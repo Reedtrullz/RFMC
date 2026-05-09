@@ -19,27 +19,22 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy workspace config
-COPY package*.json ./
-COPY shared/package.json shared/
-COPY server/package.json server/
-COPY src/package.json src/
+# Copy only what the server needs at runtime
+COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/server/package.json ./server/
 
-# Install production deps only
+# Install only server production deps
+WORKDIR /app/server
 RUN npm ci --omit=dev
 
-# Copy built frontend
-COPY --from=builder /app/dist ./dist
-
-# Copy shared source (needed at runtime by tsx)
-COPY shared/ shared/
-
-# Copy server source
-COPY server/ server/
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
 
 EXPOSE 8080
 
-CMD ["npm", "run", "start", "-w", "server"]
+CMD ["node", "server/node_modules/.bin/tsx", "server/src/index.ts"]

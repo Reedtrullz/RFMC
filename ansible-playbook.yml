@@ -5,8 +5,8 @@
     repo_url: "https://github.com/Reedtrullz/RFMC.git"
     app_dir: "/home/deploy/virtual-cdu"
     container_name: "virtual-cdu"
-    caddy_config_dir: "/home/deploy/caddy"
-    caddy_container: "caddy"
+    host_port: "8082"
+    container_port: "8080"
 
   tasks:
     - name: Ensure app directory exists
@@ -46,24 +46,24 @@
         state: started
         restart_policy: unless-stopped
         ports:
-          - "127.0.0.1:8080:8080"
+          - "127.0.0.1:{{ host_port }}:{{ container_port }}"
         log_driver: "json-file"
         log_options:
           max-size: "10m"
           max-file: "3"
         healthcheck:
-          test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))\""
+          test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:{{ container_port }}/health', r => process.exit(r.statusCode === 200 ? 0 : 1))\""]
           interval: 30s
           timeout: 10s
           retries: 3
           start_period: 20s
         env:
           NODE_ENV: production
-          PORT: "8080"
+          PORT: "{{ container_port }}"
 
     - name: Wait for health check
       uri:
-        url: "http://localhost:8080/health"
+        url: "http://localhost:{{ host_port }}/health"
         return_content: true
         timeout: 5
       register: health_check
@@ -71,25 +71,22 @@
       retries: 10
       delay: 5
 
-    - name: Copy Caddy config for fmc.reidar.tech
-      copy:
-        src: inventory/caddy/Caddyfile-fmc
-        dest: "{{ caddy_config_dir }}/Caddyfile-fmc"
-        owner: deploy
-        group: deploy
-        mode: "0644"
-
-    - name: Import Caddy config
-      community.docker.docker_container_exec:
-        container: "{{ caddy_container }}"
-        command: "caddy fmt --overwrite /etc/caddy/Caddyfile-fmc"
-      ignore_errors: true
+    - name: Ensure Caddy config includes fmc.reidar.tech
+      become: true
+      blockinfile:
+        path: /etc/caddy/Caddyfile
+        block: |
+          fmc.reidar.tech {
+            reverse_proxy localhost:{{ host_port }}
+          }
+        marker: "# {mark} ANSIBLE MANAGED - VirtualCDU"
+        create: false
 
     - name: Reload Caddy
-      community.docker.docker_container_exec:
-        container: "{{ caddy_container }}"
-        command: "caddy reload --config /etc/caddy/Caddyfile-fmc"
-      when: caddy_config_dir is defined
+      become: true
+      systemd:
+        name: caddy
+        state: reloaded
 
     - name: Verify container is running
       community.docker.docker_container_info:
