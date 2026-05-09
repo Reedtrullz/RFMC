@@ -1,0 +1,6 @@
+all:
+  hosts:
+    vps:
+      ansible_host: fmc.reidar.tech
+      ansible_user: root
+      ansible_port: 22

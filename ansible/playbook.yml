@@ -1,0 +1,14 @@
+---
+- name: Deploy VirtualCDU to VPS
+  hosts: vps
+  become: true
+  vars:
+    app_name: virtual-cdu
+    app_dir: /opt/virtual-cdu
+    node_version: 20
+    domain: fmc.reidar.tech
+    server_port: 8080
+    repo_url: https://github.com/Reedtrullz/RFMC.git
+
+  roles:
+    - virtual-cdu
