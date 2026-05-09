@@ -4,7 +4,7 @@ import { useTouchFeedback } from '../../hooks/useTouchFeedback';
 interface CDUButtonProps {
   label: string;
   className?: string;
-  variant?: 'default' | 'exec' | 'function';
+  variant?: 'default' | 'exec' | 'function' | 'highlight';
   disabled?: boolean;
   active?: boolean;
   onPress?: () => void;
@@ -33,6 +33,7 @@ export function CDUButton({ label, className = '', variant = 'default', disabled
     default: 'bg-cdu-bezel-light text-cdu-text/80 border-cdu-bezel-light hover:bg-cdu-bezel hover:text-cdu-text active:scale-95 active:bg-cdu-text/20',
     exec: 'bg-cdu-exec/10 text-cdu-exec border-cdu-exec/30 hover:bg-cdu-exec/20 active:scale-95 active:bg-cdu-exec/30',
     function: 'bg-cdu-bezel text-cdu-cyan/80 border-cdu-cyan/20 hover:bg-cdu-cyan/10 hover:text-cdu-cyan active:scale-95',
+    highlight: 'bg-cdu-cyan/15 text-cdu-cyan border-cdu-cyan/50 animate-pulse hover:bg-cdu-cyan/25 active:scale-95',
   };
 
   return (

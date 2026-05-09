@@ -19,6 +19,9 @@ export function CDU() {
   const msgLight = useFMCStore(s => s.msgLight);
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useFMCStore(s => s.connectionMode);
+  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const tutorialActive = useFMCStore(s => s.tutorialActive);
+  const getCurrentTutorialStep = useFMCStore(s => s.getCurrentTutorialStep);
 
   const { send, connectionStatus } = useWebSocket();
 
@@ -67,38 +70,38 @@ export function CDU() {
 
         {/* Screen + LSK area */}
         <div className="flex w-full">
-          <LSKColumn side="L" onPress={onPressLSK} />
+          <LSKColumn side="L" onPress={onPressLSK} highlighted={tutorialHighlight} />
           <div className="flex-1 bg-cdu-screen border-2 border-cdu-bezel-light rounded-sm">
             <Display />
             <Scratchpad />
           </div>
-          <LSKColumn side="R" onPress={onPressLSK} />
+          <LSKColumn side="R" onPress={onPressLSK} highlighted={tutorialHighlight} />
         </div>
 
         {/* Keypad */}
         <div className="w-full mt-1">
-          <KeypadGrid onPress={onPressKey} />
+          <KeypadGrid onPress={onPressKey} highlight={tutorialHighlight} />
         </div>
 
         {/* Bottom row: action keys */}
         <div className="flex w-full mt-1 gap-1">
-          <CDUButton label="INIT\nREF" className="flex-1 h-10 text-[10px] leading-tight" variant="function" onPress={() => onPressKey('INIT_REF')} />
-          <CDUButton label="RTE" className="flex-1 h-10 text-xs" variant="function" onPress={() => onPressKey('RTE')} />
-          <CDUButton label="DEP\nARR" className="flex-1 h-10 text-[10px] leading-tight" variant="function" onPress={() => onPressKey('DEP_ARR')} />
-          <CDUButton label="LEGS" className="flex-1 h-10 text-xs" variant="function" onPress={() => onPressKey('LEGS')} />
+          <CDUButton label="INIT\nREF" className="flex-1 h-10 text-[10px] leading-tight" variant={tutorialHighlight === 'POS_INIT' ? 'highlight' : 'function'} onPress={() => onPressKey('INIT_REF')} />
+          <CDUButton label="RTE" className="flex-1 h-10 text-xs" variant={tutorialHighlight === 'RTE' ? 'highlight' : 'function'} onPress={() => onPressKey('RTE')} />
+          <CDUButton label="DEP\nARR" className="flex-1 h-10 text-[10px] leading-tight" variant={tutorialHighlight === 'DEP_ARR' ? 'highlight' : 'function'} onPress={() => onPressKey('DEP_ARR')} />
+          <CDUButton label="LEGS" className="flex-1 h-10 text-xs" variant={tutorialHighlight === 'LEGS' ? 'highlight' : 'function'} onPress={() => onPressKey('LEGS')} />
         </div>
         <div className="flex w-full gap-1 mt-0.5">
-          <CDUButton label="PERF" className="flex-1 h-10 text-xs" variant="function" onPress={() => onPressKey('PERF')} />
-          <CDUButton label="PROG" className="flex-1 h-10 text-xs" variant="function" onPress={() => onPressKey('PROG')} />
+          <CDUButton label="PERF" className="flex-1 h-10 text-xs" variant={tutorialHighlight === 'PERF_INIT' ? 'highlight' : 'function'} onPress={() => onPressKey('PERF')} />
+          <CDUButton label="PROG" className="flex-1 h-10 text-xs" variant={tutorialHighlight === 'PROGRESS' ? 'highlight' : 'function'} onPress={() => onPressKey('PROG')} />
           <div className="flex-1" />
-          <CDUButton label="MENU" className="flex-1 h-10 text-xs" variant="function" onPress={() => onPressKey('MENU')} />
+          <CDUButton label="MENU" className="flex-1 h-10 text-xs" variant={tutorialHighlight === 'MENU' ? 'highlight' : 'function'} onPress={() => onPressKey('MENU')} />
         </div>
       </div>
     </div>
   );
 }
 
-function LSKColumn({ side, onPress }: { side: 'L' | 'R'; onPress: (side: 'L' | 'R', index: number) => void }) {
+function LSKColumn({ side, onPress, highlighted }: { side: 'L' | 'R'; onPress: (side: 'L' | 'R', index: number) => void; highlighted: string | null }) {
   const displayData = useFMCStore(s => s.getDisplayData());
   const currentPage = useFMCStore(s => s.currentPage);
   const legsPageIndex = useFMCStore(s => s.legsPageIndex);
@@ -122,20 +125,24 @@ function LSKColumn({ side, onPress }: { side: 'L' | 'R'; onPress: (side: 'L' | '
 
   return (
     <div className="flex flex-col justify-between py-1 px-0.5">
-      {[1, 2, 3, 4, 5, 6].map(i => (
-        <LSKButton
-          key={`${side}${i}`}
-          side={side}
-          index={i}
-          label={getLabel(i)}
-          onPress={onPress}
-        />
-      ))}
+      {[1, 2, 3, 4, 5, 6].map(i => {
+        const id = `${side}${i}`;
+        return (
+          <LSKButton
+            key={id}
+            side={side}
+            index={i}
+            label={getLabel(i)}
+            highlighted={highlighted === id}
+            onPress={onPress}
+          />
+        );
+      })}
     </div>
   );
 }
 
-function KeypadGrid({ onPress }: { onPress: (key: string) => void }) {
+function KeypadGrid({ onPress, highlight }: { onPress: (key: string) => void; highlight: string | null }) {
   const numKeys = [
     ['1', '2', '3'],
     ['4', '5', '6'],
@@ -183,10 +190,25 @@ function KeypadGrid({ onPress }: { onPress: (key: string) => void }) {
         </div>
         {/* Bottom action row */}
         <div className="flex gap-0.5 mt-0.5">
-          <CDUButton label="EXEC" className="flex-[1.5] h-9 text-xs" variant={execLit ? 'exec' : 'default'} onPress={() => onPress('EXEC')} />
+          <CDUButton 
+            label="EXEC" 
+            className="flex-[1.5] h-9 text-xs" 
+            variant={execLit ? 'exec' : highlight === 'EXEC' ? 'highlight' : 'default'} 
+            onPress={() => onPress('EXEC')} 
+          />
           <div className="flex-[0.5]" />
-          <CDUButton label="NEXT" className="flex-[1.0] h-9 text-[10px]" variant="function" onPress={() => onPress('NEXT_PAGE')} />
-          <CDUButton label="PREV" className="flex-[1.0] h-9 text-[10px]" variant="function" onPress={() => onPress('PREV_PAGE')} />
+          <CDUButton 
+            label="NEXT" 
+            className="flex-[1.0] h-9 text-[10px]" 
+            variant={highlight === 'NEXT_PAGE' ? 'highlight' : 'function'} 
+            onPress={() => onPress('NEXT_PAGE')} 
+          />
+          <CDUButton 
+            label="PREV" 
+            className="flex-[1.0] h-9 text-[10px]" 
+            variant={highlight === 'PREV_PAGE' ? 'highlight' : 'function'} 
+            onPress={() => onPress('PREV_PAGE')} 
+          />
         </div>
       </div>
     </div>

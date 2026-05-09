@@ -6,10 +6,11 @@ interface LSKButtonProps {
   index: number;
   label?: string;
   disabled?: boolean;
+  highlighted?: boolean;
   onPress?: (side: 'L' | 'R', index: number) => void;
 }
 
-export function LSKButton({ side, index, label, disabled, onPress }: LSKButtonProps) {
+export function LSKButton({ side, index, label, disabled, highlighted, onPress }: LSKButtonProps) {
   const displayLabel = label || (side === 'L' ? '◄' : '►');
 
   const handlePress = useCallback(() => {
@@ -32,16 +33,17 @@ export function LSKButton({ side, index, label, disabled, onPress }: LSKButtonPr
         rounded-sm
         font-cdu font-bold
         text-[9px]
-        bg-cdu-bezel-light
-        border border-cdu-bezel
+        border
         transition-all duration-75
         select-none
-        ${disabled 
-          ? 'text-cdu-text/20 opacity-40 pointer-events-none' 
-          : 'text-cdu-text/70 hover:text-cdu-text hover:bg-cdu-bezel active:scale-95 active:bg-cdu-text/20'
+        ${highlighted
+          ? 'bg-cdu-cyan/15 text-cdu-cyan border-cdu-cyan/50 animate-pulse'
+          : disabled
+            ? 'text-cdu-text/20 opacity-40 pointer-events-none'
+            : 'bg-cdu-bezel-light border-cdu-bezel text-cdu-text/70 hover:text-cdu-text hover:bg-cdu-bezel active:scale-95 active:bg-cdu-text/20'
         }
       `}
-      disabled={disabled}
+      disabled={disabled && !highlighted}
       aria-label={`LSK ${side}${index}`}
       {...touchHandlers}
     >

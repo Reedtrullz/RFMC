@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, parseRouteString } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, parseRouteString, getTutorialScenario } from '@shared';
 
 // ---- Default initial state ----
 const defaultState = {
@@ -23,6 +23,13 @@ const defaultState = {
   mode: 'STANDBY' as FMCMode,
   connectionStatus: 'DISCONNECTED' as ConnectionStatus,
   connectionMode: 'STANDALONE' as ConnectionMode,
+
+  // Tutorial state
+  tutorialActive: false,
+  tutorialScenario: null as string | null,
+  tutorialStepIndex: 0,
+  tutorialCompleted: false,
+  tutorialHighlight: null as string | null,
 
   legsPageIndex: 0,
   legsPageCount: 1,
@@ -48,9 +55,47 @@ interface FMCActions {
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string }) => void;
   resetState: () => void;
+
+  // Tutorial actions
+  startTutorial: (scenarioName: string) => void;
+  advanceTutorial: () => void;
+  skipTutorial: () => void;
+  getCurrentTutorialStep: () => TutorialScenario['steps'][0] | null;
 }
 
 export type FMCStore = FMCState & FMCActions;
+
+type StoreAPI = ReturnType<typeof create<FMCStore>>;
+
+function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
+  const state = get();
+  if (!state.tutorialActive || !state.tutorialScenario) return;
+
+  const scenario = getTutorialScenario(state.tutorialScenario);
+  if (!scenario) return;
+
+  const step = scenario.steps[state.tutorialStepIndex];
+  if (!step) return;
+
+  // Map CDUKey values to the format used in tutorial expectedAction
+  const keyMap: Record<string, string> = {
+    INIT_REF: 'POS_INIT',
+    RTE: 'RTE',
+    DEP_ARR: 'DEP_ARR',
+    LEGS: 'LEGS',
+    PERF: 'PERF_INIT',
+    PROG: 'PROGRESS',
+    MENU: 'MENU',
+    EXEC: 'EXEC',
+    NEXT_PAGE: 'NEXT_PAGE',
+    PREV_PAGE: 'PREV_PAGE',
+  };
+
+  const mapped = keyMap[key] || key;
+  if (mapped === step.expectedAction || step.expectedAction === key) {
+    state.advanceTutorial();
+  }
+}
 
 export const useFMCStore = create<FMCStore>((set, get) => ({
   ...defaultState,
@@ -142,6 +187,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     const char = charMap[key] || key;
     set({ scratchpad: scratchpad + char, scratchpadError: null });
+
+    // Tutorial: advance if key matches expected action
+    tryAdvanceIfMatch(get, key);
   },
 
   pressLSK: (side: 'L' | 'R', index: number) => {
@@ -263,6 +311,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (Object.keys(updates).length > 0) {
       set({ isModified: true, execLit: true, scratchpad: '', scratchpadError: null, ...(updates as any) });
     }
+
+    // Tutorial: advance on LSK press
+    const { tutorialActive } = get();
+    if (tutorialActive) {
+      get().advanceTutorial();
+    }
   },
 
   clearScratchpad: () => {
@@ -295,4 +349,104 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   resetState: () => set(defaultState),
+
+  // ---- Tutorial ----
+  startTutorial: (scenarioName: string) => {
+    const scenario = getTutorialScenario(scenarioName);
+    if (!scenario) return;
+    const firstStep = scenario.steps[0];
+    set({
+      tutorialActive: true,
+      tutorialScenario: scenarioName,
+      tutorialStepIndex: 0,
+      tutorialCompleted: false,
+      tutorialHighlight: firstStep?.highlightField || null,
+      mode: 'TUTORIAL',
+      scratchpad: '',
+      scratchpadError: null,
+    });
+    if (firstStep) {
+      // Navigate to the first step's page
+      const pageMap: Record<string, PageType> = {
+        POS_INIT: 'POS_INIT',
+        RTE: 'RTE',
+        DEP_ARR: 'DEP_ARR',
+        PERF_INIT: 'PERF_INIT',
+        THRUST_LIM: 'THRUST_LIM',
+        TAKEOFF_REF: 'TAKEOFF_REF',
+        LEGS: 'LEGS',
+        PROGRESS: 'PROGRESS',
+        IDENT: 'IDENT',
+        MENU: 'MENU',
+        HOLD: 'HOLD',
+        FIX: 'FIX',
+      };
+      const target = pageMap[firstStep.page] || 'IDENT';
+      set({ currentPage: target, pageHistory: [] });
+    }
+  },
+
+  advanceTutorial: () => {
+    const { tutorialScenario, tutorialStepIndex } = get();
+    const scenario = tutorialScenario ? getTutorialScenario(tutorialScenario) : null;
+    if (!scenario) return;
+
+    const nextIndex = tutorialStepIndex + 1;
+    if (nextIndex >= scenario.steps.length) {
+      set({
+        tutorialActive: false,
+        tutorialCompleted: true,
+        tutorialHighlight: null,
+        mode: 'ACTIVE',
+        msgLight: true,
+      });
+      return;
+    }
+
+    const nextStep = scenario.steps[nextIndex];
+    set({
+      tutorialStepIndex: nextIndex,
+      tutorialHighlight: nextStep.highlightField || null,
+      scratchpad: '',
+      scratchpadError: null,
+    });
+
+    // Navigate to the next step's page if different
+    const pageMap: Record<string, PageType> = {
+      POS_INIT: 'POS_INIT',
+      RTE: 'RTE',
+      DEP_ARR: 'DEP_ARR',
+      PERF_INIT: 'PERF_INIT',
+      THRUST_LIM: 'THRUST_LIM',
+      TAKEOFF_REF: 'TAKEOFF_REF',
+      LEGS: 'LEGS',
+      PROGRESS: 'PROGRESS',
+      IDENT: 'IDENT',
+      MENU: 'MENU',
+      HOLD: 'HOLD',
+      FIX: 'FIX',
+    };
+    const target = pageMap[nextStep.page] || 'IDENT';
+    if (target !== get().currentPage) {
+      set({ currentPage: target });
+    }
+  },
+
+  skipTutorial: () => {
+    set({
+      tutorialActive: false,
+      tutorialScenario: null,
+      tutorialStepIndex: 0,
+      tutorialHighlight: null,
+      mode: 'STANDBY',
+    });
+  },
+
+  getCurrentTutorialStep: () => {
+    const { tutorialScenario, tutorialStepIndex, tutorialActive } = get();
+    if (!tutorialActive || !tutorialScenario) return null;
+    const scenario = getTutorialScenario(tutorialScenario);
+    if (!scenario) return null;
+    return scenario.steps[tutorialStepIndex] || null;
+  },
 }));
