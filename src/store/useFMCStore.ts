@@ -128,7 +128,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     let handled = false;
 
     // Navigation keys
-    if (key === 'INIT_REF') { get().setPage('IDENT'); handled = true; }
+    if (key === 'INIT_REF') { get().setPage('POS_INIT'); handled = true; }
     else if (key === 'RTE') { get().setPage('RTE'); handled = true; }
     else if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); handled = true; }
     else if (key === 'LEGS') { get().setPage('LEGS'); handled = true; }
@@ -416,18 +416,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       scratchpadError: null,
     });
 
-    // Auto-navigate to next step's page when needed.
-    // Only when current page still matches the step that just completed
-    // (meaning the user action didn't change pages).
-    const pageMap: Record<string, PageType> = {
-      POS_INIT: 'POS_INIT', RTE: 'RTE', DEP_ARR: 'DEP_ARR', PERF_INIT: 'PERF_INIT',
-      THRUST_LIM: 'THRUST_LIM', TAKEOFF_REF: 'TAKEOFF_REF', LEGS: 'LEGS',
-      PROGRESS: 'PROGRESS', IDENT: 'IDENT', MENU: 'MENU', HOLD: 'HOLD', FIX: 'FIX',
-    };
-    const currentStepPage = pageMap[currentStep?.page] || 'IDENT';
-    const nextStepPage = pageMap[nextStep.page] || 'IDENT';
-
-    if (currentPage === currentStepPage && nextStepPage !== currentPage) {
+    // Auto-navigate to next step's page only when the next step
+    // is NOT a function key action (the user will press that key themselves).
+    // Function keys: INIT_REF, RTE, DEP_ARR, PERF, PROG, LEGS, MENU
+    // For those steps, the highlighted button both navigates and advances.
+    const functionKeyActions = ['POS_INIT', 'RTE', 'DEP_ARR', 'PERF_INIT', 'PROGRESS', 'LEGS', 'MENU'];
+    if (!functionKeyActions.includes(nextStep.expectedAction)
+        && currentPage === currentStepPage
+        && nextStepPage !== currentPage) {
       set({ currentPage: nextStepPage });
     }
   },
