@@ -125,71 +125,74 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   pressKey: (key: CDUKey) => {
     const { scratchpad, currentPage } = get();
+    let handled = false;
 
     // Navigation keys
-    if (key === 'INIT_REF') { get().setPage('IDENT'); return; }
-    if (key === 'RTE') { get().setPage('RTE'); return; }
-    if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); return; }
-    if (key === 'LEGS') { get().setPage('LEGS'); return; }
-    if (key === 'PERF') { get().setPage('PERF_INIT'); return; }
-    if (key === 'PROG') { get().setPage('PROGRESS'); return; }
-    if (key === 'MENU') { get().setPage('MENU'); return; }
+    if (key === 'INIT_REF') { get().setPage('IDENT'); handled = true; }
+    else if (key === 'RTE') { get().setPage('RTE'); handled = true; }
+    else if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); handled = true; }
+    else if (key === 'LEGS') { get().setPage('LEGS'); handled = true; }
+    else if (key === 'PERF') { get().setPage('PERF_INIT'); handled = true; }
+    else if (key === 'PROG') { get().setPage('PROGRESS'); handled = true; }
+    else if (key === 'MENU') { get().setPage('MENU'); handled = true; }
 
     // Clear
-    if (key === 'CLR') {
+    else if (key === 'CLR') {
       if (scratchpad.length > 0) {
         set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
       }
-      return;
+      handled = true;
     }
 
     // Delete (same as CLR for now)
-    if (key === 'DEL') {
+    else if (key === 'DEL') {
       if (scratchpad.length > 0) {
         set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
       }
-      return;
+      handled = true;
     }
 
     // EXEC
-    if (key === 'EXEC') {
+    else if (key === 'EXEC') {
       get().pressEXEC();
-      return;
+      handled = true;
     }
 
     // Page navigation
-    if (key === 'NEXT_PAGE') {
+    else if (key === 'NEXT_PAGE') {
       const s = get();
       if (s.currentPage === 'LEGS' && s.legsPageIndex < s.legsPageCount - 1) {
         set({ legsPageIndex: s.legsPageIndex + 1 });
       } else if (s.currentPage === 'RTE' && s.rteSubPage < 1) {
         set({ rteSubPage: s.rteSubPage + 1 });
       }
-      return;
+      handled = true;
     }
 
-    if (key === 'PREV_PAGE') {
+    else if (key === 'PREV_PAGE') {
       const s = get();
       if (s.currentPage === 'LEGS' && s.legsPageIndex > 0) {
         set({ legsPageIndex: s.legsPageIndex - 1 });
       } else if (s.currentPage === 'RTE' && s.rteSubPage > 0) {
         set({ rteSubPage: s.rteSubPage - 1 });
       }
-      return;
+      handled = true;
     }
 
     // Character input
-    if (scratchpad.length >= SCRATCHPAD_MAX) return;
+    else if (scratchpad.length < SCRATCHPAD_MAX) {
+      const charMap: Record<string, string> = {
+        DOT: '.', PLUS_MINUS: '+/-', SLASH: '/', SPACE: ' ',
+      };
+      const char = charMap[key] || key;
+      set({ scratchpad: scratchpad + char, scratchpadError: null });
+      handled = true;
+    }
 
-    const charMap: Record<string, string> = {
-      DOT: '.', PLUS_MINUS: '+/-', SLASH: '/', SPACE: ' ',
-    };
-
-    const char = charMap[key] || key;
-    set({ scratchpad: scratchpad + char, scratchpadError: null });
-
-    // Tutorial: advance if key matches expected action
-    tryAdvanceIfMatch(get, key);
+    // Tutorial: advance if action matches expected (runs after all key handling)
+    if (handled) {
+      tryAdvanceIfMatch(get, key);
+    }
   },
 
   pressLSK: (side: 'L' | 'R', index: number) => {
