@@ -44,9 +44,19 @@ export function CDUButton({ label, className = '', variant = 'default', disabled
         ${disabled ? 'opacity-40 pointer-events-none' : ''}
       `}
       disabled={disabled}
+      onClick={handlePress}
       {...touchHandlers}
     >
-      {label}
+      {label.includes('\n') ? (
+        label.split('\n').map((part, i, arr) => (
+          <span key={i}>
+            {part}
+            {i < arr.length - 1 && <br />}
+          </span>
+        ))
+      ) : (
+        label
+      )}
     </button>
   );
 }

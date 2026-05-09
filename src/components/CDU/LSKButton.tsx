@@ -44,6 +44,7 @@ export function LSKButton({ side, index, label, disabled, highlighted, onPress }
         }
       `}
       disabled={disabled && !highlighted}
+      onClick={handlePress}
       aria-label={`LSK ${side}${index}`}
       {...touchHandlers}
     >
