@@ -152,10 +152,10 @@ export const preflightScenario: TutorialScenario = {
     // --- THRUST LIM ---
     {
       id: 'to_nav',
-      instruction: 'Press LSK L5 to go to THRUST LIM. WHY: You must select a takeoff thrust setting. Reduced thrust (TO 1 or TO 2) extends engine life dramatically when runway performance permits.',
+      instruction: 'Press LSK L5 to go to THRUST LIM. WHY: You need to select a takeoff thrust setting. Reduced thrust (TO 1 or TO 2) extends engine life dramatically when runway performance permits.',
       expectedAction: 'thrust_lim',
       validate: () => true,
-      page: 'THRUST_LIM',
+      page: 'PERF_INIT',
       highlightField: 'L5',
     },
     {

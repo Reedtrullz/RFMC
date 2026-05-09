@@ -390,10 +390,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   advanceTutorial: () => {
-    const { tutorialScenario, tutorialStepIndex } = get();
+    const state = get();
+    const { tutorialScenario, tutorialStepIndex, currentPage } = state;
     const scenario = tutorialScenario ? getTutorialScenario(tutorialScenario) : null;
     if (!scenario) return;
 
+    const currentStep = scenario.steps[tutorialStepIndex];
     const nextIndex = tutorialStepIndex + 1;
     if (nextIndex >= scenario.steps.length) {
       set({
@@ -414,24 +416,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       scratchpadError: null,
     });
 
-    // Navigate to the next step's page if different
+    // Auto-navigate to next step's page when needed.
+    // Only when current page still matches the step that just completed
+    // (meaning the user action didn't change pages).
     const pageMap: Record<string, PageType> = {
-      POS_INIT: 'POS_INIT',
-      RTE: 'RTE',
-      DEP_ARR: 'DEP_ARR',
-      PERF_INIT: 'PERF_INIT',
-      THRUST_LIM: 'THRUST_LIM',
-      TAKEOFF_REF: 'TAKEOFF_REF',
-      LEGS: 'LEGS',
-      PROGRESS: 'PROGRESS',
-      IDENT: 'IDENT',
-      MENU: 'MENU',
-      HOLD: 'HOLD',
-      FIX: 'FIX',
+      POS_INIT: 'POS_INIT', RTE: 'RTE', DEP_ARR: 'DEP_ARR', PERF_INIT: 'PERF_INIT',
+      THRUST_LIM: 'THRUST_LIM', TAKEOFF_REF: 'TAKEOFF_REF', LEGS: 'LEGS',
+      PROGRESS: 'PROGRESS', IDENT: 'IDENT', MENU: 'MENU', HOLD: 'HOLD', FIX: 'FIX',
     };
-    const target = pageMap[nextStep.page] || 'IDENT';
-    if (target !== get().currentPage) {
-      set({ currentPage: target });
+    const currentStepPage = pageMap[currentStep?.page] || 'IDENT';
+    const nextStepPage = pageMap[nextStep.page] || 'IDENT';
+
+    if (currentPage === currentStepPage && nextStepPage !== currentPage) {
+      set({ currentPage: nextStepPage });
     }
   },
 
