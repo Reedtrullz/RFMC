@@ -1,0 +1,101 @@
+- name: Deploy VirtualCDU to VPS
+  hosts: vps
+  gather_facts: false
+  vars:
+    repo_url: "https://github.com/Reedtrullz/RFMC.git"
+    app_dir: "/home/deploy/virtual-cdu"
+    container_name: "virtual-cdu"
+    caddy_config_dir: "/home/deploy/caddy"
+    caddy_container: "caddy"
+
+  tasks:
+    - name: Ensure app directory exists
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: "0755"
+
+    - name: Clone or pull repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main
+        force: true
+      register: git_result
+
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: "{{ container_name }}"
+        source: build
+        build:
+          path: "{{ app_dir }}"
+        force_source: "{{ git_result.changed }}"
+      register: build_result
+
+    - name: Stop existing container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Start container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ container_name }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "127.0.0.1:8080:8080"
+        log_driver: "json-file"
+        log_options:
+          max-size: "10m"
+          max-file: "3"
+        healthcheck:
+          test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))\""
+          interval: 30s
+          timeout: 10s
+          retries: 3
+          start_period: 20s
+        env:
+          NODE_ENV: production
+          PORT: "8080"
+
+    - name: Wait for health check
+      uri:
+        url: "http://localhost:8080/health"
+        return_content: true
+        timeout: 5
+      register: health_check
+      until: health_check is succeeded and health_check.json.status == "ok"
+      retries: 10
+      delay: 5
+
+    - name: Copy Caddy config for fmc.reidar.tech
+      copy:
+        src: inventory/caddy/Caddyfile-fmc
+        dest: "{{ caddy_config_dir }}/Caddyfile-fmc"
+        owner: deploy
+        group: deploy
+        mode: "0644"
+
+    - name: Import Caddy config
+      community.docker.docker_container_exec:
+        container: "{{ caddy_container }}"
+        command: "caddy fmt --overwrite /etc/caddy/Caddyfile-fmc"
+      ignore_errors: true
+
+    - name: Reload Caddy
+      community.docker.docker_container_exec:
+        container: "{{ caddy_container }}"
+        command: "caddy reload --config /etc/caddy/Caddyfile-fmc"
+      when: caddy_config_dir is defined
+
+    - name: Verify container is running
+      community.docker.docker_container_info:
+        name: "{{ container_name }}"
+      register: container_info
+
+    - name: Report deployment status
+      debug:
+        msg: "VirtualCDU deployed: {{ container_info.container.State.Status }} -> https://fmc.reidar.tech"
