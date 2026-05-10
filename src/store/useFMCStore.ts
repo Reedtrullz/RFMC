@@ -220,6 +220,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressLSK: (side: 'L' | 'R', index: number) => {
+    console.log('pressLSK called:', side, index);
     const state = get();
     const lskId = `${side}${index}` as LSKId;
     let displayData: DisplayData;
@@ -231,6 +232,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       displayData = r ? r(state) : getPageRenderer('MENU')!(state);
     }
     const action = displayData.lskActions[lskId];
+    console.log('pressLSK action:', action);
 
     if (!action) return;
 
@@ -409,7 +411,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     // Tutorial: advance on LSK press (check action matches expectedAction OR validate passes)
-    const { tutorialActive } = get();
+    const { tutorialActive, tutorialStepIndex, tutorialScenario } = get();
+    console.log('pressLSK tutorial check:', { tutorialActive, tutorialStepIndex, tutorialScenario, action });
     if (tutorialActive) {
       const scenario = findTutorial(get().tutorialScenario || '');
       if (scenario) {
@@ -417,7 +420,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         if (step) {
           const actionMatches = action === step.expectedAction;
           const validatePasses = step.validate ? step.validate(scratchpad) : true;
+          console.log('pressLSK step check:', { stepId: step.id, expectedAction: step.expectedAction, action, actionMatches, validatePasses });
           if (actionMatches || validatePasses) {
+            console.log('pressLSK advancing tutorial!');
             get().advanceTutorial();
           }
         }
