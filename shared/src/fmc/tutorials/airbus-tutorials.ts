@@ -157,11 +157,11 @@ export const airbusTakeoffScenario: TutorialScenario = {
   description: 'Enter V-speeds (V1/VR/V2), FLX temp, runway, and wind — critical safety parameters for every A320 takeoff.',
   steps: [
     {
-      id: 'a_to_intro',
-      instruction: 'You are on the PERF TO page. This is where Airbus pilots enter takeoff performance data. V-speeds, FLX temperature, runway, and wind are all entered here. Press LSK L1 to start.',
+      id: 'a_to_nav',
+      instruction: 'Press PERF (top row, 3rd button) to go to PERF TO page. This is where Airbus pilots enter takeoff performance data.',
       expectedAction: 'PERF_TAKEOFF',
       validate: () => true,
-      page: 'PERF_TAKEOFF',
+      page: 'INIT_A',  // We're on IDENT page (INIT_A for Airbus)
       highlightField: 'PERF_TAKEOFF',
     },
     {
