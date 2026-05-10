@@ -460,6 +460,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const scenario = findTutorial(scenarioName);
     if (!scenario) return;
     const firstStep = scenario.steps[0];
+    // Call setup function to initialize tutorial state
+    if (scenario.setup) scenario.setup();
     set({
       tutorialActive: true,
       tutorialScenario: scenarioName,
