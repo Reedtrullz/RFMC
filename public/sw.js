@@ -1,20 +1,28 @@
-const CACHE_NAME = 'virtual-cdu-v1';
+const CACHE_NAME = 'virtual-cdu-v2';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+// Network-first strategy — always try to get fresh content
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request).then((response) => {
+      if (response.ok) {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request);
     })
   );
 });
 
+// Clear old caches on activation
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -25,21 +33,3 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  // Stale-while-revalidate for navigation and static assets
-  // Network-first for WebSocket calls (handled by the WS protocol, not here)
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request).then((response) => {
-        if (response.ok) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      });
-      return cached || fetchPromise;
-    })
-  );
-});
