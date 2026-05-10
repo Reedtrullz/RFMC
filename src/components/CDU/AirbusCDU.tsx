@@ -9,9 +9,10 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { useFMCStore } from '../../store/useFMCStore';
 import type { CDUKey } from '@shared';
 
+// 24 grid rows total for display (1 row per line). 6 LSKs × 4 rows each = 24.
 const LSK_AIRBUS = [
-  { row: 4, index: 1 }, { row: 7, index: 2 }, { row: 10, index: 3 },
-  { row: 13, index: 4 }, { row: 16, index: 5 }, { row: 19, index: 6 },
+  { row: 1, index: 1 }, { row: 5, index: 2 }, { row: 9, index: 3 },
+  { row: 13, index: 4 }, { row: 17, index: 5 }, { row: 21, index: 6 },
 ];
 
 export function AirbusCDU() {
@@ -61,12 +62,12 @@ export function AirbusCDU() {
 
         <div className="w-full grid gap-0" style={{ gridTemplateColumns: 'auto 1fr auto', gridTemplateRows: 'repeat(24, minmax(0, 1fr)) auto' }}>
           {LSK_AIRBUS.map(({ row, index }) => (
-            <div key={`L${index}`} className="flex items-center" style={{ gridRow: `${row} / ${row + 2}`, gridColumn: 1 }}>
+            <div key={`L${index}`} className="flex items-center" style={{ gridRow: `${row} / ${row + 4}`, gridColumn: 1 }}>
               <LSKButton side="L" index={index} label={getLSKLabel('L', index)} highlighted={isHighlighted(`L${index}`)} onPress={onPressLSK} />
             </div>
           ))}
           {LSK_AIRBUS.map(({ row, index }) => (
-            <div key={`R${index}`} className="flex items-center justify-end" style={{ gridRow: `${row} / ${row + 2}`, gridColumn: 3 }}>
+            <div key={`R${index}`} className="flex items-center justify-end" style={{ gridRow: `${row} / ${row + 4}`, gridColumn: 3 }}>
               <LSKButton side="R" index={index} label={getLSKLabel('R', index)} highlighted={isHighlighted(`R${index}`)} onPress={onPressLSK} />
             </div>
           ))}
