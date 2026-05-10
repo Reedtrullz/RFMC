@@ -74,6 +74,7 @@ export type FMCStore = FMCState & FMCActions;
 type StoreAPI = ReturnType<typeof create<FMCStore>>;
 
 function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
+  console.log('tryAdvanceIfMatch called with:', key);
   const state = get();
   if (!state.tutorialActive || !state.tutorialScenario) return;
 
@@ -138,6 +139,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressKey: (key: CDUKey) => {
+    console.log('pressKey called with:', key);
     const { scratchpad, currentPage } = get();
     let handled = false;
 
