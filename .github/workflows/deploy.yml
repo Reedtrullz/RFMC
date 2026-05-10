@@ -1,0 +1,38 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy VirtualCDU
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Install community.docker collection
+        run: ansible-galaxy collection install community.docker
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_racknerd
+          chmod 600 ~/.ssh/id_rsa_racknerd
+          ssh-keyscan -H 198.23.137.16 >> ~/.ssh/known_hosts
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook -i inventory/hosts.yml ansible-playbook.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: false
