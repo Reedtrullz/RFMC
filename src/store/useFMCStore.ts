@@ -468,9 +468,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   // ---- Tutorial ----
   startTutorial: (scenarioName: string) => {
+    console.log('startTutorial called with:', scenarioName);
     const scenario = findTutorial(scenarioName);
-    if (!scenario) return;
+    console.log('findTutorial result:', scenario?.name);
+    if (!scenario) { console.log('Scenario not found!'); return; }
     const firstStep = scenario.steps[0];
+    console.log('firstStep:', firstStep?.id, 'page:', firstStep?.page);
     // Call setup function to initialize tutorial state
     if (scenario.setup) scenario.setup();
     
@@ -501,7 +504,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       FUEL_PRED: 'FUEL_PRED',
       DATA_INDEX: 'DATA_INDEX',
     };
-    const target = pageMap[firstStep.page] || firstStep.page || 'IDENT';
+    const target = pageMap[firstStep.page] || firstStep?.page || 'IDENT';
+    console.log('Navigation target:', target);
     
     set({
       tutorialActive: true,
