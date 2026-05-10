@@ -403,10 +403,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       set({ isModified: true, execLit: true, scratchpad: '', scratchpadError: null, ...(updates as any) });
     }
 
-    // Tutorial: advance on LSK press
+    // Tutorial: advance on LSK press (only if validate passes)
     const { tutorialActive } = get();
     if (tutorialActive) {
-      get().advanceTutorial();
+      const scenario = findTutorial(get().tutorialScenario || '');
+      if (scenario) {
+        const step = scenario.steps[get().tutorialStepIndex];
+        if (step && step.validate) {
+          const scratchpad = get().scratchpad;
+          if (step.validate(scratchpad)) {
+            get().advanceTutorial();
+          }
+        } else {
+          get().advanceTutorial(); // No validate function, just advance
+        }
+      }
     }
   },
 
@@ -462,6 +473,36 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const firstStep = scenario.steps[0];
     // Call setup function to initialize tutorial state
     if (scenario.setup) scenario.setup();
+    
+    // Navigate to the first step's page
+    const pageMap: Record<string, PageType> = {
+      POS_INIT: 'POS_INIT',
+      RTE: 'RTE',
+      DEP_ARR: 'DEP_ARR',
+      PERF_INIT: 'PERF_INIT',
+      THRUST_LIM: 'THRUST_LIM',
+      TAKEOFF_REF: 'TAKEOFF_REF',
+      LEGS: 'LEGS',
+      PROGRESS: 'PROGRESS',
+      IDENT: 'IDENT',
+      MENU: 'MENU',
+      HOLD: 'HOLD',
+      FIX: 'FIX',
+      // Airbus pages
+      INIT_A: 'INIT_A',
+      INIT_B: 'INIT_B',
+      F_PLN: 'F_PLN',
+      PERF_TAKEOFF: 'PERF_TAKEOFF',
+      PROG_A: 'PROG_A',
+      DEP_ARR_A: 'DEP_ARR_A',
+      MCDU_MENU: 'MCDU_MENU',
+      RAD_NAV: 'RAD_NAV',
+      SEC_FPLN: 'SEC_FPLN',
+      FUEL_PRED: 'FUEL_PRED',
+      DATA_INDEX: 'DATA_INDEX',
+    };
+    const target = pageMap[firstStep.page] || firstStep.page || 'IDENT';
+    
     set({
       tutorialActive: true,
       tutorialScenario: scenarioName,
@@ -471,38 +512,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       mode: 'TUTORIAL',
       scratchpad: '',
       scratchpadError: null,
+      currentPage: target,
+      pageHistory: [],
     });
-    if (firstStep) {
-      // Navigate to the first step's page
-      const pageMap: Record<string, PageType> = {
-        POS_INIT: 'POS_INIT',
-        RTE: 'RTE',
-        DEP_ARR: 'DEP_ARR',
-        PERF_INIT: 'PERF_INIT',
-        THRUST_LIM: 'THRUST_LIM',
-        TAKEOFF_REF: 'TAKEOFF_REF',
-        LEGS: 'LEGS',
-        PROGRESS: 'PROGRESS',
-        IDENT: 'IDENT',
-        MENU: 'MENU',
-        HOLD: 'HOLD',
-        FIX: 'FIX',
-        // Airbus pages
-        INIT_A: 'INIT_A',
-        INIT_B: 'INIT_B',
-        F_PLN: 'F_PLN',
-        PERF_TAKEOFF: 'PERF_TAKEOFF',
-        PROG_A: 'PROG_A',
-        DEP_ARR_A: 'DEP_ARR_A',
-        MCDU_MENU: 'MCDU_MENU',
-        RAD_NAV: 'RAD_NAV',
-        SEC_FPLN: 'SEC_FPLN',
-        FUEL_PRED: 'FUEL_PRED',
-        DATA_INDEX: 'DATA_INDEX',
-      };
-      const target = pageMap[firstStep.page] || firstStep.page || 'IDENT';
-      set({ currentPage: target, pageHistory: [] });
-    }
   },
 
   advanceTutorial: () => {
