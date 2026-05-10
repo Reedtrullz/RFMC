@@ -6,14 +6,8 @@ import './index.css';
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Service worker registration failed — app still works offline-first via cache
-    });
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);

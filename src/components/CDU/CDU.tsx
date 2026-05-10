@@ -14,10 +14,7 @@ const LSK_BOEING = [
   { row: 8, index: 4 }, { row: 10, index: 5 }, { row: 12, index: 6 },
 ];
 
-const LSK_AIRBUS = [
-  { row: 4, index: 1 }, { row: 7, index: 2 }, { row: 10, index: 3 },
-  { row: 13, index: 4 }, { row: 16, index: 5 }, { row: 19, index: 6 },
-];
+
 
 export function CDU() {
   const isKiosk = useKioskMode();
@@ -94,7 +91,7 @@ export function CDU() {
           }}
         >
           {/* Left LSK buttons */}
-          {LSK_POSITIONS.map(({ row, index }) => (
+          {LSK_BOEING.map(({ row, index }) => (
             <div
               key={`L${index}`}
               className="flex items-center"
@@ -111,7 +108,7 @@ export function CDU() {
           ))}
 
           {/* Right LSK buttons */}
-          {LSK_POSITIONS.map(({ row, index }) => (
+          {LSK_BOEING.map(({ row, index }) => (
             <div
               key={`R${index}`}
               className="flex items-center justify-end"

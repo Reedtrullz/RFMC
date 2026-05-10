@@ -31,7 +31,7 @@
         source: build
         build:
           path: "{{ app_dir }}"
-        force_source: "{{ git_result.changed }}"
+        force_source: true
       register: build_result
 
     - name: Stop existing container
