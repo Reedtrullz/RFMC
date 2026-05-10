@@ -10,8 +10,8 @@ export { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } fro
 /**
  * Map a page type to its render function.
  */
-export function getPageRenderer(page: PageType): (state: FMCState) => DisplayData {
-  const renderers: Record<PageType, (state: FMCState) => DisplayData> = {
+export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
+  const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
     IDENT: renderIdentPage,
     POS_INIT: renderPosInitPage,
     RTE: renderRtePage,
@@ -24,7 +24,7 @@ export function getPageRenderer(page: PageType): (state: FMCState) => DisplayDat
     HOLD: renderHoldPage,
     FIX: renderFixPage,
     MENU: renderMenuPage,
-    TUTORIAL: renderMenuPage, // fallback
+    TUTORIAL: renderMenuPage,
   };
-  return renderers[page];
+  return renderers[page] || null;
 }

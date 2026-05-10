@@ -1,5 +1,3 @@
-import { PAGE_WIDTH } from '@shared';
-
 interface DisplayLineProps {
   text: string;
   leftLabel?: string;
@@ -7,30 +5,36 @@ interface DisplayLineProps {
   inverse?: boolean;
   small?: boolean;
   blinking?: boolean;
+  variant?: 'boeing' | 'airbus';
 }
 
-export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking }: DisplayLineProps) {
-  const paddedText = text.padEnd(PAGE_WIDTH, ' ');
+export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking, variant = 'boeing' }: DisplayLineProps) {
+  const maxWidth = variant === 'airbus' ? 24 : 24;
+  const paddedText = text.padEnd(maxWidth, ' ');
+  const isAirbus = variant === 'airbus';
+  const mainColor = isAirbus ? 'text-cdu-amber' : 'text-cdu-text';
+  const dimColor = isAirbus ? 'text-cdu-amber/60' : 'text-cdu-text-dim';
+  const inverseBg = isAirbus ? 'bg-cdu-amber' : 'bg-cdu-text';
   
   return (
     <div className={`
       flex items-center
-      text-[13px] leading-[1.15]
+      text-[11px] leading-[1.15]
       h-[1.3em]
       whitespace-pre
-      ${small ? 'text-[10px]' : ''}
+      ${small ? 'text-[9px]' : ''}
       ${inverse 
-        ? 'bg-cdu-text text-cdu-screen font-bold' 
-        : 'text-cdu-text text-glow'
+        ? `${inverseBg} text-cdu-screen font-bold` 
+        : mainColor
       }
       ${blinking ? 'animate-blink' : ''}
     `}>
       {leftLabel && (
-        <span className="text-[9px] text-cdu-text-dim mr-0.5">{leftLabel}</span>
+        <span className={`text-[8px] ${dimColor} mr-0.5`}>{leftLabel}</span>
       )}
       <span className="flex-1">{paddedText}</span>
       {rightLabel && (
-        <span className="text-[9px] text-cdu-text-dim ml-0.5">{rightLabel}</span>
+        <span className={`text-[8px] ${dimColor} ml-0.5`}>{rightLabel}</span>
       )}
     </div>
   );

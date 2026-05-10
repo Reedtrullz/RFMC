@@ -2,8 +2,11 @@
 // Core FMC types shared between frontend and backend
 // ============================================================
 
-/** All possible FMC pages */
-export type PageType =
+/** Aircraft variant */
+export type AircraftType = 'BOEING_737' | 'AIRBUS_A320';
+
+/** All possible Boeing 737 CDU pages */
+export type BoeingPageType =
   | 'IDENT'
   | 'POS_INIT'
   | 'RTE'
@@ -17,6 +20,24 @@ export type PageType =
   | 'FIX'
   | 'MENU'
   | 'TUTORIAL';
+
+/** All possible Airbus A320 MCDU pages */
+export type AirbusPageType =
+  | 'INIT_A'
+  | 'INIT_B'
+  | 'F_PLN'
+  | 'DEP_ARR_A'
+  | 'PERF_TAKEOFF'
+  | 'PERF_APPR'
+  | 'FUEL_PRED'
+  | 'SEC_FPLN'
+  | 'RAD_NAV'
+  | 'PROG_A'
+  | 'DATA_INDEX'
+  | 'MCDU_MENU';
+
+/** All possible FMC pages (Boeing + Airbus) */
+export type PageType = BoeingPageType | AirbusPageType;
 
 /** A single line on the CDU display */
 export interface DisplayLine {
@@ -119,6 +140,8 @@ export interface TakeoffData {
   windDir: number;
   windSpeed: number;
   qnh: number;
+  flaps?: string;
+  flexTemp?: number;
 }
 
 export interface PerformanceData {
@@ -154,6 +177,7 @@ export interface RouteData {
   sid?: string;
   star?: string;
   approach?: string;
+  alternate?: string;
 }
 
 // ---- Tutorial Types ----
@@ -177,6 +201,7 @@ export interface TutorialScenario {
 // ---- Full FMC State (for shared logic) ----
 
 export interface FMCState {
+  aircraft: AircraftType;
   currentPage: PageType;
   pageHistory: PageType[];
   scratchpad: string;

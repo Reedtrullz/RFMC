@@ -1,9 +1,14 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, parseRouteString, getTutorialScenario } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
+
+function findTutorial(scenarioName: string): TutorialScenario | undefined {
+  return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
+}
 
 // ---- Default initial state ----
 const defaultState = {
+  aircraft: 'BOEING_737' as AircraftType,
   currentPage: 'IDENT' as PageType,
   pageHistory: [] as PageType[],
   scratchpad: '',
@@ -55,6 +60,7 @@ interface FMCActions {
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string }) => void;
   resetState: () => void;
+  setAircraft: (type: AircraftType) => void;
 
   // Tutorial actions
   startTutorial: (scenarioName: string) => void;
@@ -71,7 +77,7 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
   const state = get();
   if (!state.tutorialActive || !state.tutorialScenario) return;
 
-  const scenario = getTutorialScenario(state.tutorialScenario);
+  const scenario = findTutorial(state.tutorialScenario);
   if (!scenario) return;
 
   const step = scenario.steps[state.tutorialStepIndex];
@@ -135,6 +141,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     else if (key === 'PERF') { get().setPage('PERF_INIT'); handled = true; }
     else if (key === 'PROG') { get().setPage('PROGRESS'); handled = true; }
     else if (key === 'MENU') { get().setPage('MENU'); handled = true; }
+    // Airbus function keys
+    else if (key === 'INIT_A') { get().setPage('INIT_A'); handled = true; }
+    else if (key === 'INIT_B') { get().setPage('INIT_B'); handled = true; }
+    else if (key === 'F_PLN') { get().setPage('F_PLN'); handled = true; }
+    else if (key === 'PERF_TAKEOFF') { get().setPage('PERF_TAKEOFF'); handled = true; }
+    else if (key === 'PROG_A') { get().setPage('PROG_A'); handled = true; }
+    else if (key === 'RAD_NAV') { get().setPage('RAD_NAV'); handled = true; }
+    else if (key === 'MCDU_MENU') { get().setPage('MCDU_MENU'); handled = true; }
 
     // Clear
     else if (key === 'CLR') {
@@ -198,8 +212,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   pressLSK: (side: 'L' | 'R', index: number) => {
     const state = get();
     const lskId = `${side}${index}` as LSKId;
-    const renderer = getPageRenderer(state.currentPage);
-    const displayData = renderer(state);
+    let displayData: DisplayData;
+    if (state.aircraft === 'AIRBUS_A320') {
+      const r = getAirbusPageRenderer(state.currentPage as any);
+      displayData = r ? r(state) : getPageRenderer('MENU')!(state);
+    } else {
+      const r = getPageRenderer(state.currentPage);
+      displayData = r ? r(state) : getPageRenderer('MENU')!(state);
+    }
     const action = displayData.lskActions[lskId];
 
     if (!action) return;
@@ -221,7 +241,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'prev_page': state.pressKey('PREV_PAGE'); return;
       case 'dep_page': set({ depArrSubPage: 'DEP' }); return;
       case 'arr_page': set({ depArrSubPage: 'ARR' }); return;
-      case 'atc': return; // not implemented
+      case 'atc': return;
+      // Airbus LSK navigation
+      case 'init_a': state.setPage('INIT_A'); return;
+      case 'init_b': state.setPage('INIT_B'); return;
+      case 'perf_to': state.setPage('PERF_TAKEOFF'); return;
+      case 'perf_appr': state.setPage('PERF_APPR'); return;
+      case 'f_pln': state.setPage('F_PLN'); return;
+      case 'fuel_pred': state.setPage('FUEL_PRED'); return;
+      case 'sec_fpln': state.setPage('SEC_FPLN'); return;
+      case 'rad_nav': state.setPage('RAD_NAV'); return;
+      case 'data_index': state.setPage('DATA_INDEX'); return;
+      case 'mcdu_menu': state.setPage('MCDU_MENU'); return;
+      case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); return;
+      case 'fpln_next': state.pressKey('NEXT_PAGE'); return;
+      case 'fpln_prev': state.pressKey('PREV_PAGE'); return;
     }
 
     // Data entry actions
@@ -309,6 +343,52 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_qnh':
         if (scratchpad) updates.takeoff = { ...state.takeoff, qnh: parseInt(scratchpad) * 100 || parseFloat(scratchpad) * 100 || 0 };
         break;
+      // Airbus data entry
+      case 'set_from_to':
+        if (scratchpad && scratchpad.includes('/')) {
+          const [from, to] = scratchpad.toUpperCase().split('/');
+          updates.route = { ...state.route, origin: from, destination: to };
+          updates.flightPlan = { ...state.flightPlan, origin: from, destination: to };
+        }
+        break;
+      case 'set_crz_fl':
+        if (scratchpad) updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
+        break;
+      case 'set_altn':
+        if (scratchpad) updates.route = { ...state.route, alternate: scratchpad.toUpperCase() };
+        break;
+      case 'set_block':
+        if (scratchpad) updates.performance = { ...state.performance, fuel: parseFloat(scratchpad) * 1000 || 0 };
+        break;
+      case 'set_flt_nbr':
+        if (scratchpad) {
+          updates.route = { ...state.route, flightNumber: scratchpad.toUpperCase() };
+          updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
+        }
+        break;
+      case 'set_sid':
+        if (scratchpad) updates.route = { ...state.route, sid: scratchpad.toUpperCase() };
+        break;
+      case 'set_rwy':
+        if (scratchpad) updates.route = { ...state.route, runway: scratchpad.toUpperCase() };
+        break;
+      case 'set_star':
+        if (scratchpad) updates.route = { ...state.route, star: scratchpad.toUpperCase() };
+        break;
+      case 'set_appr':
+        if (scratchpad) updates.route = { ...state.route, approach: scratchpad.toUpperCase() };
+        break;
+      case 'set_flaps':
+        if (scratchpad) updates.takeoff = { ...state.takeoff, flaps: scratchpad.toUpperCase() };
+        break;
+      case 'set_flex':
+        if (scratchpad) updates.takeoff = { ...state.takeoff, flexTemp: parseInt(scratchpad) || 0 };
+        break;
+      case 'set_cg':
+        if (scratchpad) updates.performance = { ...state.performance, cg: parseFloat(scratchpad) || 0 };
+        break;
+      case 'set_extra':
+        break;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -335,8 +415,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   getDisplayData: () => {
     const state = get();
-    const renderer = getPageRenderer(state.currentPage);
-    return renderer(state);
+    if (state.aircraft === 'AIRBUS_A320') {
+      const renderer = getAirbusPageRenderer(state.currentPage as any);
+      if (renderer) return renderer(state);
+    }
+    const renderer = getPageRenderer(state.currentPage as any);
+    return renderer ? renderer(state) : getPageRenderer('MENU')!(state);
   },
 
   setMode: (mode: FMCMode) => set({ mode }),
@@ -353,9 +437,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   resetState: () => set(defaultState),
 
+  setAircraft: (type: AircraftType) => {
+    const startPage = type === 'BOEING_737' ? 'IDENT' as PageType : 'INIT_A' as PageType;
+    set({
+      ...defaultState,
+      aircraft: type,
+      currentPage: startPage,
+      pageHistory: [],
+    });
+  },
+
   // ---- Tutorial ----
   startTutorial: (scenarioName: string) => {
-    const scenario = getTutorialScenario(scenarioName);
+    const scenario = findTutorial(scenarioName);
     if (!scenario) return;
     const firstStep = scenario.steps[0];
     set({
@@ -392,7 +486,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   advanceTutorial: () => {
     const state = get();
     const { tutorialScenario, tutorialStepIndex, currentPage } = state;
-    const scenario = tutorialScenario ? getTutorialScenario(tutorialScenario) : null;
+    const scenario = tutorialScenario ? findTutorial(tutorialScenario) : null;
     if (!scenario) return;
 
     const currentStep = scenario.steps[tutorialStepIndex];
@@ -441,7 +535,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   getCurrentTutorialStep: () => {
     const { tutorialScenario, tutorialStepIndex, tutorialActive } = get();
     if (!tutorialActive || !tutorialScenario) return null;
-    const scenario = getTutorialScenario(tutorialScenario);
+    const scenario = findTutorial(tutorialScenario);
     if (!scenario) return null;
     return scenario.steps[tutorialStepIndex] || null;
   },

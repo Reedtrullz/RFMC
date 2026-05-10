@@ -9,13 +9,14 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { useFMCStore } from '../../store/useFMCStore';
 import type { CDUKey } from '@shared';
 
-const LSK_POSITIONS = [
-  { row: 2, index: 1 },  // lines 1-2
-  { row: 4, index: 2 },  // lines 3-4
-  { row: 6, index: 3 },  // lines 5-6
-  { row: 8, index: 4 },  // lines 7-8
-  { row: 10, index: 5 }, // lines 9-10
-  { row: 12, index: 6 }, // lines 11-12
+const LSK_BOEING = [
+  { row: 2, index: 1 }, { row: 4, index: 2 }, { row: 6, index: 3 },
+  { row: 8, index: 4 }, { row: 10, index: 5 }, { row: 12, index: 6 },
+];
+
+const LSK_AIRBUS = [
+  { row: 4, index: 1 }, { row: 7, index: 2 }, { row: 10, index: 3 },
+  { row: 13, index: 4 }, { row: 16, index: 5 }, { row: 19, index: 6 },
 ];
 
 export function CDU() {
