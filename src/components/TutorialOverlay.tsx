@@ -70,10 +70,13 @@ export function TutorialOverlay() {
   );
 }
 
-import { getTutorialScenario } from '@shared';
+import { getTutorialScenario, airbusTutorialScenarios } from '@shared';
 
 function getTutorialStepCount(scenarioName: string | null): number {
   if (!scenarioName) return 1;
-  const s = getTutorialScenario(scenarioName);
+  // Check Boeing scenarios first
+  let s = getTutorialScenario(scenarioName);
+  // If not found, check Airbus scenarios
+  if (!s) s = airbusTutorialScenarios.find(s => s.name === scenarioName);
   return s?.steps.length || 1;
 }

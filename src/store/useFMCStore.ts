@@ -412,7 +412,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (scenario) {
         const step = scenario.steps[get().tutorialStepIndex];
         if (step && step.validate) {
-          const scratchpad = get().scratchpad;
+          // Use the original scratchpad value (saved before it was cleared)
           if (step.validate(scratchpad)) {
             get().advanceTutorial();
           }
