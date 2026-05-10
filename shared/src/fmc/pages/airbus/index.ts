@@ -54,7 +54,7 @@ export function renderInitA(state: FMCState): DisplayData {
     lskActions: {
       L1: 'set_from_to', L2: null, L3: 'set_cost_index', L4: null,
       L5: 'set_crz_fl', L6: null,
-      R1: 'set_altn', R2: null, R3: 'set_flt_nbr', R4: null,
+      R1: 'set_altn', R2: 'set_flt_nbr', R3: null, R4: null,
       R5: null, R6: 'init_b',
     },
   };
