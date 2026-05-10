@@ -32,7 +32,7 @@ export function DemoWelcome() {
         {/* Aircraft selector */}
         <div className="mb-4 flex gap-1">
           <button
-            onClick={() => setAircraft('BOEING_737')}
+            onClick={() => { console.log('Aircraft: Boeing'); setAircraft('BOEING_737') }}
             className={`flex-1 p-2 rounded text-xs font-cdu font-bold border transition-colors ${
               !isAirbus
                 ? 'bg-cdu-cyan/10 border-cdu-cyan/40 text-cdu-cyan'
@@ -42,7 +42,7 @@ export function DemoWelcome() {
             737 NG
           </button>
           <button
-            onClick={() => setAircraft('AIRBUS_A320')}
+            onClick={() => { console.log('Aircraft: Airbus'); setAircraft('AIRBUS_A320') }}
             className={`flex-1 p-2 rounded text-xs font-cdu font-bold border transition-colors ${
               isAirbus
                 ? 'bg-cdu-amber/10 border-cdu-amber/40 text-cdu-amber'
@@ -57,8 +57,9 @@ export function DemoWelcome() {
         <h2 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">Choose a Demo</h2>
         <div className="flex flex-col gap-1.5 mb-4">
           {scenarios.map((s) => (
-            <button key={s.name} onClick={() => startTutorial(s.name)}
-              className="flex items-start gap-3 w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors group">
+            <button key={s.name} onClick={() => { console.log('DemoWelcome: starting tutorial:', s.name); startTutorial(s.name); }}
+              className="flex items-start gap-3 w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors group"
+            >
               <div className="flex-shrink-0 w-8 h-8 rounded bg-cdu-cyan/10 border border-cdu-cyan/20 flex items-center justify-center mt-0.5">
                 <span className="text-cdu-cyan text-sm font-cdu font-bold">?</span>
               </div>
@@ -72,7 +73,6 @@ export function DemoWelcome() {
             <p className="text-cdu-text/30 text-xs font-cdu text-center py-4">More tutorials coming soon</p>
           )}
         </div>
-
         <button
           onClick={() => useFMCStore.getState().setMode('ACTIVE')}
           className="w-full p-2.5 bg-transparent border border-cdu-text/20 hover:border-cdu-text/50 rounded text-cdu-text/50 hover:text-cdu-text text-xs font-cdu uppercase tracking-wider transition-colors">
