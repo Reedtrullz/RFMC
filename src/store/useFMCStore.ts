@@ -530,11 +530,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       scratchpadError: null,
     });
 
+    const currentStepPage = currentStep?.page;
+    const nextStepPage = nextStep?.page;
+    
     // Auto-navigate to next step's page only when the next step
     // is NOT a function key action (the user will press that key themselves).
     // Function keys: INIT_REF, RTE, DEP_ARR, PERF, PROG, LEGS, MENU
     // For those steps, the highlighted button both navigates and advances.
-    const functionKeyActions = ['POS_INIT', 'RTE', 'DEP_ARR', 'PERF_INIT', 'PROGRESS', 'LEGS', 'MENU'];
+    // Airbus function keys: INIT_A, INIT_B, F-PLN, PERF TO, PROG A, DEP ARR A, MCDU MENU, RAD NAV
+    const functionKeyActions = ['POS_INIT', 'RTE', 'DEP_ARR', 'PERF_INIT', 'PROGRESS', 'LEGS', 'MENU',
+                              'INIT_A', 'INIT_B', 'F_PLN', 'PERF_TAKEOFF', 'PROG_A', 'DEP_ARR_A', 'MCDU_MENU', 'RAD_NAV'];
     if (!functionKeyActions.includes(nextStep.expectedAction)
         && currentPage === currentStepPage
         && nextStepPage !== currentPage) {
