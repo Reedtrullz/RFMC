@@ -485,8 +485,20 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         MENU: 'MENU',
         HOLD: 'HOLD',
         FIX: 'FIX',
+        // Airbus pages
+        INIT_A: 'INIT_A',
+        INIT_B: 'INIT_B',
+        F_PLN: 'F_PLN',
+        PERF_TAKEOFF: 'PERF_TAKEOFF',
+        PROG_A: 'PROG_A',
+        DEP_ARR_A: 'DEP_ARR_A',
+        MCDU_MENU: 'MCDU_MENU',
+        RAD_NAV: 'RAD_NAV',
+        SEC_FPLN: 'SEC_FPLN',
+        FUEL_PRED: 'FUEL_PRED',
+        DATA_INDEX: 'DATA_INDEX',
       };
-      const target = pageMap[firstStep.page] || 'IDENT';
+      const target = pageMap[firstStep.page] || firstStep.page || 'IDENT';
       set({ currentPage: target, pageHistory: [] });
     }
   },
