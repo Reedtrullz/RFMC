@@ -36,26 +36,25 @@ export function renderInitA(state: FMCState): DisplayData {
     title: 'INIT',
     pageIndicator: 'A',
     lines: [
-      inv('  INIT              A'),
-      fmt(' FROM/TO', ''),
-      fmt(` ${route.origin || '----'}/${route.destination || '----'}`),
-      fmt(' COST INDEX', '<'),
-      fmt(` ${performance.costIndex || '---'}`),
-      fmt(' CRZ FL', '<'),
-      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}`),
-      fmt(' ALTN', '<'),
-      fmt(` ${route.alternate || '----'}`),
-      fmt(' FLT NBR', '<'),
-      fmt(` ${route.flightNumber || '--------'}`),
-      blank(),
-      blank(),
-      blank(),
-   ],
+      inv('  INIT              A'),                                          // Line 1: Title
+      fmt(' FROM/TO', 'ALN'),                                        // Line 2: Left label | Right label
+      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, ` ${route.alternate || '----'}`),  // Line 3: Left data | Right data
+      fmt(' COST INDEX', 'FLT NBR'),                                   // Line 4: Left label | Right label
+      fmt(` ${performance.costIndex || '---'}`, ` ${route.flightNumber || '--------'}`),  // Line 5: Left data | Right data
+      fmt(' CRZ FL', ''),                                                // Line 6: Left label | Right (blank)
+      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}`, ''),  // Line 7: Left data | Right (blank)
+      blank(),                                                          // Line 8: Padding
+      blank(),                                                          // Line 9: Padding
+      blank(),                                                          // Line 10: Padding
+      blank(),                                                          // Line 11: Padding
+      fmt('', '→'),                                                   // Line 12: Right prompt (INIT B)
+      blank(),                                                          // Line 13: Padding
+    ],
     lskActions: {
-      L1: 'set_from_to', L2: null, L3: 'set_cost_index', L4: null,
-      L5: 'set_crz_fl', L6: null,
-      R1: 'set_altn', R2: 'set_flt_nbr', R3: null, R4: null,
-      R5: null, R6: 'init_b',
+      L1: 'set_from_to', L2: 'set_cost_index', L3: 'set_crz_fl',
+      L4: null, L5: null, L6: null,
+      R1: 'set_altn', R2: 'set_flt_nbr', R3: null,
+      R4: null, R5: null, R6: 'init_b',
     },
   };
 }
