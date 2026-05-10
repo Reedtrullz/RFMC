@@ -12,6 +12,7 @@ interface CDUButtonProps {
 
 export function CDUButton({ label, className = '', variant = 'default', disabled, active, onPress }: CDUButtonProps) {
   const handlePress = useCallback(() => {
+    console.log('CDUButton: handlePress called, label:', label);
     if (!disabled && onPress) onPress();
   }, [disabled, onPress]);
 
