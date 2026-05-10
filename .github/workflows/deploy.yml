@@ -27,7 +27,9 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_racknerd
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_racknerd_raw
+          ssh-keygen -p -m PEM -N "" -f ~/.ssh/id_rsa_racknerd_raw
+          mv ~/.ssh/id_rsa_racknerd_raw ~/.ssh/id_rsa_racknerd
           chmod 600 ~/.ssh/id_rsa_racknerd
           ssh-keyscan -H 198.23.137.16 >> ~/.ssh/known_hosts
 
