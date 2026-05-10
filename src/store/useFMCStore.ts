@@ -95,6 +95,14 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
     EXEC: 'EXEC',
     NEXT_PAGE: 'NEXT_PAGE',
     PREV_PAGE: 'PREV_PAGE',
+    // Airbus keys
+    INIT_A: 'INIT_A',
+    INIT_B: 'INIT_B',
+    F_PLN: 'F_PLN',
+    PERF_TAKEOFF: 'PERF_TAKEOFF',
+    PROG_A: 'PROG_A',
+    MCDU_MENU: 'MCDU_MENU',
+    RAD_NAV: 'RAD_NAV',
   };
 
   const mapped = keyMap[key] || key;
