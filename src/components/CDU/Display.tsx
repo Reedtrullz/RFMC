@@ -10,7 +10,7 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
   const displayData = useFMCStore(s => s.getDisplayData());
   const aircraft = useFMCStore(s => s.aircraft);
   const isAirbus = variant === 'airbus' || aircraft === 'AIRBUS_A320';
-  const maxLines = isAirbus ? 24 : PAGE_LINES;
+  const maxLines = PAGE_LINES; // 14 lines for both Boeing and Airbus MCDU
   const colorClass = isAirbus ? 'text-cdu-amber text-glow-amber' : 'text-cdu-text text-glow';
   const lines = displayData.lines;
 
