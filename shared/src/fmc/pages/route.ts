@@ -26,9 +26,9 @@ export function renderRtePage(state: FMCState): DisplayData {
       lines: [
         inverse(`  ${title}              1/2`),
         fmt(' ORIGIN', '', ''),
-        modData(` ${route.origin || '----'}`, state.isModified),
+        modData(` ${route.origin || '[    ]'}`, state.isModified),
         fmt(' DEST', '', ''),
-        modData(` ${route.destination || '----'}`, state.isModified),
+        modData(` ${route.destination || '[    ]'}`, state.isModified),
         blank(),
         fmt(' FLT NO', '', ''),
         modData(` ${route.flightNumber || '--------'}`, state.isModified),

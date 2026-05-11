@@ -33,7 +33,7 @@ export function CDUButton({ label, className = '', variant = 'default', disabled
   const size = 'min-w-[44px] min-h-[30px] px-1';
 
   const variants = {
-    default: 'bg-cdu-bezel-light text-cdu-text/80 border-cdu-bezel-light hover:bg-cdu-bezel hover:text-cdu-text active:bg-cdu-text/20',
+    default: 'bg-cdu-bezel-light text-cdu-white/80 border-cdu-bezel-light hover:bg-cdu-bezel hover:text-cdu-white active:bg-cdu-white/20',
     exec: 'bg-cdu-exec/10 text-cdu-exec border-cdu-exec/30 hover:bg-cdu-exec/20 active:bg-cdu-exec/30',
     function: 'bg-cdu-bezel text-cdu-cyan/80 border-cdu-cyan/20 hover:bg-cdu-cyan/10 hover:text-cdu-cyan',
     highlight: 'bg-cdu-cyan/15 text-cdu-cyan border-cdu-cyan/50 animate-pulse hover:bg-cdu-cyan/25',
@@ -43,7 +43,7 @@ export function CDUButton({ label, className = '', variant = 'default', disabled
     <button
       className={`
         ${base} ${size} ${variants[variant]} ${className}
-        ${active ? 'bg-cdu-text/20 !text-cdu-text border-cdu-text/50' : ''}
+        ${active ? 'bg-cdu-white/20 !text-cdu-white border-cdu-white/50' : ''}
         ${disabled ? 'opacity-40 pointer-events-none' : ''}
       `}
       disabled={disabled}

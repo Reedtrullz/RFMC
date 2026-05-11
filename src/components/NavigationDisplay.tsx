@@ -134,10 +134,10 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
               transform={`rotate(${overlay.radial})`}
             />
           )}
-          <text x="3" y="-13" fill="#22c55e" fontSize="3.5" fontFamily="monospace">
+          <text x="3" y="-13" fill="#22c55e" fontSize="3.5" fontFamily="'B612 Mono', monospace">
             {overlay.refFix}
           </text>
-          <text x="3" y="-9" fill="#22c55e" fontSize="3" fontFamily="monospace">
+          <text x="3" y="-9" fill="#22c55e" fontSize="3" fontFamily="'B612 Mono', monospace">
             R{String(overlay.radial || 0).padStart(3, '0')} D{overlay.distance || '--'}
           </text>
         </g>
@@ -153,7 +153,7 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
             strokeWidth="1"
             transform={`rotate(${model.holdOverlay.inboundCourse || 0})`}
           />
-          <text x="4" y="9" fill="#d946ef" fontSize="3.5" fontFamily="monospace">
+          <text x="4" y="9" fill="#d946ef" fontSize="3.5" fontFamily="'B612 Mono', monospace">
             HOLD {model.holdOverlay.fix} {model.holdOverlay.direction}
           </text>
         </g>
@@ -164,7 +164,7 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
           {point.discontinuity ? (
             <>
               <path d="M-3 -3 L3 3 M3 -3 L-3 3" stroke="#f59e0b" strokeWidth="1.2" />
-              <text x="4" y="1" fill="#f59e0b" fontSize="3.3" fontFamily="monospace">DISCO</text>
+              <text x="4" y="1" fill="#f59e0b" fontSize="3.3" fontFamily="'B612 Mono', monospace">DISCO</text>
             </>
           ) : (
             <>
@@ -176,11 +176,11 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
               />
               {(model.overlays.wpt || (point.airport && model.overlays.arpt)) && (
                 <>
-                  <text x="3.5" y="-3" fill={point.active ? activeColor : labelColor} fontSize="3.5" fontFamily="monospace">
+                  <text x="3.5" y="-3" fill={point.active ? activeColor : labelColor} fontSize="3.5" fontFamily="'B612 Mono', monospace">
                     {point.label}
                   </text>
                   {(point.speedLabel || point.altitudeLabel) && (
-                    <text x="3.5" y="2" fill="#facc15" fontSize="2.8" fontFamily="monospace">
+                    <text x="3.5" y="2" fill="#facc15" fontSize="2.8" fontFamily="'B612 Mono', monospace">
                       {[point.speedLabel, point.altitudeLabel].filter(Boolean).join('/')}
                     </text>
                   )}
@@ -192,17 +192,17 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
       ))}
 
       {model.routePoints.length === 0 && (
-        <text x="50" y="50" textAnchor="middle" fill="#64748b" fontSize="4" fontFamily="monospace">
+        <text x="50" y="50" textAnchor="middle" fill="#64748b" fontSize="4" fontFamily="'B612 Mono', monospace">
           NO ROUTE
         </text>
       )}
 
       <AircraftSymbol />
-      <text x="5" y="8" fill="#ffffff" fontSize="4" fontFamily="monospace">{model.mode}</text>
-      <text x="50" y="8" textAnchor="middle" fill="#f97316" fontSize="4" fontFamily="monospace">TRK 000</text>
-      <text x="95" y="8" textAnchor="end" fill="#ffffff" fontSize="4" fontFamily="monospace">RNG {model.range}</text>
-      <text x="5" y="96" fill="#22c55e" fontSize="3.5" fontFamily="monospace">{model.origin || '----'}</text>
-      <text x="95" y="96" textAnchor="end" fill="#22c55e" fontSize="3.5" fontFamily="monospace">{model.destination || '----'}</text>
+      <text x="5" y="8" fill="#ffffff" fontSize="4" fontFamily="'B612 Mono', monospace">{model.mode}</text>
+      <text x="50" y="8" textAnchor="middle" fill="#f97316" fontSize="4" fontFamily="'B612 Mono', monospace">TRK 000</text>
+      <text x="95" y="8" textAnchor="end" fill="#ffffff" fontSize="4" fontFamily="'B612 Mono', monospace">RNG {model.range}</text>
+      <text x="5" y="96" fill="#22c55e" fontSize="3.5" fontFamily="'B612 Mono', monospace">{model.origin || '----'}</text>
+      <text x="95" y="96" textAnchor="end" fill="#22c55e" fontSize="3.5" fontFamily="'B612 Mono', monospace">{model.destination || '----'}</text>
     </svg>
   );
 }
@@ -213,8 +213,8 @@ function RangeRings({ range }: { range: NDRange }) {
       <circle cx="50" cy="78" r="18" strokeDasharray="1.5 2" />
       <circle cx="50" cy="78" r="34" strokeDasharray="1.5 2" />
       <circle cx="50" cy="78" r="50" />
-      <text x="53" y="60" fill="#22c55e" fontSize="3" fontFamily="monospace">{range / 2}</text>
-      <text x="53" y="43" fill="#22c55e" fontSize="3" fontFamily="monospace">{range}</text>
+      <text x="53" y="60" fill="#22c55e" fontSize="3" fontFamily="'B612 Mono', monospace">{range / 2}</text>
+      <text x="53" y="43" fill="#22c55e" fontSize="3" fontFamily="'B612 Mono', monospace">{range}</text>
     </g>
   );
 }
