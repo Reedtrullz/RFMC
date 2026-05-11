@@ -11,6 +11,7 @@ describe('SimBrief route fixtures', () => {
 
   it('keeps fixture metadata valid and uniquely identifiable', () => {
     const ids = new Set<string>();
+    expect(fixtures.length).toBeGreaterThanOrEqual(20);
     for (const fixture of fixtures) {
       expect(validateRouteFixture(fixture), fixture.id).toEqual([]);
       expect(ids.has(fixture.id)).toBe(false);

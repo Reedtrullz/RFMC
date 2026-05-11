@@ -213,6 +213,17 @@ describe('FMC Store', () => {
     expect(display.lines.some(line => line.text.includes('88.0%'))).toBe(true);
   });
 
+  it('arms DES NOW from the DES page instead of exposing an unsupported LSK', () => {
+    const store = useFMCStore.getState();
+    store.setPage('DES');
+    store.pressLSK('R', 6);
+
+    const state = useFMCStore.getState();
+    expect(state.scratchpad).toBe('DES NOW ARMED');
+    expect(state.scratchpadError).toBeNull();
+    expect(state.msgLight).toBe(true);
+  });
+
   it('sets and clears failure mode', () => {
     const store = useFMCStore.getState();
     store.setFailureMode('FAIL', 'TEST FAILURE');

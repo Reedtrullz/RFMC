@@ -257,6 +257,10 @@ export class FMCEngine {
       }
     } else if (action === 'atc') {
       handled = true;
+    } else if (action === 'des_now') {
+      this.state.scratchpad = 'DES NOW ARMED';
+      this.state.msgLight = true;
+      handled = true;
     } else if (action === 'select_to') {
       this.state.takeoff = { ...this.state.takeoff, toMode: this.state.scratchpad.trim().toUpperCase() || 'TO' };
       this.state.scratchpad = '';

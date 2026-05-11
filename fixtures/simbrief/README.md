@@ -10,4 +10,4 @@ Each fixture should include:
 - Expected SID/STAR/approach matching behavior.
 - Expected warnings for unsupported procedures or navdata mismatches.
 
-The initial fixtures are intentionally compact. Expand to at least 20 real-world routes before the Phase 4 exit gate.
+The fixture set must stay at or above 20 routes before the Phase 4 exit gate. The current regression test enforces that minimum.

@@ -7,7 +7,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
 | Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 72/72 passing | 100% pass |
+| Unit/regression tests | `npm test -- --run` | 75/75 passing | 100% pass |
 | Playwright E2E | `npm run test:e2e` | 9/9 passing | 100% pass |
 | Production build | `npm run build` | Passing | Successful build |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |

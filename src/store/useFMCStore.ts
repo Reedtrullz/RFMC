@@ -344,6 +344,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'dep_page': set({ depArrSubPage: 'DEP' }); handled = true; break;
       case 'arr_page': set({ depArrSubPage: 'ARR' }); handled = true; break;
       case 'atc': handled = true; break;
+      case 'des_now':
+        set({ scratchpad: 'DES NOW ARMED', scratchpadError: null, msgLight: true });
+        handled = true;
+        break;
       // Airbus LSK navigation
       case 'init_a': state.setPage('INIT_A'); handled = true; break;
       case 'init_b': state.setPage('INIT_B'); handled = true; break;

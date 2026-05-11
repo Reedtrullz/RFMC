@@ -142,4 +142,14 @@ describe('FMCEngine', () => {
     expect(engine.getState().takeoff.toMode).toBe('TO 1');
     expect(display.lines.some(line => line.text.includes('94.0%'))).toBe(true);
   });
+
+  it('arms DES NOW from the backend DES page', () => {
+    const engine = new FMCEngine();
+    engine.processInput('DES');
+    engine.processInput('R6');
+
+    expect(engine.getState().scratchpad).toBe('DES NOW ARMED');
+    expect(engine.getState().scratchpadError).toBeNull();
+    expect(engine.getState().msgLight).toBe(true);
+  });
 });

@@ -18,3 +18,5 @@
 - Applied display-semantic tagging to Boeing setup and Airbus page renderer helpers.
 - Extended display-semantic tagging across the primary Boeing page renderers.
 - Added baseline screenshot manifest attachments with viewport and page metadata.
+- Added supported Boeing `DES NOW` trainer action with frontend/backend behavior.
+- Expanded SimBrief route fixtures to the Phase 4 minimum of 20 routes.

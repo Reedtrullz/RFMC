@@ -34,6 +34,7 @@ export function renderDesPage(state: FMCState): DisplayData {
       blank(),
       fmt(' DES PATH', '<', '', 'white'),
       fmt(' ----°', '', '', 'green'),
+      fmt(' DES NOW', '', '<ARM', 'white'),
       blank(),
     ],
     lskActions: {
@@ -48,7 +49,10 @@ export function renderDesPage(state: FMCState): DisplayData {
       R3: null,
       R4: null,
       R5: null,
-      R6: null,
+      R6: 'des_now',
+    },
+    lskLabels: {
+      R6: 'DES NOW',
     },
   };
 }

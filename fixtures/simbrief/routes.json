@@ -34,7 +34,9 @@
       "sid": null,
       "star": null,
       "approach": null,
-      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
     }
   },
   {
@@ -53,7 +55,9 @@
       "sid": null,
       "star": null,
       "approach": null,
-      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
     }
   },
   {
@@ -72,7 +76,9 @@
       "sid": null,
       "star": null,
       "approach": null,
-      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
     }
   },
   {
@@ -91,7 +97,324 @@
       "sid": null,
       "star": null,
       "approach": null,
-      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "ksea-kden-boeing-mountain-west",
+    "aircraft": "BOEING_737",
+    "origin": "KSEA",
+    "destination": "KDEN",
+    "alternate": "KCOS",
+    "flightNumber": "UAL789",
+    "costIndex": 38,
+    "cruiseAltitude": 39000,
+    "zfw": 129.2,
+    "fuel": 11.6,
+    "route": "KSEA DCT SEA J15 BOI J12 LAR DCT KDEN",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "kbos-kord-boeing-transcon-east",
+    "aircraft": "BOEING_737",
+    "origin": "KBOS",
+    "destination": "KORD",
+    "alternate": "KMKE",
+    "flightNumber": "AAL221",
+    "costIndex": 42,
+    "cruiseAltitude": 36000,
+    "zfw": 131.4,
+    "fuel": 13.1,
+    "route": "KBOS DCT ALB J547 BUF J16 GIJ DCT KORD",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "kdfw-kmia-boeing-sunbelt",
+    "aircraft": "BOEING_737",
+    "origin": "KDFW",
+    "destination": "KMIA",
+    "alternate": "KFLL",
+    "flightNumber": "AAL1120",
+    "costIndex": 50,
+    "cruiseAltitude": 37000,
+    "zfw": 133.0,
+    "fuel": 14.2,
+    "route": "KDFW DCT HRV J58 PIE DCT KMIA",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "cyyz-kjfk-airbus-crossborder",
+    "aircraft": "AIRBUS_A320",
+    "origin": "CYYZ",
+    "destination": "KJFK",
+    "alternate": "KEWR",
+    "flightNumber": "ACA720",
+    "costIndex": 28,
+    "cruiseAltitude": 33000,
+    "zfw": 59.4,
+    "fuel": 7.1,
+    "route": "CYYZ DCT BUF J55 HNK DCT KJFK",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "lfpg-lebl-airbus-europe-south",
+    "aircraft": "AIRBUS_A320",
+    "origin": "LFPG",
+    "destination": "LEBL",
+    "alternate": "LEMD",
+    "flightNumber": "AFR1648",
+    "costIndex": 22,
+    "cruiseAltitude": 35000,
+    "zfw": 60.8,
+    "fuel": 8.3,
+    "route": "LFPG DCT ORVAL UN852 PUMAL DCT LEBL",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "egll-eham-airbus-short-hop",
+    "aircraft": "AIRBUS_A320",
+    "origin": "EGLL",
+    "destination": "EHAM",
+    "alternate": "EHRD",
+    "flightNumber": "KLM1008",
+    "costIndex": 18,
+    "cruiseAltitude": 23000,
+    "zfw": 57.5,
+    "fuel": 5.4,
+    "route": "EGLL DCT DVR UL9 KONAN DCT EHAM",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "ekch-engm-boeing-nordic-return",
+    "aircraft": "BOEING_737",
+    "origin": "EKCH",
+    "destination": "ENGM",
+    "alternate": "ESGG",
+    "flightNumber": "SAS1468",
+    "costIndex": 36,
+    "cruiseAltitude": 36000,
+    "zfw": 131.1,
+    "fuel": 8.7,
+    "route": "EKCH DCT AAL DCT TOR DCT ENGM",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "ksfo-klas-boeing-west-short",
+    "aircraft": "BOEING_737",
+    "origin": "KSFO",
+    "destination": "KLAS",
+    "alternate": "KONT",
+    "flightNumber": "SWA884",
+    "costIndex": 30,
+    "cruiseAltitude": 31000,
+    "zfw": 127.8,
+    "fuel": 8.5,
+    "route": "KSFO DCT SNS J110 BTY DCT KLAS",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "kphx-ksea-boeing-west-north",
+    "aircraft": "BOEING_737",
+    "origin": "KPHX",
+    "destination": "KSEA",
+    "alternate": "KPDX",
+    "flightNumber": "ASA602",
+    "costIndex": 34,
+    "cruiseAltitude": 38000,
+    "zfw": 130.2,
+    "fuel": 12.0,
+    "route": "KPHX DCT EED J92 FMG J5 SEA KSEA",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "lemd-lfpg-airbus-europe-north",
+    "aircraft": "AIRBUS_A320",
+    "origin": "LEMD",
+    "destination": "LFPG",
+    "alternate": "LFPO",
+    "flightNumber": "IBE3436",
+    "costIndex": 24,
+    "cruiseAltitude": 37000,
+    "zfw": 61.0,
+    "fuel": 9.0,
+    "route": "LEMD DCT BARDI UN870 AGN DCT LFPG",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "lsgg-lirf-airbus-alpine",
+    "aircraft": "AIRBUS_A320",
+    "origin": "LSGG",
+    "destination": "LIRF",
+    "alternate": "LIRA",
+    "flightNumber": "SWR1726",
+    "costIndex": 20,
+    "cruiseAltitude": 33000,
+    "zfw": 58.7,
+    "fuel": 6.5,
+    "route": "LSGG DCT CANNE UM730 ELB DCT LIRF",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "ymml-yssy-boeing-australia",
+    "aircraft": "BOEING_737",
+    "origin": "YMML",
+    "destination": "YSSY",
+    "alternate": "YSCB",
+    "flightNumber": "QFA426",
+    "costIndex": 33,
+    "cruiseAltitude": 35000,
+    "zfw": 129.0,
+    "fuel": 8.8,
+    "route": "YMML DCT ML W466 RAZZI DCT YSSY",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "rjtt-rjbb-boeing-japan",
+    "aircraft": "BOEING_737",
+    "origin": "RJTT",
+    "destination": "RJBB",
+    "alternate": "RJOO",
+    "flightNumber": "ANA27",
+    "costIndex": 32,
+    "cruiseAltitude": 33000,
+    "zfw": 128.6,
+    "fuel": 7.9,
+    "route": "RJTT DCT KAIJI Y20 KCC DCT RJBB",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "wsss-vhhh-airbus-asia",
+    "aircraft": "AIRBUS_A320",
+    "origin": "WSSS",
+    "destination": "VHHH",
+    "alternate": "VMMC",
+    "flightNumber": "CPA716",
+    "costIndex": 26,
+    "cruiseAltitude": 39000,
+    "zfw": 62.3,
+    "fuel": 10.8,
+    "route": "WSSS DCT VMR M771 LAXOR DCT VHHH",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
+    }
+  },
+  {
+    "id": "sbgr-sbrj-boeing-brazil",
+    "aircraft": "BOEING_737",
+    "origin": "SBGR",
+    "destination": "SBRJ",
+    "alternate": "SBGL",
+    "flightNumber": "GLO2020",
+    "costIndex": 29,
+    "cruiseAltitude": 30000,
+    "zfw": 126.9,
+    "fuel": 6.9,
+    "route": "SBGR DCT UZ37 PIR DCT SBRJ",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": [
+        "PROCEDURE DATA NOT YET IN MOCK NAVDATA"
+      ]
     }
   }
 ]

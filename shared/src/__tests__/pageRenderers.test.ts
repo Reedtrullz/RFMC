@@ -87,6 +87,13 @@ describe('Page Renderers', () => {
     }
   });
 
+  it('exposes DES NOW as a supported trainer action', () => {
+    const data = renderDesPage(baseState);
+    expect(data.lskActions.R6).toBe('des_now');
+    expect(data.lskLabels?.R6).toBe('DES NOW');
+    expect(data.lines.some(line => line.text.includes('DES NOW'))).toBe(true);
+  });
+
   it('renders POS INIT page', () => {
     const data = renderPosInitPage(baseState);
     expect(data.title).toBe('POS INIT');
