@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderInitA, renderPerfTakeoff } from '../fmc/pages/airbus';
+import { renderInitA, renderPerfTakeoff, renderFuelPred, renderSecFpln, renderRadNav, renderDataIndex, renderProgA320 } from '../fmc/pages/airbus';
 import type { FMCState } from '../types/fmc';
 
 const baseState: FMCState = {
@@ -56,5 +56,24 @@ describe('Airbus page semantics', () => {
     const data = renderPerfTakeoff(baseState);
     expect(data.lines.find(l => l.text.includes('5000'))?.semantic).toBe('activeData');
     expect(data.lines.find(l => l.text.includes('CONF2'))?.semantic).toBe('guidance');
+  });
+
+  it('does not show interactive arrows on display-only Airbus pages', () => {
+    const displayOnlyPages = [
+      renderFuelPred(baseState),
+      renderSecFpln(baseState),
+      renderRadNav(baseState),
+      renderDataIndex(baseState),
+      renderProgA320(baseState),
+    ];
+
+    for (const data of displayOnlyPages) {
+      const hasArrows = data.lines.some((l: any) => l.leftLabel === '<');
+      expect(hasArrows, `${data.title} should not show interactive arrows`).toBe(false);
+
+      const allActions = Object.values(data.lskActions);
+      const hasActions = allActions.some((a: any) => a !== null);
+      expect(hasActions, `${data.title} should not expose any LSK actions`).toBe(false);
+    }
   });
 });
