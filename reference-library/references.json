@@ -1,0 +1,54 @@
+[
+  {
+    "id": "local-masterplan-pdf",
+    "source": "masterplan.pdf",
+    "sourceType": "local-project-pdf",
+    "aircraft": "mixed",
+    "variant": "VirtualCDU planning reference",
+    "unitGeneration": "n/a",
+    "displayType": "n/a",
+    "usageRights": "local planning document; do not redistribute externally without review",
+    "cropRules": "not used for pixel measurement; extract requirements and source references only",
+    "measurementUse": "roadmap and validation requirements",
+    "notes": "Strategic masterplan used as the source-of-truth roadmap."
+  },
+  {
+    "id": "local-737-a320-cdu-mcdu-pdf",
+    "source": "/Users/reidar/Downloads/737 CDUs and A320neo MCDUs.pdf",
+    "sourceType": "local-reference-pdf",
+    "aircraft": "Boeing 737 NG and Airbus A320neo",
+    "variant": "mixed",
+    "unitGeneration": "mixed",
+    "displayType": "mixed",
+    "usageRights": "local reference only until licensing/provenance is reviewed",
+    "cropRules": "manual crop per unit; record page number, display bounds, and perspective assumptions before measurement",
+    "measurementUse": "visual reference candidate for Phase 0/1",
+    "notes": "Contents still require manual extraction/review before being used as measurement truth."
+  },
+  {
+    "id": "b737-org-fmc",
+    "source": "http://www.b737.org.uk/fmc.htm",
+    "sourceType": "public-web-reference",
+    "aircraft": "Boeing 737",
+    "variant": "737 FMC/CDU reference",
+    "unitGeneration": "varies",
+    "displayType": "varies",
+    "usageRights": "link/reference only; do not redistribute images without permission",
+    "cropRules": "if used, crop only for local measurement and record page URL/date",
+    "measurementUse": "layout and procedural cross-check",
+    "notes": "Public reference listed by the older accuracy plans."
+  },
+  {
+    "id": "flybywire-a32nx-mcdu-docs",
+    "source": "https://docs.flybywiresim.com/pilots-corner/a32nx/a32nx-briefing/mcdu/interface",
+    "sourceType": "public-web-docs",
+    "aircraft": "Airbus A320neo",
+    "variant": "A32NX",
+    "unitGeneration": "simulated A320neo MCDU",
+    "displayType": "color MCDU semantics reference",
+    "usageRights": "link/reference only; follow upstream license",
+    "cropRules": "not a primary real-hardware pixel reference",
+    "measurementUse": "Airbus key/page semantic cross-check",
+    "notes": "Useful for scoped Airbus behavior and labels."
+  }
+]

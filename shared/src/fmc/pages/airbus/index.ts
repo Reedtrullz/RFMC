@@ -1,11 +1,12 @@
 import type { FMCState, DisplayData, AirbusPageType, PageType, DisplayLine } from '../../../types/fmc';
+import { inferAirbusSemantic } from '../../pageLineSemantics';
 
 const W = 24;
 function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
-  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false, color };
+  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: inferAirbusSemantic(color) };
 }
 function inv(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
-  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: true, color };
+  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: true, color, semantic: inferAirbusSemantic(color, true) };
 }
 function blank() { return fmt(''); }
 

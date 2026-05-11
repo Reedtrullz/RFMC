@@ -1,0 +1,56 @@
+# VirtualCDU Test Matrix
+
+Status source: `IMPLEMENTATION_STATUS.md`.
+
+## Current Automated Baseline
+
+| Gate | Command | Current status | Required status |
+| --- | --- | --- | --- |
+| Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
+| Unit/regression tests | `npm test -- --run` | 72/72 passing | 100% pass |
+| Playwright E2E | `npm run test:e2e` | 9/9 passing | 100% pass |
+| Production build | `npm run build` | Passing | Successful build |
+| Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
+
+## Major Flow Coverage
+
+| Area | Scenario | Automated | Manual/live | Notes |
+| --- | --- | --- | --- | --- |
+| Boeing startup | IDENT renders and POS INIT navigation works | Yes | Optional | Covered by Playwright smoke and preflight flow |
+| Boeing preflight | IDENT -> POS INIT -> RTE -> LEGS -> DEP/ARR -> PERF -> THRUST LIM -> TAKEOFF REF | Yes | Pilot review required | Current flow is trainer-level, not pilot-validated |
+| Boeing DEP/ARR | SID, runway, STAR, approach entries | Yes | Pilot review required | Uses current mock procedure data |
+| Boeing LEGS | Route parsing, insert/delete, constraints | Partial | Required | Add deeper discontinuity and EXEC staging cases |
+| Boeing HOLD | Staged edits and EXEC commit | Yes unit | Required | Add Playwright flow and route-context behavior |
+| Boeing FIX | Radial/distance validation | Partial | Required | Add multi-entry/ring preview when implemented |
+| Boeing CLB/CRZ/DES | Static pages render | Partial | Required | Add DES NOW and trainer-level prediction tests |
+| Airbus INIT/F-PLN/DEP-ARR/PERF TO | Main data-entry flow | Yes | Pilot review required | Secondary pages still scoped/display-only |
+| Airbus secondary pages | PERF APPR, FUEL PRED, SEC F-PLN, RAD NAV, DATA INDEX | Partial | Required | Each visible LSK must work or be disabled |
+| SimBrief import | Mocked import loads origin/destination/route | Yes | Required with real plans | Expand to 20 fixtures |
+| CONTROL mode | Backend-authoritative page/input parity | Mock WebSocket bridge test | Live PMDG required | Mock adapter verifies connect/input/display/key forwarding |
+| MSFS PMDG | Keypress -> CDU update -> display readback | No | Required on Windows/MSFS/PMDG | Cannot be validated on this macOS workspace |
+| PWA/iPad | Offline refresh, mounted cockpit layout, safe areas | No | Required on iPad | Add viewport and offline tests |
+| Visual baseline | 35-screen screenshot capture | Scripted | Reference comparison required | `npm run capture:baseline` |
+
+## Coverage Targets
+
+| Subsystem | Target |
+| --- | ---: |
+| `shared/src/fmc/` logic | >= 85% |
+| Frontend store actions | >= 80% |
+| `server/src/fmc-engine.ts` | >= 85% |
+| Page renderers | >= 90% |
+| Adapter mocks | >= 75% |
+
+## CI Gate Policy
+
+Every PR should pass:
+
+- `npm run typecheck:all`
+- `npm test -- --run`
+- `npm run test:e2e`
+- `npm run build`
+- `npm run test:coverage` once thresholds are enforced
+- Visual baseline/snapshot checks for pages touched by the PR
+- Audit policy review for dependency changes
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs these gates with `AIRCRAFT_ADAPTER=mock` so CI does not depend on Windows/MSFS/PMDG.

@@ -2,11 +2,35 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 43/43 pass
-- E2E tests: 5/5 pass
+- Unit tests: 72/72 pass
+- E2E tests: 9/9 pass
 - Build: successful (247KB JS, 18KB CSS)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
 - **Oracle Round 29: APPROVED** — all critical blockers resolved after Round 28 re-verification
+
+## Coverage Hardening Update
+- Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.
+- Added frontend Zustand store regressions for route parsing, LEGS insert/delete, HOLD staging/commit, V-speed ordering, DEP/ARR, DIR INTC, and N1 LIMIT.
+- Expanded Playwright coverage from smoke-only to include the Boeing IDENT → TAKEOFF REF flow, Airbus INIT/F-PLN/DEP-ARR/PERF TO flow, mocked SimBrief import, and screenshot-backed nonblank rendering checks for Boeing and Airbus displays.
+- Fixed a frontend/backend parity issue found by the new tests: HOLD field setters now clear the scratchpad after each staged edit, matching backend behavior and preventing appended invalid entries.
+- V-speed validation now reports the specific failed ordering constraint (`V1 MUST BE < VR` or `VR MUST BE < V2`) instead of only the generic all-field ordering message.
+
+## Consolidated Masterplan Implementation Update
+- Added current execution artifacts: `ROADMAP.md`, `METRICS.md`, `TEST_MATRIX.md`, `PILOT_REVIEW_RUBRIC.md`, `KNOWN_LIMITATIONS.md`, `SCOPE.md`, `CHANGELOG.md`, and ADR 0001.
+- Marked older overlapping planning documents as superseded or planning-baseline-only so they no longer compete with the current tracker.
+- Added `reference-library/references.json` to track real CDU/MCDU reference provenance, usage rights, crop rules, and measurement purpose.
+- Added Phase 0 visual measurement documentation and `npm run capture:baseline`, a Playwright capture flow for Boeing, Airbus, tutorial, connection diagnostics, and iPad baseline screens.
+- Added initial SimBrief/navdata fixture folder and `docs/NAVDATA_SCHEMA.md` for the ARINC-lite schema direction.
+- Added typed navdata/route fixture validation so Phase 4 SimBrief fixtures are executable test data.
+- Added `docs/MSFS_LIVE_VALIDATION.md` to keep PMDG live round-trip validation separate from CI-safe mock tests.
+- Added shared display semantics (`title`, `label`, `activeData`, `modified`, `guidance`, `warning`, etc.) as the Phase 1 foundation for measured color work.
+- Added rendered `data-semantic` hooks for display lines so future visual tooling can sample rows by semantic role.
+- Applied semantic tagging to Boeing setup and Airbus page renderer helpers, with renderer tests to prevent regressions.
+- Extended semantic tagging across the primary Boeing page renderers so visual measurement tooling can sample main Boeing pages consistently.
+- Added a CI-safe `MockSimConnectAdapter` for future CONTROL/MSFS integration tests without claiming live PMDG validation.
+- Added `AIRCRAFT_ADAPTER=mock` adapter selection and a GitHub Actions CI workflow that validates typecheck, unit tests, E2E, build, and high/critical audit policy without requiring MSFS.
+- Refactored the bridge server into a reusable `createBridgeServer()` module and added a WebSocket mock-adapter test for sim connection, CONTROL-mode input, display broadcast, and aircraft key forwarding.
+- Added Boeing procedural behavior for runway changes: changing takeoff runway after V-speeds are entered clears V1/VR/V2 and announces `V SPEEDS DELETED` in frontend and backend state.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
@@ -137,7 +161,7 @@
 
 ### Phase 7 (Testing) — COMPLETE
 - [x] T7.1: Vitest installed and configured
-- [x] T7.2-T7.6: 43 unit tests across 6 files, 5 E2E tests with Playwright
+- [x] T7.2-T7.6: 72 unit tests across 14 files, 9 E2E tests with Playwright
 
 ## Post-Oracle Fixes Applied
 
@@ -286,27 +310,27 @@
 
 ## Known Remaining Gaps (Acknowledged)
 
-These are documented limitations, not bugs:
+These are documented limitations and scope boundaries, not hidden completed work:
 
 1. **npm audit**: 2 moderate vulnerabilities in esbuild/vite dev dependencies. Fixing requires `--force` breaking change to Vite 8.x. Deferred per original plan.
 
-2. **FBW A320 adapter**: Returns mock data. Real SimConnect L: variable mapping for FBW A32NX is out of current scope (would require reverse engineering FBW's SimConnect protocol).
+2. **FBW A320 adapter**: Aircraft state polling is scaffolded, but MCDU display readback and key I/O are mock-only in this build. The UI now states this explicitly in connection diagnostics.
 
-3. **Airbus page backend state**: PERF APPR, FUEL PRED, SEC F-PLN, RAD NAV, DATA INDEX are rendered with static values. Their LSK actions (e.g., `set_temp`, `set_mda`, `set_dh`, `copy_active`) are not wired to backend handlers. These pages work in standalone mode (frontend state) but show "NOT SUPPORTED" in CONTROL mode. Acceptable as display-only pages per current scope.
+3. **PMDG integration verification**: The PMDG 737 adapter has SimConnect connection, key-event mapping, aircraft-state polling, and CDU display polling code. The full keypress → PMDG CDU change → display readback round trip still requires live Windows + MSFS + PMDG validation and is not proven by automated tests on this macOS workspace.
 
-4. **PMDG integration test**: No automated integration test harness exists. Keypress→PMDG CDU change→display readback round-trip cannot be verified without live MSFS + PMDG 737. Adapter code is functional but unverified in production.
+4. **Airbus display-only pages**: PERF APPR, FUEL PRED, SEC F-PLN, RAD NAV, and DATA INDEX render, but several fields are static or intentionally non-interactive. They should be treated as display/training placeholders until real data-entry handlers and backend behavior are added.
 
-5. **E2E test coverage**: 5 E2E tests cover basic smoke tests (load, RTE navigation, scratchpad, CLR, Airbus welcome). Missing: full preflight flow, DEP/ARR selection, LEGS waypoint editing, HOLD/FIX flows, SimBrief import, MSFS CONTROL mode.
+5. **Navigation database accuracy**: The app uses an expanded mock nav dataset and lightweight route parser. It does not implement Navigraph/Aerosoft ingestion, ARINC 424 path/terminator logic, AIRAC cycle validity, or real global procedure expansion.
 
 6. **CONTROL mode state divergence**: Frontend mutates local Zustand state immediately for responsiveness, then sends `fmc.input` to server. Server computes display and sends it back. The scratchpad text is local; display lines are server-authoritative. This is an intentional thin-client design pattern, not a bug.
 
-7. **Test coverage (unit)**: 43 unit tests cover core validators, page renderers, and store actions. LEGS delete, HOLD EXEC, and V-speed validation lack dedicated unit tests.
+7. **Test coverage limits**: Automated tests now cover the main preflight flow and key Oracle regressions. Still missing: live MSFS integration tests, deep visual pixel baselines against real hardware, full ARINC/navdata behavior, and exhaustive Airbus page interaction coverage.
 
-8. **Visual accuracy**: No formal screenshot comparison against real hardware. Colors and layout match reference images from research but pixel-perfect accuracy is not claimed.
+8. **Visual accuracy**: Playwright now includes screenshot-backed nonblank rendering checks. There is still no formal pixel-diff baseline against real hardware photos, no licensed FMC bitmap font, and no claim of pixel-perfect hardware fidelity.
 
 ## What's Implemented and Working
 
-### Full Preflight Flow (IDENT → TAKEOFF REF)
+### Automated Boeing Preflight Flow (IDENT → TAKEOFF REF)
 1. IDENT page → LSK1 → POS INIT
 2. POS INIT → REF AIRPORT (ICAO), GATE → LSK5 → RTE
 3. RTE page 1 → ORIGIN (ICAO), DEST (ICAO), FLT NO, CO ROUTE → NEXT → page 2
@@ -324,8 +348,9 @@ These are documented limitations, not bugs:
 - CLB/CRZ/DES: display cruise altitude, wind, ISA deviation, optimal altitude, N1 (all static display — LSK actions for CRZ ALT entry)
 - DIR INTC: set direct-to waypoint (ICAO) → display
 - N1 LIMIT: displays mode-dependent N1 percentages based on TO/TO1/TO2 thrust mode
-- Airbus MCDU: INIT A/B, F-PLN, PERF TO, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU → all pages render correctly
+- Airbus MCDU: INIT A/B, F-PLN, PERF TO, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU render correctly; INIT/F-PLN/DEP-ARR/PERF TO are covered by E2E flow tests, while several secondary pages remain static/display-only.
+- SimBrief import: mocked API import is covered by E2E and loads origin/destination/route into the app.
 
 ## Conclusion
 
-VirtualCDU is a fully functional FMC/CDU training simulator. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining gaps are documented as acceptable limitations consistent with the project's scope as a training simulator. TypeScript compiles clean, all 43 unit tests pass, all 5 E2E tests pass, build succeeds.
+VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 72 unit tests pass, all 9 E2E tests pass, and the build succeeds.

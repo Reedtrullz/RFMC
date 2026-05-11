@@ -9,9 +9,10 @@ interface DisplayLineProps {
   blinking?: boolean;
   variant?: 'boeing' | 'airbus';
   color?: DisplayColor;
+  semantic?: string;
 }
 
-export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking, variant = 'boeing', color }: DisplayLineProps) {
+export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking, variant = 'boeing', color, semantic }: DisplayLineProps) {
   const maxWidth = variant === 'airbus' ? 24 : 24;
   const paddedText = text.padEnd(maxWidth, ' ');
   const isAirbus = variant === 'airbus';
@@ -20,18 +21,21 @@ export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blink
   const inverseBg = color === 'magenta' ? 'bg-fuchsia-400' : color === 'cyan' ? 'bg-cdu-cyan' : color === 'white' ? 'bg-white' : color === 'red' ? 'bg-cdu-error' : isAirbus ? 'bg-cdu-amber' : 'bg-cdu-text';
 
   return (
-    <div className={`
-      flex items-center
-      text-[11px] leading-[1.15]
-      h-[1.3em]
-      whitespace-pre
-      ${small ? 'text-[9px]' : ''}
-      ${inverse
-        ? `${inverseBg} text-cdu-screen font-bold`
-        : mainColor
-      }
-      ${blinking ? 'animate-blink' : ''}
-    `}>
+    <div
+      className={`
+        flex items-center
+        text-[11px] leading-[1.15]
+        h-[1.3em]
+        whitespace-pre
+        ${small ? 'text-[9px]' : ''}
+        ${inverse
+          ? `${inverseBg} text-cdu-screen font-bold`
+          : mainColor
+        }
+        ${blinking ? 'animate-blink' : ''}
+      `}
+      data-semantic={semantic}
+    >
       {leftLabel && (
         <span className={`text-[8px] ${dimColor} mr-0.5`}>{leftLabel}</span>
       )}

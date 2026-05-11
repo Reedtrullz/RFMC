@@ -326,6 +326,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     const scratchpad = state.scratchpad.trim();
     let handled = false;
+    let scratchpadMessage = '';
 
     // Handle page navigation actions
     switch (action) {
@@ -472,7 +473,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_runway': {
         if (scratchpad) {
           if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, runway: scratchpad.toUpperCase() };
+          const runway = scratchpad.toUpperCase();
+          const runwayChanged = state.takeoff.runway && state.takeoff.runway !== runway;
+          const speedsEntered = state.takeoff.v1 > 0 || state.takeoff.vr > 0 || state.takeoff.v2 > 0;
+          updates.takeoff = runwayChanged && speedsEntered
+            ? { ...state.takeoff, runway, v1: 0, vr: 0, v2: 0 }
+            : { ...state.takeoff, runway };
+          if (runwayChanged && speedsEntered) {
+            updates.msgLight = true;
+            scratchpadMessage = 'V SPEEDS DELETED';
+          }
         }
         break;
       }
@@ -711,7 +721,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     } // close if (!handled)
 
     if (Object.keys(updates).length > 0) {
-      set({ isModified: true, execLit: true, scratchpad: '', scratchpadError: null, ...updates });
+      set({ isModified: true, execLit: true, scratchpad: scratchpadMessage, scratchpadError: null, ...updates });
     }
 
     // Tutorial: advance on LSK press (check action matches expectedAction OR validate passes)
@@ -927,31 +937,31 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setHoldFix: (ident: string) => {
     const state = get();
     const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, fix: ident.toUpperCase() }, isModified: true, execLit: true });
+    set({ holdPending: { ...base, fix: ident.toUpperCase() }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
   },
 
   setInboundCourse: (crs: number) => {
     const state = get();
     const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, inboundCourse: crs }, isModified: true, execLit: true });
+    set({ holdPending: { ...base, inboundCourse: crs }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
   },
 
   setLegTime: (time: number) => {
     const state = get();
     const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, legTime: time }, isModified: true, execLit: true });
+    set({ holdPending: { ...base, legTime: time }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
   },
 
   setLegDist: (dist: number) => {
     const state = get();
     const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, legDist: dist }, isModified: true, execLit: true });
+    set({ holdPending: { ...base, legDist: dist }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
   },
 
   setHoldDirection: (dir: 'L' | 'R') => {
     const state = get();
     const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, direction: dir }, isModified: true, execLit: true });
+    set({ holdPending: { ...base, direction: dir }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
   },
 
   // ---- Tutorial ----

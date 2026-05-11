@@ -29,6 +29,7 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
             blinking={line.blinking}
             variant={isAirbus ? 'airbus' : 'boeing'}
             color={line.color}
+            semantic={line.semantic}
           />
         );
       })}

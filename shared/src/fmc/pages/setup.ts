@@ -1,5 +1,6 @@
 import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
+import { inferBoeingSemantic } from '../pageLineSemantics';
 
 function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
   return {
@@ -8,11 +9,12 @@ function fmt(text: string, left: string = '', right: string = '', color?: Displa
     rightLabel: right,
     inverse: false,
     color,
+    semantic: inferBoeingSemantic(color),
   };
 }
 
 function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
-  return { ...fmt(text, left, right), inverse: true, color };
+  return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
 
 function blank() {

@@ -1,5 +1,7 @@
 # VirtualCDU Comprehensive Test & Improvement Plan
 
+> **Partially superseded:** Critical bug and early implementation sections are historical. Remaining useful test/quality ideas have been migrated into `TEST_MATRIX.md`, `METRICS.md`, `KNOWN_LIMITATIONS.md`, and `ROADMAP.md`.
+
 ## Document Information
 - **Created:** 2026-05-10
 - **Purpose:** Consolidated findings from comprehensive codebase analysis, build testing, functional verification, and real hardware comparison

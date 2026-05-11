@@ -1,0 +1,97 @@
+[
+  {
+    "id": "kjfk-kdca-boeing-baseline",
+    "aircraft": "BOEING_737",
+    "origin": "KJFK",
+    "destination": "KDCA",
+    "alternate": "KBWI",
+    "flightNumber": "AA123",
+    "costIndex": 45,
+    "cruiseAltitude": 35000,
+    "zfw": 130.5,
+    "fuel": 12.4,
+    "route": "KJFK DCT RBV DIXIE KDCA",
+    "expected": {
+      "sid": "MERIT4",
+      "star": "FRDMM2",
+      "approach": "ILS19",
+      "warnings": []
+    }
+  },
+  {
+    "id": "egkk-lfpg-airbus-short-international",
+    "aircraft": "AIRBUS_A320",
+    "origin": "EGKK",
+    "destination": "LFPG",
+    "alternate": "LFPO",
+    "flightNumber": "BAW302",
+    "costIndex": 30,
+    "cruiseAltitude": 29000,
+    "zfw": 58.2,
+    "fuel": 6.8,
+    "route": "EGKK DCT DVR UL9 KONAN UN859 BNE LFPG",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+    }
+  },
+  {
+    "id": "klax-ksfo-boeing-west-coast",
+    "aircraft": "BOEING_737",
+    "origin": "KLAX",
+    "destination": "KSFO",
+    "alternate": "KOAK",
+    "flightNumber": "SWA456",
+    "costIndex": 35,
+    "cruiseAltitude": 32000,
+    "zfw": 128.0,
+    "fuel": 10.2,
+    "route": "KLAX DCT GMN DCT SNS DCT KSFO",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+    }
+  },
+  {
+    "id": "engm-ekch-boeing-nordic",
+    "aircraft": "BOEING_737",
+    "origin": "ENGM",
+    "destination": "EKCH",
+    "alternate": "ESMS",
+    "flightNumber": "SAS1461",
+    "costIndex": 40,
+    "cruiseAltitude": 37000,
+    "zfw": 132.0,
+    "fuel": 8.9,
+    "route": "ENGM DCT TOR DCT AAL DCT EKCH",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+    }
+  },
+  {
+    "id": "eddf-lirf-airbus-medium",
+    "aircraft": "AIRBUS_A320",
+    "origin": "EDDF",
+    "destination": "LIRF",
+    "alternate": "LIRA",
+    "flightNumber": "DLH230",
+    "costIndex": 25,
+    "cruiseAltitude": 35000,
+    "zfw": 60.1,
+    "fuel": 9.5,
+    "route": "EDDF DCT RID DCT TRA DCT LIRF",
+    "expected": {
+      "sid": null,
+      "star": null,
+      "approach": null,
+      "warnings": ["PROCEDURE DATA NOT YET IN MOCK NAVDATA"]
+    }
+  }
+]

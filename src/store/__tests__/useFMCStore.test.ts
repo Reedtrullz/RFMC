@@ -56,6 +56,163 @@ describe('FMC Store', () => {
     expect(state.flightPlan.destination).toBe('KDCA');
   });
 
+  it('parses RTE route entry into LEGS waypoints', () => {
+    const store = useFMCStore.getState();
+    store.setPage('RTE');
+    store.pressKey('NEXT_PAGE');
+    for (const key of 'KJFK DCT RBV DIXIE KDCA') {
+      store.pressKey(key === ' ' ? 'SPACE' : (key as Parameters<typeof store.pressKey>[0]));
+    }
+    store.pressLSK('L', 1);
+
+    const state = useFMCStore.getState();
+    expect(state.route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(state.legsPageCount).toBe(1);
+    expect(state.execLit).toBe(true);
+  });
+
+  it('inserts and deletes LEGS waypoints through LSK actions', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'LEGS',
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+    });
+
+    for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 2);
+    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+    expect(useFMCStore.getState().execLit).toBe(true);
+
+    store.pressKey('DEL');
+    store.pressLSK('L', 2);
+    const state = useFMCStore.getState();
+    expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
+    expect(state.deleteMode).toBe(false);
+  });
+
+  it('stages HOLD edits and commits them only on EXEC', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({ currentPage: 'HOLD' });
+
+    for (const key of 'RBV') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+    for (const key of '270') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 3);
+    for (const key of '1.5') store.pressKey(key === '.' ? 'DOT' : (key as Parameters<typeof store.pressKey>[0]));
+    store.pressLSK('L', 4);
+    for (const key of 'L') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('R', 1);
+
+    let state = useFMCStore.getState();
+    expect(state.hold.fix).toBe('');
+    expect(state.holdPending).toMatchObject({ fix: 'RBV', inboundCourse: 270, legTime: 1.5, direction: 'L' });
+    expect(state.execLit).toBe(true);
+
+    store.pressEXEC();
+    state = useFMCStore.getState();
+    expect(state.hold).toMatchObject({ fix: 'RBV', inboundCourse: 270, legTime: 1.5, direction: 'L' });
+    expect(state.holdPending).toBeNull();
+    expect(state.execLit).toBe(false);
+  });
+
+  it('rejects V-speeds that violate V1 < VR < V2', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'TAKEOFF_REF',
+      takeoff: {
+        runway: '',
+        toMode: 'TO',
+        assumedTemp: 0,
+        v1: 130,
+        vr: 140,
+        v2: 145,
+        trim: 0,
+        oat: 0,
+        windDir: 0,
+        windSpeed: 0,
+        qnh: 0,
+      },
+    });
+
+    for (const key of '150') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('R', 1);
+
+    const state = useFMCStore.getState();
+    expect(state.takeoff.v1).toBe(130);
+    expect(state.scratchpadError).toBe('V1 MUST BE < VR');
+    expect(state.execLit).toBe(false);
+  });
+
+  it('deletes V-speeds when takeoff runway changes after speeds are entered', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'TAKEOFF_REF',
+      scratchpad: '',
+      scratchpadError: null,
+      msgLight: false,
+      takeoff: {
+        runway: '04L',
+        toMode: 'TO',
+        assumedTemp: 0,
+        v1: 130,
+        vr: 135,
+        v2: 140,
+        trim: 0,
+        oat: 0,
+        windDir: 0,
+        windSpeed: 0,
+        qnh: 0,
+      },
+    });
+
+    for (const key of '19') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+
+    const state = useFMCStore.getState();
+    expect(state.takeoff).toMatchObject({ runway: '19', v1: 0, vr: 0, v2: 0 });
+    expect(state.scratchpad).toBe('V SPEEDS DELETED');
+    expect(state.msgLight).toBe(true);
+    expect(state.execLit).toBe(true);
+  });
+
+  it('sets DEP/ARR procedures, DIR INTC, and N1 LIMIT values', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({ currentPage: 'DEP_ARR', route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' } });
+
+    for (const key of 'MERIT4') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 2);
+    for (const key of '04L') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 3);
+    store.pressLSK('L', 6);
+    for (const key of 'FRDMM2') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 2);
+    for (const key of 'ILS19') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 3);
+
+    let state = useFMCStore.getState();
+    expect(state.route).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
+
+    store.setPage('DIR_INTC');
+    for (const key of 'DIXIE') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+    expect(useFMCStore.getState().route.directTo).toBe('DIXIE');
+
+    useFMCStore.setState({ takeoff: { ...useFMCStore.getState().takeoff, toMode: 'TO 2' } });
+    store.setPage('N1_LIMIT');
+    const display = useFMCStore.getState().getDisplayData();
+    expect(display.lines.some(line => line.text.includes('88.0%'))).toBe(true);
+  });
+
   it('sets and clears failure mode', () => {
     const store = useFMCStore.getState();
     store.setFailureMode('FAIL', 'TEST FAILURE');

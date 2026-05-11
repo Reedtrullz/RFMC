@@ -9,6 +9,11 @@ const AIRCRAFT_LABELS: Record<string, string> = {
   CJ4: 'Working Title CJ4',
 };
 
+const INTEGRATION_NOTES: Record<string, string> = {
+  BOEING_737: 'PMDG round-trip requires live Windows + MSFS + PMDG verification.',
+  AIRBUS_A320: 'FBW display and key I/O are mock-only in this build.',
+};
+
 export function ConnectionStatus() {
   const [showSettings, setShowSettings] = useState(false);
   const [serverUrl, setServerUrl] = useState(getServerUrl());
@@ -34,6 +39,7 @@ export function ConnectionStatus() {
   const aircraftType = connectedAircraftType || configuredAircraft;
   const adapterName = connectedAircraft || AIRCRAFT_LABELS[aircraftType] || aircraftType;
   const capabilities = connectedCapabilities ?? [];
+  const integrationNote = INTEGRATION_NOTES[aircraftType];
 
   const formatNumber = (value: number | undefined, digits = 0) =>
     typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '---';
@@ -78,6 +84,11 @@ export function ConnectionStatus() {
             {lastError && (
               <div className="pt-1 text-cdu-error leading-tight">
                 <span className="text-cdu-text/50">LAST ERROR </span>{lastError}
+              </div>
+            )}
+            {integrationNote && (
+              <div className="pt-1 text-cdu-amber leading-tight">
+                <span className="text-cdu-text/50">LIMIT </span>{integrationNote}
               </div>
             )}
           </div>

@@ -375,8 +375,14 @@ export class FMCEngine {
       }
       case 'set_runway': {
         if (!sp || sp.length < 2) return err();
-        this.state.takeoff = { ...this.state.takeoff, runway: sp.toUpperCase() };
-        this.state.scratchpad = '';
+        const runway = sp.toUpperCase();
+        const runwayChanged = this.state.takeoff.runway && this.state.takeoff.runway !== runway;
+        const speedsEntered = this.state.takeoff.v1 > 0 || this.state.takeoff.vr > 0 || this.state.takeoff.v2 > 0;
+        this.state.takeoff = runwayChanged && speedsEntered
+          ? { ...this.state.takeoff, runway, v1: 0, vr: 0, v2: 0 }
+          : { ...this.state.takeoff, runway };
+        this.state.msgLight = runwayChanged && speedsEntered ? true : this.state.msgLight;
+        this.state.scratchpad = runwayChanged && speedsEntered ? 'V SPEEDS DELETED' : '';
         return true;
       }
       case 'set_to_mode': {

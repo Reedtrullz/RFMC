@@ -1,5 +1,7 @@
 # VirtualCDU FMS Accuracy Improvement Plan
 
+> **Superseded:** This document is retained for historical findings. Current execution should use `ROADMAP.md`, `METRICS.md`, `TEST_MATRIX.md`, `KNOWN_LIMITATIONS.md`, and `IMPLEMENTATION_STATUS.md`. Several critical items listed here have already been fixed.
+
 ## Overview
 This document details findings from a comprehensive analysis of the VirtualCDU FMS application compared to real Boeing 737 NG FMC/CDU and Airbus A320 MCDU units. It identifies specific visual and functional discrepancies and provides actionable improvements to enhance realism and accuracy.
 

@@ -15,8 +15,10 @@
     "typecheck": "tsc --noEmit",
     "typecheck:all": "npm run typecheck -w shared && npm run typecheck -w src && npm run typecheck -w server",
     "test": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

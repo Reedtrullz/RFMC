@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { renderIdentPage, renderPosInitPage } from '../fmc/pages/setup';
+import { renderIdentPage, renderMenuPage, renderPerfInitPage, renderPosInitPage, renderTakeoffRefPage, renderThrustLimPage } from '../fmc/pages/setup';
 import { renderLegsPage, renderHoldPage, renderFixPage, renderProgressPage } from '../fmc/pages/navigation';
+import { renderRtePage, renderDepArrPage } from '../fmc/pages/route';
+import { renderClbPage } from '../fmc/pages/climb';
+import { renderCrzPage } from '../fmc/pages/cruise';
+import { renderDesPage } from '../fmc/pages/descent';
+import { renderDirIntcPage } from '../fmc/pages/direct';
+import { renderN1LimitPage } from '../fmc/pages/n1limit';
 import type { FMCState } from '../types/fmc';
 
 const baseState: FMCState = {
@@ -45,6 +51,40 @@ describe('Page Renderers', () => {
     const data = renderIdentPage(baseState);
     expect(data.title).toBe('IDENT');
     expect(data.lines.some(l => l.text.includes('737-800'))).toBe(true);
+  });
+
+  it('tags Boeing setup page lines with display semantics', () => {
+    const data = renderIdentPage(baseState);
+    expect(data.lines[0]).toMatchObject({ semantic: 'title', inverse: true });
+    expect(data.lines.find(l => l.text.includes('MODEL'))?.semantic).toBe('label');
+    expect(data.lines.find(l => l.text.includes('737-800'))?.semantic).toBe('activeData');
+  });
+
+  it('tags every primary Boeing page title as a semantic title', () => {
+    const renderers = [
+      renderIdentPage,
+      renderPosInitPage,
+      renderPerfInitPage,
+      renderThrustLimPage,
+      renderTakeoffRefPage,
+      renderMenuPage,
+      renderLegsPage,
+      renderProgressPage,
+      renderHoldPage,
+      renderFixPage,
+      renderRtePage,
+      renderDepArrPage,
+      renderClbPage,
+      renderCrzPage,
+      renderDesPage,
+      renderDirIntcPage,
+      renderN1LimitPage,
+    ];
+
+    for (const renderer of renderers) {
+      const data = renderer(baseState);
+      expect(data.lines[0].semantic, data.title).toBe('title');
+    }
   });
 
   it('renders POS INIT page', () => {

@@ -18,6 +18,25 @@ export {
   getAirway,
   getSidStar,
 } from './fmc/airFMCData';
+export {
+  validateIcao,
+  validateRouteFixture,
+} from './fmc/navdataSchema';
+export {
+  inferAirbusSemantic,
+  inferBoeingSemantic,
+} from './fmc/pageLineSemantics';
+export type {
+  AirportRecord,
+  NavdataCycle,
+  ProcedureLeg,
+  ProcedureLegType,
+  ProcedureRecord,
+  ProcedureTransition,
+  ProcedureType,
+  RunwayRecord,
+  SimBriefRouteFixture,
+} from './fmc/navdataSchema';
 export { airbusTutorialScenarios } from './fmc/tutorials/airbus-tutorials';
 export { AIRBUS_KEYS, AIRBUS_FUNCTION_KEYS } from './fmc/airbusKeys';
 export {
@@ -31,6 +50,13 @@ export {
 } from './fmc/displayColors';
 export type { DisplayColor, BoeingColor, AirbusColor } from './fmc/displayColors';
 export {
+  AIRBUS_SEMANTIC_COLORS,
+  BOEING_SEMANTIC_COLORS,
+  getSemanticColor,
+  withDisplaySemantic,
+} from './fmc/displaySemantics';
+export type { DisplaySemantic } from './fmc/displaySemantics';
+export {
   isValidICAO,
   isValidWaypoint,
   isValidFlightNumber,
@@ -43,4 +69,3 @@ export {
 } from './fmc/validation';
 export type { ValidationResult } from './fmc/validation';
 export { devLog, devWarn, devError } from './logger';
-

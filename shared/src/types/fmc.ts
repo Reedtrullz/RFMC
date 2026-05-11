@@ -1,4 +1,5 @@
 import type { DisplayColor } from '../fmc/displayColors';
+import type { DisplaySemantic } from '../fmc/displaySemantics';
 
 // ============================================================
 // Core FMC types shared between frontend and backend
@@ -55,6 +56,7 @@ export interface DisplayLine {
   small?: boolean;
   blinking?: boolean;
   color?: DisplayColor;
+  semantic?: DisplaySemantic;
 }
 
 /** Full CDU display data — what gets rendered on screen */

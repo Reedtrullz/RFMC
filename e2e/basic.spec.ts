@@ -7,6 +7,25 @@ async function dismissWelcome(page) {
   }
 }
 
+async function press(page, label: string) {
+  await page.getByRole('button', { name: label, exact: true }).first().click();
+}
+
+async function lsk(page, id: string) {
+  await page.getByRole('button', { name: `LSK ${id}`, exact: true }).click();
+}
+
+async function enterText(page, value: string) {
+  for (const char of value) {
+    if (char === ' ') await press(page, 'SP');
+    else await press(page, char);
+  }
+}
+
+async function expectScreenText(page, text: string) {
+  await expect(page.locator('.bg-cdu-screen').filter({ hasText: text }).first()).toBeVisible();
+}
+
 test.describe('VirtualCDU Basic', () => {
   test('loads IDENT page with aircraft model', async ({ page }) => {
     await page.goto('/');
@@ -44,5 +63,169 @@ test.describe('VirtualCDU Basic', () => {
     await page.locator('button:has-text("A320neo")').click();
     await dismissWelcome(page);
     await expect(page.locator('.bg-cdu-screen >> text=INIT')).toBeVisible();
+  });
+
+  test('completes Boeing preflight flow through TAKEOFF REF', async ({ page }) => {
+    await page.goto('/');
+    await dismissWelcome(page);
+
+    await lsk(page, 'L1');
+    await expectScreenText(page, 'POS INIT');
+    await enterText(page, 'KJFK');
+    await lsk(page, 'L1');
+    await enterText(page, 'A12');
+    await lsk(page, 'L3');
+    await lsk(page, 'L5');
+
+    await expectScreenText(page, 'RTE');
+    await enterText(page, 'KJFK');
+    await lsk(page, 'L1');
+    await enterText(page, 'KDCA');
+    await lsk(page, 'L3');
+    await enterText(page, 'AA123');
+    await lsk(page, 'R1');
+    await lsk(page, 'L6');
+    await enterText(page, 'KJFK DCT RBV DIXIE KDCA');
+    await lsk(page, 'L1');
+    await expectScreenText(page, 'RBV');
+    await lsk(page, 'R3');
+
+    await expectScreenText(page, 'LEGS');
+    await expectScreenText(page, 'DIXIE');
+
+    await press(page, 'DEP ARR');
+    await enterText(page, 'MERIT4');
+    await lsk(page, 'L2');
+    await enterText(page, '04L');
+    await lsk(page, 'L3');
+    await lsk(page, 'L6');
+    await enterText(page, 'FRDMM2');
+    await lsk(page, 'L2');
+    await enterText(page, 'ILS19');
+    await lsk(page, 'L3');
+
+    await press(page, 'PERF');
+    await enterText(page, '350');
+    await lsk(page, 'L1');
+    await enterText(page, '45');
+    await lsk(page, 'L3');
+    await enterText(page, '130.5');
+    await lsk(page, 'R1');
+    await enterText(page, '5');
+    await lsk(page, 'R3');
+    await lsk(page, 'L5');
+
+    await expectScreenText(page, 'THRUST LIM');
+    await enterText(page, '45');
+    await lsk(page, 'L2');
+    await lsk(page, 'L6');
+
+    await expectScreenText(page, 'TAKEOFF REF');
+    await enterText(page, '04L');
+    await lsk(page, 'L1');
+    await enterText(page, '130');
+    await lsk(page, 'R1');
+    await enterText(page, '135');
+    await lsk(page, 'R2');
+    await enterText(page, '140');
+    await lsk(page, 'R3');
+    await enterText(page, '5.5');
+    await lsk(page, 'R4');
+    await enterText(page, '15');
+    await lsk(page, 'L4');
+    await enterText(page, '270/10');
+    await lsk(page, 'L5');
+    await enterText(page, '1013');
+    await lsk(page, 'R5');
+    await press(page, 'EXEC');
+
+    await expectScreenText(page, '130 KT');
+    await expectScreenText(page, '135 KT');
+    await expectScreenText(page, '140 KT');
+  });
+
+  test('runs Airbus INIT, F-PLN, DEP/ARR, and PERF TO entries', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('button:has-text("A320neo")').click();
+    await dismissWelcome(page);
+
+    await enterText(page, 'KJFK/KDCA');
+    await lsk(page, 'L1');
+    await enterText(page, '50');
+    await lsk(page, 'L2');
+    await enterText(page, '350');
+    await lsk(page, 'L3');
+    await expectScreenText(page, 'KJFK/KDCA');
+
+    await press(page, 'F-PLN');
+    await expectScreenText(page, 'F-PLN');
+    await lsk(page, 'L1');
+    await expectScreenText(page, 'DEP/ARR');
+    await enterText(page, 'MERIT4');
+    await lsk(page, 'L1');
+    await enterText(page, '04L');
+    await lsk(page, 'L3');
+    await enterText(page, 'FRDMM2');
+    await lsk(page, 'L5');
+    await enterText(page, 'ILS19');
+    await lsk(page, 'R1');
+
+    await press(page, 'PERF');
+    await enterText(page, '130');
+    await lsk(page, 'L1');
+    await enterText(page, '135');
+    await lsk(page, 'L3');
+    await enterText(page, '140');
+    await lsk(page, 'L5');
+    await enterText(page, 'CONF2');
+    await lsk(page, 'R1');
+    await enterText(page, '55');
+    await lsk(page, 'R3');
+
+    await expectScreenText(page, '130 KT');
+    await expectScreenText(page, 'CONF2');
+    await expectScreenText(page, '55°C');
+  });
+
+  test('imports SimBrief plan from mocked API response', async ({ page }) => {
+    await page.route('https://www.simbrief.com/api/xml.fetcher.php**', async route => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          origin: 'KJFK',
+          destination: 'KDCA',
+          flightNumber: 'AA123',
+          route: 'RBV DIXIE',
+          crzAlt: 35000,
+          costIndex: 45,
+        }),
+      });
+    });
+
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Import SimBrief' }).click();
+    await page.getByPlaceholder('123456').fill('123456');
+    await page.getByRole('button', { name: 'Import Flight Plan' }).click();
+
+    await expect(page.getByTestId('scratchpad')).toContainText('SIMBRIEF LOADED');
+    await dismissWelcome(page);
+    await press(page, 'RTE');
+    await expectScreenText(page, 'KJFK');
+    await expectScreenText(page, 'KDCA');
+  });
+
+  test('renders nonblank Boeing and Airbus CDU screenshots', async ({ page }) => {
+    await page.goto('/');
+    await dismissWelcome(page);
+    const boeing = await page.locator('.bg-cdu-screen').first().screenshot();
+    expect(boeing.length).toBeGreaterThan(10_000);
+    await expectScreenText(page, 'IDENT');
+
+    await page.reload();
+    await page.locator('button:has-text("A320neo")').click();
+    await dismissWelcome(page);
+    const airbus = await page.locator('.bg-cdu-screen').first().screenshot();
+    expect(airbus.length).toBeGreaterThan(10_000);
+    await expectScreenText(page, 'INIT');
   });
 });
