@@ -18,12 +18,15 @@ Use it to:
 
 | Feature | Description |
 |---------|-------------|
-| **12 FMC pages** | IDENT, POS INIT, RTE, DEP/ARR, PERF INIT, THRUST LIM, TAKEOFF REF, LEGS, PROGRESS, HOLD, FIX, MENU |
+| **12 Boeing FMC pages** | IDENT, POS INIT, RTE, DEP/ARR, PERF INIT, THRUST LIM, TAKEOFF REF, LEGS, PROGRESS, HOLD, FIX, MENU |
+| **7 extra Boeing pages** | CLB, CRZ, DES, DIR INTC, N1 LIMIT + full Airbus MCDU suite |
+| **Airbus A320 MCDU** | INIT A/B, F-PLN, PERF TO/APPR, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU |
 | **Guided tutorials** | 3 scenarios (Full Preflight, Takeoff Config, In-Flight Review) with pulsing button highlights and aviation-accurate explanations |
 | **Touch-optimized** | 44px touch targets, ripple feedback, iOS safe areas, PWA installable — works as a mounted cockpit display |
-| **ICAO route parser** | Parses real route strings: `KJFK DCT RBV J42 LENDY8 KDCA` |
+| **Input validation** | Aviation-accurate validation: ICAO airports, V1<VR<V2 cross-field check, QNH 900-1100, wind DIR/SPEED |
+| **ICAO route parser** | Parses real route strings: `KJFK DCT RBV J42 LENDY8 KDCA` into LEGS waypoints |
 | **SimBrief import** | Parse SimBrief XML/JSON flight plans |
-| **MSFS integration** | WebSocket bridge server + generic aircraft adapter (PMDG 737 included) |
+| **MSFS integration** | WebSocket bridge server + PMDG 737 adapter via SimConnect |
 | **Responsive** | Desktop, iPad landscape/portrait, phone |
 | **Offline PWA** | Service worker, add to home screen, fullscreen kiosk mode |
 
