@@ -187,6 +187,7 @@ export interface RouteData {
   star?: string;
   approach?: string;
   alternate?: string;
+  directTo?: string;
 }
 
 // ---- Tutorial Types ----

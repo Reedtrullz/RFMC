@@ -58,11 +58,16 @@ export function isValidTemperature(temp: string): ValidationResult {
 }
 
 export function isValidVSpeeds(v1: number, vr: number, v2: number): ValidationResult {
-  if (v1 <= 0 || vr <= 0 || v2 <= 0) {
-    return { valid: false, error: 'INVALID V-SPEEDS' };
+  if (v1 > 0 && vr > 0 && v2 > 0) {
+    if (v1 >= vr || vr >= v2) {
+      return { valid: false, error: 'V1<VR<V2 REQUIRED' };
+    }
   }
-  if (v1 >= vr || vr >= v2) {
-    return { valid: false, error: 'INVALID V-SPEEDS' };
+  if (v1 > 0 && vr > 0 && v1 >= vr) {
+    return { valid: false, error: 'V1 MUST BE < VR' };
+  }
+  if (vr > 0 && v2 > 0 && vr >= v2) {
+    return { valid: false, error: 'VR MUST BE < V2' };
   }
   return { valid: true };
 }

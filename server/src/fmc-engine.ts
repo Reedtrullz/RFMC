@@ -1,8 +1,8 @@
 import type { FMCState, DisplayData, PageType } from '@shared';
-import { getPageRenderer } from '@shared';
+import { getPageRenderer, parseRouteString } from '@shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
-  isValidWind, isValidFlightNumber, isValidWaypoint
+  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds
 } from '@shared';
 
 export class FMCEngine {
@@ -336,7 +336,12 @@ export class FMCEngine {
         return true;
       }
       case 'set_route': {
-        this.state.route = { ...this.state.route, routeString: sp.toUpperCase() };
+        const routeStr = sp.toUpperCase();
+        const parsed = parseRouteString(routeStr);
+        const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
+        this.state.route = { ...this.state.route, routeString: routeStr };
+        this.state.flightPlan = { ...this.state.flightPlan, waypoints, route: routeStr };
+        this.state.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
         this.state.scratchpad = '';
         return true;
       }
@@ -384,21 +389,30 @@ export class FMCEngine {
       case 'set_v1': {
         const result = isValidSpeed(sp);
         if (!result.valid) return icaoErr(result);
-        this.state.takeoff = { ...this.state.takeoff, v1: parseInt(sp) || 0 };
+        const newTakeoff = { ...this.state.takeoff, v1: parseInt(sp) || 0 };
+        const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
       }
       case 'set_vr': {
         const result = isValidSpeed(sp);
         if (!result.valid) return icaoErr(result);
-        this.state.takeoff = { ...this.state.takeoff, vr: parseInt(sp) || 0 };
+        const newTakeoff = { ...this.state.takeoff, vr: parseInt(sp) || 0 };
+        const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
       }
       case 'set_v2': {
         const result = isValidSpeed(sp);
         if (!result.valid) return icaoErr(result);
-        this.state.takeoff = { ...this.state.takeoff, v2: parseInt(sp) || 0 };
+        const newTakeoff = { ...this.state.takeoff, v2: parseInt(sp) || 0 };
+        const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
       }
@@ -413,6 +427,20 @@ export class FMCEngine {
         const result = isValidTemperature(sp);
         if (!result.valid) return icaoErr(result);
         this.state.takeoff = { ...this.state.takeoff, oat: parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_assumed_temp': {
+        const temp = parseInt(sp);
+        if (isNaN(temp)) return err();
+        this.state.takeoff = { ...this.state.takeoff, assumedTemp: temp };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_direct_to': {
+        const result = isValidWaypoint(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, directTo: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }

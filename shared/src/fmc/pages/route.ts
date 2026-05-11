@@ -1,11 +1,11 @@
-import type { FMCState, DisplayData } from '../../types/fmc';
+import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 
-function fmt(text: string, left: string = '', right: string = ''): { text: string; leftLabel: string; rightLabel: string; inverse: boolean } {
-  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false };
+function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color };
 }
-function inverse(text: string, left: string = '', right: string = ''): { text: string; leftLabel: string; rightLabel: string; inverse: boolean } {
-  return { ...fmt(text, left, right), inverse: true };
+function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return { ...fmt(text, left, right), inverse: true, color };
 }
 function blank() { return fmt('', '', ''); }
 
@@ -91,29 +91,27 @@ export function renderDepArrPage(state: FMCState): DisplayData {
   const { route, depArrSubPage } = state;
 
   if (depArrSubPage === 'DEP') {
-    const sids = [
-      { name: 'RBV3', runway: '22L', idx: 1 },
-      { name: 'BETTE3', runway: '22L', idx: 2 },
-      { name: 'JFK5', runway: '31L', idx: 3 },
-    ];
-
     return {
       title: 'DEP/ARR',
       pageIndicator: 'DEP',
       lines: [
         inverse('  DEP/ARR        DEP'),
         fmt(` ${route.origin || '----'}`, '', ''),
-        fmt(' SID', '', ''),
-        ...sids.flatMap(s => [
-          fmt(`  ${s.name}`, '<'),
-          fmt(`   RW${s.runway}`),
-        ]),
-        ...Array(Math.max(0, 14 - sids.length * 2 - 3)).fill(0).map(() => blank()),
-      ].slice(0, PAGE_LINES),
+        fmt(' SID', '<', '', 'white'),
+        fmt(` ${route.sid || '----'}`, '', '', 'green'),
+        fmt(' RUNWAY', '<', '', 'white'),
+        fmt(` ${route.runway || '----'}`, '', '', 'green'),
+        blank(),
+        fmt(' TRANS', '<', '', 'white'),
+        fmt(' ----', '', '', 'green'),
+        blank(),
+        blank(),
+        blank(),
+      ],
       lskActions: {
         L1: null,
-        L2: null,
-        L3: null,
+        L2: 'set_sid',
+        L3: 'set_rwy',
         L4: null,
         L5: null,
         L6: 'arr_page',
@@ -128,44 +126,37 @@ export function renderDepArrPage(state: FMCState): DisplayData {
   }
 
   // ARR page
-  const stars = [
-    { name: 'FRDMM2', runway: '22L', idx: 1 },
-    { name: 'ILG1', runway: '27R', idx: 2 },
-  ];
-  const approaches = [
-    { name: 'ILS22L', type: 'ILS', idx: 3 },
-    { name: 'RNAV27R', type: 'RNAV', idx: 4 },
-  ];
-
-  const allItems = [
-    fmt(` ${route.destination || '----'}`, '', ''),
-    fmt(' STAR', '', ''),
-    ...stars.flatMap(s => [fmt(`  ${s.name}`, '<'), fmt(`   RW${s.runway}`)]),
-    fmt(' APPR', '', ''),
-    ...approaches.flatMap(a => [fmt(`  ${a.name}`, '<'), fmt(`   ${a.type}`)]),
-  ];
-
   return {
     title: 'DEP/ARR',
     pageIndicator: 'ARR',
     lines: [
       inverse('  DEP/ARR        ARR'),
-      ...allItems,
-      ...Array(Math.max(0, PAGE_LINES - 1 - allItems.length)).fill(0).map(() => blank()),
-    ].slice(0, PAGE_LINES),
-      lskActions: {
-        L1: null,
-        L2: null,
-        L3: null,
-        L4: null,
-        L5: null,
-        L6: 'dep_page',
-        R1: null,
-        R2: null,
-        R3: null,
-        R4: null,
-        R5: null,
-        R6: null,
-      },
+      fmt(` ${route.destination || '----'}`, '', ''),
+      fmt(' STAR', '<', '', 'white'),
+      fmt(` ${route.star || '----'}`, '', '', 'green'),
+      fmt(' APPROACH', '<', '', 'white'),
+      fmt(` ${route.approach || '----'}`, '', '', 'green'),
+      fmt(' RUNWAY', '<', '', 'white'),
+      fmt(` ${route.runway || '----'}`, '', '', 'green'),
+      blank(),
+      fmt(' TRANS', '<', '', 'white'),
+      fmt(' ----', '', '', 'green'),
+      blank(),
+      blank(),
+    ],
+    lskActions: {
+      L1: null,
+      L2: 'set_star',
+      L3: 'set_appr',
+      L4: 'set_rwy',
+      L5: null,
+      L6: 'dep_page',
+      R1: null,
+      R2: null,
+      R3: null,
+      R4: null,
+      R5: null,
+      R6: null,
+    },
   };
 }

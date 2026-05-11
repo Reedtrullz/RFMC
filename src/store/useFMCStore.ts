@@ -448,9 +448,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
         }
         break;
-      case 'set_route':
-        if (scratchpad) updates.route = { ...state.route, routeString: scratchpad.toUpperCase() };
+      case 'set_route': {
+        if (scratchpad) {
+          const routeStr = scratchpad.toUpperCase();
+          const parsed = parseRouteString(routeStr);
+          const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
+          updates.route = { ...state.route, routeString: routeStr };
+          updates.flightPlan = { ...state.flightPlan, waypoints, route: routeStr };
+          updates.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
+        }
         break;
+      }
       case 'select_to':
         if (scratchpad) updates.takeoff = { ...state.takeoff, toMode: scratchpad.toUpperCase() };
         else updates.takeoff = { ...state.takeoff, toMode: 'TO' };
@@ -481,7 +489,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const v1 = parseInt(scratchpad) || 0;
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.takeoff = { ...state.takeoff, v1 };
+          const newTakeoff = { ...state.takeoff, v1 };
+          const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+          if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
+          updates.takeoff = newTakeoff;
         }
         break;
       case 'set_vr':
@@ -489,7 +500,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const vr = parseInt(scratchpad) || 0;
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.takeoff = { ...state.takeoff, vr };
+          const newTakeoff = { ...state.takeoff, vr };
+          const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+          if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
+          updates.takeoff = newTakeoff;
         }
         break;
       case 'set_v2':
@@ -497,7 +511,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const v2 = parseInt(scratchpad) || 0;
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.takeoff = { ...state.takeoff, v2 };
+          const newTakeoff = { ...state.takeoff, v2 };
+          const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
+          if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
+          updates.takeoff = newTakeoff;
         }
         break;
       case 'set_trim': {
@@ -515,6 +532,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           updates.takeoff = { ...state.takeoff, oat: parseInt(scratchpad) || 0 };
         }
         break;
+      case 'set_assumed_temp': {
+        if (scratchpad) {
+          const temp = parseInt(scratchpad);
+          if (isNaN(temp)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, assumedTemp: temp };
+        }
+        break;
+      }
+      case 'set_direct_to': {
+        if (scratchpad) {
+          const result = isValidWaypoint(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.route = { ...state.route, directTo: scratchpad.toUpperCase() };
+        }
+        break;
+      }
       case 'set_wind':
         if (scratchpad) {
           const result = isValidWind(scratchpad);

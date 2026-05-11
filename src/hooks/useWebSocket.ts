@@ -35,6 +35,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
       ws.onopen = () => {
         devLog('[WS] Connected to', url);
+        setConnectionStatus('CONNECTED');
+        setFMCConnectionStatus('CONNECTED');
         ws.send(JSON.stringify({ type: 'sim.connect' } satisfies ClientMessage));
         reconnectAttempts.current = 0;
       };

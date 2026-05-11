@@ -10,9 +10,10 @@ function inverse(text: string, left: string = '', right: string = '', color?: Di
 function blank() { return fmt('', '', ''); }
 
 export function renderDirIntcPage(state: FMCState): DisplayData {
-  const { flightPlan } = state;
+  const { flightPlan, route } = state;
   const origin = flightPlan.origin || '----';
   const destination = flightPlan.destination || '----';
+  const directTo = route.directTo || '----';
 
   return {
     title: 'DIR INTC',
@@ -21,7 +22,7 @@ export function renderDirIntcPage(state: FMCState): DisplayData {
       inverse('  DIR INTC         1/1', '', '', 'cyan'),
       blank(),
       fmt(' DIRECT TO', '<', '', 'white'),
-      fmt(' ----', '', '', 'green'),
+      fmt(` ${directTo}`, '', '', 'green'),
       blank(),
       fmt(' INTERCEPT', '<', '', 'white'),
       fmt(' ----°', '', '', 'green'),
@@ -36,7 +37,7 @@ export function renderDirIntcPage(state: FMCState): DisplayData {
       blank(),
     ],
     lskActions: {
-      L1: null,
+      L1: 'set_direct_to',
       L2: null,
       L3: null,
       L4: null,

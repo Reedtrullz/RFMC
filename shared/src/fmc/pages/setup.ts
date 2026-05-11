@@ -164,7 +164,7 @@ export function renderThrustLimPage(state: FMCState): DisplayData {
     ],
     lskActions: {
       L1: 'select_to',
-      L2: null,
+      L2: 'set_assumed_temp',
       L3: 'select_to1',
       L4: null,
       L5: 'select_to2',

@@ -22,8 +22,9 @@ export function AirbusCDU() {
   const msgLight = useFMCStore(s => s.msgLight);
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useFMCStore(s => s.connectionMode);
+  const connectionStatus = useFMCStore(s => s.connectionStatus);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
-  const { send, connectionStatus } = useWebSocket();
+  const { send } = useWebSocket();
 
   const onPressKey = useCallback((key: string) => {
     pressKey(key as CDUKey);
