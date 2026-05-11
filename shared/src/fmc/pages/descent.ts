@@ -14,6 +14,14 @@ export function renderDesPage(state: FMCState): DisplayData {
   const { performance } = state;
   const crzAlt = performance.crzAlt ? `FL${String(performance.crzAlt).slice(0, 3)}` : '-----';
 
+  const desWindStr = performance.desWindDir && performance.desWindSpeed 
+    ? `${String(performance.desWindDir).padStart(3, '0')}/${String(performance.desWindSpeed).padStart(3, '0')}`
+    : '---/---';
+
+  const isaDevStr = performance.isaDev !== undefined && performance.isaDev !== null
+    ? `${performance.isaDev >= 0 ? '+' : ''}${performance.isaDev}°C`
+    : '+00°C';
+
   return {
     title: 'DES',
     pageIndicator: '1/1',
@@ -24,10 +32,10 @@ export function renderDesPage(state: FMCState): DisplayData {
       fmt(` ${crzAlt}`, '', '', 'green'),
       blank(),
       fmt(' DES WIND', '<', '', 'white'),
-      fmt(' ---/---', '', '', 'green'),
+      fmt(` ${desWindStr}`, '', '', 'green'),
       blank(),
       fmt(' ISA DEV', '<', '', 'white'),
-      fmt(' +00°C', '', '', 'green'),
+      fmt(` ${isaDevStr}`, '', '', 'green'),
       blank(),
       fmt(' OPT ALT', '<', '', 'white'),
       fmt(' -----', '', '', 'green'),
@@ -39,8 +47,8 @@ export function renderDesPage(state: FMCState): DisplayData {
     ],
     lskActions: {
       L1: 'set_crz_alt',
-      L2: null,
-      L3: null,
+      L2: 'set_des_wind',
+      L3: 'set_isa_dev',
       L4: null,
       L5: null,
       L6: null,

@@ -13,6 +13,14 @@ function blank() { return fmt('', '', ''); }
 export function renderClbPage(state: FMCState): DisplayData {
   const { performance } = state;
   const crzAlt = performance.crzAlt ? `FL${String(performance.crzAlt).slice(0, 3)}` : '-----';
+  
+  const clbWindStr = performance.clbWindDir && performance.clbWindSpeed 
+    ? `${String(performance.clbWindDir).padStart(3, '0')}/${String(performance.clbWindSpeed).padStart(3, '0')}`
+    : '---/---';
+
+  const isaDevStr = performance.isaDev !== undefined && performance.isaDev !== null
+    ? `${performance.isaDev >= 0 ? '+' : ''}${performance.isaDev}°C`
+    : '+00°C';
 
   return {
     title: 'CLB',
@@ -24,10 +32,10 @@ export function renderClbPage(state: FMCState): DisplayData {
       fmt(` ${crzAlt}`, '', '', 'green'),
       blank(),
       fmt(' CLB WIND', '<', '', 'white'),
-      fmt(' ---/---', '', '', 'green'),
+      fmt(` ${clbWindStr}`, '', '', 'green'),
       blank(),
       fmt(' ISA DEV', '<', '', 'white'),
-      fmt(' +00°C', '', '', 'green'),
+      fmt(` ${isaDevStr}`, '', '', 'green'),
       blank(),
       fmt(' OPT ALT', '<', '', 'white'),
       fmt(' -----', '', '', 'green'),
@@ -38,8 +46,8 @@ export function renderClbPage(state: FMCState): DisplayData {
     ],
     lskActions: {
       L1: 'set_crz_alt',
-      L2: null,
-      L3: null,
+      L2: 'set_clb_wind',
+      L3: 'set_isa_dev',
       L4: null,
       L5: null,
       L6: null,

@@ -170,6 +170,13 @@ export interface PerformanceData {
   fuel: number;
   cg: number;
   reserve: number;
+  clbWindDir?: number;
+  clbWindSpeed?: number;
+  crzWindDir?: number;
+  crzWindSpeed?: number;
+  desWindDir?: number;
+  desWindSpeed?: number;
+  isaDev?: number;
 }
 
 export interface PositionData {

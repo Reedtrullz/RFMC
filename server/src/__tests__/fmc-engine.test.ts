@@ -257,6 +257,51 @@ describe('FMCEngine', () => {
     expect(engine.getState().msgLight).toBe(true);
   });
 
+  it('sets CLB, CRZ, and DES wind and ISA dev parameters', () => {
+    const engine = new FMCEngine();
+    
+    // CLB page
+    engine.processInput('CLB');
+    enter(engine, '250/15');
+    engine.processInput('L2');
+    enter(engine, '+10');
+    engine.processInput('L3');
+    
+    expect(engine.getState().performance.clbWindDir).toBe(250);
+    expect(engine.getState().performance.clbWindSpeed).toBe(15);
+    expect(engine.getState().performance.isaDev).toBe(10);
+    
+    let display = engine.getDisplayData();
+    expect(display.lines.some(l => l.text.includes('250/015'))).toBe(true);
+    expect(display.lines.some(l => l.text.includes('+10°C'))).toBe(true);
+
+    // CRZ page
+    engine.processInput('CRZ');
+    enter(engine, '270/45');
+    engine.processInput('L4');
+    enter(engine, '-05');
+    engine.processInput('L5');
+    
+    expect(engine.getState().performance.crzWindDir).toBe(270);
+    expect(engine.getState().performance.crzWindSpeed).toBe(45);
+    expect(engine.getState().performance.isaDev).toBe(-5);
+    
+    display = engine.getDisplayData();
+    expect(display.lines.some(l => l.text.includes('270/045'))).toBe(true);
+    expect(display.lines.some(l => l.text.includes('-5°C'))).toBe(true);
+
+    // DES page
+    engine.processInput('DES');
+    enter(engine, '180/10');
+    engine.processInput('L2');
+    
+    expect(engine.getState().performance.desWindDir).toBe(180);
+    expect(engine.getState().performance.desWindSpeed).toBe(10);
+    
+    display = engine.getDisplayData();
+    expect(display.lines.some(l => l.text.includes('180/010'))).toBe(true);
+  });
+
   it('discards pending modifications with CLR when scratchpad is empty', () => {
     const engine = new FMCEngine();
     engine.processInput('RTE');

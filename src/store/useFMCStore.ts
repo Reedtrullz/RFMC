@@ -36,7 +36,14 @@ const defaultState = {
 
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: { refAirport: '', gate: '' },
-  performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
+  performance: {
+    crzAlt: 0,
+    costIndex: 0,
+    zfw: 0,
+    fuel: 0,
+    cg: 0,
+    reserve: 0,
+  },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
@@ -616,14 +623,33 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
+      case 'set_clb_wind':
+      case 'set_crz_wind':
+      case 'set_des_wind':
       case 'set_wind':
-        if (scratchpad) {
-          const result = isValidWind(scratchpad);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const parts = scratchpad.split('/');
-          if (parts.length === 2) {
-            updates.takeoff = { ...state.takeoff, windDir: parseInt(parts[0]) || 0, windSpeed: parseInt(parts[1]) || 0 };
+        {
+          const input = scratchpad;
+          const wRes = isValidWind(input);
+          if (!wRes.valid) { set({ scratchpadError: wRes.error }); return; }
+          const [wdir, wspd] = input.split('/');
+          if (action === 'set_wind') {
+            updates.takeoff = { ...state.takeoff, windDir: parseInt(wdir) || 0, windSpeed: parseInt(wspd) || 0 };
+          } else if (action === 'set_clb_wind') {
+            updates.performance = { ...state.performance, clbWindDir: parseInt(wdir) || 0, clbWindSpeed: parseInt(wspd) || 0 };
+          } else if (action === 'set_crz_wind') {
+            updates.performance = { ...state.performance, crzWindDir: parseInt(wdir) || 0, crzWindSpeed: parseInt(wspd) || 0 };
+          } else if (action === 'set_des_wind') {
+            updates.performance = { ...state.performance, desWindDir: parseInt(wdir) || 0, desWindSpeed: parseInt(wspd) || 0 };
           }
+        }
+        break;
+
+      case 'set_isa_dev':
+        {
+          const input = scratchpad;
+          const isaRes = isValidTemperature(input);
+          if (!isaRes.valid) { set({ scratchpadError: isaRes.error }); return; }
+          updates.performance = { ...state.performance, isaDev: parseInt(input) || 0 };
         }
         break;
       case 'set_qnh': {

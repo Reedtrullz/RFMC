@@ -526,13 +526,33 @@ export class FMCEngine {
         this.state.scratchpad = '';
         return true;
       }
+      case 'set_clb_wind':
+      case 'set_crz_wind':
+      case 'set_des_wind':
       case 'set_wind': {
         const result = isValidWind(sp);
         if (!result.valid) return icaoErr(result);
         const parts = sp.split('/');
         if (parts.length === 2) {
-          this.state.takeoff = { ...this.state.takeoff, windDir: parseInt(parts[0]) || 0, windSpeed: parseInt(parts[1]) || 0 };
+          const wDir = parseInt(parts[0]) || 0;
+          const wSpd = parseInt(parts[1]) || 0;
+          if (action === 'set_wind') {
+            this.state.takeoff = { ...this.state.takeoff, windDir: wDir, windSpeed: wSpd };
+          } else if (action === 'set_clb_wind') {
+            this.state.performance = { ...this.state.performance, clbWindDir: wDir, clbWindSpeed: wSpd };
+          } else if (action === 'set_crz_wind') {
+            this.state.performance = { ...this.state.performance, crzWindDir: wDir, crzWindSpeed: wSpd };
+          } else if (action === 'set_des_wind') {
+            this.state.performance = { ...this.state.performance, desWindDir: wDir, desWindSpeed: wSpd };
+          }
         }
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_isa_dev': {
+        const result = isValidTemperature(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.performance = { ...this.state.performance, isaDev: parseInt(sp) || 0 };
         this.state.scratchpad = '';
         return true;
       }

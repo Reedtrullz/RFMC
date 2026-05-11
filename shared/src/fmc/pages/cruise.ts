@@ -15,6 +15,14 @@ export function renderCrzPage(state: FMCState): DisplayData {
   const crzAlt = performance.crzAlt ? `FL${String(performance.crzAlt).slice(0, 3)}` : '-----';
   const costIndex = performance.costIndex ? String(performance.costIndex) : '---';
 
+  const crzWindStr = performance.crzWindDir && performance.crzWindSpeed 
+    ? `${String(performance.crzWindDir).padStart(3, '0')}/${String(performance.crzWindSpeed).padStart(3, '0')}`
+    : '---/---';
+
+  const isaDevStr = performance.isaDev !== undefined && performance.isaDev !== null
+    ? `${performance.isaDev >= 0 ? '+' : ''}${performance.isaDev}°C`
+    : '+00°C';
+
   return {
     title: 'CRZ',
     pageIndicator: '1/1',
@@ -28,10 +36,10 @@ export function renderCrzPage(state: FMCState): DisplayData {
       fmt(` ${costIndex}`, '', '', 'green'),
       blank(),
       fmt(' CRZ WIND', '<', '', 'white'),
-      fmt(' ---/---', '', '', 'green'),
+      fmt(` ${crzWindStr}`, '', '', 'green'),
       blank(),
       fmt(' ISA DEV', '<', '', 'white'),
-      fmt(' +00°C', '', '', 'green'),
+      fmt(` ${isaDevStr}`, '', '', 'green'),
       blank(),
       fmt(' OPT ALT', '<', '', 'white'),
       fmt(' -----', '', '', 'green'),
@@ -41,8 +49,8 @@ export function renderCrzPage(state: FMCState): DisplayData {
       L1: 'set_crz_alt',
       L2: null,
       L3: 'set_cost_index',
-      L4: null,
-      L5: null,
+      L4: 'set_crz_wind',
+      L5: 'set_isa_dev',
       L6: null,
       R1: null,
       R2: null,
