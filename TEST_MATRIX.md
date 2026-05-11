@@ -7,7 +7,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
 | Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 89/89 passing | 100% pass |
+| Unit/regression tests | `npm test -- --run` | 91/91 passing | 100% pass |
 | Playwright E2E | `npm run test:e2e` | 11/11 passing | 100% pass |
 | Production build | `npm run build` | Passing | Successful build |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
@@ -22,7 +22,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Boeing LEGS | Route parsing, insert/delete, discontinuity replacement, constraints | Partial | Required | Add deeper EXEC staging cases |
 | Boeing HOLD | Staged edits, route-context validation, and EXEC commit | Yes unit | Required | Add Playwright flow |
 | Boeing FIX | Radial/distance validation | Partial | Required | Add multi-entry/ring preview when implemented |
-| ND route context | Route points, active leg, discontinuities, constraints, procedures | Yes | Pilot review required | Training visualization, not measured avionics fidelity |
+| ND route context | Route points, direct-to active leg, discontinuities, constraints, procedures | Yes | Pilot review required | Training visualization, not measured avionics fidelity |
 | ND overlays | FIX radial/distance and HOLD racetrack preview | Yes | Pilot review required | Uses current trainer state only |
 | ND controls/iPad | MAP/PLAN, range, overlay toggles, mobile ND toggle | Yes | iPad device review required | Keep CDU controls unobstructed |
 | Boeing CLB/CRZ/DES | Static pages render | Partial | Required | Add DES NOW and trainer-level prediction tests |

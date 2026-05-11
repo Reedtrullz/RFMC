@@ -74,4 +74,32 @@ describe('NavigationDisplay', () => {
     expect(screen.getAllByText('DJL').length).toBeGreaterThan(0);
     expect(screen.getAllByText('LEBL').length).toBeGreaterThan(0);
   });
+
+  it('shows DIR INTC selections in the ND header', () => {
+    useFMCStore.setState({
+      route: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        companyRoute: '',
+        routeString: '',
+        directTo: 'DIXIE',
+      },
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+    });
+
+    render(<NavigationDisplay />);
+
+    expect(screen.getByText('DIR DIXIE')).toBeInTheDocument();
+    expect(screen.getAllByText('DIXIE').length).toBeGreaterThan(0);
+  });
 });

@@ -114,9 +114,9 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
           x2={segment.to.x}
           y2={segment.to.y}
           stroke={routeColor}
-          strokeWidth="1.2"
+          strokeWidth={segment.active ? '1.9' : '1.2'}
           strokeDasharray={segment.dashed ? '3 2' : undefined}
-          opacity={segment.dashed ? 0.7 : 0.95}
+          opacity={segment.active ? 1 : segment.dashed ? 0.7 : 0.95}
         />
       ))}
 

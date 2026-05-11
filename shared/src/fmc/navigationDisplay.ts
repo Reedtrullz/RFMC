@@ -32,6 +32,7 @@ export interface NDRouteSegment {
   from: NDRoutePoint;
   to: NDRoutePoint;
   dashed: boolean;
+  active: boolean;
 }
 
 export interface NDFixOverlay {
@@ -83,11 +84,13 @@ export function buildNavigationDisplayModel(
     overlays: { ...DEFAULT_SETTINGS.overlays, ...settings.overlays },
   };
   const routeItems = buildRouteItems(state);
-  const routePoints = routeItems.map((item, index) => projectRoutePoint(item, index, routeItems.length, resolved.mode));
+  const activeIndex = findActiveRouteIndex(routeItems, state.route.directTo);
+  const routePoints = routeItems.map((item, index) => projectRoutePoint(item, index, routeItems.length, resolved.mode, index === activeIndex));
   const routeSegments = routePoints.slice(1).map((point, index) => ({
     from: routePoints[index],
     to: point,
     dashed: routePoints[index].discontinuity || point.discontinuity,
+    active: point.active,
   }));
   const activePoint = routePoints.find(point => !point.discontinuity && !point.airport) ?? routePoints.find(point => !point.discontinuity);
 
@@ -141,7 +144,15 @@ function isAirportWaypoint(waypoint: FlightPlanWaypoint, destination: string): b
   return waypoint.ident === destination || (/^[A-Z]{4}$/.test(waypoint.ident) && !waypoint.discontinuity);
 }
 
-function projectRoutePoint(item: RouteItem, index: number, total: number, mode: NDMapMode): NDRoutePoint {
+function findActiveRouteIndex(routeItems: RouteItem[], directTo?: string): number {
+  if (directTo) {
+    const directIndex = routeItems.findIndex(item => !item.discontinuity && item.ident === directTo);
+    if (directIndex >= 0) return directIndex;
+  }
+  return routeItems.findIndex(item => !item.discontinuity && !item.airport);
+}
+
+function projectRoutePoint(item: RouteItem, index: number, total: number, mode: NDMapMode, active: boolean): NDRoutePoint {
   if (total <= 1) {
     return {
       id: `${item.ident}-${index}`,
@@ -150,7 +161,7 @@ function projectRoutePoint(item: RouteItem, index: number, total: number, mode: 
       speedLabel: item.speedLabel,
       x: 50,
       y: 58,
-      active: false,
+      active,
       discontinuity: item.discontinuity,
       airport: item.airport,
     };
@@ -169,7 +180,7 @@ function projectRoutePoint(item: RouteItem, index: number, total: number, mode: 
     speedLabel: item.discontinuity ? null : item.speedLabel,
     x: clamp(Math.round(x * 10) / 10, 8, 92),
     y: clamp(Math.round(y * 10) / 10, 10, 88),
-    active: index === 1 && !item.discontinuity,
+    active,
     discontinuity: item.discontinuity,
     airport: item.airport,
   };
@@ -227,6 +238,7 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], fallback
 
 function formatProcedureLabel(state: FMCState): string {
   const parts = [
+    state.route.directTo ? `DIR ${state.route.directTo}` : '',
     state.route.sid,
     state.route.star,
     state.route.approach,

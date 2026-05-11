@@ -130,6 +130,29 @@ describe('Navigation Display model', () => {
     expect(model.routePoints.find(point => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
   });
 
+  it('uses direct-to route state as the active ND target', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      route: { ...baseState.route, directTo: 'DIXIE' },
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+          { ident: 'KDCA', discontinuity: false },
+        ],
+      },
+    });
+
+    expect(model.procedureLabel).toContain('DIR DIXIE');
+    expect(model.routePoints.find(point => point.label === 'RBV')?.active).toBe(false);
+    expect(model.routePoints.find(point => point.label === 'DIXIE')?.active).toBe(true);
+    expect(model.routeSegments.find(segment => segment.to.label === 'DIXIE')?.active).toBe(true);
+  });
+
   it('does not show constraints for discontinuity markers', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
