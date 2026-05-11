@@ -116,6 +116,11 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
 
       <rect width="100" height="100" fill={colors.background} />
       
+      {/* Procedure Label (Top Left-ish) */}
+      <text x="4" y="15" fill={colors.text} fontSize="3.5" fontWeight="bold" opacity="0.8">
+        {model.procedureLabel}
+      </text>
+
       {/* Visual Base (Rings / Rose) */}
       <g opacity="0.4">
         <RangeRings range={model.range} centered={model.centered} color={model.style === 'airbus' ? '#004400' : '#003344'} />
@@ -153,22 +158,27 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
             <text x="3" y="1" fill={point.active ? colors.active : colors.text} fontSize="3.2" fontWeight="bold">
               {point.label}
             </text>
-            {point.altitudeLabel && (
-              <text x="3" y="4.5" fill="#facc15" fontSize="2.4">{point.altitudeLabel}</text>
-            )}
+            <g fontSize="2.4">
+              {point.speedLabel && (
+                <text x="3" y="4.5" fill="#facc15">{point.speedLabel}</text>
+              )}
+              {point.altitudeLabel && (
+                <text x="3" y={point.speedLabel ? 7.5 : 4.5} fill="#facc15">{point.altitudeLabel}</text>
+              )}
+            </g>
           </g>
         ))}
 
         {/* Overlays (Fix/Hold) */}
         {model.fixOverlays.map((f, i) => (
-          <g key={`fix-${i}`} transform={`translate(${f.x} ${f.y})`} opacity="0.8">
+          <g key={`fix-${i}`} transform={`translate(${f.x} ${f.y})`} opacity="0.8" data-testid="nd-fix-overlay">
             <circle r="8" fill="none" stroke={colors.text} strokeWidth="0.5" strokeDasharray="1 1" />
             <text x="2" y="-5" fill={colors.text} fontSize="2.8">{f.refFix}</text>
           </g>
         ))}
         
         {model.holdOverlay && (
-          <g transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`}>
+          <g transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`} data-testid="nd-hold-overlay">
             <ellipse rx="10" ry="4" fill="none" stroke={colors.route} strokeWidth="0.8" transform={`rotate(${model.holdOverlay.inboundCourse})`} />
           </g>
         )}

@@ -6,8 +6,11 @@ function escapeRegExp(value: string): string {
 
 async function dismissWelcome(page) {
   const skipButton = page.locator('button:has-text("Skip Demo")');
-  if (await skipButton.isVisible().catch(() => false)) {
+  try {
+    await skipButton.waitFor({ state: 'visible', timeout: 5000 });
     await skipButton.click();
+  } catch (e) {
+    // Button might not be there or already dismissed
   }
 }
 
@@ -77,13 +80,13 @@ test.describe('VirtualCDU Basic', () => {
     await page.goto('/');
     await dismissWelcome(page);
 
-    await lsk(page, 'L1');
+    await lsk(page, 'R6');
     await expectScreenText(page, 'POS INIT');
     await enterText(page, 'KJFK');
-    await lsk(page, 'L1');
+    await lsk(page, 'L2');
     await enterText(page, 'A12');
     await lsk(page, 'L3');
-    await lsk(page, 'L5');
+    await lsk(page, 'R6');
 
     await expectScreenText(page, 'RTE');
     await enterText(page, 'KJFK');

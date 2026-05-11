@@ -6,8 +6,11 @@ test.describe('Visual Regression', () => {
     // Wait for fonts to load
     await page.waitForLoadState('networkidle');
     const skipButton = page.locator('button:has-text("Skip Demo")');
-    if (await skipButton.isVisible()) {
+    try {
+      await skipButton.waitFor({ state: 'visible', timeout: 5000 });
       await skipButton.click();
+    } catch (e) {
+      // Button might not be there or already dismissed
     }
   });
 
@@ -18,7 +21,7 @@ test.describe('Visual Regression', () => {
   });
 
   test('POS INIT Page Visual Match', async ({ page }) => {
-    await page.getByRole('button', { name: 'LSK L1', exact: true }).click();
+    await page.getByRole('button', { name: 'LSK R6', exact: true }).click();
     await expect(page.locator('.bg-cdu-screen').first()).toHaveScreenshot('boeing-pos-init.png', {
       maxDiffPixelRatio: 0.05
     });

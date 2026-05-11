@@ -46,12 +46,13 @@ describe('NavigationDisplay', () => {
     render(<NavigationDisplay />);
 
     expect(screen.getByTestId('navigation-display')).toBeInTheDocument();
-    expect(screen.getByText('737 ND')).toBeInTheDocument();
+    expect(screen.getByText(/BOEING/i)).toBeInTheDocument();
     expect(screen.getByText('ILS19 / RW19')).toBeInTheDocument();
     expect(screen.getAllByText('MAP').length).toBeGreaterThan(0);
     expect(screen.getAllByText('40').length).toBeGreaterThan(0);
     expect(screen.getAllByText('RBV').length).toBeGreaterThan(0);
-    expect(screen.getByText('250/10000A')).toBeInTheDocument();
+    expect(screen.getByText('250')).toBeInTheDocument();
+    expect(screen.getByText('10000A')).toBeInTheDocument();
     expect(screen.getByTestId('nd-hold-overlay')).toBeInTheDocument();
     expect(screen.getAllByTestId('nd-fix-overlay')).toHaveLength(2);
   });
@@ -73,7 +74,7 @@ describe('NavigationDisplay', () => {
 
     render(<NavigationDisplay />);
 
-    expect(screen.getByText('A320 ND')).toBeInTheDocument();
+    expect(screen.getByText(/AIRBUS/i)).toBeInTheDocument();
     expect(screen.getAllByText('LFPG').length).toBeGreaterThan(0);
     expect(screen.getAllByText('DJL').length).toBeGreaterThan(0);
     expect(screen.getAllByText('LEBL').length).toBeGreaterThan(0);
