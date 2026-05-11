@@ -148,6 +148,7 @@ function handleServerMessage(msg: ServerMessage): void {
       store.setConnectionMode('CONTROL');
       store.setConnectedAircraft(msg.aircraft, msg.capabilities ?? null, msg.aircraftType ?? null);
       store.setConnectedLastError(msg.lastError ?? null);
+      store.setSessionStartTime(Date.now());
       break;
     case 'sim.disconnected':
       store.setConnectionStatus('DISCONNECTED');
@@ -155,12 +156,17 @@ function handleServerMessage(msg: ServerMessage): void {
       store.setConnectedAircraft(null, null, null);
       store.setAircraftState(null);
       store.setConnectedLastError(msg.lastError ?? null);
+      store.setSessionStartTime(null);
       break;
     case 'sim.data':
       store.setSimVariables(msg.variables);
       if (msg.aircraftState) {
         store.setAircraftState(msg.aircraftState);
       }
+      break;
+    case 'sim.heartbeat':
+      // Basic latency estimate (assumes clock sync, or just shows jitter)
+      store.setLatency(Math.abs(Date.now() - msg.serverTime));
       break;
     case 'error':
       devError('[WS] Server error:', msg.message);

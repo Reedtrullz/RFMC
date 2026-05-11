@@ -63,6 +63,11 @@ export interface SimDataMessage {
   };
 }
 
+export interface SimHeartbeatMessage {
+  type: 'sim.heartbeat';
+  serverTime: number;
+}
+
 export interface ErrorMessage {
   type: 'error';
   message: string;
@@ -73,4 +78,5 @@ export type ServerMessage =
   | SimConnectedMessage 
   | SimDisconnectedMessage 
   | SimDataMessage 
+  | SimHeartbeatMessage
   | ErrorMessage;

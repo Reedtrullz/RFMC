@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWebSocket, saveServerUrl, getServerUrl } from '../hooks/useWebSocket';
 import { useFMCStore } from '../store/useFMCStore';
 import { CDUButton } from './CDU/CDUButton';
@@ -27,6 +27,26 @@ export function ConnectionStatus() {
   const connectedCapabilities = useFMCStore(s => s.connectedCapabilities);
   const lastError = useFMCStore(s => s.lastError);
   const aircraftState = useFMCStore(s => s.aircraftState);
+  const latency = useFMCStore(s => s.latency);
+  const sessionStartTime = useFMCStore(s => s.sessionStartTime);
+  const [uptime, setUptime] = useState('00:00:00');
+
+  useEffect(() => {
+    if (!sessionStartTime || connectionStatus !== 'CONNECTED') {
+      setUptime('00:00:00');
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const seconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+      const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+      const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      setUptime(`${h}:${m}:${s}`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionStartTime, connectionStatus]);
 
   const statusMap = {
     DISCONNECTED: { label: 'DISCONNECTED', color: 'bg-gray-500', text: 'text-gray-400' },
@@ -79,6 +99,8 @@ export function ConnectionStatus() {
               <>
                 <DiagnosticRow label="AIRCRAFT" value={aircraftType} />
                 <DiagnosticRow label="CAPS" value={capabilities.length ? capabilities.join(', ') : '---'} />
+                <DiagnosticRow label="LATENCY" value={`${latency} MS`} className={latency > 100 ? 'text-cdu-amber' : 'text-cdu-exec'} />
+                <DiagnosticRow label="UPTIME" value={uptime} className="text-cdu-cyan" />
               </>
             )}
             {lastError && (

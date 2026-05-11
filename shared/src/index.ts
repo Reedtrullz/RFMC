@@ -5,7 +5,7 @@ export * from './types/webSocket';
 export { PAGE_LINES, PAGE_WIDTH, SCRATCHPAD_MAX, LSK_COUNT } from './fmc/constants';
 export { getPageRenderer } from './fmc/pages';
 export { getAirbusPageRenderer } from './fmc/pages/airbus';
-export { parseRouteString, greatCircleDistance } from './fmc/flightPlanParser';
+export { parseRouteString, greatCircleDistance, isProcedure } from './fmc/flightPlanParser';
 export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbriefParser';
 export { buildNavigationDisplayModel } from './fmc/navigationDisplay';
 export type {
@@ -19,7 +19,7 @@ export type {
   NDRoutePoint,
   NDRouteSegment,
 } from './fmc/navigationDisplay';
-export { tutorialScenarios, getTutorialScenario } from './fmc/tutorialEngine';
+export { tutorialScenarios, getTutorialScenario, calculateTutorialGrade, isStepComplete } from './fmc/tutorialEngine';
 export {
   AIRPORTS,
   WAYPOINTS,

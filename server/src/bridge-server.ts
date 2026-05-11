@@ -32,6 +32,23 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   const fmc = options.fmc ?? new FMCEngine();
   const aircraft = options.aircraft ?? createAircraftAdapter();
   let pollInterval: ReturnType<typeof setInterval> | null = null;
+  let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
+  function startHeartbeat(): void {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(() => {
+      if (wss.clients.size > 0) {
+        broadcast({ type: 'sim.heartbeat', serverTime: Date.now() });
+      }
+    }, 5000);
+  }
+
+  function stopHeartbeat(): void {
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = null;
+    }
+  }
 
   if (options.serveStatic) {
     app.use(express.static('../dist'));
@@ -98,6 +115,10 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
   wss.on('connection', (ws: WebSocket) => {
     devLog(`[WS] Client connected (total: ${wss.clients.size})`);
+    
+    if (wss.clients.size === 1) {
+      startHeartbeat();
+    }
 
     ws.send(JSON.stringify({
       type: 'fmc.display',
@@ -205,6 +226,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     }),
     stop: async () => {
       stopPolling();
+      stopHeartbeat();
       await aircraft.disconnect();
       wss.clients.forEach((client) => client.terminate());
       await new Promise<void>((resolve) => wss.close(() => resolve()));

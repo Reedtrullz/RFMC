@@ -2,9 +2,11 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 101/101 pass
-- E2E tests: 11 passed, 2 skipped
+- Unit tests: 112/112 pass
+- E2E tests: 15 passed, 2 skipped
 - Build: successful (265.54KB JS, 20.76KB CSS)
+- Test Coverage: 51.75% (All Files)
+- Visual Regression: 4/4 Baselines Generated (IDENT, POS INIT, RTE, N1 LIMIT)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
 - **Oracle Round 29: APPROVED** — all critical blockers resolved after Round 28 re-verification
 
@@ -43,6 +45,9 @@
 - Added CLR cancellation of pending modifications: pressing CLR with an empty scratchpad while in MOD state discards all pending route/flight-plan/hold changes and clears the EXEC light. Both frontend and backend in parity.
 - Phase 2 Deeper Procedural Fidelity: Added interactive data entry for `CLB WIND`, `CRZ WIND`, `DES WIND`, and `ISA DEV` to the CLB, CRZ, and DES pages. Implemented frontend/backend sync, validation (`isValidWind`, `isValidTemperature`), and dynamic formatting.
 - Phase 2 Deeper PROG Behavior: Overhauled the generic PROGRESS page to accurately match the Boeing 737 NG layout. It now dynamically calculates cumulative `greatCircleDistance` down the flight plan to accurately project `DTG` for the `TO`, `NEXT`, and `DEST` waypoints, maintaining a precise 24-character width.
+- Phase 4 Navdata & Procedure Validation: Implemented an ARINC-Lite expansion engine that "unrolls" recognized SIDs/STARs into their constituent waypoint legs upon route parsing. Added advanced `ROUTE/SID MISMATCH` and `ROUTE/STAR MISMATCH` validation to cross-check typed RTE procedures against the current active selections on the DEP/ARR pages.
+- Phase 5 MSFS Integration Hardening: Implemented a robust connection state machine with a 5-second server-side heartbeat. Added real-time latency tracking and session uptime monitoring to the frontend diagnostics panel. Updated shared WebSocket types and store logic to handle periodic health checks.
+- Phase 6 Training Curriculum & Adaptive Polish: Upgraded the tutorial system into a training curriculum with A/B/C grading, mastery scores, and PF/PM role callouts. Implemented adaptive "smart" hinting that detects wrong page/field errors and provides contextual guidance. Added a star-based confidence rating system to track training effectiveness.
 - Phase 1 Boeing Visual Fidelity Finalization: Downloaded and integrated the open-source **B612 Mono** font (designed specifically by Airbus/Boeing for high-legibility digital avionics) to lock in the 24x14 grid. Added a functional interactive `BRT` slider to the CDU bezel which dynamically controls screen brightness via CSS filters and global Zustand state.
 - Airbus scope cleanup: removed misleading interactive arrows from display-only pages (FUEL PRED, SEC F-PLN, RAD NAV, DATA INDEX, PROG). Fixed LSK position mappings for INIT B and DEP/ARR. Added Airbus page status table to SCOPE.md.
 - Phase 8 PWA/iPad Offline Hardening: migrated to `vite-plugin-pwa` for robust service worker generation and caching of all compiled assets. Added PWA update prompt UI in React to alert users of offline updates.
@@ -175,9 +180,10 @@
 - [x] T6.4: Tutorial error detection (error count, hints, skip after 3 failures)
 - [x] T6.5: Performance metrics (time tracking, localStorage, completion screen)
 
-### Phase 7 (Testing) — COMPLETE
-- [x] T7.1: Vitest installed and configured
-- [x] T7.2-T7.6: 98 unit tests across 16 files, 11 passing E2E tests with Playwright, 2 skipped live/optional tests
+### Phase 7 (Testing, CI & Quality) — COMPLETE
+- [x] T7.1: Vitest installed and configured (50% coverage thresholds enforced)
+- [x] T7.2-T7.6: 112 unit tests (100% pass), 15 E2E tests (100% pass), 4 Visual Regression baselines.
+- [x] T7.7: Audit Policy established in AUDIT_POLICY.md.
 
 ## Post-Oracle Fixes Applied
 

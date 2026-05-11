@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
 import { CDUButton } from './CDU/CDUButton';
-import { devError } from '@shared';
+import { devError, calculateTutorialGrade } from '@shared';
 
 export function TutorialOverlay() {
   const tutorialActive = useFMCStore(s => s.tutorialActive);
@@ -54,9 +54,19 @@ export function TutorialOverlay() {
 
           {/* Instruction */}
           {currentStep && !tutorialCompleted && (
-            <p className="text-cdu-text text-sm font-cdu leading-relaxed mb-2">
-              {currentStep.instruction}
-            </p>
+            <div className="flex gap-2 items-start mb-2">
+              {currentStep.role && (
+                <span className={`
+                  shrink-0 px-1 py-0.5 rounded text-[9px] font-bold
+                  ${currentStep.role === 'PF' ? 'bg-cdu-cyan text-cdu-bezel' : 'bg-cdu-white text-cdu-bezel'}
+                `}>
+                  {currentStep.role}
+                </span>
+              )}
+              <p className="text-cdu-text text-sm font-cdu leading-relaxed">
+                {currentStep.instruction}
+              </p>
+            </div>
           )}
 
           {tutorialHint && !tutorialCompleted && (
@@ -112,45 +122,90 @@ function getTutorialStepCount(scenarioName: string | null): number {
 }
 
 function TutorialMetrics() {
-  const scenario = useFMCStore(s => s.tutorialScenario);
+  const scenarioName = useFMCStore(s => s.tutorialScenario);
   const startTutorial = useFMCStore(s => s.startTutorial);
+  const confidence = useFMCStore(s => s.tutorialConfidence);
+  const setConfidence = useFMCStore(s => s.setTutorialConfidence);
   const [metrics, setMetrics] = useState<{ errors: number; timeMs: number } | null>(null);
+
+  const scenario = scenarioName ? getTutorialScenario(scenarioName) : null;
+  const stepCount = scenario?.steps.length || 1;
 
   useEffect(() => {
     try {
       const history = JSON.parse(localStorage.getItem('cdu-tutorial-metrics') || '[]');
       const last = history[history.length - 1];
-      if (last && last.scenario === scenario) {
+      if (last && last.scenario === scenarioName) {
         setMetrics({ errors: last.errors, timeMs: last.timeMs });
       }
     } catch {
       devError('[Tutorial] Failed to load metrics');
     }
-  }, [scenario]);
+  }, [scenarioName]);
 
   if (!metrics) return null;
 
+  const { grade, score } = calculateTutorialGrade(metrics.errors, metrics.timeMs, stepCount, scenario?.standardTimeMs);
   const minutes = Math.floor(metrics.timeMs / 60000);
   const seconds = Math.floor((metrics.timeMs % 60000) / 1000);
   const timeStr = `${minutes}:${String(seconds).padStart(2, '0')}`;
 
+  const gradeColors = { A: 'text-cdu-exec', B: 'text-cdu-cyan', C: 'text-cdu-amber', D: 'text-cdu-error' };
+
   return (
-    <div className="rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-2 mb-2">
-      <div className="grid grid-cols-2 gap-2 text-[10px] font-cdu">
-        <div className="flex justify-between">
-          <span className="text-cdu-text/50">TIME</span>
-          <span className="text-cdu-cyan">{timeStr}</span>
+    <div className="space-y-3">
+      <div className="rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-3 shadow-inner">
+        <div className="flex items-center justify-between mb-3 border-b border-cdu-bezel-light/30 pb-2">
+          <div className="flex flex-col">
+            <span className="text-cdu-text/40 text-[8px] uppercase tracking-tighter">Performance Grade</span>
+            <span className={`text-3xl font-bold font-cdu ${gradeColors[grade]}`}>{grade}</span>
+          </div>
+          <div className="text-right">
+            <span className="text-cdu-text/40 text-[8px] uppercase tracking-tighter">Mastery Score</span>
+            <div className="text-lg font-cdu text-cdu-text">{score}%</div>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <span className="text-cdu-text/50">ERRORS</span>
-          <span className={metrics.errors > 0 ? 'text-cdu-error' : 'text-cdu-exec'}>{metrics.errors}</span>
+
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] font-cdu">
+          <div className="flex justify-between">
+            <span className="text-cdu-text/50">TIME</span>
+            <span className="text-cdu-text">{timeStr}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-cdu-text/50">ERRORS</span>
+            <span className={metrics.errors > 0 ? 'text-cdu-error' : 'text-cdu-exec'}>{metrics.errors}</span>
+          </div>
         </div>
       </div>
+
+      {!confidence && (
+        <div className="bg-cdu-bezel-light/10 rounded p-2 text-center">
+          <p className="text-cdu-text/60 text-[10px] font-cdu uppercase mb-1">How confident do you feel?</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map(star => (
+              <button
+                key={star}
+                onClick={() => setConfidence(star)}
+                className="text-lg hover:scale-125 transition-transform"
+              >
+                {confidence && confidence >= star ? '★' : '☆'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {confidence && (
+        <div className="text-center py-1">
+          <p className="text-cdu-cyan text-[10px] font-cdu">Confidence recorded. Keep practicing!</p>
+        </div>
+      )}
+
       <button
-        onClick={() => scenario && startTutorial(scenario)}
-        className="mt-2 w-full py-1 rounded bg-cdu-cyan/10 text-cdu-cyan text-[10px] font-cdu hover:bg-cdu-cyan/20"
+        onClick={() => scenarioName && startTutorial(scenarioName)}
+        className="w-full py-2 rounded bg-cdu-cyan/20 text-cdu-cyan text-xs font-cdu font-bold hover:bg-cdu-cyan/30 transition-colors uppercase"
       >
-        Practice Again
+        Practice Again to Master
       </button>
     </div>
   );

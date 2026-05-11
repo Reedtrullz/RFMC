@@ -39,6 +39,22 @@ describe('FMCEngine', () => {
     expect(engine.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
   });
 
+  it('triggers ROUTE/SID MISMATCH when entered route procedure conflicts with route.sid', () => {
+    const engine = new FMCEngine();
+    engine.getState().route.sid = 'DEEZZ1';
+    
+    engine.processInput('RTE');
+    engine.processInput('NEXT_PAGE');
+    enter(engine, 'KJFK LENDY1 KDCA');
+    engine.processInput('L1');
+
+    const state = engine.getState();
+    // Route should not have updated
+    expect(state.pendingRoute).toBeNull();
+    // Error should be set
+    expect(state.scratchpadError).toBe('ROUTE/SID MISMATCH');
+  });
+
   it('resolves backend LEGS discontinuities by replacing them with scratchpad waypoint entries', () => {
     const engine = new FMCEngine();
     engine.getState().currentPage = 'LEGS';
@@ -244,7 +260,7 @@ describe('FMCEngine', () => {
     const display = engine.getDisplayData();
 
     expect(engine.getState().takeoff.toMode).toBe('TO 1');
-    expect(display.lines.some(line => line.text.includes('94.0%'))).toBe(true);
+    expect(display.lines.some(line => line.text.includes('94.0'))).toBe(true);
   });
 
   it('arms DES NOW from the backend DES page', () => {

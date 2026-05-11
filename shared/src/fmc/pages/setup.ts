@@ -28,33 +28,22 @@ export function renderIdentPage(state: FMCState): DisplayData {
     pageIndicator: '1/1',
     lines: [
       inverse('  IDENT            1/1', '', '', 'cyan'),
-      fmt(' MODEL', '<', '', 'white'),
-      fmt(` ${ident.aircraftType || '----'}`, '', '', 'green'),
+      fmt(' MODEL', '', 'NAV DATA', 'white'),
+      fmt(` ${ident.aircraftType || '737-800'}`, '', ident.navDataVersion || 'OCT05NOV01', 'green'),
+      fmt(' ENGINES', '', 'OP PROGRAM', 'white'),
+      fmt(` ${ident.engRating || '26K'}`, '', ident.opProgram || 'BP0101', 'green'),
       blank(),
-      fmt(' ENG RATING', '<', '', 'white'),
-      fmt(` ${ident.engRating || '----'}`, '', '', 'green'),
-      blank(),
-      fmt(' NAV DATA', '<', '', 'white'),
-      fmt(` ${ident.navDataVersion || '--------'}`, '', '', 'green'),
-      blank(),
-      fmt(' OP PROGRAM', '', '', 'white'),
-      fmt(` ${ident.opProgram || '-------------'}`, '', '', 'green'),
+      fmt(' ACTIVE', '', 'SECOND', 'white'),
+      fmt(` ${ident.navDataVersion || 'OCT05NOV01'}`, '', 'SEP07OCT04', 'green'),
       blank(),
       blank(),
+      blank(),
+      blank(),
+      fmt('', ' <INDEX', '', 'white'),
     ],
     lskActions: {
-      L1: 'pos_init',
-      L2: null,
-      L3: 'perf_init',
-      L4: null,
-      L5: null,
-      L6: null,
+      L6: 'menu',
       R1: null,
-      R2: null,
-      R3: null,
-      R4: null,
-      R5: null,
-      R6: 'menu',
     },
   };
 }
@@ -62,7 +51,7 @@ export function renderIdentPage(state: FMCState): DisplayData {
 export function renderPosInitPage(state: FMCState): DisplayData {
   const { position, flightPlan } = state;
   const lastPos = position.lat != null && position.lon != null
-    ? `${position.lat.toFixed(1)} ${position.lon.toFixed(1)}`
+    ? `${Math.abs(position.lat).toFixed(1)}${position.lat >= 0 ? 'N' : 'S'} ${Math.abs(position.lon).toFixed(1)}${position.lon >= 0 ? 'E' : 'W'}`
     : '----.-  ----.-';
 
   return {
@@ -70,33 +59,25 @@ export function renderPosInitPage(state: FMCState): DisplayData {
     pageIndicator: '1/1',
     lines: [
       inverse('  POS INIT         1/1', '', '', 'cyan'),
+      fmt(' LAST POS', '', '', 'white'),
+      fmt(` ${lastPos}`, '', '', 'green'),
       fmt(' REF AIRPORT', '<', '', 'white'),
       fmt(` ${position.refAirport || '----'}`, '', '', 'green'),
       fmt(' GATE', '<', '', 'white'),
       fmt(` ${position.gate || '----'}`, '', '', 'green'),
       blank(),
-      fmt(' LAST POS', '', '', 'white'),
-      fmt(` ${flightPlan.origin || '----'}    `, '', lastPos, 'green'),
+      fmt('', '', 'SET IRS POS', 'white'),
+      fmt('', '', ' □□□□.□ □□□□□.□', 'white'),
       blank(),
       blank(),
       blank(),
-      blank(),
-      blank(),
-      blank(),
+      fmt('', ' <INDEX', 'ROUTE>', 'white'),
     ],
     lskActions: {
       L1: 'set_ref_airport',
-      L2: null,
       L3: 'set_gate',
-      L4: null,
-      L5: 'rte',
-      L6: null,
-      R1: null,
-      R2: null,
-      R3: null,
-      R4: null,
-      R5: null,
-      R6: null,
+      L6: 'menu',
+      R6: 'rte',
     },
   };
 }

@@ -9,7 +9,7 @@ export function DemoWelcome() {
   const aircraft = useFMCStore(s => s.aircraft);
 
   const [showSimBrief, setShowSimBrief] = useState(false);
-  const [pilotId, setPilotId] = useState('');
+  const [pilotId, setPilotId] = useState(() => localStorage.getItem('cdu-simbrief-pilot-id') || '');
   const [loading, setLoading] = useState(false);
   const [simBriefMessage, setSimBriefMessage] = useState<string | null>(null);
 
@@ -26,6 +26,7 @@ export function DemoWelcome() {
       setSimBriefMessage('INVALID PILOT ID');
       return;
     }
+    localStorage.setItem('cdu-simbrief-pilot-id', id);
     setLoading(true);
     setSimBriefMessage(null);
     try {

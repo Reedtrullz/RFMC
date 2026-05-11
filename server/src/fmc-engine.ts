@@ -2,7 +2,7 @@ import type { FMCState, DisplayData, PageType } from '@shared';
 import { getPageRenderer, parseRouteString } from '@shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
-  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds
+  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure
 } from '@shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
@@ -410,11 +410,51 @@ export class FMCEngine {
       }
       case 'set_route': {
         const routeStr = sp.toUpperCase();
-        const parsed = parseRouteString(routeStr);
+        const tokens = routeStr.trim().split(/\s+/);
+        
+        let detectedSid: string | null = null;
+        let detectedStar: string | null = null;
+        
+        if (tokens.length >= 2) {
+          if (isProcedure(tokens[1])) detectedSid = tokens[1];
+          // Usually STAR is the 2nd to last token (before destination)
+          if (tokens.length >= 3 && isProcedure(tokens[tokens.length - 2])) {
+            detectedStar = tokens[tokens.length - 2];
+          }
+        }
+
         const route = this.state.pendingRoute ?? this.state.route;
+        
+        let hasMismatch = false;
+        let updatedSid = route.sid;
+        let updatedStar = route.star;
+
+        if (detectedSid) {
+          if (!route.sid) updatedSid = detectedSid;
+          else if (route.sid !== detectedSid) {
+            hasMismatch = true;
+            this.state.scratchpadError = 'ROUTE/SID MISMATCH';
+          }
+        }
+        
+        if (detectedStar) {
+          if (!route.star) updatedStar = detectedStar;
+          else if (route.star !== detectedStar) {
+            hasMismatch = true;
+            if (!this.state.scratchpadError) this.state.scratchpadError = 'ROUTE/STAR MISMATCH';
+          }
+        }
+
+        if (hasMismatch) {
+          // If mismatch, we do NOT execute the route setting. Let user clear error.
+          return 'error';
+        }
+
+        const parsed = parseRouteString(routeStr);
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
         const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
-        this.state.pendingRoute = { ...route, routeString: routeStr };
+        
+        this.state.pendingRoute = { ...route, routeString: routeStr, sid: updatedSid, star: updatedStar };
         this.state.pendingFlightPlan = { ...flightPlan, waypoints, route: routeStr };
         this.state.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
         this.state.scratchpad = '';

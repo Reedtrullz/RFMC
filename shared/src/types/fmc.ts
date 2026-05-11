@@ -222,6 +222,7 @@ export interface TutorialStep {
   validate: (input: string) => boolean;
   page: PageType;
   highlightField?: string;
+  role?: 'PF' | 'PM';
 }
 
 export interface TutorialScenario {
@@ -229,6 +230,7 @@ export interface TutorialScenario {
   description: string;
   steps: TutorialStep[];
   setup: () => (keyof FMCState)[];
+  standardTimeMs?: number;
 }
 
 // ---- Full FMC State (for shared logic) ----

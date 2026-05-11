@@ -369,6 +369,24 @@ export const SID_STARS: Record<string, { sids: string[]; stars: string[] }> = {
 };
 
 // ============================================================================
+// PROCEDURE LEGS (ARINC-LITE)
+// Maps a procedure name to its constituent sequence of waypoints.
+// ============================================================================
+
+export const PROCEDURE_LEGS: Record<string, string[]> = {
+  // KJFK SID
+  BETTE1: ['JFK', 'BETTE', 'RBV'],
+  DEEZZ1: ['JFK', 'DEEZZ', 'NELIE', 'VIKNG'],
+  // KJFK STAR
+  CAMRN1: ['FRDMM', 'CAMRN', 'JFK'],
+  LENDY1: ['LENDY', 'LGA', 'JFK'], // LGA is not in our mock, but this is ARINC-lite. Let's use existing points.
+  // We'll map LENDY1 to existing ones.
+  // Wait, let's just make sure the waypoints exist.
+};
+
+PROCEDURE_LEGS['LENDY1'] = ['LENDY', 'DIXIE', 'JFK'];
+
+// ============================================================================
 // Helper functions
 // ============================================================================
 

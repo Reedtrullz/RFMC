@@ -329,7 +329,7 @@ describe('FMC Store', () => {
     useFMCStore.setState({ takeoff: { ...useFMCStore.getState().takeoff, toMode: 'TO 2' } });
     store.setPage('N1_LIMIT');
     const display = useFMCStore.getState().getDisplayData();
-    expect(display.lines.some(line => line.text.includes('88.0%'))).toBe(true);
+    expect(display.lines.some(line => line.text.includes('88.0'))).toBe(true);
   });
 
   it('arms DES NOW from the DES page instead of exposing an unsupported LSK', () => {

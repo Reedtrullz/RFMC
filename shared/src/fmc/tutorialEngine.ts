@@ -14,21 +14,23 @@ export const preflightScenario: TutorialScenario = {
     // --- IDENT page (already showing) ---
     {
       id: 'ident_note',
-      instruction: 'You are on the IDENT page. This verifies your aircraft type (737-800), engine rating (26K), and navigation database currency. No entry needed — just confirm the data matches your aircraft. Press INIT REF to continue.',
+      instruction: 'PM: IDENT page displayed. Check aircraft type (737-800), engine rating (26K), and navigation database currency. This ensures the FMC is running the correct performance models and has up-to-date waypoint data. Press INIT REF to continue.',
       expectedAction: 'POS_INIT',
       validate: () => true,
       page: 'IDENT',
       highlightField: 'POS_INIT',
+      role: 'PM',
     },
 
     // --- POS INIT --- 
     {
       id: 'pos_init_ref',
-      instruction: 'REF AIRPORT tells the FMC where the aircraft is parked. The IRS (Inertial Reference System) uses this position to align its gyros — without a valid airport reference, navigation is unavailable. Type KJFK (four letters, no numbers) on the keypad, then press LSK L1.',
+      instruction: 'PM: Position initialization required. REF AIRPORT tells the FMC where the aircraft is parked. The IRS uses this position to align its gyros. Type KJFK and press LSK L1.',
       expectedAction: 'KJFK',
       validate: (input: string) => input.toUpperCase() === 'KJFK',
       page: 'POS_INIT',
       highlightField: 'L1',
+      role: 'PM',
     },
     {
       id: 'pos_init_gate',
@@ -50,19 +52,21 @@ export const preflightScenario: TutorialScenario = {
     },
     {
       id: 'rte_origin',
-      instruction: 'ORIGIN is your departure airport. Type KJFK and press LSK L1. The FMC will load all departures, runways, and procedures for this airport.',
+      instruction: 'PF: Enter origin KJFK. PM: Origin set to KJFK.',
       expectedAction: 'KJFK',
       validate: (input: string) => input.toUpperCase() === 'KJFK',
       page: 'RTE',
       highlightField: 'L1',
+      role: 'PF',
     },
     {
       id: 'rte_dest',
-      instruction: 'DEST is where you are going. Type KDCA (Reagan National) and press LSK L3. The FMC now knows the two endpoints of your route.',
+      instruction: 'PF: Enter destination KDCA. PM: Destination set to KDCA.',
       expectedAction: 'KDCA',
       validate: (input: string) => input.toUpperCase() === 'KDCA',
       page: 'RTE',
       highlightField: 'L3',
+      role: 'PF',
     },
     {
       id: 'rte_fltno',
@@ -234,11 +238,12 @@ export const preflightScenario: TutorialScenario = {
     },
     {
       id: 'to_exec',
-      instruction: 'Press EXEC (bottom-left keypad, glowing green). WHY: The green EXEC light means you have uncommitted changes. Pressing EXEC activates all your entries — the FMC now has a complete flight plan and performance data. Both pilots cross-check V-speeds here. Preflight complete!',
+      instruction: 'PF: Takeoff data complete. Check V-speeds. PM: Cross-checked. V1 135, VR 140, V2 145. Press EXEC to activate. PF: Executing. PM: FMC active.',
       expectedAction: 'EXEC',
       validate: () => true,
       page: 'TAKEOFF_REF',
       highlightField: 'EXEC',
+      role: 'PF',
     },
   ],
   setup: () => [],
@@ -403,4 +408,34 @@ export const tutorialScenarios: TutorialScenario[] = [
 
 export function getTutorialScenario(name: string): TutorialScenario | undefined {
   return tutorialScenarios.find(s => s.name === name);
+}
+
+export function calculateTutorialGrade(errors: number, timeMs: number, stepCount: number, scenarioStandardTime?: number): { grade: 'A' | 'B' | 'C' | 'D'; score: number } {
+  const standardTimeMs = scenarioStandardTime || stepCount * 15000;
+  let score = 100 - (errors * 8); // Reduced penalty per error for fairer grading
+  
+  if (timeMs > standardTimeMs) {
+    const overTimeSeconds = (timeMs - standardTimeMs) / 1000;
+    score -= Math.floor(overTimeSeconds / 20); // 1 point per 20s over standard
+  }
+  
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  
+  let grade: 'A' | 'B' | 'C' | 'D' = 'D';
+  if (score >= 90) grade = 'A';
+  else if (score >= 75) grade = 'B';
+  else if (score >= 60) grade = 'C';
+  
+  return { grade, score };
+}
+
+/**
+ * Check if a tutorial step is satisfied by the current FMC state.
+ */
+export function isStepComplete(step: any, state: any): boolean {
+  if (state.currentPage !== step.page) return false;
+  if (step.validate) {
+    return step.validate(state.scratchpad || '');
+  }
+  return true;
 }

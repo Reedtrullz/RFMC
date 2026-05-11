@@ -1,4 +1,5 @@
 import type { FlightPlanWaypoint, AltitudeConstraint, SpeedConstraint } from '../types/fmc';
+import { PROCEDURE_LEGS } from './airFMCData';
 
 /**
  * Parse an ICAO route string into an array of waypoints.
@@ -71,12 +72,24 @@ export function parseRouteString(routeString: string): { origin: string; destina
 
     // Check if it's a procedure (ends with number, not a standard waypoint)
     if (isProcedure(token)) {
-      waypoints.push({
-        ident: token,
-        airway: previousAirway,
-        discontinuity: false,
-      });
-      previousAirway = undefined;
+      const legs = PROCEDURE_LEGS[token];
+      if (legs) {
+        legs.forEach(leg => {
+          waypoints.push({
+            ident: leg,
+            airway: previousAirway,
+            discontinuity: false,
+          });
+          previousAirway = undefined;
+        });
+      } else {
+        waypoints.push({
+          ident: token,
+          airway: previousAirway,
+          discontinuity: false,
+        });
+        previousAirway = undefined;
+      }
       continue;
     }
 
@@ -103,7 +116,7 @@ function isAirway(token: string): boolean {
   return /^[A-Z]+\d+$/.test(token) && token.length >= 2;
 }
 
-function isProcedure(token: string): boolean {
+export function isProcedure(token: string): boolean {
   // Procedures: longer strings ending with number, not a 5-letter fix
   // Examples: LENDY8, RBV3, FRDMM2
   if (token.length < 3) return false;

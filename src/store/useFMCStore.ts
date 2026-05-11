@@ -76,6 +76,7 @@ const defaultState = {
   tutorialStartTime: null as number | null,
   tutorialHint: null as string | null,
   tutorialSkipAvailable: false,
+  tutorialConfidence: null as number | null,
 
   legsPageIndex: 0,
   legsPageCount: 1,
@@ -97,6 +98,8 @@ const defaultState = {
 
   aircraftState: null,
   brightness: 100,
+  latency: 0,
+  sessionStartTime: null as number | null,
 };
 
 interface FMCActions {
@@ -151,6 +154,9 @@ interface FMCActions {
   recordTutorialError: () => void;
   skipTutorialStep: () => void;
   clearTutorialHint: () => void;
+  setTutorialConfidence: (stars: number) => void;
+  setLatency: (ms: number) => void;
+  setSessionStartTime: (time: number | null) => void;
 }
 
 interface ConnectionDiagnostics {
@@ -171,6 +177,7 @@ interface TutorialState {
   tutorialHint: string | null;
   tutorialSkipAvailable: boolean;
   tutorialHighlight: string | null;
+  tutorialConfidence: number | null;
 }
 
 export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & FMCActions & { brightness: number };
@@ -1282,10 +1289,27 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   recordTutorialError: () => {
     const state = get();
     const newErrors = state.tutorialErrors + 1;
+    const step = state.getCurrentTutorialStep();
+    
+    let hint = 'Check the highlighted field and try again.';
+    if (step) {
+      if (state.currentPage !== step.page) {
+        hint = `Wrong page! Press the ${step.page} button to continue.`;
+      } else if (step.highlightField) {
+        const side = step.highlightField.startsWith('L') ? 'left' : step.highlightField.startsWith('R') ? 'right' : '';
+        const num = step.highlightField.slice(1);
+        if (side) {
+          hint = `Press LSK ${step.highlightField} (the ${num}${num === '1' ? 'st' : num === '2' ? 'nd' : num === '3' ? 'rd' : 'th'} button on the ${side}).`;
+        } else {
+          hint = `Press the ${step.highlightField} key on the keypad.`;
+        }
+      }
+    }
+
     set({
       tutorialErrors: newErrors,
       tutorialSkipAvailable: newErrors >= 3,
-      tutorialHint: state.tutorialHint || 'Check the highlighted field and try again.',
+      tutorialHint: hint,
     });
   },
 
@@ -1296,4 +1320,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   clearTutorialHint: () => set({ tutorialHint: null }),
+  setTutorialConfidence: (stars: number) => set({ tutorialConfidence: stars }),
+  setLatency: (ms: number) => set({ latency: ms }),
+  setSessionStartTime: (time: number | null) => set({ sessionStartTime: time }),
 }));

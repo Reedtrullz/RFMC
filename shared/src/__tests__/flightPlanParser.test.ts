@@ -40,4 +40,11 @@ describe('Flight Plan Parser', () => {
     expect(result.waypoints[0].altitudeConstraint).toMatchObject({ type: 'AT_OR_ABOVE', altitude: 10000 });
     expect(result.waypoints[1].altitudeConstraint).toMatchObject({ type: 'AT_OR_BELOW', altitude: 5000 });
   });
+
+  it('unrolls ARINC-Lite procedures into multiple legs', () => {
+    const result = parseRouteString('KJFK LENDY1 KJFK');
+    // LENDY1 expands to ['LENDY', 'DIXIE', 'JFK']
+    // Plus the destination KJFK
+    expect(result.waypoints.map(w => w.ident)).toEqual(['LENDY', 'DIXIE', 'JFK', 'KJFK']);
+  });
 });
