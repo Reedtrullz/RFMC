@@ -363,4 +363,28 @@ describe('FMC Store', () => {
     expect(data.title).toBe('FAIL');
     expect(data.lines.some(l => l.text.includes('FAIL'))).toBe(true);
   });
+
+  it('discards pending modifications with CLR when scratchpad is empty', () => {
+    const store = useFMCStore.getState();
+    store.setPage('RTE');
+    store.pressKey('NEXT_PAGE');
+    for (const key of 'KJFK DCT RBV DIXIE KDCA') {
+      store.pressKey(key === ' ' ? 'SPACE' : (key as Parameters<typeof store.pressKey>[0]));
+    }
+    store.pressLSK('L', 1);
+
+    let state = useFMCStore.getState();
+    expect(state.pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(state.isModified).toBe(true);
+    expect(state.execLit).toBe(true);
+
+    store.pressKey('CLR');
+
+    state = useFMCStore.getState();
+    expect(state.pendingRoute).toBeNull();
+    expect(state.pendingFlightPlan).toBeNull();
+    expect(state.isModified).toBe(false);
+    expect(state.execLit).toBe(false);
+    expect(state.route.routeString).toBe('');
+  });
 });

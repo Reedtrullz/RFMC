@@ -7,7 +7,7 @@ This file records measured baselines and phase gates. Do not present estimated s
 | Metric | Command or method | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing |
-| Unit tests | `npm test -- --run` | 91/91 passing |
+| Unit tests | `npm test -- --run` | 100/100 passing |
 | E2E tests | `npm run test:e2e` | 11/11 passing |
 | Build | `npm run build` | Passing |
 | Audit | `npm audit` | 2 deferred moderate dev-dependency issues |

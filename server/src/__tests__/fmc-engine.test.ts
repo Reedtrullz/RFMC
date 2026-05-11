@@ -256,4 +256,24 @@ describe('FMCEngine', () => {
     expect(engine.getState().scratchpadError).toBeNull();
     expect(engine.getState().msgLight).toBe(true);
   });
+
+  it('discards pending modifications with CLR when scratchpad is empty', () => {
+    const engine = new FMCEngine();
+    engine.processInput('RTE');
+    engine.processInput('NEXT_PAGE');
+    enter(engine, 'KJFK DCT RBV DIXIE KDCA');
+    engine.processInput('L1');
+
+    expect(engine.getState().pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(engine.getState().isModified).toBe(true);
+    expect(engine.getState().execLit).toBe(true);
+
+    engine.processInput('CLR');
+
+    expect(engine.getState().pendingRoute).toBeNull();
+    expect(engine.getState().pendingFlightPlan).toBeNull();
+    expect(engine.getState().isModified).toBe(false);
+    expect(engine.getState().execLit).toBe(false);
+    expect(engine.getState().route.routeString).toBe('');
+  });
 });

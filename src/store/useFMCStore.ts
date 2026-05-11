@@ -9,10 +9,11 @@ function findTutorial(scenarioName: string): TutorialScenario | undefined {
 }
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
+  const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
   const routeFixes = new Set([
-    state.flightPlan.origin,
-    state.flightPlan.destination,
-    ...state.flightPlan.waypoints.map(wp => wp.ident),
+    flightPlan.origin,
+    flightPlan.destination,
+    ...flightPlan.waypoints.map(wp => wp.ident),
   ].filter(Boolean).map(fix => fix.toUpperCase()));
 
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
@@ -271,6 +272,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     else if (key === 'CLR') {
       if (scratchpad.length > 0) {
         set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
+      } else if (get().isModified) {
+        set({
+          pendingRoute: null,
+          pendingFlightPlan: null,
+          holdPending: null,
+          isModified: false,
+          execLit: false,
+          scratchpad: '',
+          scratchpadError: null,
+        });
       }
       handled = true;
     }

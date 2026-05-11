@@ -131,6 +131,12 @@ export class FMCEngine {
     } else if (key === 'CLR' || key === 'DEL') {
       if (key === 'DEL' && this.state.currentPage === 'LEGS' && this.state.scratchpad === '') {
         this.state.deleteMode = !this.state.deleteMode;
+      } else if (key === 'CLR' && this.state.scratchpad === '' && this.state.isModified) {
+        this.state.pendingRoute = null;
+        this.state.pendingFlightPlan = null;
+        this.state.holdPending = null;
+        this.state.isModified = false;
+        this.state.execLit = false;
       } else {
         this.state.scratchpad = this.state.scratchpad.slice(0, -1);
       }
