@@ -6,10 +6,11 @@ import {
 } from '@shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
+  const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
   const routeFixes = new Set([
-    state.flightPlan.origin,
-    state.flightPlan.destination,
-    ...state.flightPlan.waypoints.map(wp => wp.ident),
+    flightPlan.origin,
+    flightPlan.destination,
+    ...flightPlan.waypoints.map(wp => wp.ident),
   ].filter(Boolean).map(fix => fix.toUpperCase()));
 
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
@@ -43,6 +44,8 @@ export class FMCEngine {
       landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
       route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
       flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
+      pendingRoute: null,
+      pendingFlightPlan: null,
       isModified: false,
       execLit: false,
       msgLight: false,
@@ -137,6 +140,14 @@ export class FMCEngine {
       if (this.state.holdPending) {
         this.state.hold = { ...this.state.holdPending };
         this.state.holdPending = null;
+      }
+      if (this.state.pendingRoute) {
+        this.state.route = { ...this.state.pendingRoute };
+        this.state.pendingRoute = null;
+      }
+      if (this.state.pendingFlightPlan) {
+        this.state.flightPlan = { ...this.state.pendingFlightPlan };
+        this.state.pendingFlightPlan = null;
       }
     } else if (key === 'NEXT_PAGE') {
       this.advancePage();
@@ -268,7 +279,10 @@ export class FMCEngine {
         const wpAction = wpMatch[1];
         const wpIndex = parseInt(wpMatch[2], 10);
         if (wpAction === 'delete_wp' && this.state.deleteMode) {
-          this.state.flightPlan.waypoints.splice(wpIndex, 1);
+          const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+          const waypoints = [...flightPlan.waypoints];
+          waypoints.splice(wpIndex, 1);
+          this.state.pendingFlightPlan = { ...flightPlan, waypoints };
           this.state.deleteMode = false;
           handled = true;
           this.state.isModified = true;
@@ -280,12 +294,15 @@ export class FMCEngine {
             if (!result.valid) {
               this.state.scratchpadError = result.error ?? 'INVALID ENTRY';
             } else {
+              const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+              const waypoints = [...flightPlan.waypoints];
               const nextWaypoint = { ident, discontinuity: false };
-              if (this.state.flightPlan.waypoints[wpIndex]?.discontinuity) {
-                this.state.flightPlan.waypoints[wpIndex] = nextWaypoint;
+              if (waypoints[wpIndex]?.discontinuity) {
+                waypoints[wpIndex] = nextWaypoint;
               } else {
-                this.state.flightPlan.waypoints.splice(wpIndex, 0, nextWaypoint);
+                waypoints.splice(wpIndex, 0, nextWaypoint);
               }
+              this.state.pendingFlightPlan = { ...flightPlan, waypoints };
               this.state.scratchpad = '';
               this.state.isModified = true;
               this.state.execLit = true;
@@ -358,33 +375,41 @@ export class FMCEngine {
       case 'set_origin': {
         const result = isValidICAO(sp.toUpperCase());
         if (!result.valid) return icaoErr(result);
-        this.state.route = { ...this.state.route, origin: sp.toUpperCase() };
-        this.state.flightPlan = { ...this.state.flightPlan, origin: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+        this.state.pendingRoute = { ...route, origin: sp.toUpperCase() };
+        this.state.pendingFlightPlan = { ...flightPlan, origin: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_dest': {
         const result = isValidICAO(sp.toUpperCase());
         if (!result.valid) return icaoErr(result);
-        this.state.route = { ...this.state.route, destination: sp.toUpperCase() };
-        this.state.flightPlan = { ...this.state.flightPlan, destination: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+        this.state.pendingRoute = { ...route, destination: sp.toUpperCase() };
+        this.state.pendingFlightPlan = { ...flightPlan, destination: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_flt_no': {
         const result = isValidFlightNumber(sp);
         if (!result.valid) return icaoErr(result);
-        this.state.route = { ...this.state.route, flightNumber: sp.toUpperCase() };
-        this.state.flightPlan = { ...this.state.flightPlan, flightNumber: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+        this.state.pendingRoute = { ...route, flightNumber: sp.toUpperCase() };
+        this.state.pendingFlightPlan = { ...flightPlan, flightNumber: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_route': {
         const routeStr = sp.toUpperCase();
         const parsed = parseRouteString(routeStr);
+        const route = this.state.pendingRoute ?? this.state.route;
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
         const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
-        this.state.route = { ...this.state.route, routeString: routeStr };
-        this.state.flightPlan = { ...this.state.flightPlan, waypoints, route: routeStr };
+        this.state.pendingRoute = { ...route, routeString: routeStr };
+        this.state.pendingFlightPlan = { ...flightPlan, waypoints, route: routeStr };
         this.state.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
         this.state.scratchpad = '';
         return true;
@@ -490,7 +515,8 @@ export class FMCEngine {
       case 'set_direct_to': {
         const result = isValidWaypoint(sp.toUpperCase());
         if (!result.valid) return icaoErr(result);
-        this.state.route = { ...this.state.route, directTo: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, directTo: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
@@ -625,8 +651,10 @@ export class FMCEngine {
           const toResult = isValidICAO(to);
           if (!fromResult.valid) return icaoErr(fromResult);
           if (!toResult.valid) return icaoErr(toResult);
-          this.state.route = { ...this.state.route, origin: from, destination: to };
-          this.state.flightPlan = { ...this.state.flightPlan, origin: from, destination: to };
+          const route = this.state.pendingRoute ?? this.state.route;
+          const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+          this.state.pendingRoute = { ...route, origin: from, destination: to };
+          this.state.pendingFlightPlan = { ...flightPlan, origin: from, destination: to };
           this.state.scratchpad = '';
           return true;
         }
@@ -649,8 +677,10 @@ export class FMCEngine {
       case 'set_flt_nbr': {
         const result = isValidFlightNumber(sp);
         if (!result.valid) return icaoErr(result);
-        this.state.route = { ...this.state.route, flightNumber: sp.toUpperCase() };
-        this.state.flightPlan = { ...this.state.flightPlan, flightNumber: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+        this.state.pendingRoute = { ...route, flightNumber: sp.toUpperCase() };
+        this.state.pendingFlightPlan = { ...flightPlan, flightNumber: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
@@ -662,23 +692,27 @@ export class FMCEngine {
         return true;
       }
       case 'set_sid': {
-        this.state.route = { ...this.state.route, sid: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, sid: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_rwy': {
         if (sp.length < 2) return err();
-        this.state.route = { ...this.state.route, runway: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, runway: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_star': {
-        this.state.route = { ...this.state.route, star: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, star: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }
       case 'set_appr': {
-        this.state.route = { ...this.state.route, approach: sp.toUpperCase() };
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, approach: sp.toUpperCase() };
         this.state.scratchpad = '';
         return true;
       }

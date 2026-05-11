@@ -241,6 +241,9 @@ export interface FMCState {
   route: RouteData;
   flightPlan: FlightPlan;
   
+  pendingRoute: RouteData | null;
+  pendingFlightPlan: FlightPlan | null;
+  
   isModified: boolean;
   execLit: boolean;
   msgLight: boolean;

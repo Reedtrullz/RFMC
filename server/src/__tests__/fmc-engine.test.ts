@@ -29,10 +29,14 @@ describe('FMCEngine', () => {
     engine.processInput('L1');
 
     const state = engine.getState();
-    expect(state.route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(state.pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(state.pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
     expect(state.legsPageCount).toBe(1);
     expect(state.execLit).toBe(true);
+
+    engine.processInput('EXEC');
+    expect(engine.getState().route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(engine.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
   });
 
   it('resolves backend LEGS discontinuities by replacing them with scratchpad waypoint entries', () => {
@@ -54,13 +58,16 @@ describe('FMCEngine', () => {
     engine.processInput('L2');
 
     const state = engine.getState();
-    expect(state.flightPlan.waypoints).toEqual([
+    expect(state.pendingFlightPlan?.waypoints).toEqual([
       { ident: 'RBV', discontinuity: false },
       { ident: 'LENDY', discontinuity: false },
       { ident: 'DIXIE', discontinuity: false },
     ]);
     expect(state.execLit).toBe(true);
     expect(state.scratchpad).toBe('');
+
+    engine.processInput('EXEC');
+    expect(engine.getState().flightPlan.waypoints[1].ident).toBe('LENDY');
   });
 
   it('handles DEP/ARR procedure entries in backend CONTROL mode', () => {
@@ -76,6 +83,14 @@ describe('FMCEngine', () => {
     enter(engine, 'ILS19');
     engine.processInput('L3');
 
+    expect(engine.getState().pendingRoute).toMatchObject({
+      sid: 'MERIT4',
+      runway: '04L',
+      star: 'FRDMM2',
+      approach: 'ILS19',
+    });
+
+    engine.processInput('EXEC');
     expect(engine.getState().route).toMatchObject({
       sid: 'MERIT4',
       runway: '04L',
@@ -218,6 +233,8 @@ describe('FMCEngine', () => {
     engine.processInput('DIR_INTC');
     enter(engine, 'DIXIE');
     engine.processInput('L1');
+    expect(engine.getState().pendingRoute?.directTo).toBe('DIXIE');
+    engine.processInput('EXEC');
     expect(engine.getState().route.directTo).toBe('DIXIE');
 
     engine.processInput('PERF');

@@ -12,7 +12,8 @@ function inverse(text: string, left: string = '', right: string = '', color?: Di
 function blank() { return fmt('', '', ''); }
 
 export function renderLegsPage(state: FMCState): DisplayData {
-  const { flightPlan, legsPageIndex, aircraftState } = state;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const { legsPageIndex, aircraftState } = state;
   const waypoints = flightPlan.waypoints;
   const perPage = 5;
   const totalPages = Math.max(1, Math.ceil(waypoints.length / perPage));
@@ -20,7 +21,8 @@ export function renderLegsPage(state: FMCState): DisplayData {
   const pageWaypoints = waypoints.slice(start, start + perPage);
 
   const isLive = aircraftState !== null;
-  const title = isLive ? '►LEGS' : 'LEGS';
+  const titleBase = isLive ? '►LEGS' : 'LEGS';
+  const title = state.isModified ? `MOD ${titleBase}` : titleBase;
   const modeSuffix = state.deleteMode ? ' DEL' : '';
   const lines = [
     inverse(`  ${title}${modeSuffix}          ${legsPageIndex + 1}/${totalPages}`),
@@ -105,7 +107,8 @@ function formatAltitude(constraint: { type: string; altitude: number; altitude2?
 
 function getLegsLskActions(state: FMCState): Record<string, string | null> {
   const actions: Record<string, string | null> = {};
-  const { flightPlan, legsPageIndex, deleteMode } = state;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const { legsPageIndex, deleteMode } = state;
   const perPage = 5;
   const start = legsPageIndex * perPage;
   const waypoints = flightPlan.waypoints;

@@ -40,6 +40,8 @@ const defaultState = {
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
+  pendingRoute: null as RouteData | null,
+  pendingFlightPlan: null as FlightPlan | null,
 
   isModified: false,
   execLit: false,
@@ -465,33 +467,41 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         if (scratchpad) {
           const result = isValidICAO(scratchpad.toUpperCase());
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, origin: scratchpad.toUpperCase() };
-          updates.flightPlan = { ...state.flightPlan, origin: scratchpad.toUpperCase() };
+          const route = state.pendingRoute ?? state.route;
+          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+          updates.pendingRoute = { ...route, origin: scratchpad.toUpperCase() };
+          updates.pendingFlightPlan = { ...flightPlan, origin: scratchpad.toUpperCase() };
         }
         break;
       case 'set_dest':
         if (scratchpad) {
           const result = isValidICAO(scratchpad.toUpperCase());
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, destination: scratchpad.toUpperCase() };
-          updates.flightPlan = { ...state.flightPlan, destination: scratchpad.toUpperCase() };
+          const route = state.pendingRoute ?? state.route;
+          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+          updates.pendingRoute = { ...route, destination: scratchpad.toUpperCase() };
+          updates.pendingFlightPlan = { ...flightPlan, destination: scratchpad.toUpperCase() };
         }
         break;
       case 'set_flt_no':
         if (scratchpad) {
           const result = isValidFlightNumber(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, flightNumber: scratchpad.toUpperCase() };
-          updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
+          const route = state.pendingRoute ?? state.route;
+          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+          updates.pendingRoute = { ...route, flightNumber: scratchpad.toUpperCase() };
+          updates.pendingFlightPlan = { ...flightPlan, flightNumber: scratchpad.toUpperCase() };
         }
         break;
       case 'set_route': {
         if (scratchpad) {
           const routeStr = scratchpad.toUpperCase();
           const parsed = parseRouteString(routeStr);
+          const route = state.pendingRoute ?? state.route;
+          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
           const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
-          updates.route = { ...state.route, routeString: routeStr };
-          updates.flightPlan = { ...state.flightPlan, waypoints, route: routeStr };
+          updates.pendingRoute = { ...route, routeString: routeStr };
+          updates.pendingFlightPlan = { ...flightPlan, waypoints, route: routeStr };
           updates.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
         }
         break;
@@ -590,7 +600,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         if (scratchpad) {
           const result = isValidWaypoint(scratchpad.toUpperCase());
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, directTo: scratchpad.toUpperCase() };
+          const route = state.pendingRoute ?? state.route;
+          updates.pendingRoute = { ...route, directTo: scratchpad.toUpperCase() };
         }
         break;
       }
@@ -700,20 +711,30 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         break;
       }
       case 'set_sid':
-        if (scratchpad) updates.route = { ...state.route, sid: scratchpad.toUpperCase() };
+        if (scratchpad) {
+          const route = state.pendingRoute ?? state.route;
+          updates.pendingRoute = { ...route, sid: scratchpad.toUpperCase() };
+        }
         break;
       case 'set_rwy': {
         if (scratchpad) {
           if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.route = { ...state.route, runway: scratchpad.toUpperCase() };
+          const route = state.pendingRoute ?? state.route;
+          updates.pendingRoute = { ...route, runway: scratchpad.toUpperCase() };
         }
         break;
       }
       case 'set_star':
-        if (scratchpad) updates.route = { ...state.route, star: scratchpad.toUpperCase() };
+        if (scratchpad) {
+          const route = state.pendingRoute ?? state.route;
+          updates.pendingRoute = { ...route, star: scratchpad.toUpperCase() };
+        }
         break;
       case 'set_appr':
-        if (scratchpad) updates.route = { ...state.route, approach: scratchpad.toUpperCase() };
+        if (scratchpad) {
+          const route = state.pendingRoute ?? state.route;
+          updates.pendingRoute = { ...route, approach: scratchpad.toUpperCase() };
+        }
         break;
       case 'set_flaps':
         if (scratchpad) updates.takeoff = { ...state.takeoff, flaps: scratchpad.toUpperCase() };
@@ -874,6 +895,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       execUpdates.hold = state.holdPending;
       execUpdates.holdPending = null;
     }
+    if (state.pendingRoute) {
+      execUpdates.route = state.pendingRoute;
+      execUpdates.pendingRoute = null;
+    }
+    if (state.pendingFlightPlan) {
+      execUpdates.flightPlan = state.pendingFlightPlan;
+      execUpdates.pendingFlightPlan = null;
+    }
 
     if (state.execLit) {
       execUpdates.execLit = false;
@@ -972,7 +1001,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const state = get();
     const result = isValidWaypoint(ident.toUpperCase());
     if (!result.valid) { set({ scratchpadError: result.error }); return; }
-    const waypoints = [...state.flightPlan.waypoints];
+    const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
     const nextWaypoint = { ident: ident.toUpperCase(), discontinuity: false };
     if (waypoints[index]?.discontinuity) {
       waypoints[index] = nextWaypoint;
@@ -980,7 +1009,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       waypoints.splice(index, 0, nextWaypoint);
     }
     set({
-      flightPlan: { ...state.flightPlan, waypoints },
+      pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
       isModified: true,
       execLit: true,
       scratchpad: '',
@@ -990,11 +1019,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   deleteWaypoint: (index: number) => {
     const state = get();
-    const waypoints = [...state.flightPlan.waypoints];
+    const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
     if (index >= 0 && index < waypoints.length) {
       waypoints.splice(index, 1);
       set({
-        flightPlan: { ...state.flightPlan, waypoints },
+        pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
         isModified: true,
         execLit: true,
         deleteMode: false,

@@ -32,12 +32,14 @@ export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => Dis
 }
 
 export function renderInitA(state: FMCState): DisplayData {
-  const { route, performance } = state;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const { performance } = state;
+  const title = state.isModified ? 'TMPY INIT' : 'INIT';
   return {
-    title: 'INIT',
+    title,
     pageIndicator: 'A',
     lines: [
-      inv('  INIT              A', '', '', 'cyan'),
+      inv(`  ${title}              A`, '', '', 'cyan'),
       fmt(' FROM/TO', 'ALN', '', 'white'),
       fmt(` ${route.origin || '----'}/${route.destination || '----'}`, ` ${route.alternate || '----'}`, '', 'magenta'),
       fmt(' COST INDEX', 'FLT NBR', '', 'white'),
@@ -91,9 +93,11 @@ export function renderInitB(state: FMCState): DisplayData {
 }
 
 export function renderFpln(state: FMCState): DisplayData {
-  const { flightPlan, route } = state;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
   const wpts = flightPlan.waypoints;
-  const lines = [inv(`  F-PLN             ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan')];
+  const title = state.isModified ? 'TMPY F-PLN' : 'F-PLN';
+  const lines = [inv(`  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan')];
   
   for (let i = 0; i < Math.min(wpts.length, 10); i++) {
     const wp = wpts[i];
@@ -121,12 +125,13 @@ function buildFplnActions(state: FMCState): Record<string, string | null> {
 }
 
 export function renderDepArrA320(state: FMCState): DisplayData {
-  const { route } = state;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const title = state.isModified ? 'TMPY DEP/ARR' : 'DEP/ARR';
   return {
-    title: 'DEP/ARR',
+    title,
     pageIndicator: '',
     lines: [
-      inv(`  DEP/ARR     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan'),
+      inv(`  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan'),
       fmt(' DEPARTURE', '', '', 'white'),
       fmt(` ${route.origin || '----'}`, '', '', 'green'),
       fmt('  SID', '<', '', 'white'),

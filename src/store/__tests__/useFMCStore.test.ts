@@ -66,10 +66,14 @@ describe('FMC Store', () => {
     store.pressLSK('L', 1);
 
     const state = useFMCStore.getState();
-    expect(state.route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(state.pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(state.pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
     expect(state.legsPageCount).toBe(1);
     expect(state.execLit).toBe(true);
+
+    store.pressEXEC();
+    expect(useFMCStore.getState().route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
+    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
   });
 
   it('inserts and deletes LEGS waypoints through LSK actions', () => {
@@ -90,11 +94,17 @@ describe('FMC Store', () => {
 
     for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 2);
-    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
     expect(useFMCStore.getState().execLit).toBe(true);
+
+    store.pressEXEC();
+    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
 
     store.pressKey('DEL');
     store.pressLSK('L', 2);
+    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
+    
+    store.pressEXEC();
     const state = useFMCStore.getState();
     expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
     expect(state.deleteMode).toBe(false);
@@ -121,13 +131,16 @@ describe('FMC Store', () => {
     store.pressLSK('L', 2);
 
     const state = useFMCStore.getState();
-    expect(state.flightPlan.waypoints).toEqual([
+    expect(state.pendingFlightPlan?.waypoints).toEqual([
       { ident: 'RBV', discontinuity: false },
       { ident: 'LENDY', discontinuity: false },
       { ident: 'DIXIE', discontinuity: false },
     ]);
     expect(state.execLit).toBe(true);
     expect(state.scratchpad).toBe('');
+
+    store.pressEXEC();
+    expect(useFMCStore.getState().flightPlan.waypoints[1].ident).toBe('LENDY');
   });
 
   it('stages HOLD edits and commits them only on EXEC', () => {
@@ -302,11 +315,15 @@ describe('FMC Store', () => {
     store.pressLSK('L', 3);
 
     let state = useFMCStore.getState();
-    expect(state.route).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
+    expect(state.pendingRoute).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
+    store.pressEXEC();
+    expect(useFMCStore.getState().route).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
 
     store.setPage('DIR_INTC');
     for (const key of 'DIXIE') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 1);
+    expect(useFMCStore.getState().pendingRoute?.directTo).toBe('DIXIE');
+    store.pressEXEC();
     expect(useFMCStore.getState().route.directTo).toBe('DIXIE');
 
     useFMCStore.setState({ takeoff: { ...useFMCStore.getState().takeoff, toMode: 'TO 2' } });

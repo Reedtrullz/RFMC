@@ -11,14 +11,17 @@ function inverse(text: string, left: string = '', right: string = '', color?: Di
 function blank() { return fmt('', '', ''); }
 
 export function renderRtePage(state: FMCState): DisplayData {
-  const { route, flightPlan, rteSubPage } = state;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const { rteSubPage } = state;
+  const title = state.isModified ? 'MOD RTE' : 'RTE';
 
   if (rteSubPage === 0) {
     return {
-      title: 'RTE',
+      title,
       pageIndicator: '1/2',
       lines: [
-        inverse('  RTE              1/2'),
+        inverse(`  ${title}              1/2`),
         fmt(' ORIGIN', '', ''),
         fmt(` ${route.origin || '----'}`),
         fmt(' DEST', '', ''),
@@ -54,10 +57,10 @@ export function renderRtePage(state: FMCState): DisplayData {
   const waypointPreview = flightPlan.waypoints.slice(0, 4).map(w => w.ident).join(' ');
 
   return {
-    title: 'RTE',
+    title,
     pageIndicator: '2/2',
     lines: [
-      inverse('  RTE              2/2'),
+      inverse(`  ${title}              2/2`),
       fmt(' ROUTE', '', ''),
       fmt(` ${routeLines.length > 20 ? routeLines.slice(0, 20) : routeLines.padEnd(20)}`),
       blank(),
@@ -89,14 +92,16 @@ export function renderRtePage(state: FMCState): DisplayData {
 }
 
 export function renderDepArrPage(state: FMCState): DisplayData {
-  const { route, depArrSubPage } = state;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const { depArrSubPage } = state;
+  const title = state.isModified ? 'MOD DEP/ARR' : 'DEP/ARR';
 
   if (depArrSubPage === 'DEP') {
     return {
-      title: 'DEP/ARR',
+      title,
       pageIndicator: 'DEP',
       lines: [
-        inverse('  DEP/ARR        DEP'),
+        inverse(`  ${title}        DEP`),
         fmt(` ${route.origin || '----'}`, '', ''),
         fmt(' SID', '<', '', 'white'),
         fmt(` ${route.sid || '----'}`, '', '', 'green'),
@@ -128,10 +133,10 @@ export function renderDepArrPage(state: FMCState): DisplayData {
 
   // ARR page
   return {
-    title: 'DEP/ARR',
+    title,
     pageIndicator: 'ARR',
     lines: [
-      inverse('  DEP/ARR        ARR'),
+      inverse(`  ${title}        ARR`),
       fmt(` ${route.destination || '----'}`, '', ''),
       fmt(' STAR', '<', '', 'white'),
       fmt(` ${route.star || '----'}`, '', '', 'green'),

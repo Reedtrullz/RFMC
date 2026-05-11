@@ -122,12 +122,14 @@ interface RouteItem {
 }
 
 function buildRouteItems(state: FMCState): RouteItem[] {
-  const origin = state.flightPlan.origin || state.route.origin;
-  const destination = state.flightPlan.destination || state.route.destination;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+  const origin = flightPlan.origin || route.origin;
+  const destination = flightPlan.destination || route.destination;
   const points: RouteItem[] = [];
 
   if (origin) points.push({ ident: origin, discontinuity: false, airport: true, altitudeLabel: null, speedLabel: null });
-  for (const waypoint of state.flightPlan.waypoints) {
+  for (const waypoint of flightPlan.waypoints) {
     points.push({
       ident: waypoint.ident,
       discontinuity: waypoint.discontinuity,
@@ -245,12 +247,13 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], fallback
 }
 
 function formatProcedureLabel(state: FMCState): string {
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
   const parts = [
-    state.route.directTo ? `DIR ${state.route.directTo}` : '',
-    state.route.sid,
-    state.route.star,
-    state.route.approach,
-    state.route.runway ? `RW${state.route.runway}` : '',
+    route.directTo ? `DIR ${route.directTo}` : '',
+    route.sid,
+    route.star,
+    route.approach,
+    route.runway ? `RW${route.runway}` : '',
   ].filter(Boolean);
   return parts.length ? parts.join(' / ') : 'NO PROC';
 }
