@@ -19,6 +19,12 @@
 - Better preflight prompts, scratchpad messages, EXEC staging, and dependent-value invalidation.
 - Deeper LEGS, HOLD, FIX, CLB, CRZ, DES, PROG, and approach-reference behavior.
 
+## Phase 2.5: Navigation Display Context Visuals
+
+- Standalone ND training display that explains route, mode, range, fix, hold, discontinuity, procedure, and approach context.
+- Boeing-style ND first, with scoped Airbus-style presentation from the same derived model.
+- Training visualization only; PFD, flight-director, attitude, weather, terrain, TCAS, and live ND mirroring stay out of this phase.
+
 ## Phase 3: Airbus Scoped Polish
 
 - Clear functional/display-only/out-of-scope status per page.

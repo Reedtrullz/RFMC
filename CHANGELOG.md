@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added standalone ND training visuals with route, discontinuity, FIX, HOLD, procedure, range, mode, and overlay context.
+- Added shared ND model and frontend/E2E coverage for Boeing/Airbus route context and iPad layout.
 - Added Phase 0 implementation artifacts for the consolidated VirtualCDU masterplan.
 - Added test matrix, pilot review rubric, known limitations, metrics, scope, roadmap, and reference-library metadata.
 - Added repeatable Playwright baseline screenshot capture script.

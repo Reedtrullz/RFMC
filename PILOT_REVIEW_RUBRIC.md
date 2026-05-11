@@ -21,6 +21,7 @@ Use this rubric after Phase 0 baseline capture and at each phase gate. Scores ar
 | Boeing page flow realism |  | IDENT, POS INIT, RTE, DEP/ARR, PERF, TAKEOFF REF |
 | Scratchpad behavior |  | Error wording, clearing, invalid entries, EXEC staging |
 | LEGS/HOLD/FIX realism |  | Waypoint edits, holds, fix rings, constraints |
+| ND training clarity |  | Does the ND make route edits, fixes, holds, discontinuities, and approach settings understandable? |
 | CLB/CRZ/DES/PROG usefulness |  | Trainer-level predictions and cues |
 | Airbus visual realism |  | MCDU colors, labels, page grouping |
 | Airbus scope honesty |  | Display-only vs functional pages are clear |

@@ -10,6 +10,7 @@ VirtualCDU is a web-based procedure trainer. It is not certified, approved, or s
 - PMDG integration code exists, but the full keypress -> PMDG CDU update -> display readback loop still requires live validation on Windows with MSFS and PMDG installed.
 - FBW A320 aircraft-state polling is scaffolded, but real MCDU display readback and key I/O are mock-only unless a dedicated mapping phase is approved.
 - Airbus secondary pages such as PERF APPR, FUEL PRED, SEC F-PLN, RAD NAV, and DATA INDEX are partly display-only until explicitly wired and tested.
+- The Navigation Display is a standalone trainer/context visualization. It is not a real avionics replica, PFD, weather/terrain/TCAS display, or live simulator ND mirror.
 - CONTROL mode intentionally keeps some immediate frontend responsiveness while server display data becomes authoritative. This behavior must remain documented and tested.
 - `npm audit` currently reports two moderate Vite/esbuild development dependency issues. The available automatic fix requires a breaking Vite upgrade and is deferred.
 

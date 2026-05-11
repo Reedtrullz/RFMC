@@ -7,6 +7,18 @@ export { getPageRenderer } from './fmc/pages';
 export { getAirbusPageRenderer } from './fmc/pages/airbus';
 export { parseRouteString, greatCircleDistance } from './fmc/flightPlanParser';
 export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbriefParser';
+export { buildNavigationDisplayModel } from './fmc/navigationDisplay';
+export type {
+  NavigationDisplayModel,
+  NavigationDisplaySettings,
+  NDMapMode,
+  NDOverlaySettings,
+  NDRange,
+  NDFixOverlay,
+  NDHoldOverlay,
+  NDRoutePoint,
+  NDRouteSegment,
+} from './fmc/navigationDisplay';
 export { tutorialScenarios, getTutorialScenario } from './fmc/tutorialEngine';
 export {
   AIRPORTS,

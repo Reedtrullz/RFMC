@@ -876,11 +876,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   clearFailureMode: () => set({ mode: 'ACTIVE', failureMessage: null }),
 
   loadFlightPlan: (data) => {
-    set((state) => ({
-      flightPlan: { ...state.flightPlan, ...data },
-      route: { ...state.route, origin: data.origin || state.route.origin, destination: data.destination || state.route.destination, routeString: data.route || state.route.routeString },
-      msgLight: true,
-    }));
+    set((state) => {
+      const origin = data.origin || state.flightPlan.origin || state.route.origin;
+      const destination = data.destination || state.flightPlan.destination || state.route.destination;
+      const route = data.route || state.flightPlan.route || state.route.routeString;
+      const parsed = route ? parseRouteString([origin, route, destination].filter(Boolean).join(' ')) : null;
+      const waypoints = data.waypoints ?? parsed?.waypoints ?? state.flightPlan.waypoints;
+      return {
+        flightPlan: { ...state.flightPlan, ...data, origin, destination, route, waypoints },
+        route: { ...state.route, origin, destination, routeString: route },
+        legsPageCount: Math.max(1, Math.ceil(waypoints.length / 5)),
+        msgLight: true,
+      };
+    });
   },
 
   resetState: () => set(defaultState),

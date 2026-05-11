@@ -11,6 +11,7 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 - Complete trainer-level Boeing preflight, route, performance, LEGS, HOLD, FIX, CLB/CRZ/DES/PROG, and approach-reference workflows.
 - Robust input validation and scratchpad behavior.
 - Guided tutorials and scoring for major procedure flows.
+- Standalone ND training visuals that make FMC settings and route modifications understandable.
 - Repeatable visual, unit, E2E, and integration-test baselines.
 - PMDG 737 connected-mode validation.
 - Offline/iPad cockpit usability.
@@ -19,6 +20,7 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 
 - Airbus A320 MCDU support with honest page scoping.
 - Airbus visual semantics and functional core pages.
+- Airbus-style ND context from the shared trainer visualization model.
 - Display-only secondary pages where real behavior is not implemented.
 
 ## Out Of Scope For v1
@@ -28,3 +30,4 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 - Full ARINC 424 global leg/path support.
 - Full FBW/Fenix MCDU integration unless separately scoped.
 - Proprietary fonts, reference photos, or navdata without licensing clarity.
+- Full PFD/attitude display simulation, weather radar, terrain, TCAS, and live ND mirroring unless separately scoped.

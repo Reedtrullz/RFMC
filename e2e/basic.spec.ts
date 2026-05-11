@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function dismissWelcome(page) {
   const skipButton = page.locator('button:has-text("Skip Demo")');
   if (await skipButton.isVisible().catch(() => false)) {
@@ -8,7 +12,11 @@ async function dismissWelcome(page) {
 }
 
 async function press(page, label: string) {
-  await page.getByRole('button', { name: label, exact: true }).first().click();
+  await page.locator('button.cdu-button').filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) }).first().click();
+}
+
+async function pressFunction(page, label: string) {
+  await page.locator('button.cdu-button').filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) }).last().click();
 }
 
 async function lsk(page, id: string) {
@@ -37,7 +45,7 @@ test.describe('VirtualCDU Basic', () => {
   test('navigates to RTE page', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    await page.locator('button:has-text("RTE")').first().click();
+    await press(page, 'RTE');
     await expect(page.locator('.bg-cdu-screen >> text=RTE')).toBeVisible();
     await expect(page.locator('.bg-cdu-screen >> text=ORIGIN')).toBeVisible();
   });
@@ -45,16 +53,16 @@ test.describe('VirtualCDU Basic', () => {
   test('enters scratchpad text', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    await page.locator('button:has-text("1")').first().click();
-    await page.locator('button:has-text("2")').first().click();
+    await press(page, '1');
+    await press(page, '2');
     await expect(page.locator('[data-testid="scratchpad"]')).toContainText('12');
   });
 
   test('clears scratchpad with CLR', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    await page.locator('button:has-text("1")').first().click();
-    await page.locator('button:has-text("CLR")').first().click();
+    await press(page, '1');
+    await press(page, 'CLR');
     await expect(page.locator('[data-testid="scratchpad"]')).not.toContainText('1');
   });
 
@@ -88,6 +96,7 @@ test.describe('VirtualCDU Basic', () => {
     await enterText(page, 'KJFK DCT RBV DIXIE KDCA');
     await lsk(page, 'L1');
     await expectScreenText(page, 'RBV');
+    await expect(page.getByTestId('navigation-display')).toContainText('RBV');
     await lsk(page, 'R3');
 
     await expectScreenText(page, 'LEGS');
@@ -142,6 +151,25 @@ test.describe('VirtualCDU Basic', () => {
     await expectScreenText(page, '130 KT');
     await expectScreenText(page, '135 KT');
     await expectScreenText(page, '140 KT');
+  });
+
+  test('shows HOLD and FIX overlays on the ND training display', async ({ page }) => {
+    await page.goto('/');
+    await dismissWelcome(page);
+
+    await press(page, 'HOLD');
+    await enterText(page, 'RBV');
+    await lsk(page, 'L1');
+    await expect(page.getByTestId('nd-hold-overlay')).toBeVisible();
+
+    await pressFunction(page, 'FIX');
+    await enterText(page, 'KJFK');
+    await lsk(page, 'L1');
+    await enterText(page, '180');
+    await press(page, '/');
+    await enterText(page, '20');
+    await lsk(page, 'L2');
+    await expect(page.getByTestId('nd-fix-overlay')).toBeVisible();
   });
 
   test('runs Airbus INIT, F-PLN, DEP/ARR, and PERF TO entries', async ({ page }) => {
@@ -212,6 +240,24 @@ test.describe('VirtualCDU Basic', () => {
     await press(page, 'RTE');
     await expectScreenText(page, 'KJFK');
     await expectScreenText(page, 'KDCA');
+    await expect(page.getByTestId('navigation-display')).toContainText('RBV');
+  });
+
+  test('keeps ND context available without covering CDU controls on iPad', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await page.goto('/');
+    await dismissWelcome(page);
+
+    const ndBox = await page.getByTestId('navigation-display').boundingBox();
+    const rteBox = await page.getByRole('button', { name: 'RTE', exact: true }).first().boundingBox();
+
+    expect(ndBox).not.toBeNull();
+    expect(rteBox).not.toBeNull();
+    expect(ndBox!.y + ndBox!.height).toBeLessThanOrEqual(rteBox!.y);
+
+    await page.getByRole('button', { name: 'ND', exact: true }).click();
+    await expect(page.getByTestId('navigation-display')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'RTE', exact: true }).first()).toBeVisible();
   });
 
   test('renders nonblank Boeing and Airbus CDU screenshots', async ({ page }) => {
