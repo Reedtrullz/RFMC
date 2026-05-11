@@ -2,13 +2,16 @@ import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
-  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: inferBoeingSemantic(color) };
+function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color'], semantic?: DisplayLine['semantic']): DisplayLine {
+  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: semantic ?? inferBoeingSemantic(color) };
 }
 function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
 function blank() { return fmt('', '', ''); }
+function modData(text: string, isModified: boolean, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return fmt(text, left, right, color, isModified ? 'modified' : undefined);
+}
 
 export function renderRtePage(state: FMCState): DisplayData {
   const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
@@ -23,15 +26,15 @@ export function renderRtePage(state: FMCState): DisplayData {
       lines: [
         inverse(`  ${title}              1/2`),
         fmt(' ORIGIN', '', ''),
-        fmt(` ${route.origin || '----'}`),
+        modData(` ${route.origin || '----'}`, state.isModified),
         fmt(' DEST', '', ''),
-        fmt(` ${route.destination || '----'}`),
+        modData(` ${route.destination || '----'}`, state.isModified),
         blank(),
         fmt(' FLT NO', '', ''),
-        fmt(` ${route.flightNumber || '--------'}`),
+        modData(` ${route.flightNumber || '--------'}`, state.isModified),
         blank(),
         fmt(' CO ROUTE', '', ''),
-        fmt(` ${route.companyRoute || '---------'}`),
+        modData(` ${route.companyRoute || '---------'}`, state.isModified),
         blank(),
         blank(),
       ],
@@ -62,7 +65,7 @@ export function renderRtePage(state: FMCState): DisplayData {
     lines: [
       inverse(`  ${title}              2/2`),
       fmt(' ROUTE', '', ''),
-      fmt(` ${routeLines.length > 20 ? routeLines.slice(0, 20) : routeLines.padEnd(20)}`),
+      modData(` ${routeLines.length > 20 ? routeLines.slice(0, 20) : routeLines.padEnd(20)}`, state.isModified),
       blank(),
       fmt(' VIA/TO', '', ''),
       fmt(' DIRECT'),
@@ -104,9 +107,9 @@ export function renderDepArrPage(state: FMCState): DisplayData {
         inverse(`  ${title}        DEP`),
         fmt(` ${route.origin || '----'}`, '', ''),
         fmt(' SID', '<', '', 'white'),
-        fmt(` ${route.sid || '----'}`, '', '', 'green'),
+        modData(` ${route.sid || '----'}`, state.isModified, '', '', 'green'),
         fmt(' RUNWAY', '<', '', 'white'),
-        fmt(` ${route.runway || '----'}`, '', '', 'green'),
+        modData(` ${route.runway || '----'}`, state.isModified, '', '', 'green'),
         blank(),
         fmt(' TRANS', '<', '', 'white'),
         fmt(' ----', '', '', 'green'),
@@ -139,11 +142,11 @@ export function renderDepArrPage(state: FMCState): DisplayData {
       inverse(`  ${title}        ARR`),
       fmt(` ${route.destination || '----'}`, '', ''),
       fmt(' STAR', '<', '', 'white'),
-      fmt(` ${route.star || '----'}`, '', '', 'green'),
+      modData(` ${route.star || '----'}`, state.isModified, '', '', 'green'),
       fmt(' APPROACH', '<', '', 'white'),
-      fmt(` ${route.approach || '----'}`, '', '', 'green'),
+      modData(` ${route.approach || '----'}`, state.isModified, '', '', 'green'),
       fmt(' RUNWAY', '<', '', 'white'),
-      fmt(` ${route.runway || '----'}`, '', '', 'green'),
+      modData(` ${route.runway || '----'}`, state.isModified, '', '', 'green'),
       blank(),
       fmt(' TRANS', '<', '', 'white'),
       fmt(' ----', '', '', 'green'),

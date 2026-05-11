@@ -3,13 +3,16 @@ import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { greatCircleDistance } from '../flightPlanParser';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
-  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: inferBoeingSemantic(color) };
+function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"], semantic?: DisplayLine['semantic']): DisplayLine {
+  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: semantic ?? inferBoeingSemantic(color) };
 }
 function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
   return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
 function blank() { return fmt('', '', ''); }
+function modData(text: string, isModified: boolean, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return fmt(text, left, right, color, isModified ? 'modified' : undefined);
+}
 
 export function renderLegsPage(state: FMCState): DisplayData {
   const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
@@ -75,8 +78,8 @@ export function renderLegsPage(state: FMCState): DisplayData {
         lines.push(fmt(`${marker} ${delLabel}`, '<', '', 'red'));
         lines.push(fmt(`  ${alt} ${spd}`, '', '', 'red'));
       } else {
-        lines.push(fmt(`${marker} ${wp.ident}`, '<'));
-        lines.push(fmt(`  ${alt} ${spd}`, '', ''));
+        lines.push(modData(`${marker} ${wp.ident}`, state.isModified, '<'));
+        lines.push(modData(`  ${alt} ${spd}`, state.isModified, '', ''));
       }
     }
   }

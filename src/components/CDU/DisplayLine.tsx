@@ -20,6 +20,8 @@ export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blink
   const dimColor = isAirbus ? 'text-cdu-amber/60' : 'text-cdu-text-dim';
   const inverseBg = color === 'magenta' ? 'bg-fuchsia-400' : color === 'cyan' ? 'bg-cdu-cyan' : color === 'white' ? 'bg-white' : color === 'red' ? 'bg-cdu-error' : isAirbus ? 'bg-cdu-amber' : 'bg-cdu-text';
 
+  const isModified = semantic === 'modified';
+
   return (
     <div
       className={`
@@ -30,7 +32,9 @@ export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blink
         ${small ? 'text-[9px]' : ''}
         ${inverse
           ? `${inverseBg} text-cdu-screen font-bold`
-          : mainColor
+          : isModified
+            ? `${mainColor} bg-white/[0.06]`
+            : mainColor
         }
         ${blinking ? 'animate-blink' : ''}
       `}
