@@ -265,6 +265,28 @@ describe('FMC Store', () => {
     expect(state.execLit).toBe(true);
   });
 
+  it('sets two FIX entries through entry-specific LSK actions', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({ currentPage: 'FIX' });
+
+    for (const key of 'RBV') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+    for (const key of '180/20') store.pressKey(key === '/' ? 'SLASH' : (key as Parameters<typeof store.pressKey>[0]));
+    store.pressLSK('L', 2);
+    for (const key of 'DIXIE') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('R', 1);
+    for (const key of '270/35') store.pressKey(key === '/' ? 'SLASH' : (key as Parameters<typeof store.pressKey>[0]));
+    store.pressLSK('R', 2);
+
+    const state = useFMCStore.getState();
+    expect(state.fixEntries).toEqual([
+      { refFix: 'RBV', radial: 180, distance: 20 },
+      { refFix: 'DIXIE', radial: 270, distance: 35 },
+    ]);
+    expect(state.fix).toEqual({ refFix: 'RBV', radial: 180, distance: 20 });
+    expect(state.execLit).toBe(true);
+  });
+
   it('sets DEP/ARR procedures, DIR INTC, and N1 LIMIT values', () => {
     const store = useFMCStore.getState();
     useFMCStore.setState({ currentPage: 'DEP_ARR', route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' } });

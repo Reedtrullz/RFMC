@@ -153,7 +153,7 @@ test.describe('VirtualCDU Basic', () => {
     await expectScreenText(page, '140 KT');
   });
 
-  test('shows HOLD and FIX overlays on the ND training display', async ({ page }) => {
+  test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
 
@@ -169,7 +169,13 @@ test.describe('VirtualCDU Basic', () => {
     await press(page, '/');
     await enterText(page, '20');
     await lsk(page, 'L2');
-    await expect(page.getByTestId('nd-fix-overlay')).toBeVisible();
+    await enterText(page, 'DIXIE');
+    await lsk(page, 'R1');
+    await enterText(page, '270');
+    await press(page, '/');
+    await enterText(page, '35');
+    await lsk(page, 'R2');
+    await expect(page.getByTestId('nd-fix-overlay')).toHaveCount(2);
   });
 
   test('runs Airbus INIT, F-PLN, DEP/ARR, and PERF TO entries', async ({ page }) => {

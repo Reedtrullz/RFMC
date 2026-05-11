@@ -120,10 +120,10 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
         />
       ))}
 
-      {model.fixOverlay && (
-        <g data-testid="nd-fix-overlay" transform={`translate(${model.fixOverlay.x} ${model.fixOverlay.y})`}>
+      {model.fixOverlays.map((overlay, index) => (
+        <g key={`${overlay.refFix}-${index}`} data-testid="nd-fix-overlay" transform={`translate(${overlay.x} ${overlay.y})`}>
           <circle r="12" fill="none" stroke="#22c55e" strokeWidth="0.9" strokeDasharray="2 2" />
-          {model.fixOverlay.radial > 0 && (
+          {overlay.radial > 0 && (
             <line
               x1="0"
               y1="0"
@@ -131,17 +131,17 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
               y2="-18"
               stroke="#22c55e"
               strokeWidth="0.8"
-              transform={`rotate(${model.fixOverlay.radial})`}
+              transform={`rotate(${overlay.radial})`}
             />
           )}
           <text x="3" y="-13" fill="#22c55e" fontSize="3.5" fontFamily="monospace">
-            {model.fixOverlay.refFix}
+            {overlay.refFix}
           </text>
           <text x="3" y="-9" fill="#22c55e" fontSize="3" fontFamily="monospace">
-            R{String(model.fixOverlay.radial || 0).padStart(3, '0')} D{model.fixOverlay.distance || '--'}
+            R{String(overlay.radial || 0).padStart(3, '0')} D{overlay.distance || '--'}
           </text>
         </g>
-      )}
+      ))}
 
       {model.holdOverlay && (
         <g data-testid="nd-hold-overlay" transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`}>

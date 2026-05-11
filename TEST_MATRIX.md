@@ -7,7 +7,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
 | Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 94/94 passing | 100% pass |
+| Unit/regression tests | `npm test -- --run` | 98/98 passing | 100% pass |
 | Playwright E2E | `npm run test:e2e` | 11 passed, 2 skipped | 100% pass for runnable tests |
 | Production build | `npm run build` | Passing | Successful build |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
@@ -22,9 +22,9 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Boeing approach reference | TAKEOFF REF page 2 landing runway, flaps, VREF, ILS frequency, course | Yes unit | Pilot review required | Trainer reference data only; not navdata-backed tuning |
 | Boeing LEGS | Route parsing, insert/delete, discontinuity replacement, constraints | Partial | Required | Add deeper EXEC staging cases |
 | Boeing HOLD | Staged edits, route-context validation, and EXEC commit | Yes unit | Required | Add Playwright flow |
-| Boeing FIX | Radial/distance validation | Partial | Required | Add multi-entry/ring preview when implemented |
+| Boeing FIX | Two FIX entries with radial/distance validation | Yes unit | Pilot review required | Trainer-level two-slot implementation |
 | ND route context | Route points, direct-to active leg, discontinuities, constraints, procedures | Yes | Pilot review required | Training visualization, not measured avionics fidelity |
-| ND overlays | FIX radial/distance and HOLD racetrack preview | Yes | Pilot review required | Uses current trainer state only |
+| ND overlays | Multiple FIX radial/distance rings and HOLD racetrack preview | Yes | Pilot review required | Uses current trainer state only |
 | ND controls/iPad | MAP/PLAN, range, overlay toggles, mobile ND toggle | Yes | iPad device review required | Keep CDU controls unobstructed |
 | Boeing CLB/CRZ/DES | Static pages render | Partial | Required | Add DES NOW and trainer-level prediction tests |
 | Airbus INIT/F-PLN/DEP-ARR/PERF TO | Main data-entry flow | Yes | Pilot review required | Secondary pages still scoped/display-only |

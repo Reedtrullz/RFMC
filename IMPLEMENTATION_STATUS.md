@@ -2,9 +2,9 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 94/94 pass
+- Unit tests: 98/98 pass
 - E2E tests: 11 passed, 2 skipped
-- Build: successful (262.88KB JS, 20.76KB CSS)
+- Build: successful (263.93KB JS, 20.76KB CSS)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
 - **Oracle Round 29: APPROVED** — all critical blockers resolved after Round 28 re-verification
 
@@ -39,6 +39,7 @@
 - Fixed route-string constraint parsing so entries like `RBV/250FL100A` feed LEGS and ND constraint displays as structured speed/altitude data instead of waypoint text.
 - Added DIR INTC awareness to the ND so direct-to selections move the active target/segment and appear in the ND context header.
 - Added TAKEOFF REF page 2 trainer approach-reference support with landing runway, landing flaps, VREF, ILS frequency, and course entry in both frontend standalone mode and backend CONTROL-mode engine.
+- Expanded Boeing FIX support from one trainer entry to two entry-specific FIX slots, with frontend/backend parity and multiple ND FIX overlays.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
@@ -169,7 +170,7 @@
 
 ### Phase 7 (Testing) — COMPLETE
 - [x] T7.1: Vitest installed and configured
-- [x] T7.2-T7.6: 94 unit tests across 16 files, 11 passing E2E tests with Playwright, 2 skipped live/optional tests
+- [x] T7.2-T7.6: 98 unit tests across 16 files, 11 passing E2E tests with Playwright, 2 skipped live/optional tests
 
 ## Post-Oracle Fixes Applied
 
@@ -361,4 +362,4 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ## Conclusion
 
-VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 94 unit tests pass, 11 E2E tests pass with 2 skipped live/optional tests, and the build succeeds.
+VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 98 unit tests pass, 11 E2E tests pass with 2 skipped live/optional tests, and the build succeeds.

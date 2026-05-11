@@ -64,6 +64,7 @@ export interface NavigationDisplayModel {
   routePoints: NDRoutePoint[];
   routeSegments: NDRouteSegment[];
   fixOverlay: NDFixOverlay | null;
+  fixOverlays: NDFixOverlay[];
   holdOverlay: NDHoldOverlay | null;
   overlays: NDOverlaySettings;
 }
@@ -93,6 +94,7 @@ export function buildNavigationDisplayModel(
     active: point.active,
   }));
   const activePoint = routePoints.find(point => !point.discontinuity && !point.airport) ?? routePoints.find(point => !point.discontinuity);
+  const fixOverlays = resolved.overlays.fix ? buildFixOverlays(state, routePoints, activePoint) : [];
 
   return {
     aircraft: state.aircraft,
@@ -104,7 +106,8 @@ export function buildNavigationDisplayModel(
     procedureLabel: formatProcedureLabel(state),
     routePoints,
     routeSegments,
-    fixOverlay: resolved.overlays.fix ? buildFixOverlay(state, routePoints, activePoint) : null,
+    fixOverlay: fixOverlays[0] ?? null,
+    fixOverlays,
     holdOverlay: resolved.overlays.hold ? buildHoldOverlay(state, routePoints, activePoint) : null,
     overlays: resolved.overlays,
   };
@@ -213,16 +216,21 @@ function formatAltitude(altitude: number): string {
   return altitude >= 18000 && altitude % 100 === 0 ? `FL${String(Math.round(altitude / 100)).padStart(3, '0')}` : String(altitude);
 }
 
-function buildFixOverlay(state: FMCState, routePoints: NDRoutePoint[], fallback?: NDRoutePoint): NDFixOverlay | null {
-  if (!state.fix.refFix) return null;
-  const point = routePoints.find(routePoint => routePoint.label === state.fix.refFix) ?? fallback;
-  return {
-    refFix: state.fix.refFix,
-    radial: state.fix.radial,
-    distance: state.fix.distance,
-    x: point?.x ?? 58,
-    y: point?.y ?? 46,
-  };
+function buildFixOverlays(state: FMCState, routePoints: NDRoutePoint[], fallback?: NDRoutePoint): NDFixOverlay[] {
+  const entries = state.fixEntries.some(entry => entry.refFix) ? state.fixEntries : [state.fix];
+  return entries
+    .filter(entry => entry.refFix)
+    .slice(0, 2)
+    .map((entry, index) => {
+      const point = routePoints.find(routePoint => routePoint.label === entry.refFix) ?? fallback;
+      return {
+        refFix: entry.refFix,
+        radial: entry.radial,
+        distance: entry.distance,
+        x: point?.x ?? 58 + index * 8,
+        y: point?.y ?? 46 + index * 6,
+      };
+    });
 }
 
 function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], fallback?: NDRoutePoint): NDHoldOverlay | null {

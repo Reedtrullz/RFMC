@@ -200,6 +200,12 @@ export interface RouteData {
   directTo?: string;
 }
 
+export interface FixEntry {
+  refFix: string;
+  radial: number;
+  distance: number;
+}
+
 // ---- Tutorial Types ----
 
 export interface TutorialStep {
@@ -271,6 +277,7 @@ export interface FMCState {
     radial: number;
     distance: number;
   };
+  fixEntries: FixEntry[];
 
   // Multi-page state
   legsPageIndex: number;

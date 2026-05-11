@@ -18,6 +18,13 @@ function isFixInActiveRoute(state: FMCState, ident: string): boolean {
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
 }
 
+function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix']): FMCState['fixEntries'] {
+  return [
+    { ...(entries[0] ?? legacy) },
+    { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
+  ];
+}
+
 // ---- Default initial state ----
 const defaultState = {
   aircraft: 'BOEING_737' as AircraftType,
@@ -67,6 +74,10 @@ const defaultState = {
   takeoffRefPageIndex: 0,
 
   fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [
+    { refFix: '', radial: 0, distance: 0 },
+    { refFix: '', radial: 0, distance: 0 },
+  ],
 
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
   holdPending: null as FMCState['holdPending'],
@@ -726,13 +737,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_extra':
         break;
       case 'set_fix_ref':
+      case 'set_fix_ref_0':
+      case 'set_fix_ref_1':
         if (scratchpad) {
-          const result = isValidICAO(scratchpad.toUpperCase());
+          const result = isValidWaypoint(scratchpad.toUpperCase());
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.fix = { ...state.fix, refFix: scratchpad.toUpperCase() };
+          const entryIndex = action.endsWith('_1') ? 1 : 0;
+          const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
+          fixEntries[entryIndex] = { ...fixEntries[entryIndex], refFix: scratchpad.toUpperCase() };
+          updates.fixEntries = fixEntries;
+          if (entryIndex === 0) updates.fix = fixEntries[0];
         }
         break;
       case 'set_fix_radial_distance':
+      case 'set_fix_radial_distance_0':
+      case 'set_fix_radial_distance_1':
         if (scratchpad) {
           const parts = scratchpad.split('/');
           if (parts.length !== 2) { set({ scratchpadError: 'INVALID FORMAT' }); return; }
@@ -740,7 +759,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const distance = parseInt(parts[1], 10);
           if (isNaN(radial) || radial < 1 || radial > 360) { set({ scratchpadError: 'INVALID RADIAL' }); return; }
           if (isNaN(distance) || distance < 0 || distance > 999) { set({ scratchpadError: 'INVALID DISTANCE' }); return; }
-          updates.fix = { ...state.fix, radial, distance };
+          const entryIndex = action.endsWith('_1') ? 1 : 0;
+          const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
+          fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
+          updates.fixEntries = fixEntries;
+          if (entryIndex === 0) updates.fix = fixEntries[0];
         }
         break;
       case 'set_hold_fix':
@@ -1008,11 +1031,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   setFixRef: (ident: string) => {
-    set({ fix: { ...get().fix, refFix: ident.toUpperCase() } });
+    const state = get();
+    const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
+    fixEntries[0] = { ...fixEntries[0], refFix: ident.toUpperCase() };
+    set({ fix: fixEntries[0], fixEntries });
   },
 
   setFixRadialDistance: (radial: number, distance: number) => {
-    set({ fix: { ...get().fix, radial, distance } });
+    const state = get();
+    const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
+    fixEntries[0] = { ...fixEntries[0], radial, distance };
+    set({ fix: fixEntries[0], fixEntries });
   },
 
   setHoldFix: (ident: string) => {

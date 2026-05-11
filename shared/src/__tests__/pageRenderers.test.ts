@@ -31,6 +31,7 @@ const baseState: FMCState = {
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
   holdPending: null,
   fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
   legsPageIndex: 0,
   legsPageCount: 1,
   depArrSubPage: 'DEP',
@@ -134,7 +135,23 @@ describe('Page Renderers', () => {
   it('renders FIX page', () => {
     const data = renderFixPage(baseState);
     expect(data.title).toBe('FIX');
-    expect(data.lines.some(l => l.text.includes('REF FIX'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('REF FIX 1'))).toBe(true);
+  });
+
+  it('renders two FIX entries and exposes entry-specific actions', () => {
+    const data = renderFixPage({
+      ...baseState,
+      fixEntries: [
+        { refFix: 'RBV', radial: 180, distance: 20 },
+        { refFix: 'DIXIE', radial: 270, distance: 35 },
+      ],
+    });
+
+    expect(data.lines.some(l => l.text.includes('RBV'))).toBe(true);
+    expect(data.lines.some(l => l.rightLabel === 'DIXIE')).toBe(true);
+    expect(data.lines.some(l => l.rightLabel === '270/035')).toBe(true);
+    expect(data.lskActions.L1).toBe('set_fix_ref_0');
+    expect(data.lskActions.R1).toBe('set_fix_ref_1');
   });
 
   it('renders LEGS page with waypoints', () => {

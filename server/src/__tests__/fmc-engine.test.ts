@@ -192,6 +192,27 @@ describe('FMCEngine', () => {
     expect(state.route.runway).toBe('19');
   });
 
+  it('sets two backend FIX entries through entry-specific LSK actions', () => {
+    const engine = new FMCEngine();
+    engine.processInput('FIX');
+
+    enter(engine, 'RBV');
+    engine.processInput('L1');
+    enter(engine, '180/20');
+    engine.processInput('L2');
+    enter(engine, 'DIXIE');
+    engine.processInput('R1');
+    enter(engine, '270/35');
+    engine.processInput('R2');
+
+    const state = engine.getState();
+    expect(state.fixEntries).toEqual([
+      { refFix: 'RBV', radial: 180, distance: 20 },
+      { refFix: 'DIXIE', radial: 270, distance: 35 },
+    ]);
+    expect(state.fix).toEqual({ refFix: 'RBV', radial: 180, distance: 20 });
+  });
+
   it('sets direct-to waypoint and renders mode-dependent N1 limits', () => {
     const engine = new FMCEngine();
     engine.processInput('DIR_INTC');

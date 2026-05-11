@@ -31,6 +31,7 @@ const baseState: FMCState = {
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
   holdPending: null,
   fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
   legsPageIndex: 0,
   legsPageCount: 1,
   depArrSubPage: 'DEP',
@@ -99,6 +100,29 @@ describe('Navigation Display model', () => {
 
     expect(model.holdOverlay).toMatchObject({ fix: 'RBV', inboundCourse: 270, direction: 'L' });
     expect(model.fixOverlay).toMatchObject({ refFix: 'RBV', radial: 180, distance: 20 });
+  });
+
+  it('creates multiple fix overlays from FIX entries', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+      fixEntries: [
+        { refFix: 'RBV', radial: 180, distance: 20 },
+        { refFix: 'DIXIE', radial: 270, distance: 35 },
+      ],
+    });
+
+    expect(model.fixOverlays).toHaveLength(2);
+    expect(model.fixOverlays[1]).toMatchObject({ refFix: 'DIXIE', radial: 270, distance: 35 });
   });
 
   it('formats speed and altitude constraints on route points', () => {

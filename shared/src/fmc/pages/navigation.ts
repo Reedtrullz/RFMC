@@ -251,13 +251,17 @@ export function renderHoldPage(state: FMCState): DisplayData {
 }
 
 export function renderFixPage(state: FMCState): DisplayData {
-  const { fix } = state;
-  const refFix = fix.refFix || '----';
-  const radDis = fix.refFix && fix.radial > 0
-    ? `${String(fix.radial).padStart(3, '0')}/${String(fix.distance).padStart(3, '0')}`
+  const entries = getFixEntries(state);
+  const [entry1, entry2] = entries;
+  const refFix1 = entry1.refFix || '----';
+  const radDis1 = formatFixRadialDistance(entry1);
+  const refFix2 = entry2.refFix || '----';
+  const radDis2 = formatFixRadialDistance(entry2);
+  const abeam1 = entry1.refFix && entry1.radial > 0
+    ? `1 ${entry1.refFix} R${String(entry1.radial).padStart(3, '0')} D${String(entry1.distance).padStart(3, '0')}`
     : '---/---';
-  const abeam = fix.refFix && fix.radial > 0
-    ? `R${String(fix.radial).padStart(3, '0')} / D${String(fix.distance).padStart(3, '0')}`
+  const abeam2 = entry2.refFix && entry2.radial > 0
+    ? `2 ${entry2.refFix} R${String(entry2.radial).padStart(3, '0')} D${String(entry2.distance).padStart(3, '0')}`
     : '----';
 
   return {
@@ -266,27 +270,45 @@ export function renderFixPage(state: FMCState): DisplayData {
     lines: [
       inverse('  FIX              1/1', '', '', 'cyan'),
       blank(),
-      fmt(' REF FIX', '<', '', 'white'),
-      fmt(` ${refFix}`, '', '', 'green'),
+      fmt(' REF FIX 1', '<', 'REF FIX 2', 'white'),
+      fmt(` ${refFix1}`, '', refFix2, 'green'),
       blank(),
-      fmt(' RAD/DIS', '<', '', 'white'),
-      fmt(` ${radDis}`, '', '', 'green'),
+      fmt(' RAD/DIS 1', '<', 'RAD/DIS 2', 'white'),
+      fmt(` ${radDis1}`, '', radDis2, 'green'),
       blank(),
       fmt(' ABEAM PTS', '', '', 'white'),
-      fmt(` ${abeam}`, '', '', 'green'),
-      blank(),
+      fmt(` ${abeam1}`, '', '', 'green'),
+      fmt(` ${abeam2}`, '', '', 'green'),
       blank(),
       blank(),
       blank(),
     ],
     lskActions: {
-      L1: 'set_fix_ref',
-      L2: 'set_fix_radial_distance',
+      L1: 'set_fix_ref_0',
+      L2: 'set_fix_radial_distance_0',
       L3: null, L4: null, L5: null, L6: null,
-      R1: null, R2: null, R3: null, R4: null, R5: null, R6: null,
+      R1: 'set_fix_ref_1',
+      R2: 'set_fix_radial_distance_1',
+      R3: null, R4: null, R5: null, R6: null,
     },
     lskLabels: {
-      L1: 'REF', L2: 'RAD/DIS',
+      L1: 'REF1', L2: 'R/D1', R1: 'REF2', R2: 'R/D2',
     },
   };
+}
+
+function getFixEntries(state: FMCState) {
+  const entries = state.fixEntries.some(entry => entry.refFix)
+    ? state.fixEntries
+    : [state.fix];
+  return [
+    entries[0] ?? { refFix: '', radial: 0, distance: 0 },
+    entries[1] ?? { refFix: '', radial: 0, distance: 0 },
+  ];
+}
+
+function formatFixRadialDistance(entry: { refFix: string; radial: number; distance: number }): string {
+  return entry.refFix && entry.radial > 0
+    ? `${String(entry.radial).padStart(3, '0')}/${String(entry.distance).padStart(3, '0')}`
+    : '---/---';
 }

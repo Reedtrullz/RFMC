@@ -5,7 +5,8 @@ This handoff is for the next agent continuing implementation work in `/Users/rei
 ## Current Repository State
 
 - Active branch: `main`
-- Latest pushed commit at handoff time: `51ef671 Add Boeing approach reference page`
+- Latest pushed commit before this continuation slice: `672415a Add agent handoff instructions`
+- This handoff was updated during the next roadmap slice; check `git log -1 --oneline` for the newest commit after that slice is committed.
 - Current authoritative status document: `IMPLEMENTATION_STATUS.md`
 - Current roadmap: `ROADMAP.md`
 - Current test matrix: `TEST_MATRIX.md`
@@ -35,9 +36,9 @@ These are useful as local references, but prior commits intentionally excluded t
 Latest verified automated baseline:
 
 - `npm run typecheck:all` passes across shared, frontend, and server.
-- `npm test -- --run` passes with `94/94` tests.
+- `npm test -- --run` passes with `98/98` tests.
 - `npm run test:e2e` passes with `11 passed, 2 skipped`.
-- `npm run build` succeeds.
+- `npm run build` succeeds with the current bundle at about `263.93KB` JS and `20.76KB` CSS.
 - `npm audit --audit-level=high` exits successfully for the high/critical policy, while still reporting the documented 2 moderate Vite/esbuild dev advisories.
 
 Do not claim live MSFS/PMDG validation from this macOS workspace. PMDG work is scaffolded and mock-tested, but live round-trip validation belongs in the Windows/MSFS/PMDG matrix documented in `docs/MSFS_LIVE_VALIDATION.md`.
@@ -50,6 +51,8 @@ Recent commits in order:
 - `e47db78 Show route constraints on ND`
 - `c2bcd04 Reflect direct-to targets on ND`
 - `51ef671 Add Boeing approach reference page`
+- `672415a Add agent handoff instructions`
+- Current continuation slice after `672415a`: two-entry FIX page and multiple ND FIX overlays.
 
 The current implementation includes:
 
@@ -66,12 +69,14 @@ The current implementation includes:
   - DIR INTC direct-to state.
   - DES NOW trainer action.
   - TAKEOFF REF page 2 trainer approach reference with landing runway, landing flaps, VREF, ILS frequency, and course.
+  - Two-entry FIX page support with entry-specific radial/distance fields.
 - Phase 2.5 ND training visuals:
   - Route line and waypoint labels.
   - Active/direct-to segment awareness.
   - Discontinuity marker.
   - Speed/altitude constraints from route parsing.
   - FIX radial/distance overlay.
+  - Multiple FIX ring/radial overlays when two FIX entries exist.
   - HOLD racetrack preview.
   - SID/STAR/approach/runway context.
   - MAP/PLAN mode, range, overlay toggles, and iPad layout handling.
@@ -169,21 +174,18 @@ Watch-outs:
 
 Roadmap phases: Phase 2 and Phase 2.5.
 
-Goal:
+Status:
 
-- Expand FIX from a single reference fix to trainer-level multiple FIX entries, with ND overlay support.
+- Completed as a two-slot trainer implementation after this handoff was first created.
+- `FMCState.fixEntries` is the new multi-entry model, while legacy `fix` remains for compatibility with the first slot.
+- The FIX page exposes L1/L2 for entry 1 and R1/R2 for entry 2.
+- The ND model exposes `fixOverlays` and renders multiple ring/radial overlays.
+- Unit tests cover renderer, ND model, frontend store, and backend engine behavior.
+- Playwright covers entering two FIX entries and seeing two ND overlays.
 
-Expected work:
+Possible follow-up:
 
-- Replace or extend `state.fix` with a multi-entry model.
-- Support at least two FIX entries if keeping scope conservative.
-- Render multiple rings/radials on ND when overlay is enabled.
-- Add validation and tests for radial/distance ranges.
-- Update `TEST_MATRIX.md` from partial to stronger automated coverage.
-
-Watch-outs:
-
-- Do not overbuild full aircraft behavior. This is a training overlay until pilot review.
+- Consider pilot feedback before expanding beyond two slots.
 
 ### Option C: Airbus Scope Cleanup
 
@@ -265,4 +267,3 @@ A roadmap slice is done when:
 - `IMPLEMENTATION_STATUS.md` and `TEST_MATRIX.md` are updated with measured results.
 - The full validation command set passes or any skipped/unrun command is clearly documented.
 - The commit excludes unrelated local artifacts.
-

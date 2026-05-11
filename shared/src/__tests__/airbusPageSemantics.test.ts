@@ -31,6 +31,7 @@ const baseState: FMCState = {
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
   holdPending: null,
   fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
   legsPageIndex: 0,
   legsPageCount: 1,
   depArrSubPage: 'DEP',

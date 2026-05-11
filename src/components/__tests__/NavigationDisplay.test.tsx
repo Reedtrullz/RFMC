@@ -37,6 +37,10 @@ describe('NavigationDisplay', () => {
       },
       hold: { fix: 'RBV', inboundCourse: 270, legTime: 1.5, legDist: 0, direction: 'L' },
       fix: { refFix: 'DIXIE', radial: 180, distance: 20 },
+      fixEntries: [
+        { refFix: 'DIXIE', radial: 180, distance: 20 },
+        { refFix: 'RBV', radial: 270, distance: 35 },
+      ],
     });
 
     render(<NavigationDisplay />);
@@ -49,7 +53,7 @@ describe('NavigationDisplay', () => {
     expect(screen.getAllByText('RBV').length).toBeGreaterThan(0);
     expect(screen.getByText('250/10000A')).toBeInTheDocument();
     expect(screen.getByTestId('nd-hold-overlay')).toBeInTheDocument();
-    expect(screen.getByTestId('nd-fix-overlay')).toBeInTheDocument();
+    expect(screen.getAllByTestId('nd-fix-overlay')).toHaveLength(2);
   });
 
   it('switches display style for Airbus without changing route data', () => {

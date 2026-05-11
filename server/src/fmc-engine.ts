@@ -15,6 +15,13 @@ function isFixInActiveRoute(state: FMCState, ident: string): boolean {
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
 }
 
+function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix']): FMCState['fixEntries'] {
+  return [
+    { ...(entries[0] ?? legacy) },
+    { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
+  ];
+}
+
 export class FMCEngine {
   private state: FMCState;
 
@@ -50,6 +57,10 @@ export class FMCEngine {
       hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
       holdPending: null,
       fix: { refFix: '', radial: 0, distance: 0 },
+      fixEntries: [
+        { refFix: '', radial: 0, distance: 0 },
+        { refFix: '', radial: 0, distance: 0 },
+      ],
       deleteMode: false,
       editWaypointIndex: null,
       aircraftState: null,
@@ -578,20 +589,32 @@ export class FMCEngine {
         this.state.scratchpad = '';
         return true;
       }
-      case 'set_fix_ref': {
-        const result = isValidICAO(sp.toUpperCase());
+      case 'set_fix_ref':
+      case 'set_fix_ref_0':
+      case 'set_fix_ref_1': {
+        const result = isValidWaypoint(sp.toUpperCase());
         if (!result.valid) return icaoErr(result);
-        this.state.fix = { ...this.state.fix, refFix: sp.toUpperCase() };
+        const entryIndex = action.endsWith('_1') ? 1 : 0;
+        const fixEntries = ensureFixEntries(this.state.fixEntries, this.state.fix);
+        fixEntries[entryIndex] = { ...fixEntries[entryIndex], refFix: sp.toUpperCase() };
+        this.state.fixEntries = fixEntries;
+        if (entryIndex === 0) this.state.fix = fixEntries[0];
         this.state.scratchpad = '';
         return true;
       }
-      case 'set_fix_radial_distance': {
+      case 'set_fix_radial_distance':
+      case 'set_fix_radial_distance_0':
+      case 'set_fix_radial_distance_1': {
         const parts = sp.split('/');
         if (parts.length !== 2) return err();
         const radial = parseInt(parts[0]);
         const distance = parseInt(parts[1]);
         if (isNaN(radial) || radial < 1 || radial > 360 || isNaN(distance) || distance < 0 || distance > 999) return err();
-        this.state.fix = { ...this.state.fix, radial, distance };
+        const entryIndex = action.endsWith('_1') ? 1 : 0;
+        const fixEntries = ensureFixEntries(this.state.fixEntries, this.state.fix);
+        fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
+        this.state.fixEntries = fixEntries;
+        if (entryIndex === 0) this.state.fix = fixEntries[0];
         this.state.scratchpad = '';
         return true;
       }
