@@ -2,7 +2,7 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 77/77 pass
+- Unit tests: 79/79 pass
 - E2E tests: 9/9 pass
 - Build: successful (247KB JS, 18KB CSS)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
@@ -34,6 +34,7 @@
 - Added a supported Boeing `DES NOW` trainer action on the DES page that arms descent guidance feedback instead of showing an unsupported LSK.
 - Expanded the versioned SimBrief route fixture set to 20 routes and enforced that minimum in regression tests.
 - Added route-context validation for Boeing HOLD fixes so active-route holds reject fixes that are not in the loaded route.
+- Added LEGS discontinuity resolution behavior: entering a waypoint on a discontinuity line replaces the discontinuity instead of inserting before it.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
@@ -164,7 +165,7 @@
 
 ### Phase 7 (Testing) — COMPLETE
 - [x] T7.1: Vitest installed and configured
-- [x] T7.2-T7.6: 77 unit tests across 14 files, 9 E2E tests with Playwright
+- [x] T7.2-T7.6: 79 unit tests across 14 files, 9 E2E tests with Playwright
 
 ## Post-Oracle Fixes Applied
 
@@ -356,4 +357,4 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ## Conclusion
 
-VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 77 unit tests pass, all 9 E2E tests pass, and the build succeeds.
+VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 79 unit tests pass, all 9 E2E tests pass, and the build succeeds.

@@ -255,7 +255,12 @@ export class FMCEngine {
             if (!result.valid) {
               this.state.scratchpadError = result.error ?? 'INVALID ENTRY';
             } else {
-              this.state.flightPlan.waypoints.splice(wpIndex, 0, { ident, discontinuity: false });
+              const nextWaypoint = { ident, discontinuity: false };
+              if (this.state.flightPlan.waypoints[wpIndex]?.discontinuity) {
+                this.state.flightPlan.waypoints[wpIndex] = nextWaypoint;
+              } else {
+                this.state.flightPlan.waypoints.splice(wpIndex, 0, nextWaypoint);
+              }
               this.state.scratchpad = '';
               this.state.isModified = true;
               this.state.execLit = true;

@@ -35,6 +35,34 @@ describe('FMCEngine', () => {
     expect(state.execLit).toBe(true);
   });
 
+  it('resolves backend LEGS discontinuities by replacing them with scratchpad waypoint entries', () => {
+    const engine = new FMCEngine();
+    engine.getState().currentPage = 'LEGS';
+    engine.getState().flightPlan = {
+      origin: 'KJFK',
+      destination: 'KDCA',
+      flightNumber: '',
+      route: '',
+      waypoints: [
+        { ident: 'RBV', discontinuity: false },
+        { ident: 'DISCONTINUITY', discontinuity: true },
+        { ident: 'DIXIE', discontinuity: false },
+      ],
+    };
+
+    enter(engine, 'LENDY');
+    engine.processInput('L2');
+
+    const state = engine.getState();
+    expect(state.flightPlan.waypoints).toEqual([
+      { ident: 'RBV', discontinuity: false },
+      { ident: 'LENDY', discontinuity: false },
+      { ident: 'DIXIE', discontinuity: false },
+    ]);
+    expect(state.execLit).toBe(true);
+    expect(state.scratchpad).toBe('');
+  });
+
   it('handles DEP/ARR procedure entries in backend CONTROL mode', () => {
     const engine = new FMCEngine();
     engine.processInput('DEP_ARR');

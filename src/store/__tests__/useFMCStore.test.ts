@@ -100,6 +100,36 @@ describe('FMC Store', () => {
     expect(state.deleteMode).toBe(false);
   });
 
+  it('resolves a LEGS discontinuity by replacing it with the scratchpad waypoint', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'LEGS',
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DISCONTINUITY', discontinuity: true },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+    });
+
+    for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 2);
+
+    const state = useFMCStore.getState();
+    expect(state.flightPlan.waypoints).toEqual([
+      { ident: 'RBV', discontinuity: false },
+      { ident: 'LENDY', discontinuity: false },
+      { ident: 'DIXIE', discontinuity: false },
+    ]);
+    expect(state.execLit).toBe(true);
+    expect(state.scratchpad).toBe('');
+  });
+
   it('stages HOLD edits and commits them only on EXEC', () => {
     const store = useFMCStore.getState();
     useFMCStore.setState({ currentPage: 'HOLD' });

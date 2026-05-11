@@ -890,7 +890,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const result = isValidWaypoint(ident.toUpperCase());
     if (!result.valid) { set({ scratchpadError: result.error }); return; }
     const waypoints = [...state.flightPlan.waypoints];
-    waypoints.splice(index, 0, { ident: ident.toUpperCase(), discontinuity: false });
+    const nextWaypoint = { ident: ident.toUpperCase(), discontinuity: false };
+    if (waypoints[index]?.discontinuity) {
+      waypoints[index] = nextWaypoint;
+    } else {
+      waypoints.splice(index, 0, nextWaypoint);
+    }
     set({
       flightPlan: { ...state.flightPlan, waypoints },
       isModified: true,
