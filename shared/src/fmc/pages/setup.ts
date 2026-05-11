@@ -182,7 +182,47 @@ export function renderThrustLimPage(state: FMCState): DisplayData {
 }
 
 export function renderTakeoffRefPage(state: FMCState): DisplayData {
-  const { takeoff } = state;
+  const { takeoff, landing, route, takeoffRefPageIndex } = state;
+
+  if (takeoffRefPageIndex === 1) {
+    const runway = landing.runway || route.runway || takeoff.runway || '---';
+    const approach = route.approach || '-----';
+    return {
+      title: 'TAKEOFF REF',
+      pageIndicator: '2/2',
+      lines: [
+        inverse('  TAKEOFF REF      2/2', '', '', 'cyan'),
+        fmt(' LANDING RW', '<', '', 'white'),
+        fmt(` ${runway}`, '', '', 'green'),
+        fmt(' APPROACH', '<', '', 'white'),
+        fmt(` ${approach}`, '', '', route.approach ? 'green' : 'white'),
+        blank(),
+        fmt(' FLAPS', '<', 'VREF', 'white'),
+        fmt(` ${landing.flaps || '--'}${''.padEnd(12, ' ')}${landing.vref ? `${landing.vref} KT` : '---'}`, '', '', landing.flaps || landing.vref ? 'green' : 'white'),
+        fmt(' ILS FREQ', '<', 'CRS', 'white'),
+        fmt(` ${landing.ilsFrequency || '---.--'}${''.padEnd(9, ' ')}${landing.course ? `${landing.course}°` : '---'}`, '', '', landing.ilsFrequency || landing.course ? 'green' : 'white'),
+        blank(),
+        fmt(' REF ONLY', '', '', 'white'),
+        fmt(' TRAINER APPR DATA', '', '', 'green'),
+        blank(),
+      ],
+      lskActions: {
+        L1: 'set_landing_runway',
+        L2: null,
+        L3: 'set_landing_flaps',
+        L4: 'set_ils_frequency',
+        L5: null,
+        L6: 'prev_page',
+        R1: null,
+        R2: null,
+        R3: 'set_landing_vref',
+        R4: 'set_ils_course',
+        R5: null,
+        R6: null,
+      },
+    };
+  }
+
   return {
     title: 'TAKEOFF REF',
     pageIndicator: '1/2',

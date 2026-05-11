@@ -7,8 +7,8 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
 | Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 91/91 passing | 100% pass |
-| Playwright E2E | `npm run test:e2e` | 11/11 passing | 100% pass |
+| Unit/regression tests | `npm test -- --run` | 94/94 passing | 100% pass |
+| Playwright E2E | `npm run test:e2e` | 11 passed, 2 skipped | 100% pass for runnable tests |
 | Production build | `npm run build` | Passing | Successful build |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
 
@@ -19,6 +19,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Boeing startup | IDENT renders and POS INIT navigation works | Yes | Optional | Covered by Playwright smoke and preflight flow |
 | Boeing preflight | IDENT -> POS INIT -> RTE -> LEGS -> DEP/ARR -> PERF -> THRUST LIM -> TAKEOFF REF | Yes | Pilot review required | Current flow is trainer-level, not pilot-validated |
 | Boeing DEP/ARR | SID, runway, STAR, approach entries | Yes | Pilot review required | Uses current mock procedure data |
+| Boeing approach reference | TAKEOFF REF page 2 landing runway, flaps, VREF, ILS frequency, course | Yes unit | Pilot review required | Trainer reference data only; not navdata-backed tuning |
 | Boeing LEGS | Route parsing, insert/delete, discontinuity replacement, constraints | Partial | Required | Add deeper EXEC staging cases |
 | Boeing HOLD | Staged edits, route-context validation, and EXEC commit | Yes unit | Required | Add Playwright flow |
 | Boeing FIX | Radial/distance validation | Partial | Required | Add multi-entry/ring preview when implemented |

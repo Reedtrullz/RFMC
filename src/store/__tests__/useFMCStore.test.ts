@@ -240,6 +240,31 @@ describe('FMC Store', () => {
     expect(state.execLit).toBe(true);
   });
 
+  it('sets landing approach reference values from TAKEOFF REF page 2', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'TAKEOFF_REF',
+      takeoffRefPageIndex: 1,
+      route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '', approach: 'ILS19' },
+    });
+
+    for (const key of '19') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+    for (const key of '30') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 3);
+    for (const key of '142') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('R', 3);
+    for (const key of '109.90') store.pressKey(key === '.' ? 'DOT' : (key as Parameters<typeof store.pressKey>[0]));
+    store.pressLSK('L', 4);
+    for (const key of '193') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('R', 4);
+
+    const state = useFMCStore.getState();
+    expect(state.landing).toEqual({ runway: '19', flaps: '30', vref: 142, ilsFrequency: '109.90', course: 193 });
+    expect(state.route.runway).toBe('19');
+    expect(state.execLit).toBe(true);
+  });
+
   it('sets DEP/ARR procedures, DIR INTC, and N1 LIMIT values', () => {
     const store = useFMCStore.getState();
     useFMCStore.setState({ currentPage: 'DEP_ARR', route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' } });

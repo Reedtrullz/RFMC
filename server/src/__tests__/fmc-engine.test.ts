@@ -170,6 +170,28 @@ describe('FMCEngine', () => {
     expect(state.execLit).toBe(true);
   });
 
+  it('sets backend landing approach reference values from TAKEOFF REF page 2', () => {
+    const engine = new FMCEngine();
+    engine.processInput('PERF');
+    engine.processInput('NEXT_PAGE');
+    engine.processInput('NEXT_PAGE');
+
+    enter(engine, '19');
+    engine.processInput('L1');
+    enter(engine, '30');
+    engine.processInput('L3');
+    enter(engine, '142');
+    engine.processInput('R3');
+    enter(engine, '109.90');
+    engine.processInput('L4');
+    enter(engine, '193');
+    engine.processInput('R4');
+
+    const state = engine.getState();
+    expect(state.landing).toEqual({ runway: '19', flaps: '30', vref: 142, ilsFrequency: '109.90', course: 193 });
+    expect(state.route.runway).toBe('19');
+  });
+
   it('sets direct-to waypoint and renders mode-dependent N1 limits', () => {
     const engine = new FMCEngine();
     engine.processInput('DIR_INTC');

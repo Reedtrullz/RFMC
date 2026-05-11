@@ -30,6 +30,7 @@ const defaultState = {
   position: { refAirport: '', gate: '' },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
+  landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
 
@@ -63,6 +64,7 @@ const defaultState = {
   legsPageCount: 1,
   depArrSubPage: 'DEP' as 'DEP' | 'ARR',
   rteSubPage: 0,
+  takeoffRefPageIndex: 0,
 
   fix: { refFix: '', radial: 0, distance: 0 },
 
@@ -205,6 +207,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       pageHistory: [...pageHistory, currentPage],
       scratchpad: '',
       scratchpadError: null,
+      takeoffRefPageIndex: page === 'TAKEOFF_REF' ? 0 : get().takeoffRefPageIndex,
     });
   },
 
@@ -282,9 +285,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       } else if (s.currentPage === 'RTE' && s.rteSubPage < 1) {
         set({ rteSubPage: s.rteSubPage + 1 });
       } else if (s.currentPage === 'PERF_INIT') {
-        set({ currentPage: 'TAKEOFF_REF', scratchpad: '', scratchpadError: null });
+        set({ currentPage: 'TAKEOFF_REF', takeoffRefPageIndex: 0, scratchpad: '', scratchpadError: null });
       } else if (s.currentPage === 'TAKEOFF_REF') {
-        set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
+        if (s.takeoffRefPageIndex < 1) {
+          set({ takeoffRefPageIndex: s.takeoffRefPageIndex + 1, scratchpad: '', scratchpadError: null });
+        } else {
+          set({ currentPage: 'PERF_INIT', takeoffRefPageIndex: 0, scratchpad: '', scratchpadError: null });
+        }
       }
       handled = true;
     }
@@ -296,9 +303,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       } else if (s.currentPage === 'RTE' && s.rteSubPage > 0) {
         set({ rteSubPage: s.rteSubPage - 1 });
       } else if (s.currentPage === 'PERF_INIT') {
-        set({ currentPage: 'TAKEOFF_REF', scratchpad: '', scratchpadError: null });
+        set({ currentPage: 'TAKEOFF_REF', takeoffRefPageIndex: 0, scratchpad: '', scratchpadError: null });
       } else if (s.currentPage === 'TAKEOFF_REF') {
-        set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
+        if (s.takeoffRefPageIndex > 0) {
+          set({ takeoffRefPageIndex: s.takeoffRefPageIndex - 1, scratchpad: '', scratchpadError: null });
+        } else {
+          set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
+        }
       }
       handled = true;
     }
@@ -587,6 +598,47 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const qnh = parseFloat(scratchpad);
           if (isNaN(qnh) || qnh < 900 || qnh > 1100) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
           updates.takeoff = { ...state.takeoff, qnh: qnh * 100 };
+        }
+        break;
+      }
+      case 'set_landing_runway': {
+        if (scratchpad) {
+          if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          const runway = scratchpad.toUpperCase();
+          updates.landing = { ...state.landing, runway };
+          updates.route = { ...state.route, runway };
+        }
+        break;
+      }
+      case 'set_landing_flaps': {
+        if (scratchpad) {
+          const flaps = scratchpad.toUpperCase();
+          if (!['15', '30', '40'].includes(flaps)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.landing = { ...state.landing, flaps };
+        }
+        break;
+      }
+      case 'set_landing_vref': {
+        if (scratchpad) {
+          const vref = parseInt(scratchpad, 10);
+          if (isNaN(vref) || vref < 80 || vref > 200) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.landing = { ...state.landing, vref };
+        }
+        break;
+      }
+      case 'set_ils_frequency': {
+        if (scratchpad) {
+          const frequency = parseFloat(scratchpad);
+          if (isNaN(frequency) || frequency < 108.1 || frequency > 111.95) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.landing = { ...state.landing, ilsFrequency: frequency.toFixed(2) };
+        }
+        break;
+      }
+      case 'set_ils_course': {
+        if (scratchpad) {
+          const course = parseInt(scratchpad, 10);
+          if (isNaN(course) || course < 1 || course > 360) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
+          updates.landing = { ...state.landing, course };
         }
         break;
       }

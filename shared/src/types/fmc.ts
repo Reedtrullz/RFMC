@@ -155,6 +155,14 @@ export interface TakeoffData {
   flexTemp?: number;
 }
 
+export interface LandingData {
+  runway: string;
+  flaps: string;
+  vref: number;
+  ilsFrequency: string;
+  course: number;
+}
+
 export interface PerformanceData {
   crzAlt: number;
   costIndex: number;
@@ -223,6 +231,7 @@ export interface FMCState {
   position: PositionData;
   performance: PerformanceData;
   takeoff: TakeoffData;
+  landing: LandingData;
   route: RouteData;
   flightPlan: FlightPlan;
   
@@ -268,6 +277,7 @@ export interface FMCState {
   legsPageCount: number;
   depArrSubPage: 'DEP' | 'ARR';
   rteSubPage: number;
+  takeoffRefPageIndex: number;
 
   deleteMode: boolean;
   editWaypointIndex: number | null;

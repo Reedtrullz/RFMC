@@ -19,6 +19,7 @@ const baseState: FMCState = {
   position: { refAirport: '', gate: '' },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
+  landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'AA123', route: '', waypoints: [] },
   isModified: false,
@@ -34,6 +35,7 @@ const baseState: FMCState = {
   legsPageCount: 1,
   depArrSubPage: 'DEP',
   rteSubPage: 0,
+  takeoffRefPageIndex: 0,
   deleteMode: false,
   editWaypointIndex: null,
   aircraftState: null,
@@ -92,6 +94,22 @@ describe('Page Renderers', () => {
     expect(data.lskActions.R6).toBe('des_now');
     expect(data.lskLabels?.R6).toBe('DES NOW');
     expect(data.lines.some(line => line.text.includes('DES NOW'))).toBe(true);
+  });
+
+  it('renders TAKEOFF REF page 2 as landing and approach reference', () => {
+    const data = renderTakeoffRefPage({
+      ...baseState,
+      takeoffRefPageIndex: 1,
+      route: { ...baseState.route, approach: 'ILS19' },
+      landing: { runway: '19', flaps: '30', vref: 142, ilsFrequency: '109.90', course: 193 },
+    });
+
+    expect(data.pageIndicator).toBe('2/2');
+    expect(data.lines.some(l => l.text.includes('LANDING RW'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('ILS19'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('142 KT'))).toBe(true);
+    expect(data.lskActions.L3).toBe('set_landing_flaps');
+    expect(data.lskActions.R3).toBe('set_landing_vref');
   });
 
   it('renders POS INIT page', () => {

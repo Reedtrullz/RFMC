@@ -33,6 +33,7 @@ export class FMCEngine {
       position: { refAirport: '', gate: '' },
       performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
       takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
+      landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
       route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
       flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
       isModified: false,
@@ -45,6 +46,7 @@ export class FMCEngine {
       legsPageCount: 1,
       depArrSubPage: 'DEP',
       rteSubPage: 0,
+      takeoffRefPageIndex: 0,
       hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
       holdPending: null,
       fix: { refFix: '', radial: 0, distance: 0 },
@@ -100,6 +102,7 @@ export class FMCEngine {
     const target = pageMap[page] || (page as PageType);
     this.state.pageHistory.push(this.state.currentPage);
     this.state.currentPage = target;
+    if (target === 'TAKEOFF_REF') this.state.takeoffRefPageIndex = 0;
     this.state.scratchpad = '';
   }
 
@@ -161,11 +164,17 @@ export class FMCEngine {
     } else if (this.state.currentPage === 'PERF_INIT') {
       this.state.pageHistory.push(this.state.currentPage);
       this.state.currentPage = 'TAKEOFF_REF';
+      this.state.takeoffRefPageIndex = 0;
       this.state.scratchpad = '';
       return true;
     } else if (this.state.currentPage === 'TAKEOFF_REF') {
-      this.state.pageHistory.push(this.state.currentPage);
-      this.state.currentPage = 'PERF_INIT';
+      if (this.state.takeoffRefPageIndex < 1) {
+        this.state.takeoffRefPageIndex += 1;
+      } else {
+        this.state.pageHistory.push(this.state.currentPage);
+        this.state.currentPage = 'PERF_INIT';
+        this.state.takeoffRefPageIndex = 0;
+      }
       this.state.scratchpad = '';
       return true;
     }
@@ -184,11 +193,16 @@ export class FMCEngine {
     } else if (this.state.currentPage === 'PERF_INIT') {
       this.state.pageHistory.push(this.state.currentPage);
       this.state.currentPage = 'TAKEOFF_REF';
+      this.state.takeoffRefPageIndex = 0;
       this.state.scratchpad = '';
       return true;
     } else if (this.state.currentPage === 'TAKEOFF_REF') {
-      this.state.pageHistory.push(this.state.currentPage);
-      this.state.currentPage = 'PERF_INIT';
+      if (this.state.takeoffRefPageIndex > 0) {
+        this.state.takeoffRefPageIndex -= 1;
+      } else {
+        this.state.pageHistory.push(this.state.currentPage);
+        this.state.currentPage = 'PERF_INIT';
+      }
       this.state.scratchpad = '';
       return true;
     }
@@ -483,6 +497,42 @@ export class FMCEngine {
         const qnh = parseFloat(sp);
         if (isNaN(qnh) || qnh < 900 || qnh > 1100) return err();
         this.state.takeoff = { ...this.state.takeoff, qnh: qnh * 100 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_landing_runway': {
+        if (sp.length < 2) return err();
+        const runway = sp.toUpperCase();
+        this.state.landing = { ...this.state.landing, runway };
+        this.state.route = { ...this.state.route, runway };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_landing_flaps': {
+        const flaps = sp.toUpperCase();
+        if (!['15', '30', '40'].includes(flaps)) return err();
+        this.state.landing = { ...this.state.landing, flaps };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_landing_vref': {
+        const vref = parseInt(sp, 10);
+        if (isNaN(vref) || vref < 80 || vref > 200) return err();
+        this.state.landing = { ...this.state.landing, vref };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_ils_frequency': {
+        const frequency = parseFloat(sp);
+        if (isNaN(frequency) || frequency < 108.1 || frequency > 111.95) return err();
+        this.state.landing = { ...this.state.landing, ilsFrequency: frequency.toFixed(2) };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_ils_course': {
+        const course = parseInt(sp, 10);
+        if (isNaN(course) || course < 1 || course > 360) return err();
+        this.state.landing = { ...this.state.landing, course };
         this.state.scratchpad = '';
         return true;
       }

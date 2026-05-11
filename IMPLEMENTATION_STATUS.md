@@ -2,9 +2,9 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 91/91 pass
-- E2E tests: 11/11 pass
-- Build: successful (247KB JS, 18KB CSS)
+- Unit tests: 94/94 pass
+- E2E tests: 11 passed, 2 skipped
+- Build: successful (262.88KB JS, 20.76KB CSS)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
 - **Oracle Round 29: APPROVED** — all critical blockers resolved after Round 28 re-verification
 
@@ -38,6 +38,7 @@
 - Added Phase 2.5 Navigation Display context visuals to the masterplan and implemented the first standalone ND training panel with route, discontinuity, speed/altitude constraints, FIX, HOLD, procedure, range, mode, and overlay context.
 - Fixed route-string constraint parsing so entries like `RBV/250FL100A` feed LEGS and ND constraint displays as structured speed/altitude data instead of waypoint text.
 - Added DIR INTC awareness to the ND so direct-to selections move the active target/segment and appear in the ND context header.
+- Added TAKEOFF REF page 2 trainer approach-reference support with landing runway, landing flaps, VREF, ILS frequency, and course entry in both frontend standalone mode and backend CONTROL-mode engine.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
@@ -168,7 +169,7 @@
 
 ### Phase 7 (Testing) — COMPLETE
 - [x] T7.1: Vitest installed and configured
-- [x] T7.2-T7.6: 91 unit tests across 16 files, 11 E2E tests with Playwright
+- [x] T7.2-T7.6: 94 unit tests across 16 files, 11 passing E2E tests with Playwright, 2 skipped live/optional tests
 
 ## Post-Oracle Fixes Applied
 
@@ -346,7 +347,7 @@ These are documented limitations and scope boundaries, not hidden completed work
 6. DEP/ARR → DEP page: SID (LSK2), RUNWAY (LSK3) → LSK6 → ARR page: STAR (LSK2), APPR (LSK3) → LSK6 → PERF INIT
 7. PERF INIT → CRZ ALT, COST INDEX, ZFW, RESERVES → LSK5 → THRUST LIM
 8. THRUST LIM → TO/TO1/TO2 modes, SEL OAT (LSK2) → LSK6 → TAKEOFF REF
-9. TAKEOFF REF → RUNWAY, TO MODE, V1/VR/V2 (cross-field validated: V1<VR<V2), TRIM, OAT, WIND, QNH → EXEC
+9. TAKEOFF REF → RUNWAY, TO MODE, V1/VR/V2 (cross-field validated: V1<VR<V2), TRIM, OAT, WIND, QNH; page 2 supports landing runway, landing flaps, VREF, ILS frequency, and course → EXEC
 
 ### Secondary Flows
 - HOLD page: set hold fix (waypoint), inbound course (1-360), leg time (0-9.9), leg dist (0-999), direction (L/R) → EXEC commits
@@ -360,4 +361,4 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ## Conclusion
 
-VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 91 unit tests pass, all 11 E2E tests pass, and the build succeeds.
+VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 94 unit tests pass, 11 E2E tests pass with 2 skipped live/optional tests, and the build succeeds.
