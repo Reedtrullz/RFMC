@@ -43,6 +43,8 @@
 - Added EXEC staging for LEGS and route edits: `pendingRoute` and `pendingFlightPlan` hold staged changes until EXEC is pressed. All route/flight-plan mutations (origin, destination, flight number, route string, SID, STAR, approach, runway, waypoint insert/delete, direct-to) now use the staging layer. Page renderers show "MOD" (Boeing) or "TMPY" (Airbus) title prefix during pending state. The ND displays the staged route preview.
 - Added CLR cancellation of pending modifications: pressing CLR with an empty scratchpad while in MOD state discards all pending route/flight-plan/hold changes and clears the EXEC light. Both frontend and backend in parity.
 - Airbus scope cleanup: removed misleading interactive arrows from display-only pages (FUEL PRED, SEC F-PLN, RAD NAV, DATA INDEX, PROG). Fixed LSK position mappings for INIT B and DEP/ARR. Added Airbus page status table to SCOPE.md.
+- Phase 8 PWA/iPad Offline Hardening: migrated to `vite-plugin-pwa` for robust service worker generation and caching of all compiled assets. Added PWA update prompt UI in React to alert users of offline updates.
+- Added iOS layout safe-area-inset boundaries to prevent the Home Indicator and notch from overlapping the CDU. Applied `touch-none` to root wrapper to prevent default browser elastic scrolling and pinch-to-zoom gestures, creating a native app feel on iPads.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
