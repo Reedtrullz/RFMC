@@ -2,7 +2,7 @@
 
 ## Verification Results (Latest Run)
 - TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 100/100 pass
+- Unit tests: 101/101 pass
 - E2E tests: 11 passed, 2 skipped
 - Build: successful (265.54KB JS, 20.76KB CSS)
 - npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
@@ -42,6 +42,7 @@
 - Expanded Boeing FIX support from one trainer entry to two entry-specific FIX slots, with frontend/backend parity and multiple ND FIX overlays.
 - Added EXEC staging for LEGS and route edits: `pendingRoute` and `pendingFlightPlan` hold staged changes until EXEC is pressed. All route/flight-plan mutations (origin, destination, flight number, route string, SID, STAR, approach, runway, waypoint insert/delete, direct-to) now use the staging layer. Page renderers show "MOD" (Boeing) or "TMPY" (Airbus) title prefix during pending state. The ND displays the staged route preview.
 - Added CLR cancellation of pending modifications: pressing CLR with an empty scratchpad while in MOD state discards all pending route/flight-plan/hold changes and clears the EXEC light. Both frontend and backend in parity.
+- Airbus scope cleanup: removed misleading interactive arrows from display-only pages (FUEL PRED, SEC F-PLN, RAD NAV, DATA INDEX, PROG). Fixed LSK position mappings for INIT B and DEP/ARR. Added Airbus page status table to SCOPE.md.
 
 ## Oracle Round 28 Critical Blockers — FIXED
 
