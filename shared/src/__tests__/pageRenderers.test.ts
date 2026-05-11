@@ -22,6 +22,8 @@ const baseState: FMCState = {
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'AA123', route: '', waypoints: [] },
+  pendingRoute: null,
+  pendingFlightPlan: null,
   isModified: false,
   execLit: false,
   msgLight: false,

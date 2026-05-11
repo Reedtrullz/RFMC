@@ -15,6 +15,8 @@ const baseState: FMCState = {
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
+  pendingRoute: null,
+  pendingFlightPlan: null,
   isModified: false,
   execLit: false,
   msgLight: false,

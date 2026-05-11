@@ -40,8 +40,8 @@ const defaultState = {
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
-  pendingRoute: null as RouteData | null,
-  pendingFlightPlan: null as FlightPlan | null,
+  pendingRoute: null,
+  pendingFlightPlan: null,
 
   isModified: false,
   execLit: false,
