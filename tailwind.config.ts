@@ -22,7 +22,7 @@ export default {
         'cdu-blue': '#60a5fa',
       },
       fontFamily: {
-        cdu: ['"Courier New"', 'Courier', 'monospace'],
+        cdu: ['"B612 Mono"', '"Courier New"', 'Courier', 'monospace'],
       },
       keyframes: {
         blink: {

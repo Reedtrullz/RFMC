@@ -96,6 +96,7 @@ const defaultState = {
   editWaypointIndex: null,
 
   aircraftState: null,
+  brightness: 100,
 };
 
 interface FMCActions {
@@ -121,6 +122,7 @@ interface FMCActions {
   setExternalDisplayData: (data: DisplayData | null) => void;
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
   clearFailureMode: () => void;
+  setBrightness: (b: number) => void;
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string }) => void;
   resetState: () => void;
@@ -171,7 +173,7 @@ interface TutorialState {
   tutorialHighlight: string | null;
 }
 
-export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & FMCActions;
+export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & FMCActions & { brightness: number };
 
 type StoreAPI = import('zustand').StoreApi<FMCStore>;
 
@@ -1015,6 +1017,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   }),
   setFailureMode: (mode, message) => set({ mode, failureMessage: message || (mode === 'FAIL' ? 'FMC FAILURE' : 'CDU OFF') }),
   clearFailureMode: () => set({ mode: 'ACTIVE', failureMessage: null }),
+  setBrightness: (b: number) => set({ brightness: b }),
 
   loadFlightPlan: (data) => {
     set((state) => {

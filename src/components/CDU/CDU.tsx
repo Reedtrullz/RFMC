@@ -26,6 +26,8 @@ export function CDU() {
   const connectionMode = useFMCStore(s => s.connectionMode);
   const connectionStatus = useFMCStore(s => s.connectionStatus);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const brightness = useFMCStore(s => s.brightness);
+  const setBrightness = useFMCStore(s => s.setBrightness);
 
   const { send } = useWebSocket();
 
@@ -136,7 +138,11 @@ export function CDU() {
           {/* Display */}
           <div
             className="bg-cdu-screen border-2 border-cdu-bezel-light rounded-sm overflow-hidden"
-            style={{ gridRow: '1 / 15', gridColumn: 2 }}
+            style={{ 
+              gridRow: '1 / 15', 
+              gridColumn: 2,
+              filter: `brightness(${brightness}%)`
+            }}
           >
             <Display />
           </div>
@@ -144,7 +150,11 @@ export function CDU() {
           {/* Scratchpad */}
           <div
             className="bg-cdu-screen border-x-2 border-b-2 border-cdu-bezel-light rounded-b-sm"
-            style={{ gridRow: 15, gridColumn: 2 }}
+            style={{ 
+              gridRow: 15, 
+              gridColumn: 2,
+              filter: `brightness(${brightness}%)`
+            }}
           >
             <Scratchpad />
           </div>
@@ -152,7 +162,13 @@ export function CDU() {
 
         {/* Keypad */}
         <div className="w-full mt-1">
-          <KeypadGrid onPress={onPressKey} highlight={tutorialHighlight} execLit={execLit} />
+          <KeypadGrid 
+            onPress={onPressKey} 
+            highlight={tutorialHighlight} 
+            execLit={execLit}
+            brightness={brightness}
+            onBrightnessChange={setBrightness}
+          />
         </div>
 
         {/* Function key row 1 */}
@@ -181,7 +197,13 @@ export function CDU() {
   );
 }
 
-function KeypadGrid({ onPress, highlight, execLit }: { onPress: (key: string) => void; highlight: string | null; execLit: boolean }) {
+function KeypadGrid({ onPress, highlight, execLit, brightness, onBrightnessChange }: { 
+  onPress: (key: string) => void; 
+  highlight: string | null; 
+  execLit: boolean;
+  brightness: number;
+  onBrightnessChange: (b: number) => void;
+}) {
   const numKeys = [['1','2','3'],['4','5','6'],['7','8','9'],['.','0','+/-']];
   const alphaKeys = [['A','B','C','D','E'],['F','G','H','I','J'],['K','L','M','N','O'],['P','Q','R','S','T'],['U','V','W','X','Y']];
 
@@ -215,7 +237,16 @@ function KeypadGrid({ onPress, highlight, execLit }: { onPress: (key: string) =>
           <CDUButton label="EXEC" className="flex-[1.5] h-9 text-xs"
             variant={execLit ? 'exec' : highlight === 'EXEC' ? 'highlight' : 'default'}
             onPress={() => onPress('EXEC')} />
-          <div className="flex-[0.5]" />
+          <div className="flex-[0.5] flex flex-col justify-end items-center pb-1">
+            <span className="text-[7px] text-cdu-white mb-0.5 opacity-60">BRT</span>
+            <input 
+              type="range" 
+              min="20" max="100" 
+              value={brightness}
+              onChange={(e) => onBrightnessChange(Number(e.target.value))}
+              className="w-full max-w-[24px] h-1 bg-cdu-bezel-light appearance-none rounded-full outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cdu-white"
+            />
+          </div>
           <CDUButton label="NEXT" className="flex-[1.0] h-9 text-[10px]"
             variant={highlight === 'NEXT_PAGE' ? 'highlight' : 'function'}
             onPress={() => onPress('NEXT_PAGE')} />
