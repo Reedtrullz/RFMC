@@ -121,9 +121,14 @@ describe('Page Renderers', () => {
     expect(data.lines.some(l => l.text.includes('REF AIRPORT'))).toBe(true);
   });
 
-  it('renders PROGRESS page', () => {
+  it('renders authentic Boeing PROGRESS page layout', () => {
     const data = renderProgressPage(baseState);
     expect(data.title).toBe('PROGRESS');
+    expect(data.lines.some(l => l.text.includes('LAST'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('TO'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('NEXT'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('DEST'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('CMD SPD'))).toBe(true);
     expect(data.lines.some(l => l.text.includes('KJFK'))).toBe(true);
     expect(data.lines.some(l => l.text.includes('KDCA'))).toBe(true);
   });

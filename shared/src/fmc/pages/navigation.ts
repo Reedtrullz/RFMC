@@ -138,71 +138,96 @@ function getLegsLskActions(state: FMCState): Record<string, string | null> {
 }
 
 export function renderProgressPage(state: FMCState): DisplayData {
-  const { flightPlan, performance, aircraftState } = state;
-  const origin = flightPlan.origin || '----';
-  const dest = flightPlan.destination || '----';
-
+  const { flightPlan, aircraftState, performance } = state;
   const isLive = aircraftState !== null;
   const title = isLive ? '►PROGRESS' : 'PROGRESS';
-  const titleLine = inverse(`  ${title}          1/1`);
 
-  let altDisplay = performance.crzAlt ? `FL${String(performance.crzAlt).slice(0, 3)}` : '---';
-  let speedDisplay = '---';
-  let headingDisplay = '---';
-  let vsDisplay = '----';
+  // Extract variables
+  const origin = flightPlan.origin || '----';
+  const dest = flightPlan.destination || '----';
+  
+  // Calculate DTG
+  let toWpt = '----';
+  let nextWpt = '----';
+  
+  let dtgTo = 0;
+  let dtgNext = 0;
+  let dtgDest = 0;
 
-  if (aircraftState) {
-    if (aircraftState.altitude !== undefined) {
-      const altFeet = Math.round(aircraftState.altitude);
-      if (altFeet >= 1000) {
-        altDisplay = `FL${String(Math.floor(altFeet / 100)).padStart(3, '0')}`;
-      } else {
-        altDisplay = String(altFeet).padStart(5, ' ');
+  let hasTo = false;
+  let hasNext = false;
+
+  if (aircraftState?.position && flightPlan.waypoints.length > 0) {
+    const w0 = flightPlan.waypoints[0];
+    if (w0.lat && w0.lon) {
+      toWpt = w0.ident;
+      hasTo = true;
+      dtgTo = greatCircleDistance(aircraftState.position.lat, aircraftState.position.lon, w0.lat, w0.lon);
+      dtgDest += dtgTo;
+
+      if (flightPlan.waypoints.length > 1) {
+        const w1 = flightPlan.waypoints[1];
+        if (w1.lat && w1.lon) {
+          nextWpt = w1.ident;
+          hasNext = true;
+          dtgNext = dtgTo + greatCircleDistance(w0.lat, w0.lon, w1.lat, w1.lon);
+        }
       }
-    }
-    if (aircraftState.speed !== undefined) {
-      speedDisplay = String(Math.round(aircraftState.speed)).padStart(3, ' ');
-    }
-    if (aircraftState.heading !== undefined) {
-      headingDisplay = String(Math.round(aircraftState.heading)).padStart(3, '0');
-    }
-    if (aircraftState.verticalSpeed !== undefined) {
-      const vs = Math.round(aircraftState.verticalSpeed);
-      vsDisplay = vs >= 0 ? `+${String(vs).padStart(4, ' ')}` : String(vs).padStart(5, ' ');
+
+      // Calculate total dest
+      let prevLat = w0.lat;
+      let prevLon = w0.lon;
+      for (let i = 1; i < flightPlan.waypoints.length; i++) {
+        const w = flightPlan.waypoints[i];
+        if (w.lat && w.lon) {
+          dtgDest += greatCircleDistance(prevLat, prevLon, w.lat, w.lon);
+          prevLat = w.lat;
+          prevLon = w.lon;
+        }
+      }
     }
   }
 
-  let dtgDisplay = ' ---- NM';
-  if (aircraftState && aircraftState.position && flightPlan.waypoints.length > 0) {
-    const nextWp = flightPlan.waypoints[0];
-    if (nextWp.lat !== undefined && nextWp.lon !== undefined) {
-      const dist = greatCircleDistance(
-        aircraftState.position.lat,
-        aircraftState.position.lon,
-        nextWp.lat,
-        nextWp.lon
-      );
-      dtgDisplay = ` ${dist.toFixed(1).padStart(5, ' ')} NM`;
-    }
+  // Formatting strings
+  const lastStr = origin.padEnd(5, ' ');
+  const toStr = toWpt.padEnd(5, ' ');
+  const nextStr = nextWpt.padEnd(5, ' ');
+  const destStr = dest.padEnd(5, ' ');
+
+  const formatDtg = (dtg: number, valid: boolean) => valid ? String(Math.round(dtg)).padStart(4, ' ') : '----';
+  
+  const toDtgStr = formatDtg(dtgTo, hasTo);
+  const nextDtgStr = formatDtg(dtgNext, hasNext);
+  const destDtgStr = formatDtg(dtgDest, hasTo); // If we have TO, we have a partial route to dest
+
+  // Command speed
+  let cmdSpd = '---';
+  if (aircraftState?.speed !== undefined) {
+    // Usually PROG shows commanded Mach or IAS, e.g. .78 MACH or 280 KT
+    // We'll just show current rounded speed as KT for now
+    cmdSpd = `${String(Math.round(aircraftState.speed))} KT`;
+  } else if (performance.costIndex) {
+    // Fallback if not live
+    cmdSpd = `ECON`;
   }
 
   return {
     title: isLive ? 'PROGRESS LIVE' : 'PROGRESS',
     pageIndicator: '1/1',
     lines: [
-      titleLine,
-      fmt(` ${origin} -> ${dest}`, '', ''),
+      inverse(`  ${title}          1/1`),
+      fmt(' LAST             ATA  FUEL', '', '', 'white'),
+      fmt(` ${lastStr}          ----- ----`, '', '', 'green'),
+      fmt(' TO               ETA   DTG', '', '', 'white'),
+      fmt(` ${toStr}           -----${toDtgStr}`, '', '', 'magenta'),
+      fmt(' NEXT             ETA   DTG', '', '', 'white'),
+      fmt(` ${nextStr}           -----${nextDtgStr}`, '', '', 'green'),
+      fmt(' DEST             ETA  FUEL', '', '', 'white'),
+      fmt(` ${destStr}           ----- ----`, '', '', 'green'),
+      fmt(' CMD SPD', '', '', 'white'),
+      fmt(` ${cmdSpd}`, '', '', 'green'),
       blank(),
-      fmt(' ALT', '', ''),
-      fmt(` ${altDisplay}`),
       blank(),
-      fmt(' HDG', '', ` ${headingDisplay}°`),
-      fmt(' DTG', '', dtgDisplay),
-      fmt(' ETA', '', ` ----Z`),
-      fmt(' FUEL REM', '', ` ---.-`),
-      fmt(' WIND', '', ` ---/---`),
-      fmt(' SPD', '', ` ${speedDisplay} KT`),
-      fmt(' VS', '', ` ${vsDisplay} FPM`),
     ],
     lskActions: {
       L1: null, L2: null, L3: null, L4: null, L5: null, L6: null,
