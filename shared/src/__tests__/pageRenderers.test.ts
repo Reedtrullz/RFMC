@@ -49,6 +49,29 @@ const baseState: FMCState = {
   simVariables: {},
   failureMessage: null,
   externalDisplayData: null,
+  efisL: {
+    mode: 'MAP',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'L',
+  },
+  efisR: {
+    mode: 'MAP',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'R',
+  },
+  brightness: 100,
+  latency: 0,
+  sessionStartTime: null,
 };
 
 describe('Page Renderers', () => {

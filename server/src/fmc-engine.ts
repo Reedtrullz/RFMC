@@ -74,6 +74,24 @@ export class FMCEngine {
       simVariables: {},
       failureMessage: null,
       externalDisplayData: null,
+      efisL: this.createDefaultEFIS('BOEING_737', 'L'),
+      efisR: this.createDefaultEFIS('BOEING_737', 'R'),
+      brightness: 100,
+      latency: 0,
+      sessionStartTime: null,
+    };
+  }
+
+  private createDefaultEFIS(aircraft: any, side: 'L' | 'R'): any {
+    return {
+      mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
+      range: 40,
+      overlays: {
+        fix: true, hold: true, wpt: true, arpt: true, sta: true,
+        data: false, pos: false, terr: false, wxr: false, tfc: true
+      },
+      centered: false,
+      side,
     };
   }
 

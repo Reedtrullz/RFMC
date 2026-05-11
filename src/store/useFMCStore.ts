@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan } from '@shared';
 import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber } from '@shared';
 import { devLog, devError } from '@shared';
@@ -27,40 +27,47 @@ function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix
 }
 
 // ---- Default initial state ----
+function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
+  return {
+    mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side,
+  };
+}
+
 const defaultState = {
   aircraft: 'BOEING_737' as AircraftType,
   currentPage: 'IDENT' as PageType,
   pageHistory: [] as PageType[],
   scratchpad: '',
   scratchpadError: null as string | null,
-
+  
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: { refAirport: '', gate: '' },
-  performance: {
-    crzAlt: 0,
-    costIndex: 0,
-    zfw: 0,
-    fuel: 0,
-    cg: 0,
-    reserve: 0,
-  },
+  performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
-  pendingRoute: null,
-  pendingFlightPlan: null,
-
+  
+  pendingRoute: null as RouteData | null,
+  pendingFlightPlan: null as FlightPlan | null,
+  
   isModified: false,
   execLit: false,
   msgLight: false,
-
+  
   mode: 'STANDBY' as FMCMode,
   connectionStatus: 'DISCONNECTED' as ConnectionStatus,
   connectionMode: 'STANDALONE' as ConnectionMode,
   connectedAircraft: null as string | null,
   connectedAircraftType: null as AircraftType | null,
-  connectedCapabilities: [] as string[],
+  connectedCapabilities: null as string[] | null,
   lastError: null as string | null,
   simVariables: {} as Record<string, number>,
   failureMessage: null as string | null,
@@ -78,28 +85,27 @@ const defaultState = {
   tutorialSkipAvailable: false,
   tutorialConfidence: null as number | null,
 
+  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
+  holdPending: null as any,
+  fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
+  
   legsPageIndex: 0,
   legsPageCount: 1,
-  depArrSubPage: 'DEP' as 'DEP' | 'ARR',
+  depArrSubPage: 'DEP' as const,
   rteSubPage: 0,
   takeoffRefPageIndex: 0,
-
-  fix: { refFix: '', radial: 0, distance: 0 },
-  fixEntries: [
-    { refFix: '', radial: 0, distance: 0 },
-    { refFix: '', radial: 0, distance: 0 },
-  ],
-
-  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
-  holdPending: null as FMCState['holdPending'],
-
+  
   deleteMode: false,
-  editWaypointIndex: null,
+  editWaypointIndex: null as number | null,
 
-  aircraftState: null,
+  aircraftState: null as any,
   brightness: 100,
   latency: 0,
   sessionStartTime: null as number | null,
+
+  efisL: createDefaultEFIS('BOEING_737', 'L'),
+  efisR: createDefaultEFIS('BOEING_737', 'R'),
 };
 
 interface FMCActions {
@@ -157,6 +163,11 @@ interface FMCActions {
   setTutorialConfidence: (stars: number) => void;
   setLatency: (ms: number) => void;
   setSessionStartTime: (time: number | null) => void;
+
+  setNDMode: (side: 'L' | 'R', mode: string) => void;
+  setNDRange: (side: 'L' | 'R', range: number) => void;
+  toggleNDOverlay: (side: 'L' | 'R', key: keyof EFISState['overlays']) => void;
+  toggleNDCenter: (side: 'L' | 'R') => void;
 }
 
 interface ConnectionDiagnostics {
@@ -1323,4 +1334,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setTutorialConfidence: (stars: number) => set({ tutorialConfidence: stars }),
   setLatency: (ms: number) => set({ latency: ms }),
   setSessionStartTime: (time: number | null) => set({ sessionStartTime: time }),
+
+  setNDMode: (side, mode) => {
+    const key = side === 'L' ? 'efisL' : 'efisR';
+    set({ [key]: { ...get()[key], mode } });
+  },
+  setNDRange: (side, range) => {
+    const key = side === 'L' ? 'efisL' : 'efisR';
+    set({ [key]: { ...get()[key], range } });
+  },
+  toggleNDOverlay: (side, overlayKey) => {
+    const key = side === 'L' ? 'efisL' : 'efisR';
+    const efis = get()[key];
+    set({ [key]: { ...efis, overlays: { ...efis.overlays, [overlayKey]: !efis.overlays[overlayKey as keyof typeof efis.overlays] } } });
+  },
+  toggleNDCenter: (side) => {
+    const key = side === 'L' ? 'efisL' : 'efisR';
+    set({ [key]: { ...get()[key], centered: !get()[key].centered } });
+  },
 }));

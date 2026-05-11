@@ -5,7 +5,7 @@ import {
   isStepComplete
 } from '../fmc/tutorialEngine';
 import { airbusTutorialScenarios } from '../fmc/tutorials/airbus-tutorials';
-import type { FMCState } from '../../types/fmc';
+import type { FMCState } from '../types/fmc';
 
 describe('tutorialEngine', () => {
   it('calculates an A grade for perfect performance', () => {

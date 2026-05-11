@@ -42,6 +42,29 @@ const baseState: FMCState = {
   deleteMode: false,
   editWaypointIndex: null,
   aircraftState: null,
+  efisL: {
+    mode: 'MAP',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'L',
+  },
+  efisR: {
+    mode: 'MAP',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'R',
+  },
+  brightness: 100,
+  latency: 0,
+  sessionStartTime: null,
 };
 
 describe('Navigation Display model', () => {
@@ -101,7 +124,7 @@ describe('Navigation Display model', () => {
     });
 
     expect(model.holdOverlay).toMatchObject({ fix: 'RBV', inboundCourse: 270, direction: 'L' });
-    expect(model.fixOverlay).toMatchObject({ refFix: 'RBV', radial: 180, distance: 20 });
+    expect(model.fixOverlays[0]).toMatchObject({ refFix: 'RBV', radial: 180, distance: 20 });
   });
 
   it('creates multiple fix overlays from FIX entries', () => {

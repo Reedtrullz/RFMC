@@ -42,6 +42,29 @@ const baseState: FMCState = {
   deleteMode: false,
   editWaypointIndex: null,
   aircraftState: null,
+  efisL: {
+    mode: 'ARC',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'L',
+  },
+  efisR: {
+    mode: 'ARC',
+    range: 40,
+    overlays: {
+      fix: true, hold: true, wpt: true, arpt: true, sta: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
+    centered: false,
+    side: 'R',
+  },
+  brightness: 100,
+  latency: 0,
+  sessionStartTime: null,
 };
 
 describe('Airbus page semantics', () => {

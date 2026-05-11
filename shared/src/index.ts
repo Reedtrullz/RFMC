@@ -10,9 +10,7 @@ export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbri
 export { buildNavigationDisplayModel } from './fmc/navigationDisplay';
 export type {
   NavigationDisplayModel,
-  NavigationDisplaySettings,
   NDMapMode,
-  NDOverlaySettings,
   NDRange,
   NDFixOverlay,
   NDHoldOverlay,

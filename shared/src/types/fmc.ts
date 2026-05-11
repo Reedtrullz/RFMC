@@ -8,6 +8,25 @@ import type { DisplaySemantic } from '../fmc/displaySemantics';
 /** Aircraft variant */
 export type AircraftType = 'BOEING_737' | 'AIRBUS_A320';
 
+export interface EFISState {
+  mode: string;           // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
+  range: number;          // 10, 20, 40, 80, 160, 320, 640
+  overlays: {
+    fix: boolean;
+    hold: boolean;
+    wpt: boolean;
+    arpt: boolean;
+    sta: boolean;
+    data: boolean;
+    pos: boolean;
+    terr: boolean;
+    wxr: boolean;
+    tfc: boolean;
+  };
+  centered: boolean;      // 737 CTR toggle
+  side: 'L' | 'R';
+}
+
 /** All possible Boeing 737 CDU pages */
 export type BoeingPageType =
   | 'IDENT'
@@ -268,6 +287,9 @@ export interface FMCState {
   failureMessage: string | null;
   externalDisplayData: DisplayData | null;
 
+  efisL: EFISState;
+  efisR: EFISState;
+
   hold: {
     fix: string;
     inboundCourse: number;
@@ -309,4 +331,7 @@ export interface FMCState {
     verticalSpeed?: number;
   } | null;
 
+  brightness: number;
+  latency: number;
+  sessionStartTime: number | null;
 }
