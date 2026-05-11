@@ -7,7 +7,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
 | Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 75/75 passing | 100% pass |
+| Unit/regression tests | `npm test -- --run` | 77/77 passing | 100% pass |
 | Playwright E2E | `npm run test:e2e` | 9/9 passing | 100% pass |
 | Production build | `npm run build` | Passing | Successful build |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
@@ -20,7 +20,7 @@ Status source: `IMPLEMENTATION_STATUS.md`.
 | Boeing preflight | IDENT -> POS INIT -> RTE -> LEGS -> DEP/ARR -> PERF -> THRUST LIM -> TAKEOFF REF | Yes | Pilot review required | Current flow is trainer-level, not pilot-validated |
 | Boeing DEP/ARR | SID, runway, STAR, approach entries | Yes | Pilot review required | Uses current mock procedure data |
 | Boeing LEGS | Route parsing, insert/delete, constraints | Partial | Required | Add deeper discontinuity and EXEC staging cases |
-| Boeing HOLD | Staged edits and EXEC commit | Yes unit | Required | Add Playwright flow and route-context behavior |
+| Boeing HOLD | Staged edits, route-context validation, and EXEC commit | Yes unit | Required | Add Playwright flow |
 | Boeing FIX | Radial/distance validation | Partial | Required | Add multi-entry/ring preview when implemented |
 | Boeing CLB/CRZ/DES | Static pages render | Partial | Required | Add DES NOW and trainer-level prediction tests |
 | Airbus INIT/F-PLN/DEP-ARR/PERF TO | Main data-entry flow | Yes | Pilot review required | Secondary pages still scoped/display-only |

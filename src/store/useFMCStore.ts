@@ -8,6 +8,16 @@ function findTutorial(scenarioName: string): TutorialScenario | undefined {
   return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
 }
 
+function isFixInActiveRoute(state: FMCState, ident: string): boolean {
+  const routeFixes = new Set([
+    state.flightPlan.origin,
+    state.flightPlan.destination,
+    ...state.flightPlan.waypoints.map(wp => wp.ident),
+  ].filter(Boolean).map(fix => fix.toUpperCase()));
+
+  return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
+}
+
 // ---- Default initial state ----
 const defaultState = {
   aircraft: 'BOEING_737' as AircraftType,
@@ -683,9 +693,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         break;
       case 'set_hold_fix':
         if (scratchpad) {
-          const result = isValidWaypoint(scratchpad.toUpperCase());
+          const ident = scratchpad.toUpperCase();
+          const result = isValidWaypoint(ident);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          state.setHoldFix(scratchpad.toUpperCase());
+          if (!isFixInActiveRoute(state, ident)) { set({ scratchpadError: 'NOT IN ROUTE' }); return; }
+          state.setHoldFix(ident);
           handled = true;
         }
         break;

@@ -5,6 +5,16 @@ import {
   isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds
 } from '@shared';
 
+function isFixInActiveRoute(state: FMCState, ident: string): boolean {
+  const routeFixes = new Set([
+    state.flightPlan.origin,
+    state.flightPlan.destination,
+    ...state.flightPlan.waypoints.map(wp => wp.ident),
+  ].filter(Boolean).map(fix => fix.toUpperCase()));
+
+  return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
+}
+
 export class FMCEngine {
   private state: FMCState;
 
@@ -472,10 +482,12 @@ export class FMCEngine {
         return true;
       }
       case 'set_hold_fix': {
-        const result = isValidWaypoint(sp.toUpperCase());
+        const ident = sp.toUpperCase();
+        const result = isValidWaypoint(ident);
         if (!result.valid) return icaoErr(result);
+        if (!isFixInActiveRoute(this.state, ident)) return icaoErr({ valid: false, error: 'NOT IN ROUTE' });
         const base = this.state.holdPending ?? this.state.hold;
-        this.state.holdPending = { ...base, fix: sp.toUpperCase() };
+        this.state.holdPending = { ...base, fix: ident };
         this.state.scratchpad = '';
         return true;
       }

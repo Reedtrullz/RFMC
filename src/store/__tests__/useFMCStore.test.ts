@@ -125,6 +125,31 @@ describe('FMC Store', () => {
     expect(state.execLit).toBe(false);
   });
 
+  it('rejects HOLD fixes that are not in the active route', () => {
+    const store = useFMCStore.getState();
+    useFMCStore.setState({
+      currentPage: 'HOLD',
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+    });
+
+    for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 1);
+
+    const state = useFMCStore.getState();
+    expect(state.holdPending).toBeNull();
+    expect(state.scratchpadError).toBe('NOT IN ROUTE');
+    expect(state.execLit).toBe(false);
+  });
+
   it('rejects V-speeds that violate V1 < VR < V2', () => {
     const store = useFMCStore.getState();
     useFMCStore.setState({

@@ -86,6 +86,22 @@ describe('FMCEngine', () => {
     expect(engine.getState().holdPending).toBeNull();
   });
 
+  it('rejects backend HOLD fixes that are not in the active route', () => {
+    const engine = new FMCEngine();
+    engine.processInput('RTE');
+    engine.processInput('NEXT_PAGE');
+    enter(engine, 'KJFK DCT RBV DIXIE KDCA');
+    engine.processInput('L1');
+    engine.processInput('HOLD');
+    enter(engine, 'LENDY');
+    engine.processInput('L1');
+
+    const state = engine.getState();
+    expect(state.holdPending).toBeNull();
+    expect(state.scratchpadError).toBe('NOT IN ROUTE');
+    expect(state.execLit).toBe(true);
+  });
+
   it('rejects invalid V-speed ordering without mutating state', () => {
     const engine = new FMCEngine();
     engine.processInput('PERF');
