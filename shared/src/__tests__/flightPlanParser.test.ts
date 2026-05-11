@@ -23,4 +23,21 @@ describe('Flight Plan Parser', () => {
     expect(result.destination).toBe('');
     expect(result.waypoints).toHaveLength(0);
   });
+
+  it('parses speed and altitude constraints before procedure detection', () => {
+    const result = parseRouteString('KJFK DCT RBV/250FL100 DIXIE KDCA');
+
+    expect(result.waypoints[0]).toMatchObject({
+      ident: 'RBV',
+      speedConstraint: { type: 'AT', speed: 250 },
+      altitudeConstraint: { type: 'AT', altitude: 10000 },
+    });
+  });
+
+  it('parses at-or-above and at-or-below altitude suffixes', () => {
+    const result = parseRouteString('KJFK DCT RBV/250FL100A DIXIE/2105000B KDCA');
+
+    expect(result.waypoints[0].altitudeConstraint).toMatchObject({ type: 'AT_OR_ABOVE', altitude: 10000 });
+    expect(result.waypoints[1].altitudeConstraint).toMatchObject({ type: 'AT_OR_BELOW', altitude: 5000 });
+  });
 });

@@ -175,9 +175,16 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
                 strokeWidth="1"
               />
               {(model.overlays.wpt || (point.airport && model.overlays.arpt)) && (
-                <text x="3.5" y="-3" fill={point.active ? activeColor : labelColor} fontSize="3.5" fontFamily="monospace">
-                  {point.label}
-                </text>
+                <>
+                  <text x="3.5" y="-3" fill={point.active ? activeColor : labelColor} fontSize="3.5" fontFamily="monospace">
+                    {point.label}
+                  </text>
+                  {(point.speedLabel || point.altitudeLabel) && (
+                    <text x="3.5" y="2" fill="#facc15" fontSize="2.8" fontFamily="monospace">
+                      {[point.speedLabel, point.altitudeLabel].filter(Boolean).join('/')}
+                    </text>
+                  )}
+                </>
               )}
             </>
           )}

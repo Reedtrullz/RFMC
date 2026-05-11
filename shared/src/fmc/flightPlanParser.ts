@@ -54,6 +54,21 @@ export function parseRouteString(routeString: string): { origin: string; destina
       continue;
     }
 
+    // Constraint-bearing fixes like RBV/250FL100 must be parsed before
+    // procedure detection, because their constraint text often ends in digits.
+    if (token.includes('/')) {
+      const { ident, altConstraint, spdConstraint } = parseConstraint(token);
+      waypoints.push({
+        ident,
+        airway: previousAirway,
+        altitudeConstraint: altConstraint,
+        speedConstraint: spdConstraint,
+        discontinuity: false,
+      });
+      previousAirway = undefined;
+      continue;
+    }
+
     // Check if it's a procedure (ends with number, not a standard waypoint)
     if (isProcedure(token)) {
       waypoints.push({
@@ -114,28 +129,30 @@ function parseConstraint(token: string): ParsedConstraint {
   let altConstraint: AltitudeConstraint | undefined;
   let spdConstraint: SpeedConstraint | undefined;
 
-  // Parse speed: /250FL100 or /250
-  const speedMatch = constraint.match(/^(\d{2,3})/);
+  let altitudePart = constraint;
+
+  // Parse speed: /250FL100, /25010000, or /250.
+  const speedMatch = constraint.match(/^(\d{2,3})(?=FL|\d{4,5}|$)/);
   if (speedMatch) {
     spdConstraint = { type: 'AT', speed: parseInt(speedMatch[1]) };
+    altitudePart = constraint.slice(speedMatch[1].length);
   }
 
   // Parse altitude: FL100, 10000, 5000
-  const altMatch = constraint.match(/FL(\d{2,3})/);
+  const altMatch = altitudePart.match(/FL(\d{2,3})/);
   if (altMatch) {
     altConstraint = { type: 'AT', altitude: parseInt(altMatch[1]) * 100 };
   } else {
-    const altNum = constraint.match(/(\d{4,5})/);
+    const altNum = altitudePart.match(/(\d{4,5})/);
     if (altNum) {
       altConstraint = { type: 'AT', altitude: parseInt(altNum[1]) };
     }
   }
 
-  // Parse constraint type
-  if (constraint.includes('B') || constraint.includes('ABV')) {
+  // Parse constraint type: A/ABV means at-or-above, B/BLW means at-or-below.
+  if (/(ABV|A$)/.test(constraint)) {
     if (altConstraint) altConstraint.type = 'AT_OR_ABOVE';
-  }
-  if (constraint.includes('A') || constraint.includes('BLW')) {
+  } else if (/(BLW|B$)/.test(constraint)) {
     if (altConstraint) altConstraint.type = 'AT_OR_BELOW';
   }
 

@@ -99,6 +99,62 @@ describe('Navigation Display model', () => {
     expect(model.fixOverlay).toMatchObject({ refFix: 'RBV', radial: 180, distance: 20 });
   });
 
+  it('formats speed and altitude constraints on route points', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          {
+            ident: 'RBV',
+            discontinuity: false,
+            speedConstraint: { type: 'AT', speed: 250 },
+            altitudeConstraint: { type: 'AT_OR_ABOVE', altitude: 10000 },
+          },
+          {
+            ident: 'DIXIE',
+            discontinuity: false,
+            altitudeConstraint: { type: 'AT', altitude: 18000 },
+          },
+        ],
+      },
+    });
+
+    expect(model.routePoints.find(point => point.label === 'RBV')).toMatchObject({
+      speedLabel: '250',
+      altitudeLabel: '10000A',
+    });
+    expect(model.routePoints.find(point => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
+  });
+
+  it('does not show constraints for discontinuity markers', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          {
+            ident: 'DISCONTINUITY',
+            discontinuity: true,
+            speedConstraint: { type: 'AT', speed: 210 },
+            altitudeConstraint: { type: 'AT', altitude: 6000 },
+          },
+        ],
+      },
+    });
+
+    expect(model.routePoints.find(point => point.discontinuity)).toMatchObject({
+      speedLabel: null,
+      altitudeLabel: null,
+    });
+  });
+
   it('returns a valid empty ND model without route data', () => {
     const model = buildNavigationDisplayModel(baseState);
 

@@ -19,6 +19,8 @@ export interface NavigationDisplaySettings {
 export interface NDRoutePoint {
   id: string;
   label: string;
+  altitudeLabel: string | null;
+  speedLabel: string | null;
   x: number;
   y: number;
   active: boolean;
@@ -109,6 +111,8 @@ interface RouteItem {
   ident: string;
   discontinuity: boolean;
   airport: boolean;
+  altitudeLabel: string | null;
+  speedLabel: string | null;
 }
 
 function buildRouteItems(state: FMCState): RouteItem[] {
@@ -116,16 +120,18 @@ function buildRouteItems(state: FMCState): RouteItem[] {
   const destination = state.flightPlan.destination || state.route.destination;
   const points: RouteItem[] = [];
 
-  if (origin) points.push({ ident: origin, discontinuity: false, airport: true });
+  if (origin) points.push({ ident: origin, discontinuity: false, airport: true, altitudeLabel: null, speedLabel: null });
   for (const waypoint of state.flightPlan.waypoints) {
     points.push({
       ident: waypoint.ident,
       discontinuity: waypoint.discontinuity,
       airport: isAirportWaypoint(waypoint, destination),
+      altitudeLabel: formatAltitudeConstraint(waypoint),
+      speedLabel: formatSpeedConstraint(waypoint),
     });
   }
   if (destination && !points.some(point => point.ident === destination)) {
-    points.push({ ident: destination, discontinuity: false, airport: true });
+    points.push({ ident: destination, discontinuity: false, airport: true, altitudeLabel: null, speedLabel: null });
   }
 
   return points;
@@ -137,7 +143,17 @@ function isAirportWaypoint(waypoint: FlightPlanWaypoint, destination: string): b
 
 function projectRoutePoint(item: RouteItem, index: number, total: number, mode: NDMapMode): NDRoutePoint {
   if (total <= 1) {
-    return { id: `${item.ident}-${index}`, label: item.ident, x: 50, y: 58, active: false, discontinuity: item.discontinuity, airport: item.airport };
+    return {
+      id: `${item.ident}-${index}`,
+      label: item.ident,
+      altitudeLabel: item.altitudeLabel,
+      speedLabel: item.speedLabel,
+      x: 50,
+      y: 58,
+      active: false,
+      discontinuity: item.discontinuity,
+      airport: item.airport,
+    };
   }
 
   const progress = index / (total - 1);
@@ -149,12 +165,41 @@ function projectRoutePoint(item: RouteItem, index: number, total: number, mode: 
   return {
     id: `${item.ident}-${index}`,
     label: item.discontinuity ? 'DISCO' : item.ident,
+    altitudeLabel: item.discontinuity ? null : item.altitudeLabel,
+    speedLabel: item.discontinuity ? null : item.speedLabel,
     x: clamp(Math.round(x * 10) / 10, 8, 92),
     y: clamp(Math.round(y * 10) / 10, 10, 88),
     active: index === 1 && !item.discontinuity,
     discontinuity: item.discontinuity,
     airport: item.airport,
   };
+}
+
+function formatAltitudeConstraint(waypoint: FlightPlanWaypoint): string | null {
+  const constraint = waypoint.altitudeConstraint;
+  if (!constraint) return null;
+  const altitude = formatAltitude(constraint.altitude);
+  switch (constraint.type) {
+    case 'AT_OR_ABOVE':
+      return `${altitude}A`;
+    case 'AT_OR_BELOW':
+      return `${altitude}B`;
+    case 'BETWEEN':
+      return constraint.altitude2 ? `${altitude}/${formatAltitude(constraint.altitude2)}` : altitude;
+    default:
+      return altitude;
+  }
+}
+
+function formatSpeedConstraint(waypoint: FlightPlanWaypoint): string | null {
+  const constraint = waypoint.speedConstraint;
+  if (!constraint) return null;
+  const suffix = constraint.type === 'AT_OR_ABOVE' ? 'A' : constraint.type === 'AT_OR_BELOW' ? 'B' : '';
+  return `${constraint.speed}${suffix}`;
+}
+
+function formatAltitude(altitude: number): string {
+  return altitude >= 18000 && altitude % 100 === 0 ? `FL${String(Math.round(altitude / 100)).padStart(3, '0')}` : String(altitude);
 }
 
 function buildFixOverlay(state: FMCState, routePoints: NDRoutePoint[], fallback?: NDRoutePoint): NDFixOverlay | null {

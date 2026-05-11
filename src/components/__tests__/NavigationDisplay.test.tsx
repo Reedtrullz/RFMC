@@ -16,7 +16,12 @@ describe('NavigationDisplay', () => {
         flightNumber: '',
         route: '',
         waypoints: [
-          { ident: 'RBV', discontinuity: false },
+          {
+            ident: 'RBV',
+            discontinuity: false,
+            speedConstraint: { type: 'AT', speed: 250 },
+            altitudeConstraint: { type: 'AT_OR_ABOVE', altitude: 10000 },
+          },
           { ident: 'DIXIE', discontinuity: false },
           { ident: 'KDCA', discontinuity: false },
         ],
@@ -42,6 +47,7 @@ describe('NavigationDisplay', () => {
     expect(screen.getAllByText('MAP').length).toBeGreaterThan(0);
     expect(screen.getAllByText('40').length).toBeGreaterThan(0);
     expect(screen.getAllByText('RBV').length).toBeGreaterThan(0);
+    expect(screen.getByText('250/10000A')).toBeInTheDocument();
     expect(screen.getByTestId('nd-hold-overlay')).toBeInTheDocument();
     expect(screen.getByTestId('nd-fix-overlay')).toBeInTheDocument();
   });
