@@ -48,10 +48,18 @@ export function CDU() {
     const lskId = `${side}${index}`;
     const action = displayData.lskActions[lskId];
     if (!action) return undefined;
+    if (displayData.lskLabels?.[lskId]) return displayData.lskLabels[lskId];
     if (action === 'next_page') return '▼';
     if (action === 'prev_page') return '▲';
     if (action === 'dep_page') return 'DEP';
     if (action === 'arr_page') return 'ARR';
+    if (action === 'set_hold_fix') return 'FIX';
+    if (action === 'set_inbound_crs') return 'CRS';
+    if (action === 'set_leg_time') return 'TIME';
+    if (action === 'set_leg_dist') return 'DIST';
+    if (action === 'set_hold_direction') return 'DIR';
+    if (action === 'set_fix_ref') return 'REF';
+    if (action === 'set_fix_radial_distance') return 'RAD/DIS';
     if (side === 'L' && action) return '◄';
     if (side === 'R' && action) return '►';
     return undefined;
@@ -148,27 +156,23 @@ export function CDU() {
 
         {/* Function key row 1 */}
         <div className="flex w-full mt-1 gap-1">
-          <CDUButton 
-            label="INIT REF" 
-            className="flex-1 h-9 text-[9px] font-semibold" 
-            variant={isHighlighted('POS_INIT') ? 'highlight' : 'function'} 
-            onPress={() => onPressKey('INIT_REF')} 
-          />
+          <CDUButton label="INIT REF" className="flex-1 h-9 text-[9px] font-semibold" variant={isHighlighted('POS_INIT') ? 'highlight' : 'function'} onPress={() => onPressKey('INIT_REF')} />
           <CDUButton label="RTE" className="flex-1 h-9 text-xs" variant={isHighlighted('RTE') ? 'highlight' : 'function'} onPress={() => onPressKey('RTE')} />
-          <CDUButton 
-            label="DEP ARR" 
-            className="flex-1 h-9 text-[9px] font-semibold" 
-            variant={isHighlighted('DEP_ARR') ? 'highlight' : 'function'} 
-            onPress={() => onPressKey('DEP_ARR')} 
-          />
+          <CDUButton label="CLB" className="flex-1 h-9 text-xs" variant={isHighlighted('CLB') ? 'highlight' : 'function'} onPress={() => onPressKey('CLB')} />
+          <CDUButton label="CRZ" className="flex-1 h-9 text-xs" variant={isHighlighted('CRZ') ? 'highlight' : 'function'} onPress={() => onPressKey('CRZ')} />
+          <CDUButton label="DES" className="flex-1 h-9 text-xs" variant={isHighlighted('DES') ? 'highlight' : 'function'} onPress={() => onPressKey('DES')} />
+          <CDUButton label="DIR INTC" className="flex-1 h-9 text-[9px] font-semibold" variant={isHighlighted('DIR_INTC') ? 'highlight' : 'function'} onPress={() => onPressKey('DIR_INTC')} />
           <CDUButton label="LEGS" className="flex-1 h-9 text-xs" variant={isHighlighted('LEGS') ? 'highlight' : 'function'} onPress={() => onPressKey('LEGS')} />
         </div>
 
         {/* Function key row 2 */}
         <div className="flex w-full gap-1 mt-0.5">
+          <CDUButton label="DEP ARR" className="flex-1 h-9 text-[9px] font-semibold" variant={isHighlighted('DEP_ARR') ? 'highlight' : 'function'} onPress={() => onPressKey('DEP_ARR')} />
+          <CDUButton label="HOLD" className="flex-1 h-9 text-xs" variant={isHighlighted('HOLD') ? 'highlight' : 'function'} onPress={() => onPressKey('HOLD')} />
           <CDUButton label="PERF" className="flex-1 h-9 text-xs" variant={isHighlighted('PERF_INIT') ? 'highlight' : 'function'} onPress={() => onPressKey('PERF')} />
           <CDUButton label="PROG" className="flex-1 h-9 text-xs" variant={isHighlighted('PROGRESS') ? 'highlight' : 'function'} onPress={() => onPressKey('PROG')} />
-          <div className="flex-1" />
+          <CDUButton label="N1 LIMIT" className="flex-1 h-9 text-[9px] font-semibold" variant={isHighlighted('N1_LIMIT') ? 'highlight' : 'function'} onPress={() => onPressKey('N1_LIMIT')} />
+          <CDUButton label="FIX" className="flex-1 h-9 text-xs" variant={isHighlighted('FIX') ? 'highlight' : 'function'} onPress={() => onPressKey('FIX')} />
           <CDUButton label="MENU" className="flex-1 h-9 text-xs" variant={isHighlighted('MENU') ? 'highlight' : 'function'} onPress={() => onPressKey('MENU')} />
         </div>
       </div>

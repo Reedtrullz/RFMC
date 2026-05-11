@@ -16,6 +16,10 @@ export default {
         'cdu-bezel-light': '#2a2a2a',
         'cdu-exec': '#00ff00',
         'cdu-error': '#ff3333',
+        'cdu-magenta': '#e879f9',
+        'cdu-white': '#ffffff',
+        'cdu-shaded': '#e5e5e5',
+        'cdu-blue': '#60a5fa',
       },
       fontFamily: {
         cdu: ['"Courier New"', 'Courier', 'monospace'],

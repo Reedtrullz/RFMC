@@ -1,3 +1,5 @@
+import { getColorClass, type DisplayColor } from '@shared';
+
 interface DisplayLineProps {
   text: string;
   leftLabel?: string;
@@ -6,16 +8,17 @@ interface DisplayLineProps {
   small?: boolean;
   blinking?: boolean;
   variant?: 'boeing' | 'airbus';
+  color?: DisplayColor;
 }
 
-export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking, variant = 'boeing' }: DisplayLineProps) {
+export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blinking, variant = 'boeing', color }: DisplayLineProps) {
   const maxWidth = variant === 'airbus' ? 24 : 24;
   const paddedText = text.padEnd(maxWidth, ' ');
   const isAirbus = variant === 'airbus';
-  const mainColor = isAirbus ? 'text-cdu-amber' : 'text-cdu-text';
+  const mainColor = color ? getColorClass(color) : isAirbus ? 'text-cdu-amber' : 'text-cdu-text';
   const dimColor = isAirbus ? 'text-cdu-amber/60' : 'text-cdu-text-dim';
-  const inverseBg = isAirbus ? 'bg-cdu-amber' : 'bg-cdu-text';
-  
+  const inverseBg = color === 'magenta' ? 'bg-fuchsia-400' : color === 'cyan' ? 'bg-cdu-cyan' : color === 'white' ? 'bg-white' : color === 'red' ? 'bg-cdu-error' : isAirbus ? 'bg-cdu-amber' : 'bg-cdu-text';
+
   return (
     <div className={`
       flex items-center
@@ -23,8 +26,8 @@ export function DisplayLine({ text, leftLabel, rightLabel, inverse, small, blink
       h-[1.3em]
       whitespace-pre
       ${small ? 'text-[9px]' : ''}
-      ${inverse 
-        ? `${inverseBg} text-cdu-screen font-bold` 
+      ${inverse
+        ? `${inverseBg} text-cdu-screen font-bold`
         : mainColor
       }
       ${blinking ? 'animate-blink' : ''}

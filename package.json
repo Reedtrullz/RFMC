@@ -13,6 +13,18 @@
     "preview": "vite preview",
     "server": "cd server && npm run dev",
     "typecheck": "tsc --noEmit",
-    "typecheck:all": "npm run typecheck -w shared && npm run typecheck -w src && npm run typecheck -w server"
+    "typecheck:all": "npm run typecheck -w shared && npm run typecheck -w src && npm run typecheck -w server",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.5"
   }
 }

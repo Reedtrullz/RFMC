@@ -28,6 +28,7 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
             small={line.small}
             blinking={line.blinking}
             variant={isAirbus ? 'airbus' : 'boeing'}
+            color={line.color}
           />
         );
       })}

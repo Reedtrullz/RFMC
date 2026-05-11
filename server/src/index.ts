@@ -1,7 +1,8 @@
 import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMessage, ServerMessage } from '@shared';
+import type { ClientMessage, ServerMessage, DisplayData } from '@shared';
+import { devLog, devError } from '@shared';
 import { FMCEngine } from './fmc-engine';
 import { PMDG737Adapter } from './aircraft-adapters/pmdg-737';
 import type { IAircraftAdapter } from './aircraft-adapters/IAircraftAdapter';
@@ -25,6 +26,10 @@ app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     aircraft: aircraft.isConnected ? aircraft.name : 'none',
+    aircraftType: aircraft.aircraftType,
+    capabilities: aircraft.capabilities,
+    connectionStatus: aircraft.connectionStatus,
+    lastError: aircraft.lastError,
     clients: wss.clients.size,
   });
 });
@@ -48,14 +53,32 @@ function startPolling(): void {
     if (!aircraft.isConnected) return;
     try {
       const simDisplay = await aircraft.readDisplay();
+      const aircraftState = await aircraft.readAircraftState();
+      const displayData: DisplayData = {
+        title: simDisplay.title,
+        pageIndicator: '',
+        lines: simDisplay.lines.map(text => ({ text, leftLabel: '', rightLabel: '', inverse: false })),
+        lskActions: {},
+      };
+      broadcast({
+        type: 'fmc.display',
+        data: displayData,
+      } as ServerMessage);
       broadcast({
         type: 'sim.data',
         variables: {
           brightness: simDisplay.brightness,
         },
+        aircraftState: {
+          position: aircraftState.position,
+          heading: aircraftState.heading,
+          altitude: aircraftState.altitude,
+          speed: aircraftState.speed,
+          verticalSpeed: aircraftState.verticalSpeed,
+        },
       });
     } catch (err) {
-      console.error('[Poll] Error:', err);
+      devError('[Poll] Error:', err);
     }
   }, 100); // 10Hz
 }
@@ -68,7 +91,7 @@ function stopPolling(): void {
 }
 
 wss.on('connection', (ws: WebSocket) => {
-  console.log(`[WS] Client connected (total: ${wss.clients.size})`);
+  devLog(`[WS] Client connected (total: ${wss.clients.size})`);
 
   // Send current display state immediately
   const displayData = fmc.getDisplayData();
@@ -81,6 +104,10 @@ wss.on('connection', (ws: WebSocket) => {
   ws.send(JSON.stringify({
     type: aircraft.isConnected ? 'sim.connected' : 'sim.disconnected',
     aircraft: aircraft.name,
+    aircraftType: aircraft.aircraftType,
+    capabilities: aircraft.capabilities,
+    connectionStatus: aircraft.connectionStatus,
+    lastError: aircraft.lastError,
   } as ServerMessage));
 
   ws.on('message', (raw) => {
@@ -96,24 +123,28 @@ wss.on('connection', (ws: WebSocket) => {
           if (aircraft.isConnected) {
             // Map key to aircraft-specific command
             aircraft.sendKeypress(msg.key).catch(err =>
-              console.error('[Aircraft] sendKeypress error:', err)
+              devError('[Aircraft] sendKeypress error:', err)
             );
           }
           break;
         }
 
         case 'sim.connect': {
-          console.log('[WS] Client requested sim connection');
+          devLog('[WS] Client requested sim connection');
           aircraft.connect().then(connected => {
             if (connected) {
               startPolling();
               broadcast({
                 type: 'sim.connected',
                 aircraft: aircraft.name,
+                aircraftType: aircraft.aircraftType,
+                capabilities: aircraft.capabilities,
+                connectionStatus: aircraft.connectionStatus,
+                lastError: aircraft.lastError,
               } as ServerMessage);
             }
           }).catch(err => {
-            console.error('[SimConnect] Error:', err);
+            devError('[SimConnect] Error:', err);
             ws.send(JSON.stringify({
               type: 'error',
               message: 'Failed to connect to MSFS',
@@ -123,21 +154,21 @@ wss.on('connection', (ws: WebSocket) => {
         }
 
         case 'sim.disconnect': {
-          console.log('[WS] Client requested disconnect');
+          devLog('[WS] Client requested disconnect');
           stopPolling();
           aircraft.disconnect().then(() => {
-            broadcast({ type: 'sim.disconnected' } as ServerMessage);
+            broadcast({ type: 'sim.disconnected', lastError: aircraft.lastError } as ServerMessage);
           });
           break;
         }
 
         case 'mode': {
-          console.log('[WS] Mode changed:', msg.mode);
+          devLog('[WS] Mode changed:', msg.mode);
           break;
         }
       }
     } catch (err) {
-      console.error('[WS] Invalid message:', err);
+      devError('[WS] Invalid message:', err);
       ws.send(JSON.stringify({
         type: 'error',
         message: 'Invalid message format',
@@ -146,17 +177,17 @@ wss.on('connection', (ws: WebSocket) => {
   });
 
   ws.on('close', () => {
-    console.log(`[WS] Client disconnected (remaining: ${wss.clients.size - 1})`);
+    devLog(`[WS] Client disconnected (remaining: ${wss.clients.size - 1})`);
   });
 
   ws.on('error', (err) => {
-    console.error('[WS] Client error:', err);
+    devError('[WS] Client error:', err);
   });
 });
 
 // Cleanup on shutdown
 process.on('SIGINT', async () => {
-  console.log('\n[Server] Shutting down...');
+  devLog('\n[Server] Shutting down...');
   stopPolling();
   await aircraft.disconnect();
   wss.close();
@@ -173,7 +204,7 @@ process.on('SIGTERM', async () => {
 });
 
 server.listen(PORT, () => {
-  console.log(`[Server] VirtualCDU bridge running on http://localhost:${PORT}`);
-  console.log(`[Server] WebSocket: ws://localhost:${PORT}`);
-  console.log(`[Server] Aircraft adapter: ${aircraft.name} (${aircraft.isConnected ? 'connected' : 'disconnected'})`);
+  devLog(`[Server] VirtualCDU bridge running on http://localhost:${PORT}`);
+  devLog(`[Server] WebSocket: ws://localhost:${PORT}`);
+  devLog(`[Server] Aircraft adapter: ${aircraft.name} (${aircraft.connectionStatus})`);
 });

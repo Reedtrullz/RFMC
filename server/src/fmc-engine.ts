@@ -1,10 +1,9 @@
-/**
- * Backend FMC Engine — uses shared page logic to compute DisplayData.
- * In backend-authoritative mode, this is the source of truth.
- */
-
-import type { FMCState, DisplayData, CDUKey } from '@shared';
-import { getPageRenderer, parseRouteString } from '@shared';
+import type { FMCState, DisplayData, PageType } from '@shared';
+import { getPageRenderer } from '@shared';
+import {
+  isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
+  isValidWind, isValidFlightNumber, isValidWaypoint
+} from '@shared';
 
 export class FMCEngine {
   private state: FMCState;
@@ -15,6 +14,7 @@ export class FMCEngine {
 
   private createDefaultState(): FMCState {
     return {
+      aircraft: 'BOEING_737',
       currentPage: 'IDENT',
       pageHistory: [],
       scratchpad: '',
@@ -35,43 +35,547 @@ export class FMCEngine {
       legsPageCount: 1,
       depArrSubPage: 'DEP',
       rteSubPage: 0,
+      hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
+      holdPending: null,
+      fix: { refFix: '', radial: 0, distance: 0 },
+      deleteMode: false,
+      editWaypointIndex: null,
+      aircraftState: null,
+      connectedAircraft: null,
+      connectedAircraftType: null,
+      connectedCapabilities: [],
+      lastError: null,
+      simVariables: {},
+      failureMessage: null,
+      externalDisplayData: null,
     };
   }
 
   getDisplayData(): DisplayData {
     const renderer = getPageRenderer(this.state.currentPage);
-    return renderer(this.state);
+    if (!renderer) {
+      const fallback = getPageRenderer('MENU');
+      if (fallback) return { ...fallback(this.state), scratchpadError: this.state.scratchpadError };
+      return { lines: [], title: 'ERROR', pageIndicator: '', lskActions: {}, scratchpadError: this.state.scratchpadError };
+    }
+    return { ...renderer(this.state), scratchpadError: this.state.scratchpadError };
   }
 
   setPage(page: string): void {
-    // Navigate between pages
-    const pageMap: Record<string, any> = {
-      'INIT_REF': 'IDENT',
+    const pageMap: Record<string, PageType> = {
+      'INIT_REF': 'POS_INIT',
       'RTE': 'RTE',
+      'CLB': 'CLB',
+      'CRZ': 'CRZ',
+      'DES': 'DES',
+      'DIR_INTC': 'DIR_INTC',
       'DEP_ARR': 'DEP_ARR',
       'LEGS': 'LEGS',
+      'HOLD': 'HOLD',
+      'FIX': 'FIX',
       'PERF': 'PERF_INIT',
       'PROG': 'PROGRESS',
+      'N1_LIMIT': 'N1_LIMIT',
       'MENU': 'MENU',
+      'INIT_A': 'INIT_A',
+      'INIT_B': 'INIT_B',
+      'F_PLN': 'F_PLN',
+      'PERF_TAKEOFF': 'PERF_TAKEOFF',
+      'PROG_A': 'PROG_A',
+      'DEP_ARR_A': 'DEP_ARR_A',
+      'MCDU_MENU': 'MCDU_MENU',
+      'RAD_NAV': 'RAD_NAV',
+      'DATA_INDEX': 'DATA_INDEX',
     };
-    const target = pageMap[page] || page;
+    const target = pageMap[page] || (page as PageType);
     this.state.pageHistory.push(this.state.currentPage);
-    this.state.currentPage = target as any;
+    this.state.currentPage = target;
     this.state.scratchpad = '';
   }
 
   processInput(key: string): DisplayData {
-    // Simple routing of inputs
-    const navKeys = ['INIT_REF', 'RTE', 'DEP_ARR', 'LEGS', 'PERF', 'PROG', 'MENU'];
-    if (navKeys.includes(key)) {
+    this.state.scratchpadError = null;
+
+    const functionKeys = ['INIT_REF', 'RTE', 'CLB', 'CRZ', 'DES', 'DIR_INTC', 'DEP_ARR', 'LEGS', 'HOLD', 'FIX', 'PERF', 'PROG', 'N1_LIMIT', 'MENU',
+      'INIT_A', 'INIT_B', 'F_PLN', 'PERF_TAKEOFF', 'PROG_A', 'DEP_ARR_A', 'MCDU_MENU', 'RAD_NAV', 'DATA_INDEX'];
+
+    if (functionKeys.includes(key)) {
       this.setPage(key);
     } else if (key === 'CLR' || key === 'DEL') {
-      this.state.scratchpad = this.state.scratchpad.slice(0, -1);
+      if (key === 'DEL' && this.state.currentPage === 'LEGS' && this.state.scratchpad === '') {
+        this.state.deleteMode = !this.state.deleteMode;
+      } else {
+        this.state.scratchpad = this.state.scratchpad.slice(0, -1);
+      }
+    } else if (key === 'EXEC') {
+      this.state.execLit = false;
+      this.state.isModified = false;
+      if (this.state.holdPending) {
+        this.state.hold = { ...this.state.holdPending };
+        this.state.holdPending = null;
+      }
+    } else if (key === 'NEXT_PAGE') {
+      this.advancePage();
+    } else if (key === 'PREV_PAGE') {
+      this.rewindPage();
+    } else if (/^[LR][1-6]$/.test(key)) {
+      const displayData = this.getDisplayData();
+      const lskAction = displayData.lskActions[key];
+      if (lskAction) {
+        this.handleLskAction(lskAction);
+      }
+    } else if (key === 'DOT') {
+      this.state.scratchpad += '.';
+    } else if (key === 'SLASH') {
+      this.state.scratchpad += '/';
+    } else if (key === 'SPACE') {
+      this.state.scratchpad += ' ';
+    } else if (key === 'PLUS_MINUS' || key === '+/-') {
+      this.state.scratchpad += '+/-';
     } else if (key.length === 1) {
       this.state.scratchpad += key;
     }
 
     return this.getDisplayData();
+  }
+
+  private advancePage(): boolean {
+    if (this.state.currentPage === 'RTE') {
+      const prev = this.state.rteSubPage;
+      this.state.rteSubPage = Math.min(this.state.rteSubPage + 1, 1);
+      return this.state.rteSubPage !== prev;
+    } else if (this.state.currentPage === 'LEGS') {
+      const prev = this.state.legsPageIndex;
+      this.state.legsPageIndex = Math.min(this.state.legsPageIndex + 1, this.state.legsPageCount - 1);
+      return this.state.legsPageIndex !== prev;
+    } else if (this.state.currentPage === 'PERF_INIT') {
+      this.state.pageHistory.push(this.state.currentPage);
+      this.state.currentPage = 'TAKEOFF_REF';
+      this.state.scratchpad = '';
+      return true;
+    } else if (this.state.currentPage === 'TAKEOFF_REF') {
+      this.state.pageHistory.push(this.state.currentPage);
+      this.state.currentPage = 'PERF_INIT';
+      this.state.scratchpad = '';
+      return true;
+    }
+    return false;
+  }
+
+  private rewindPage(): boolean {
+    if (this.state.currentPage === 'RTE') {
+      const prev = this.state.rteSubPage;
+      this.state.rteSubPage = Math.max(this.state.rteSubPage - 1, 0);
+      return this.state.rteSubPage !== prev;
+    } else if (this.state.currentPage === 'LEGS') {
+      const prev = this.state.legsPageIndex;
+      this.state.legsPageIndex = Math.max(this.state.legsPageIndex - 1, 0);
+      return this.state.legsPageIndex !== prev;
+    } else if (this.state.currentPage === 'PERF_INIT') {
+      this.state.pageHistory.push(this.state.currentPage);
+      this.state.currentPage = 'TAKEOFF_REF';
+      this.state.scratchpad = '';
+      return true;
+    } else if (this.state.currentPage === 'TAKEOFF_REF') {
+      this.state.pageHistory.push(this.state.currentPage);
+      this.state.currentPage = 'PERF_INIT';
+      this.state.scratchpad = '';
+      return true;
+    }
+    return false;
+  }
+
+  private handleLskAction(action: string): void {
+    let handled = false;
+
+    const pageNavMap: Record<string, PageType> = {
+      pos_init: 'POS_INIT',
+      perf_init: 'PERF_INIT',
+      rte: 'RTE',
+      dep_arr: 'DEP_ARR',
+      legs: 'LEGS',
+      thrust_lim: 'THRUST_LIM',
+      takeoff_ref: 'TAKEOFF_REF',
+      menu: 'MENU',
+      ident: 'IDENT',
+      init_a: 'INIT_A',
+      init_b: 'INIT_B',
+      perf_to: 'PERF_TAKEOFF',
+      perf_appr: 'PERF_APPR',
+      f_pln: 'F_PLN',
+      fuel_pred: 'FUEL_PRED',
+      sec_fpln: 'SEC_FPLN',
+      rad_nav: 'RAD_NAV',
+      data_index: 'DATA_INDEX',
+      mcdu_menu: 'MCDU_MENU',
+      fpln_dep_arr: 'DEP_ARR_A',
+    };
+
+    const targetPage = pageNavMap[action];
+    if (targetPage) {
+      this.state.pageHistory.push(this.state.currentPage);
+      this.state.currentPage = targetPage;
+      this.state.scratchpad = '';
+      handled = true;
+    } else if (action === 'dep_page') {
+      this.state.depArrSubPage = 'DEP';
+      handled = true;
+    } else if (action === 'arr_page') {
+      this.state.depArrSubPage = 'ARR';
+      handled = true;
+    } else if (action === 'next_page' || action === 'fpln_next') {
+      handled = this.advancePage();
+    } else if (action === 'prev_page' || action === 'fpln_prev') {
+      handled = this.rewindPage();
+    } else if (this.state.currentPage === 'LEGS') {
+      const wpMatch = action.match(/^(delete_wp|edit_wp)_(\d+)$/);
+      if (wpMatch) {
+        const wpAction = wpMatch[1];
+        const wpIndex = parseInt(wpMatch[2], 10);
+        if (wpAction === 'delete_wp' && this.state.deleteMode) {
+          this.state.flightPlan.waypoints.splice(wpIndex, 1);
+          this.state.deleteMode = false;
+          handled = true;
+          this.state.isModified = true;
+          this.state.execLit = true;
+        } else if (wpAction === 'edit_wp') {
+          if (this.state.scratchpad) {
+            const ident = this.state.scratchpad.toUpperCase();
+            const result = isValidWaypoint(ident);
+            if (!result.valid) {
+              this.state.scratchpadError = result.error ?? 'INVALID ENTRY';
+            } else {
+              this.state.flightPlan.waypoints.splice(wpIndex, 0, { ident, discontinuity: false });
+              this.state.scratchpad = '';
+              this.state.isModified = true;
+              this.state.execLit = true;
+            }
+          }
+          this.state.editWaypointIndex = wpIndex;
+          handled = true;
+        }
+      }
+    } else if (action === 'atc') {
+      handled = true;
+    } else if (action === 'select_to') {
+      this.state.takeoff = { ...this.state.takeoff, toMode: this.state.scratchpad.trim().toUpperCase() || 'TO' };
+      this.state.scratchpad = '';
+      handled = true;
+      this.state.isModified = true;
+      this.state.execLit = true;
+    } else if (action === 'select_to1') {
+      this.state.takeoff = { ...this.state.takeoff, toMode: 'TO 1' };
+      handled = true;
+      this.state.isModified = true;
+      this.state.execLit = true;
+    } else if (action === 'select_to2') {
+      this.state.takeoff = { ...this.state.takeoff, toMode: 'TO 2' };
+      handled = true;
+      this.state.isModified = true;
+      this.state.execLit = true;
+    }
+
+    if (!handled) {
+      const dataResult = this.handleDataEntry(action);
+      if (dataResult === true) {
+        handled = true;
+        this.state.isModified = true;
+        this.state.execLit = true;
+      } else if (dataResult === 'error') {
+        handled = true;
+      }
+    }
+
+    if (!handled) {
+      this.state.scratchpadError = 'NOT SUPPORTED';
+    }
+  }
+
+  private handleDataEntry(action: string): boolean | 'error' {
+    const sp = this.state.scratchpad.trim();
+    if (!sp) return false;
+
+    const err = (): 'error' => { this.state.scratchpadError = 'INVALID ENTRY'; return 'error'; };
+    const icaoErr = (r: { valid: boolean; error?: string }): 'error' => { this.state.scratchpadError = r.error ?? 'INVALID ENTRY'; return 'error'; };
+
+    switch (action) {
+      case 'set_ref_airport': {
+        const result = isValidICAO(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.position = { ...this.state.position, refAirport: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_gate': {
+        this.state.position = { ...this.state.position, gate: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_origin': {
+        const result = isValidICAO(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, origin: sp.toUpperCase() };
+        this.state.flightPlan = { ...this.state.flightPlan, origin: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_dest': {
+        const result = isValidICAO(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, destination: sp.toUpperCase() };
+        this.state.flightPlan = { ...this.state.flightPlan, destination: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flt_no': {
+        const result = isValidFlightNumber(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, flightNumber: sp.toUpperCase() };
+        this.state.flightPlan = { ...this.state.flightPlan, flightNumber: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_route': {
+        this.state.route = { ...this.state.route, routeString: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_crz_alt': {
+        const result = isValidAltitude(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.performance = { ...this.state.performance, crzAlt: parseInt(sp) * 100 || parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_cost_index': {
+        const ci = parseInt(sp);
+        if (isNaN(ci) || ci < 0 || ci > 500) return err();
+        this.state.performance = { ...this.state.performance, costIndex: ci };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_zfw': {
+        const zfw = parseFloat(sp);
+        if (isNaN(zfw) || zfw <= 0) return err();
+        this.state.performance = { ...this.state.performance, zfw: zfw * 1000 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_reserve': {
+        const res = parseFloat(sp);
+        if (isNaN(res) || res < 0) return err();
+        this.state.performance = { ...this.state.performance, reserve: res * 1000 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_runway': {
+        if (!sp || sp.length < 2) return err();
+        this.state.takeoff = { ...this.state.takeoff, runway: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_to_mode': {
+        const mode = sp.toUpperCase();
+        if (!['TO', 'TO 1', 'TO 2'].includes(mode)) return err();
+        this.state.takeoff = { ...this.state.takeoff, toMode: mode };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_v1': {
+        const result = isValidSpeed(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.takeoff = { ...this.state.takeoff, v1: parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_vr': {
+        const result = isValidSpeed(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.takeoff = { ...this.state.takeoff, vr: parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_v2': {
+        const result = isValidSpeed(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.takeoff = { ...this.state.takeoff, v2: parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_trim': {
+        const trim = parseFloat(sp);
+        if (isNaN(trim)) return err();
+        this.state.takeoff = { ...this.state.takeoff, trim };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_oat': {
+        const result = isValidTemperature(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.takeoff = { ...this.state.takeoff, oat: parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_wind': {
+        const result = isValidWind(sp);
+        if (!result.valid) return icaoErr(result);
+        const parts = sp.split('/');
+        if (parts.length === 2) {
+          this.state.takeoff = { ...this.state.takeoff, windDir: parseInt(parts[0]) || 0, windSpeed: parseInt(parts[1]) || 0 };
+        }
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_qnh': {
+        const qnh = parseFloat(sp);
+        if (isNaN(qnh) || qnh < 900 || qnh > 1100) return err();
+        this.state.takeoff = { ...this.state.takeoff, qnh: qnh * 100 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_hold_fix': {
+        const result = isValidWaypoint(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        const base = this.state.holdPending ?? this.state.hold;
+        this.state.holdPending = { ...base, fix: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_inbound_crs': {
+        const crs = parseInt(sp);
+        if (isNaN(crs) || crs < 1 || crs > 360) return err();
+        const base = this.state.holdPending ?? this.state.hold;
+        this.state.holdPending = { ...base, inboundCourse: crs };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_leg_time': {
+        const lt = parseFloat(sp);
+        if (isNaN(lt) || lt <= 0 || lt > 9.9) return err();
+        const base = this.state.holdPending ?? this.state.hold;
+        this.state.holdPending = { ...base, legTime: lt };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_leg_dist': {
+        const ld = parseFloat(sp);
+        if (isNaN(ld) || ld < 0 || ld > 999) return err();
+        const base = this.state.holdPending ?? this.state.hold;
+        this.state.holdPending = { ...base, legDist: ld };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_hold_direction': {
+        const dir = sp.toUpperCase();
+        if (dir !== 'L' && dir !== 'R') return err();
+        const base = this.state.holdPending ?? this.state.hold;
+        this.state.holdPending = { ...base, direction: dir as 'L' | 'R' };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_fix_ref': {
+        const result = isValidICAO(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.fix = { ...this.state.fix, refFix: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_fix_radial_distance': {
+        const parts = sp.split('/');
+        if (parts.length !== 2) return err();
+        const radial = parseInt(parts[0]);
+        const distance = parseInt(parts[1]);
+        if (isNaN(radial) || radial < 1 || radial > 360 || isNaN(distance) || distance < 0 || distance > 999) return err();
+        this.state.fix = { ...this.state.fix, radial, distance };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_from_to': {
+        if (sp.includes('/')) {
+          const [from, to] = sp.toUpperCase().split('/');
+          const fromResult = isValidICAO(from);
+          const toResult = isValidICAO(to);
+          if (!fromResult.valid) return icaoErr(fromResult);
+          if (!toResult.valid) return icaoErr(toResult);
+          this.state.route = { ...this.state.route, origin: from, destination: to };
+          this.state.flightPlan = { ...this.state.flightPlan, origin: from, destination: to };
+          this.state.scratchpad = '';
+          return true;
+        }
+        return false;
+      }
+      case 'set_crz_fl': {
+        const result = isValidAltitude(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.performance = { ...this.state.performance, crzAlt: parseInt(sp) * 100 || parseInt(sp) || 0 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_altn': {
+        const result = isValidICAO(sp.toUpperCase());
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, alternate: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flt_nbr': {
+        const result = isValidFlightNumber(sp);
+        if (!result.valid) return icaoErr(result);
+        this.state.route = { ...this.state.route, flightNumber: sp.toUpperCase() };
+        this.state.flightPlan = { ...this.state.flightPlan, flightNumber: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_block': {
+        const fuel = parseFloat(sp);
+        if (isNaN(fuel) || fuel <= 0) return err();
+        this.state.performance = { ...this.state.performance, fuel: fuel * 1000 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_sid': {
+        this.state.route = { ...this.state.route, sid: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_rwy': {
+        if (sp.length < 2) return err();
+        this.state.route = { ...this.state.route, runway: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_star': {
+        this.state.route = { ...this.state.route, star: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_appr': {
+        this.state.route = { ...this.state.route, approach: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flaps': {
+        this.state.takeoff = { ...this.state.takeoff, flaps: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flex': {
+        const temp = parseInt(sp);
+        if (isNaN(temp)) return err();
+        this.state.takeoff = { ...this.state.takeoff, flexTemp: temp };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_cg': {
+        const cg = parseFloat(sp);
+        if (isNaN(cg)) return err();
+        this.state.performance = { ...this.state.performance, cg };
+        this.state.scratchpad = '';
+        return true;
+      }
+    }
+
+    return false;
   }
 
   getState(): FMCState {

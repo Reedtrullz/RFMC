@@ -5,70 +5,388 @@
  *   L:PMDG_CDU_Screen_1_Row_X_Col_Y for each character position
  *   L:PMDG_CDU_Screen_1_Title for the title
  *
- * This is a stub that provides mock data when MSFS/SimConnect is unavailable.
- * Wire to real SimConnect via node-simconnect in production.
+ * Falls back to mock data when MSFS/SimConnect is unavailable.
  */
 
-import type { IAircraftAdapter, CDUDisplayData } from './IAircraftAdapter';
+import {
+  open,
+  Protocol,
+  SimConnectConstants,
+  SimConnectDataType,
+  SimConnectPeriod,
+  EventFlag,
+} from 'node-simconnect';
+import type { SimConnectConnection } from 'node-simconnect';
+import type { IAircraftAdapter, CDUDisplayData, AircraftState } from './IAircraftAdapter';
+import type { AircraftType, ConnectionStatus } from '@shared';
+import { devLog, devError, devWarn } from '@shared';
+
+export type PMDGVariant = '737-600' | '737-700' | '737-800' | '737-900';
+
+const PMDG_KEY_MAP: Record<string, string> = {
+  '0': 'PMDG_CDU_1_BTN_0', '1': 'PMDG_CDU_1_BTN_1', '2': 'PMDG_CDU_1_BTN_2',
+  '3': 'PMDG_CDU_1_BTN_3', '4': 'PMDG_CDU_1_BTN_4', '5': 'PMDG_CDU_1_BTN_5',
+  '6': 'PMDG_CDU_1_BTN_6', '7': 'PMDG_CDU_1_BTN_7', '8': 'PMDG_CDU_1_BTN_8',
+  '9': 'PMDG_CDU_1_BTN_9',
+  'A': 'PMDG_CDU_1_BTN_A', 'B': 'PMDG_CDU_1_BTN_B', 'C': 'PMDG_CDU_1_BTN_C',
+  'D': 'PMDG_CDU_1_BTN_D', 'E': 'PMDG_CDU_1_BTN_E', 'F': 'PMDG_CDU_1_BTN_F',
+  'G': 'PMDG_CDU_1_BTN_G', 'H': 'PMDG_CDU_1_BTN_H', 'I': 'PMDG_CDU_1_BTN_I',
+  'J': 'PMDG_CDU_1_BTN_J', 'K': 'PMDG_CDU_1_BTN_K', 'L': 'PMDG_CDU_1_BTN_L',
+  'M': 'PMDG_CDU_1_BTN_M', 'N': 'PMDG_CDU_1_BTN_N', 'O': 'PMDG_CDU_1_BTN_O',
+  'P': 'PMDG_CDU_1_BTN_P', 'Q': 'PMDG_CDU_1_BTN_Q', 'R': 'PMDG_CDU_1_BTN_R',
+  'S': 'PMDG_CDU_1_BTN_S', 'T': 'PMDG_CDU_1_BTN_T', 'U': 'PMDG_CDU_1_BTN_U',
+  'V': 'PMDG_CDU_1_BTN_V', 'W': 'PMDG_CDU_1_BTN_W', 'X': 'PMDG_CDU_1_BTN_X',
+  'Y': 'PMDG_CDU_1_BTN_Y', 'Z': 'PMDG_CDU_1_BTN_Z',
+  '.': 'PMDG_CDU_1_BTN_DOT', '+': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  '-': 'PMDG_CDU_1_BTN_PLUSMINUS', ' ': 'PMDG_CDU_1_BTN_SP',
+  '/': 'PMDG_CDU_1_BTN_SLASH',
+  'CLR': 'PMDG_CDU_1_BTN_CLR', 'DEL': 'PMDG_CDU_1_BTN_DEL',
+  'EXEC': 'PMDG_CDU_1_BTN_EXEC',
+  'PREV_PAGE': 'PMDG_CDU_1_BTN_PREV_PAGE', 'NEXT_PAGE': 'PMDG_CDU_1_BTN_NEXT_PAGE',
+  'INIT': 'PMDG_CDU_1_BTN_INIT', 'INIT_REF': 'PMDG_CDU_1_BTN_INIT',
+  'RTE': 'PMDG_CDU_1_BTN_RTE',
+  'DEP': 'PMDG_CDU_1_BTN_DEP', 'ARR': 'PMDG_CDU_1_BTN_ARR',
+  'DEP_ARR': 'PMDG_CDU_1_BTN_DEP', 'DIR_INTC': 'PMDG_CDU_1_BTN_DIR_INTC',
+  'CLB': 'PMDG_CDU_1_BTN_CLB', 'CRZ': 'PMDG_CDU_1_BTN_CRZ',
+  'DES': 'PMDG_CDU_1_BTN_DES', 'PERF': 'PMDG_CDU_1_BTN_PERF',
+  'LEGS': 'PMDG_CDU_1_BTN_LEGS', 'PROG': 'PMDG_CDU_1_BTN_PROG',
+  'FIX': 'PMDG_CDU_1_BTN_FIX', 'HOLD': 'PMDG_CDU_1_BTN_HOLD',
+  'FMC_COMM': 'PMDG_CDU_1_BTN_FMC_COMM', 'MENU': 'PMDG_CDU_1_BTN_MENU',
+  'N1_LIMIT': 'PMDG_CDU_1_BTN_N1_LIMIT',
+  'L1': 'PMDG_CDU_1_BTN_L1', 'L2': 'PMDG_CDU_1_BTN_L2', 'L3': 'PMDG_CDU_1_BTN_L3',
+  'L4': 'PMDG_CDU_1_BTN_L4', 'L5': 'PMDG_CDU_1_BTN_L5', 'L6': 'PMDG_CDU_1_BTN_L6',
+  'R1': 'PMDG_CDU_1_BTN_R1', 'R2': 'PMDG_CDU_1_BTN_R2', 'R3': 'PMDG_CDU_1_BTN_R3',
+  'R4': 'PMDG_CDU_1_BTN_R4', 'R5': 'PMDG_CDU_1_BTN_R5', 'R6': 'PMDG_CDU_1_BTN_R6',
+  'DOT': 'PMDG_CDU_1_BTN_DOT',
+  'PLUS_MINUS': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  '+/-': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  'SLASH': 'PMDG_CDU_1_BTN_SLASH',
+  'SPACE': 'PMDG_CDU_1_BTN_SP',
+  'INIT_A': 'PMDG_CDU_1_BTN_INIT',
+  'INIT_B': 'PMDG_CDU_1_BTN_INIT',
+  'F_PLN': 'PMDG_CDU_1_BTN_RTE',
+  'PERF_TAKEOFF': 'PMDG_CDU_1_BTN_PERF',
+  'PROG_A': 'PMDG_CDU_1_BTN_PROG',
+  'DEP_ARR_A': 'PMDG_CDU_1_BTN_DEP',
+  'MCDU_MENU': 'PMDG_CDU_1_BTN_MENU',
+  'DATA_INDEX': 'PMDG_CDU_1_BTN_MENU',
+  'RAD_NAV': 'PMDG_CDU_1_BTN_MENU',
+};
+
+const PMDG_EVENT_BASE = 1000;
+const PMDG_NOTIFY_GROUP = 1;
 
 export class PMDG737Adapter implements IAircraftAdapter {
-  readonly name = 'PMDG 737-800';
+  readonly aircraftType: AircraftType = 'BOEING_737';
+  readonly capabilities = ['position', 'heading', 'speed', 'altitude', 'display'];
+  connectionStatus: ConnectionStatus = 'DISCONNECTED';
+  lastError: string | null = null;
   isConnected = false;
 
-  private mockLines: string[] = [];
+  private simState: { lat: number; lon: number; altitude: number; heading: number; ias: number; tas: number; gs: number; vs: number } | null = null;
 
-  constructor() {
-    // Default mock display: IDENT page
-    this.mockLines = [
-      '  IDENT            1/1',
-      ' MODEL',
-      ' 737-800',
-      '',
-      ' ENG RATING',
-      ' 26K',
-      '',
-      ' NAV DATA',
-      ' FMC21A1',
-      '',
-      ' -----------------------',
-      '                         ',
-      '                         ',
-    ];
+  /** Cached CDU display lines, updated by SimConnect event handler */
+  private cduLines: string[] = [];
+  private cduTitle: string = 'IDENT';
+  private cduBrightness: number = 0.8;
+  private handle: SimConnectConnection | null = null;
+
+  readonly variant: PMDGVariant;
+
+  private static readonly CDU_ROWS = 14;
+  private static readonly CDU_COLS = 24;
+
+  private static readonly MOCK_LINES: string[] = [
+    '  IDENT            1/1',
+    ' MODEL',
+    ' 737-800',
+    '',
+    ' ENG RATING',
+    ' 26K',
+    '',
+    ' NAV DATA',
+    ' FMC21A1',
+    '',
+    ' -----------------------',
+    '                         ',
+    '                         ',
+  ];
+
+  constructor(variant: PMDGVariant = '737-800') {
+    this.variant = variant;
+    this.cduLines = [...PMDG737Adapter.MOCK_LINES];
+  }
+
+  get name(): string {
+    return `PMDG ${this.variant}`;
   }
 
   async connect(): Promise<boolean> {
-    // TODO: Connect to MSFS via node-simconnect
-    // Check if PMDG L: variables are available
-    console.log(`[PMDG] Attempting connection...`);
-    this.isConnected = true; // Stub - assumes connected
-    console.log(`[PMDG] Connected to ${this.name}`);
-    return true;
+    this.connectionStatus = 'CONNECTING';
+    try {
+      devLog(`[PMDG] Attempting connection...`);
+      const { recvOpen, handle } = await open('VirtualCDU', Protocol.KittyHawk);
+      this.handle = handle;
+
+      devLog(`[PMDG] Connected to ${recvOpen.applicationName}`);
+
+      this._setupKeypressEvents(handle);
+      this._setupAircraftStatePolling(handle);
+      this._setupCDUDisplayPolling(handle);
+
+      handle.on('close', () => {
+        devLog('[PMDG] SimConnect connection closed unexpectedly');
+        this.isConnected = false;
+        this.connectionStatus = 'DISCONNECTED';
+        this.handle = null;
+      });
+
+      this.isConnected = true;
+      this.connectionStatus = 'CONNECTED';
+      this.lastError = null;
+      return true;
+    } catch (err) {
+      this.connectionStatus = 'ERROR';
+      this.lastError = err instanceof Error ? err.message : String(err);
+      devError('[PMDG] Connection failed:', this.lastError);
+      this.isConnected = false;
+      this.handle = null;
+      return false;
+    }
   }
 
   async disconnect(): Promise<void> {
+    try {
+      if (this.handle) {
+        this.handle.close();
+        this.handle = null;
+      }
+    } catch (err) {
+      devError('[PMDG] Error during disconnect:', err);
+    }
     this.isConnected = false;
-    console.log(`[PMDG] Disconnected`);
+    this.connectionStatus = 'DISCONNECTED';
+    this.lastError = null;
+    this.simState = null;
+    // Restore mock data on disconnect
+    this.cduLines = [...PMDG737Adapter.MOCK_LINES];
+    this.cduTitle = 'IDENT';
+    this.cduBrightness = 0.8;
+    devLog(`[PMDG] Disconnected`);
   }
 
   async readDisplay(): Promise<CDUDisplayData> {
-    // TODO: Read from SimConnect L:PMDG_CDU_Screen_1_* variables
-    // For now, return mock data
+    // Always return cached data — it is kept up-to-date by the SimConnect event handler.
+    // Fall back to mock data when not connected or on first render before any data arrives.
+    if (!this.isConnected || !this.handle || this.cduLines.length === 0) {
+      return {
+        lines: PMDG737Adapter.MOCK_LINES,
+        title: 'IDENT',
+        brightness: 0.8,
+      };
+    }
     return {
-      lines: this.mockLines,
-      title: 'IDENT',
-      brightness: 0.8,
+      lines: this.cduLines,
+      title: this.cduTitle,
+      brightness: this.cduBrightness,
     };
   }
 
   async sendKeypress(key: string): Promise<void> {
-    // TODO: Send via SimConnect to PMDG
-    // PMDG accepts H: events or specific L: variables for CDU keys
-    console.log(`[PMDG] Keypress: ${key}`);
+    if (!this.handle || !this.isConnected) {
+      devLog(`[PMDG] Keypress (not connected): ${key}`);
+      return;
+    }
+
+    const eventName = PMDG_KEY_MAP[key.toUpperCase()];
+    if (!eventName) {
+      devWarn(`[PMDG] Unknown key: ${key}`);
+      return;
+    }
+
+    const eventId = PMDG_EVENT_BASE + Object.keys(PMDG_KEY_MAP).indexOf(key.toUpperCase());
+    try {
+      this.handle.transmitClientEvent(
+        SimConnectConstants.OBJECT_ID_USER,
+        eventId,
+        0,
+        PMDG_NOTIFY_GROUP,
+        EventFlag.EVENT_FLAG_DEFAULT
+      );
+      devLog(`[PMDG] Sent keypress: ${key} (${eventName})`);
+    } catch (err) {
+      devError(`[PMDG] Failed to send keypress ${key}:`, err);
+    }
   }
 
   async sendLSK(side: 'L' | 'R', index: number): Promise<void> {
     const lsk = `${side}${index}`;
-    console.log(`[PMDG] LSK: ${lsk}`);
     await this.sendKeypress(lsk);
+  }
+
+  private _setupKeypressEvents(handle: SimConnectConnection): void {
+    try {
+      const keys = Object.keys(PMDG_KEY_MAP);
+      for (let i = 0; i < keys.length; i++) {
+        const eventName = PMDG_KEY_MAP[keys[i]];
+        const eventId = PMDG_EVENT_BASE + i;
+        handle.mapClientEventToSimEvent(eventId, eventName);
+      }
+      devLog(`[PMDG] Mapped ${keys.length} CDU keypress events`);
+    } catch (err) {
+      devError('[PMDG] Error setting up keypress events:', err);
+    }
+  }
+
+  async readAircraftState(): Promise<AircraftState> {
+    if (!this.simState) {
+      return {
+        position: { lat: 40.6413, lon: -73.7781 },
+        heading: 45,
+        altitude: 0,
+        speed: 0,
+        verticalSpeed: 0,
+      };
+    }
+    return {
+      position: { lat: this.simState.lat, lon: this.simState.lon },
+      heading: this.simState.heading,
+      altitude: this.simState.altitude,
+      speed: this.simState.ias,
+      verticalSpeed: this.simState.vs,
+    };
+  }
+
+  private _setupCDUDisplayPolling(handle: SimConnectConnection): void {
+    const DEF_CDU = 1;
+    const REQ_CDU = 1;
+
+    try {
+      for (let row = 0; row < PMDG737Adapter.CDU_ROWS; row++) {
+        for (let col = 0; col < PMDG737Adapter.CDU_COLS; col++) {
+          handle.addToDataDefinition(
+            DEF_CDU,
+            `L:PMDG_CDU_Screen_1_Row_${row}_Col_${col}`,
+            null,
+            SimConnectDataType.INT32
+          );
+        }
+      }
+
+      handle.requestDataOnSimObject(
+        REQ_CDU,
+        DEF_CDU,
+        SimConnectConstants.OBJECT_ID_USER,
+        SimConnectPeriod.SECOND
+      );
+
+      handle.on('simObjectData', (recvSimObjectData) => {
+        if (recvSimObjectData.requestID !== REQ_CDU) return;
+
+        const lines: string[] = [];
+        for (let row = 0; row < PMDG737Adapter.CDU_ROWS; row++) {
+          let rowStr = '';
+          for (let col = 0; col < PMDG737Adapter.CDU_COLS; col++) {
+            const charCode = recvSimObjectData.data.readInt32();
+            rowStr += String.fromCharCode(charCode);
+          }
+          lines.push(rowStr);
+        }
+
+        if (lines.length > 0) {
+          this.cduLines = lines;
+          if (lines[0].trim().length > 0) {
+            const titleMatch = lines[0].match(/^\s*(\S+)/);
+            this.cduTitle = titleMatch ? titleMatch[1] : 'CDU';
+          }
+        }
+      });
+    } catch (err) {
+      devError('[PMDG] Error setting up CDU display polling:', err);
+    }
+  }
+
+  private _setupAircraftStatePolling(handle: SimConnectConnection): void {
+    const DEFINITION_ID = 0;
+    const REQUEST_ID = 0;
+
+    try {
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Plane Latitude',
+        'degrees',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Plane Longitude',
+        'degrees',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Plane Altitude',
+        'feet',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Plane Heading Degrees True',
+        'degrees',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Airspeed Indicated',
+        'knots',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Airspeed True',
+        'knots',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Ground Velocity',
+        'knots',
+        SimConnectDataType.FLOAT64
+      );
+      handle.addToDataDefinition(
+        DEFINITION_ID,
+        'Vertical Speed',
+        'feet per minute',
+        SimConnectDataType.FLOAT64
+      );
+
+      handle.requestDataOnSimObject(
+        REQUEST_ID,
+        DEFINITION_ID,
+        SimConnectConstants.OBJECT_ID_USER,
+        SimConnectPeriod.SECOND
+      );
+
+      handle.on('simObjectData', (recvSimObjectData) => {
+        if (recvSimObjectData.requestID === REQUEST_ID) {
+          try {
+            this.simState = {
+              lat: recvSimObjectData.data.readFloat64(),
+              lon: recvSimObjectData.data.readFloat64(),
+              altitude: recvSimObjectData.data.readFloat64(),
+              heading: recvSimObjectData.data.readFloat64(),
+              ias: recvSimObjectData.data.readFloat64(),
+              tas: recvSimObjectData.data.readFloat64(),
+              gs: recvSimObjectData.data.readFloat64(),
+              vs: recvSimObjectData.data.readFloat64(),
+            };
+          } catch (readErr) {
+            devError('[PMDG] Error reading aircraft state:', readErr);
+          }
+        }
+      });
+    } catch (err) {
+      devError('[PMDG] Error setting up aircraft state polling:', err);
+    }
   }
 }

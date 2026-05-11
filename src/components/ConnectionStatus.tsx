@@ -1,38 +1,97 @@
 import { useState } from 'react';
 import { useWebSocket, saveServerUrl, getServerUrl } from '../hooks/useWebSocket';
+import { useFMCStore } from '../store/useFMCStore';
 import { CDUButton } from './CDU/CDUButton';
+
+const AIRCRAFT_LABELS: Record<string, string> = {
+  BOEING_737: 'PMDG 737-800',
+  AIRBUS_A320: 'FBW A320',
+  CJ4: 'Working Title CJ4',
+};
 
 export function ConnectionStatus() {
   const [showSettings, setShowSettings] = useState(false);
   const [serverUrl, setServerUrl] = useState(getServerUrl());
-  const { connectionStatus, connect, disconnect } = useWebSocket({ autoConnect: false });
+  const { connect, disconnect } = useWebSocket({ autoConnect: false });
+
+  const connectionStatus = useFMCStore(s => s.connectionStatus);
+  const connectionMode = useFMCStore(s => s.connectionMode);
+  const configuredAircraft = useFMCStore(s => s.aircraft);
+  const connectedAircraft = useFMCStore(s => s.connectedAircraft);
+  const connectedAircraftType = useFMCStore(s => s.connectedAircraftType);
+  const connectedCapabilities = useFMCStore(s => s.connectedCapabilities);
+  const lastError = useFMCStore(s => s.lastError);
+  const aircraftState = useFMCStore(s => s.aircraftState);
 
   const statusMap = {
-    DISCONNECTED: { label: 'Disconnected', color: 'bg-gray-500', text: 'text-gray-400' },
-    CONNECTING: { label: 'Connecting...', color: 'bg-cdu-amber animate-pulse', text: 'text-cdu-amber' },
-    CONNECTED: { label: 'Connected', color: 'bg-cdu-exec', text: 'text-cdu-exec' },
-    ERROR: { label: 'Connection Error', color: 'bg-cdu-error', text: 'text-cdu-error' },
-  };
+    DISCONNECTED: { label: 'DISCONNECTED', color: 'bg-gray-500', text: 'text-gray-400' },
+    CONNECTING: { label: 'CONNECTING', color: 'bg-cdu-amber animate-pulse', text: 'text-cdu-amber' },
+    CONNECTED: { label: 'CONNECTED', color: 'bg-cdu-exec', text: 'text-cdu-exec' },
+    ERROR: { label: 'ERROR', color: 'bg-cdu-error', text: 'text-cdu-error' },
+  } as const;
 
   const status = statusMap[connectionStatus];
+  const aircraftType = connectedAircraftType || configuredAircraft;
+  const adapterName = connectedAircraft || AIRCRAFT_LABELS[aircraftType] || aircraftType;
+  const capabilities = connectedCapabilities ?? [];
+
+  const formatNumber = (value: number | undefined, digits = 0) =>
+    typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '---';
+
+  const handleConnect = () => {
+    saveServerUrl(serverUrl);
+    connect();
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setShowSettings(false);
+  };
 
   return (
     <div className="fixed bottom-2 right-2 z-50">
-      {/* Status indicator */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cdu-bezel/90 backdrop-blur border border-cdu-bezel-light"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cdu-bezel/90 backdrop-blur border border-cdu-bezel-light shadow-lg"
       >
         <div className={`w-2.5 h-2.5 rounded-full ${status.color}`} />
         <span className={`text-xs font-cdu ${status.text}`}>{status.label}</span>
+        <span className="hidden sm:inline text-[10px] font-cdu text-cdu-cyan/80">{adapterName}</span>
       </button>
 
-      {/* Settings panel */}
       {showSettings && (
-        <div className="absolute bottom-full right-0 mb-2 p-3 rounded-lg bg-cdu-bezel border border-cdu-bezel-light shadow-lg min-w-[260px]">
-          <h3 className="text-cdu-text/70 text-xs font-cdu uppercase tracking-wider mb-2">
-            Connection Settings
+        <div className="absolute bottom-full right-0 mb-2 p-3 rounded-lg bg-cdu-bezel border border-cdu-bezel-light shadow-lg min-w-[300px] max-w-[340px]">
+          <h3 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">
+            MSFS Connection Diagnostics
           </h3>
+
+          <div className="mb-3 space-y-1 rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-2 font-cdu text-[10px]">
+            <DiagnosticRow label="STATUS" value={status.label} className={status.text} />
+            <DiagnosticRow label="ADAPTER" value={adapterName} className="text-cdu-cyan" />
+            <DiagnosticRow label="MODE" value={connectionMode} />
+            {connectionStatus === 'CONNECTED' && (
+              <>
+                <DiagnosticRow label="AIRCRAFT" value={aircraftType} />
+                <DiagnosticRow label="CAPS" value={capabilities.length ? capabilities.join(', ') : '---'} />
+              </>
+            )}
+            {lastError && (
+              <div className="pt-1 text-cdu-error leading-tight">
+                <span className="text-cdu-text/50">LAST ERROR </span>{lastError}
+              </div>
+            )}
+          </div>
+
+          {connectionStatus === 'CONNECTED' && (
+            <div className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-2 font-cdu text-[10px]">
+              <DiagnosticRow label="LAT" value={formatNumber(aircraftState?.position?.lat, 5)} />
+              <DiagnosticRow label="LON" value={formatNumber(aircraftState?.position?.lon, 5)} />
+              <DiagnosticRow label="ALT" value={`${formatNumber(aircraftState?.altitude)} FT`} />
+              <DiagnosticRow label="HDG" value={`${formatNumber(aircraftState?.heading)}°`} />
+              <DiagnosticRow label="SPD" value={`${formatNumber(aircraftState?.speed)} KT`} />
+              <DiagnosticRow label="VS" value={`${formatNumber(aircraftState?.verticalSpeed)} FPM`} />
+            </div>
+          )}
 
           <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">
             Server URL (WebSocket)
@@ -51,21 +110,14 @@ export function ConnectionStatus() {
                 label="DISCONNECT"
                 className="flex-1 h-8 text-[10px]"
                 variant="default"
-                onPress={() => {
-                  disconnect();
-                  setShowSettings(false);
-                }}
+                onPress={handleDisconnect}
               />
             ) : (
               <CDUButton
-                label="CONNECT"
+                label={connectionStatus === 'ERROR' ? 'RETRY MSFS' : 'CONNECT TO MSFS'}
                 className="flex-1 h-8 text-[10px]"
                 variant="exec"
-                onPress={() => {
-                  saveServerUrl(serverUrl);
-                  connect();
-                  setShowSettings(false);
-                }}
+                onPress={handleConnect}
               />
             )}
             <CDUButton
@@ -77,6 +129,15 @@ export function ConnectionStatus() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DiagnosticRow({ label, value, className = 'text-cdu-text' }: { label: string; value: string; className?: string }) {
+  return (
+    <div className="flex justify-between gap-2 min-w-0">
+      <span className="text-cdu-text/50 shrink-0">{label}</span>
+      <span className={`truncate text-right ${className}`}>{value}</span>
     </div>
   );
 }

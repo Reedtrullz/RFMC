@@ -2,14 +2,23 @@ import type { FMCState, DisplayData, PageType } from '../../types/fmc';
 import { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
 import { renderRtePage, renderDepArrPage } from './route';
 import { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } from './navigation';
+import { renderClbPage } from './climb';
+import { renderCrzPage } from './cruise';
+import { renderDesPage } from './descent';
+import { renderDirIntcPage } from './direct';
+import { renderN1LimitPage } from './n1limit';
+import { getAirbusPageRenderer } from './airbus';
 
 export { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
 export { renderRtePage, renderDepArrPage } from './route';
 export { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } from './navigation';
+export { renderClbPage } from './climb';
+export { renderCrzPage } from './cruise';
+export { renderDesPage } from './descent';
+export { renderDirIntcPage } from './direct';
+export { renderN1LimitPage } from './n1limit';
+export { getAirbusPageRenderer } from './airbus';
 
-/**
- * Map a page type to its render function.
- */
 export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
   const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
     IDENT: renderIdentPage,
@@ -25,6 +34,11 @@ export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayDa
     FIX: renderFixPage,
     MENU: renderMenuPage,
     TUTORIAL: renderMenuPage,
+    CLB: renderClbPage,
+    CRZ: renderCrzPage,
+    DES: renderDesPage,
+    DIR_INTC: renderDirIntcPage,
+    N1_LIMIT: renderN1LimitPage,
   };
-  return renderers[page] || null;
+  return renderers[page] || getAirbusPageRenderer(page);
 }

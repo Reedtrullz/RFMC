@@ -17,7 +17,9 @@ export function useSound() {
   useEffect(() => {
     try {
       ctxRef.current = new AudioContext();
-    } catch {}
+    } catch {
+      console.error('[Sound] Failed to create AudioContext');
+    }
     mutedRef.current = localStorage.getItem('cdu-muted') === 'true';
     return () => { ctxRef.current?.close(); };
   }, []);

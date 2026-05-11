@@ -1,3 +1,5 @@
+import type { DisplayColor } from '../fmc/displayColors';
+
 // ============================================================
 // Core FMC types shared between frontend and backend
 // ============================================================
@@ -19,7 +21,12 @@ export type BoeingPageType =
   | 'HOLD'
   | 'FIX'
   | 'MENU'
-  | 'TUTORIAL';
+  | 'TUTORIAL'
+  | 'CLB'
+  | 'CRZ'
+  | 'DES'
+  | 'DIR_INTC'
+  | 'N1_LIMIT';
 
 /** All possible Airbus A320 MCDU pages */
 export type AirbusPageType =
@@ -41,18 +48,13 @@ export type PageType = BoeingPageType | AirbusPageType;
 
 /** A single line on the CDU display */
 export interface DisplayLine {
-  /** Text content (max 24 chars) */
   text: string;
-  /** Optional small left-side label (e.g., arrow, line number) */
   leftLabel?: string;
-  /** Optional small right-side label */
   rightLabel?: string;
-  /** True for inverse video (green bg, black text) */
   inverse?: boolean;
-  /** True for smaller font on this line (used for LEGS page details) */
   small?: boolean;
-  /** True if this line should blink */
   blinking?: boolean;
+  color?: DisplayColor;
 }
 
 /** Full CDU display data — what gets rendered on screen */
@@ -65,6 +67,9 @@ export interface DisplayData {
   pageIndicator?: string;
   /** LSK handler identifiers — which actions are available on each LSK */
   lskActions: Record<string, string | null>;
+  lskLabels?: Record<string, string>;
+  /** Error message for the scratchpad (e.g., "NOT SUPPORTED") */
+  scratchpadError?: string | null;
 }
 
 /** A Line Select Key identifier */
@@ -79,8 +84,9 @@ export type CDUKey =
   | 'DOT' | 'PLUS_MINUS' | 'SLASH' | 'SPACE'
   | 'CLR' | 'DEL' | 'EXEC'
   | 'NEXT_PAGE' | 'PREV_PAGE'
-  | 'INIT_REF' | 'RTE' | 'DEP_ARR' | 'LEGS'
-  | 'PERF' | 'PROG' | 'MENU'
+  | 'INIT_REF' | 'RTE' | 'CLB' | 'CRZ' | 'DES' | 'DIR_INTC' | 'LEGS'
+  | 'DEP_ARR' | 'HOLD' | 'PERF' | 'PROG' | 'N1_LIMIT' | 'FIX' | 'MENU'
+  | 'INIT_A' | 'INIT_B' | 'F_PLN' | 'PERF_TAKEOFF' | 'PROG_A' | 'DEP_ARR_A' | 'MCDU_MENU' | 'RAD_NAV' | 'DATA_INDEX'
   | 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
   | 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6';
 
@@ -88,7 +94,7 @@ export type CDUKey =
 export type ConnectionMode = 'STANDALONE' | 'SYNC' | 'CONTROL';
 
 /** FMC operating mode */
-export type FMCMode = 'STANDBY' | 'ACTIVE' | 'TUTORIAL';
+export type FMCMode = 'STANDBY' | 'ACTIVE' | 'TUTORIAL' | 'FAIL' | 'OFF';
 
 /** Connection status */
 export type ConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR';
@@ -103,7 +109,10 @@ export interface AltitudeConstraint {
   altitude2?: number;     // for BETWEEN
 }
 
+export type SpeedConstraintType = 'AT' | 'AT_OR_ABOVE' | 'AT_OR_BELOW';
+
 export interface SpeedConstraint {
+  type: SpeedConstraintType;
   speed: number;          // knots
 }
 
@@ -221,10 +230,51 @@ export interface FMCState {
   mode: FMCMode;
   connectionStatus: ConnectionStatus;
   connectionMode: ConnectionMode;
-  
+  connectedAircraft: string | null;
+  connectedAircraftType: AircraftType | null;
+  connectedCapabilities: string[] | null;
+  lastError: string | null;
+  simVariables: Record<string, number>;
+  failureMessage: string | null;
+  externalDisplayData: DisplayData | null;
+
+  hold: {
+    fix: string;
+    inboundCourse: number;
+    legTime: number;
+    legDist: number;
+    direction: 'L' | 'R';
+  };
+  holdPending: {
+    fix: string;
+    inboundCourse: number;
+    legTime: number;
+    legDist: number;
+    direction: 'L' | 'R';
+  } | null;
+
+  // FIX page state
+  fix: {
+    refFix: string;
+    radial: number;
+    distance: number;
+  };
+
   // Multi-page state
   legsPageIndex: number;
   legsPageCount: number;
   depArrSubPage: 'DEP' | 'ARR';
   rteSubPage: number;
+
+  deleteMode: boolean;
+  editWaypointIndex: number | null;
+
+  aircraftState: {
+    position?: { lat: number; lon: number };
+    heading?: number;
+    altitude?: number;
+    speed?: number;
+    verticalSpeed?: number;
+  } | null;
+
 }

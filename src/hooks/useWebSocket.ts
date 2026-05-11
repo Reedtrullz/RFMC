@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { ClientMessage, ServerMessage, ConnectionMode } from '@shared';
+import { devLog, devError } from '@shared';
 import { useFMCStore } from '../store/useFMCStore';
 
 const RECONNECT_BASE_DELAY = 1000;
@@ -18,6 +19,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   const setFMCConnectionStatus = useFMCStore(s => s.setConnectionStatus);
   const setConnectionMode = useFMCStore(s => s.setConnectionMode);
+  const setAircraftState = useFMCStore(s => s.setAircraftState);
 
   const connect = useCallback(() => {
     const url = options.url || getSavedServerUrl();
@@ -32,9 +34,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('[WS] Connected to', url);
-        setConnectionStatus('CONNECTED');
-        setFMCConnectionStatus('CONNECTED');
+        devLog('[WS] Connected to', url);
+        ws.send(JSON.stringify({ type: 'sim.connect' } satisfies ClientMessage));
         reconnectAttempts.current = 0;
       };
 
@@ -43,12 +44,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
           const msg: ServerMessage = JSON.parse(event.data);
           handleServerMessage(msg);
         } catch (err) {
-          console.error('[WS] Parse error:', err);
+          devError('[WS] Parse error:', err);
         }
       };
 
       ws.onclose = () => {
-        console.log('[WS] Disconnected');
+        devLog('[WS] Disconnected');
         setConnectionStatus('DISCONNECTED');
         setFMCConnectionStatus('DISCONNECTED');
         wsRef.current = null;
@@ -56,12 +57,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       };
 
       ws.onerror = (err) => {
-        console.error('[WS] Error:', err);
+        devError('[WS] Error:', err);
         setConnectionStatus('ERROR');
         setFMCConnectionStatus('ERROR');
       };
     } catch (err) {
-      console.error('[WS] Connection failed:', err);
+      devError('[WS] Connection failed:', err);
       setConnectionStatus('ERROR');
       setFMCConnectionStatus('ERROR');
       scheduleReconnect();
@@ -72,6 +73,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     if (reconnectTimer.current) {
       clearTimeout(reconnectTimer.current);
       reconnectTimer.current = null;
+    }
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'sim.disconnect' } satisfies ClientMessage));
     }
     wsRef.current?.close();
     setConnectionStatus('DISCONNECTED');
@@ -135,23 +139,31 @@ function handleServerMessage(msg: ServerMessage): void {
 
   switch (msg.type) {
     case 'fmc.display':
-      // In backend-authoritative mode, we would apply display data
-      // For now, just log it
-      console.log('[WS] Display update:', msg.data.title);
+      store.setExternalDisplayData(msg.data);
       break;
     case 'sim.connected':
       store.setConnectionStatus('CONNECTED');
       store.setConnectionMode('CONTROL');
+      store.setConnectedAircraft(msg.aircraft, msg.capabilities ?? null, msg.aircraftType ?? null);
+      store.setConnectedLastError(msg.lastError ?? null);
       break;
     case 'sim.disconnected':
       store.setConnectionStatus('DISCONNECTED');
       store.setConnectionMode('STANDALONE');
+      store.setConnectedAircraft(null, null, null);
+      store.setAircraftState(null);
+      store.setConnectedLastError(msg.lastError ?? null);
       break;
     case 'sim.data':
-      // Handle sim data variables
+      store.setSimVariables(msg.variables);
+      if (msg.aircraftState) {
+        store.setAircraftState(msg.aircraftState);
+      }
       break;
     case 'error':
-      console.error('[WS] Server error:', msg.message);
+      devError('[WS] Server error:', msg.message);
+      store.setConnectionStatus('ERROR');
+      store.setConnectedLastError(msg.message);
       break;
   }
 }
@@ -160,14 +172,18 @@ function getSavedServerUrl(): string {
   try {
     const saved = localStorage.getItem('cdu-server-url');
     if (saved) return saved;
-  } catch {}
+  } catch {
+    devError('[WS] Failed to read server URL');
+  }
   return `ws://${window.location.hostname}:8080`;
 }
 
 export function saveServerUrl(url: string): void {
   try {
     localStorage.setItem('cdu-server-url', url);
-  } catch {}
+  } catch {
+    devError('[WS] Failed to save server URL');
+  }
 }
 
 export function getServerUrl(): string {

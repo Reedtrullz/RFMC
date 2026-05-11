@@ -11,14 +11,17 @@ import type { FlightPlanWaypoint, AltitudeConstraint, SpeedConstraint } from '..
  * - Ends with number, 5+ chars: procedure (SID/STAR)
  * - DCT: direct
  */
-export function parseRouteString(routeString: string): FlightPlanWaypoint[] {
-  if (!routeString.trim()) return [];
+export function parseRouteString(routeString: string): { origin: string; destination: string; waypoints: FlightPlanWaypoint[] } {
+  if (!routeString.trim()) {
+    return { origin: '', destination: '', waypoints: [] };
+  }
 
   const tokens = routeString.trim().toUpperCase().split(/\s+/);
   const waypoints: FlightPlanWaypoint[] = [];
+  let origin = '';
+  let destination = '';
 
   let previousAirway: string | undefined = undefined;
-  let discontinuity = false;
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
@@ -31,15 +34,13 @@ export function parseRouteString(routeString: string): FlightPlanWaypoint[] {
 
     // First token is origin airport (if 4-letter)
     if (i === 0 && token.length === 4 && !/\d/.test(token)) {
-      waypoints.push({
-        ident: token,
-        discontinuity: false,
-      });
+      origin = token;
       continue;
     }
 
     // Last token is destination airport (if 4-letter)
     if (i === tokens.length - 1 && token.length === 4 && !/\d/.test(token)) {
+      destination = token;
       waypoints.push({
         ident: token,
         discontinuity: false,
@@ -77,7 +78,7 @@ export function parseRouteString(routeString: string): FlightPlanWaypoint[] {
     previousAirway = undefined;
   }
 
-  return waypoints;
+  return { origin, destination, waypoints };
 }
 
 function isAirway(token: string): boolean {
@@ -116,7 +117,7 @@ function parseConstraint(token: string): ParsedConstraint {
   // Parse speed: /250FL100 or /250
   const speedMatch = constraint.match(/^(\d{2,3})/);
   if (speedMatch) {
-    spdConstraint = { speed: parseInt(speedMatch[1]) };
+    spdConstraint = { type: 'AT', speed: parseInt(speedMatch[1]) };
   }
 
   // Parse altitude: FL100, 10000, 5000

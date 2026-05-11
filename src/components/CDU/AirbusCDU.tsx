@@ -81,15 +81,13 @@ export function AirbusCDU() {
 
         {/* Airbus function keys */}
         <div className="flex w-full mt-1 gap-1">
-          <CDUButton label="AIR PORT" className="flex-1 h-9 text-[8px]" variant={isHighlighted('INIT_A') ? 'highlight' : 'function'} onPress={() => onPressKey('INIT_A')} />
-          <CDUButton label="F-PLN" className="flex-1 h-9 text-xs" variant={isHighlighted('F_PLN') ? 'highlight' : 'function'} onPress={() => onPressKey('F_PLN')} />
-          <CDUButton label="PERF" className="flex-1 h-9 text-xs" variant={isHighlighted('PERF_TAKEOFF') ? 'highlight' : 'function'} onPress={() => onPressKey('PERF_TAKEOFF')} />
+          <CDUButton label="DIR" className="flex-1 h-9 text-xs" variant={isHighlighted('DIR_INTC') ? 'highlight' : 'function'} onPress={() => onPressKey('DIR_INTC')} />
           <CDUButton label="PROG" className="flex-1 h-9 text-xs" variant={isHighlighted('PROG_A') ? 'highlight' : 'function'} onPress={() => onPressKey('PROG_A')} />
-        </div>
-        <div className="flex w-full gap-1 mt-0.5">
+          <CDUButton label="PERF" className="flex-1 h-9 text-xs" variant={isHighlighted('PERF_TAKEOFF') ? 'highlight' : 'function'} onPress={() => onPressKey('PERF_TAKEOFF')} />
+          <CDUButton label="INIT" className="flex-1 h-9 text-xs" variant={isHighlighted('INIT_A') ? 'highlight' : 'function'} onPress={() => onPressKey('INIT_A')} />
+          <CDUButton label="DATA" className="flex-1 h-9 text-xs" variant={isHighlighted('DATA_INDEX') ? 'highlight' : 'function'} onPress={() => onPressKey('DATA_INDEX')} />
+          <CDUButton label="F-PLN" className="flex-1 h-9 text-xs" variant={isHighlighted('F_PLN') ? 'highlight' : 'function'} onPress={() => onPressKey('F_PLN')} />
           <CDUButton label="RAD NAV" className="flex-1 h-9 text-[8px]" variant={isHighlighted('RAD_NAV') ? 'highlight' : 'function'} onPress={() => onPressKey('RAD_NAV')} />
-          <CDUButton label="MCDU MENU" className="flex-1 h-9 text-[7px]" variant={isHighlighted('MCDU_MENU') ? 'highlight' : 'function'} onPress={() => onPressKey('MCDU_MENU')} />
-          <div className="flex-[2]" />
         </div>
 
         {/* Airbus keypad */}

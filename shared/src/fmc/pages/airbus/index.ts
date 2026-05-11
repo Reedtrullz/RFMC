@@ -1,15 +1,18 @@
-import type { FMCState, DisplayData, AirbusPageType } from '../../../types/fmc';
+import type { FMCState, DisplayData, AirbusPageType, PageType, DisplayLine } from '../../../types/fmc';
 
 const W = 24;
-function fmt(text: string, left: string = '', right: string = ''): { text: string; leftLabel: string; rightLabel: string; inverse: boolean } {
-  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false };
+function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false, color };
 }
-function inv(text: string, left: string = '', right: string = ''): { text: string; leftLabel: string; rightLabel: string; inverse: boolean } {
-  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: true };
+function inv(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: true, color };
 }
 function blank() { return fmt(''); }
 
-export function getAirbusPageRenderer(page: AirbusPageType): (state: FMCState) => DisplayData {
+const AIRBUS_PAGES: readonly string[] = ['INIT_A', 'INIT_B', 'F_PLN', 'DEP_ARR_A', 'PERF_TAKEOFF', 'PERF_APPR', 'FUEL_PRED', 'SEC_FPLN', 'RAD_NAV', 'PROG_A', 'DATA_INDEX', 'MCDU_MENU'];
+
+export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
+  if (!AIRBUS_PAGES.includes(page)) return null;
   const renderers: Record<AirbusPageType, (state: FMCState) => DisplayData> = {
     INIT_A:             renderInitA,
     INIT_B:             renderInitB,
@@ -24,31 +27,28 @@ export function getAirbusPageRenderer(page: AirbusPageType): (state: FMCState) =
     DATA_INDEX:         renderDataIndex,
     MCDU_MENU:          renderMcduMenu,
   };
-  return renderers[page];
+  return renderers[page as AirbusPageType];
 }
 
-// ============================================================
-// INIT A — From/To, Alternate, Cost Index, Cruise FL
-// ============================================================
 export function renderInitA(state: FMCState): DisplayData {
   const { route, performance } = state;
   return {
     title: 'INIT',
     pageIndicator: 'A',
     lines: [
-      inv('  INIT              A'),                                          // Line 1: Title
-      fmt(' FROM/TO', 'ALN'),                                        // Line 2: Left label | Right label
-      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, ` ${route.alternate || '----'}`),  // Line 3: Left data | Right data
-      fmt(' COST INDEX', 'FLT NBR'),                                   // Line 4: Left label | Right label
-      fmt(` ${performance.costIndex || '---'}`, ` ${route.flightNumber || '--------'}`),  // Line 5: Left data | Right data
-      fmt(' CRZ FL', ''),                                                // Line 6: Left label | Right (blank)
-      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}`, ''),  // Line 7: Left data | Right (blank)
-      blank(),                                                          // Line 8: Padding
-      blank(),                                                          // Line 9: Padding
-      blank(),                                                          // Line 10: Padding
-      blank(),                                                          // Line 11: Padding
-      fmt('', '→'),                                                   // Line 12: Right prompt (INIT B)
-      blank(),                                                          // Line 13: Padding
+      inv('  INIT              A', '', '', 'cyan'),
+      fmt(' FROM/TO', 'ALN', '', 'white'),
+      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, ` ${route.alternate || '----'}`, '', 'magenta'),
+      fmt(' COST INDEX', 'FLT NBR', '', 'white'),
+      fmt(` ${performance.costIndex || '---'}`, ` ${route.flightNumber || '--------'}`, '', 'magenta'),
+      fmt(' CRZ FL', '', '', 'white'),
+      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}`, '', '', 'magenta'),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+      fmt('', '→', '', 'magenta'),
+      blank(),
     ],
     lskActions: {
       L1: 'set_from_to', L2: 'set_cost_index', L3: 'set_crz_fl',
@@ -59,22 +59,19 @@ export function renderInitA(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// INIT B — ZFW, Block Fuel, CG
-// ============================================================
 export function renderInitB(state: FMCState): DisplayData {
   const { performance, route } = state;
   return {
     title: 'INIT',
     pageIndicator: 'B',
     lines: [
-      inv('  INIT              B'),
-      fmt(' ZFW', '<'),
-      fmt(` ${performance.zfw ? (performance.zfw / 1000).toFixed(1) : '---.-'}`),
-      fmt(' BLOCK', '<'),
-      fmt(` ${performance.fuel ? (performance.fuel / 1000).toFixed(1) : '---.-'}`),
-      fmt(' CG', '<'),
-      fmt(` ${performance.cg ? performance.cg.toFixed(1) : '--.-'}`),
+      inv('  INIT              B', '', '', 'cyan'),
+      fmt(' ZFW', '<', '', 'white'),
+      fmt(` ${performance.zfw ? (performance.zfw / 1000).toFixed(1) : '---.-'}`, '', '', 'magenta'),
+      fmt(' BLOCK', '<', '', 'white'),
+      fmt(` ${performance.fuel ? (performance.fuel / 1000).toFixed(1) : '---.-'}`, '', '', 'magenta'),
+      fmt(' CG', '<', '', 'white'),
+      fmt(` ${performance.cg ? performance.cg.toFixed(1) : '--.-'}`, '', '', 'magenta'),
       blank(),
       blank(),
       blank(),
@@ -92,20 +89,17 @@ export function renderInitB(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// F-PLN — Flight Plan
-// ============================================================
 export function renderFpln(state: FMCState): DisplayData {
   const { flightPlan, route } = state;
   const wpts = flightPlan.waypoints;
-  const lines = [inv(`  F-PLN             ${route.origin || '----'} / ${route.destination || '----'}`)];
+  const lines = [inv(`  F-PLN             ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan')];
   
   for (let i = 0; i < Math.min(wpts.length, 10); i++) {
     const wp = wpts[i];
     if (wp.discontinuity) {
-      lines.push(fmt(' ----- DISCONTINUITY'));
+      lines.push(fmt(' ----- DISCONTINUITY', '', '', 'amber'));
     } else {
-      lines.push(fmt(` ${wp.ident}`));
+      lines.push(fmt(` ${wp.ident}`, '', '', 'green'));
     }
   }
   while (lines.length < 14) lines.push(blank());
@@ -121,32 +115,29 @@ function buildFplnActions(state: FMCState): Record<string, string | null> {
   const actions: Record<string, string | null> = {};
   for (let i = 1; i <= 6; i++) { actions[`L${i}`] = null; actions[`R${i}`] = null; }
   actions['L1'] = 'fpln_dep_arr';
-  actions['R6'] = 'fpln_next';
+  actions['R6'] = null;
   return actions;
 }
 
-// ============================================================
-// DEP/ARR A320
-// ============================================================
 export function renderDepArrA320(state: FMCState): DisplayData {
   const { route } = state;
   return {
     title: 'DEP/ARR',
     pageIndicator: '',
     lines: [
-      inv(`  DEP/ARR     ${route.origin || '----'} / ${route.destination || '----'}`),
-      fmt(' DEPARTURE', ''),
-      fmt(` ${route.origin || '----'}`),
-      fmt('  SID', '<'),
-      fmt(`   ${route.sid || 'NONE'}`),
-      fmt('  RWY', '<'),
-      fmt(`   ${route.runway || '----'}`),
-      fmt(' ARRIVAL', ''),
-      fmt(` ${route.destination || '----'}`),
-      fmt('  STAR', '<'),
-      fmt(`   ${route.star || 'NONE'}`),
-      fmt('  APPR', '<'),
-      fmt(`   ${route.approach || 'NONE'}`),
+      inv(`  DEP/ARR     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan'),
+      fmt(' DEPARTURE', '', '', 'white'),
+      fmt(` ${route.origin || '----'}`, '', '', 'green'),
+      fmt('  SID', '<', '', 'white'),
+      fmt(`   ${route.sid || 'NONE'}`, '', '', 'magenta'),
+      fmt('  RWY', '<', '', 'white'),
+      fmt(`   ${route.runway || '----'}`, '', '', 'magenta'),
+      fmt(' ARRIVAL', '', '', 'white'),
+      fmt(` ${route.destination || '----'}`, '', '', 'green'),
+      fmt('  STAR', '<', '', 'white'),
+      fmt(`   ${route.star || 'NONE'}`, '', '', 'magenta'),
+      fmt('  APPR', '<', '', 'white'),
+      fmt(`   ${route.approach || 'NONE'}`, '', '', 'magenta'),
       blank(),
    ],
     lskActions: {
@@ -158,25 +149,22 @@ export function renderDepArrA320(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// PERF TAKEOFF
-// ============================================================
 export function renderPerfTakeoff(state: FMCState): DisplayData {
   const { takeoff } = state;
   return {
     title: 'PERF',
     pageIndicator: 'TO',
     lines: [
-      inv('  PERF              TO'),
-      fmt(' V1', '', `${takeoff.v1 ? `${takeoff.v1} KT` : '---'}`),
-      fmt(' VR', '', `${takeoff.vr ? `${takeoff.vr} KT` : '---'}`),
-      fmt(' V2', '', `${takeoff.v2 ? `${takeoff.v2} KT` : '---'}`),
-      fmt(' FLAPS', '<'),
-      fmt(` ${takeoff.flaps || 'CONF 2'}`),
-      fmt(' FLEX TO TEMP', '<'),
-      fmt(` ${takeoff.flexTemp ? `${takeoff.flexTemp}°C` : '---'}`),
-      fmt(' TRANS ALT', '<'),
-      fmt(' 5000'),
+      inv('  PERF              TO', '', '', 'cyan'),
+      fmt(' V1', '', `${takeoff.v1 ? `${takeoff.v1} KT` : '---'}`, 'white'),
+      fmt(' VR', '', `${takeoff.vr ? `${takeoff.vr} KT` : '---'}`, 'white'),
+      fmt(' V2', '', `${takeoff.v2 ? `${takeoff.v2} KT` : '---'}`, 'white'),
+      fmt(' FLAPS', '<', '', 'white'),
+      fmt(` ${takeoff.flaps || 'CONF 2'}`, '', '', 'magenta'),
+      fmt(' FLEX TO TEMP', '<', '', 'white'),
+      fmt(` ${takeoff.flexTemp ? `${takeoff.flexTemp}°C` : '---'}`, '', '', 'magenta'),
+      fmt(' TRANS ALT', '<', '', 'white'),
+      fmt(' 5000', '', '', 'green'),
       blank(),
       blank(),
       blank(),
@@ -191,64 +179,58 @@ export function renderPerfTakeoff(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// PERF APPR
-// ============================================================
 export function renderPerfAppr(state: FMCState): DisplayData {
   return {
     title: 'PERF',
     pageIndicator: 'APPR',
     lines: [
-      inv('  PERF              APPR'),
-      fmt(' QNH', '<'),
-      fmt(' 1013'),
-      fmt(' TEMP', '<'),
-      fmt(' 15°C'),
-      fmt(' WIND', '<'),
-      fmt(' ---/---'),
-      fmt(' MDA', '<'),
-      fmt(' ----'),
-      fmt(' DH', '<'),
-      fmt(' ----'),
-      fmt(' LDG CONF', '<'),
-      fmt(' FULL'),
+      inv('  PERF              APPR', '', '', 'cyan'),
+      fmt(' QNH', '<', '', 'white'),
+      fmt(' 1013', '', '', 'magenta'),
+      fmt(' TEMP', '<', '', 'white'),
+      fmt(' 15°C', '', '', 'magenta'),
+      fmt(' WIND', '<', '', 'white'),
+      fmt(' ---/---', '', '', 'magenta'),
+      fmt(' MDA', '<', '', 'white'),
+      fmt(' ----', '', '', 'magenta'),
+      fmt(' DH', '<', '', 'white'),
+      fmt(' ----', '', '', 'magenta'),
+      fmt(' LDG CONF', '<', '', 'white'),
+      fmt(' FULL', '', '', 'green'),
       blank(),
    ],
     lskActions: {
-      L1: 'set_qnh', L2: null, L3: 'set_temp', L4: null,
+      L1: 'set_qnh', L2: null, L3: null, L4: null,
       L5: 'set_wind', L6: null,
-      R1: 'set_mda', R2: null, R3: 'set_dh', R4: null,
+      R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: 'perf_to',
     },
   };
 }
 
-// ============================================================
-// FUEL PRED
-// ============================================================
 export function renderFuelPred(state: FMCState): DisplayData {
   const { route, performance } = state;
   return {
     title: 'FUEL PRED',
     pageIndicator: '',
     lines: [
-      inv('  FUEL PRED'),
-      fmt(` ${route.origin || '----'} / ${route.destination || '----'}`),
-      fmt(' FOB', '', `${performance.fuel ? (performance.fuel/1000).toFixed(1) : '---.-'} T`),
-      fmt(' EXTRA', '<'),
-      fmt(' 0.0'),
-      fmt(' MIN DEST FOB', ''),
-      fmt(' 2.5'),
-      fmt(' ALTN', '', ''),
-      fmt(`   ${route.alternate || '----'}`),
-      fmt('  ALTN FOB', '', ''),
-      fmt(`   0.0`, '', `${performance.reserve ? (performance.reserve/1000).toFixed(1) : '--.-'}`),
-      fmt(' EXTRA/TIME', ''),
-      fmt(' ----     ----'),
-      fmt(' FINAL/TIME', ''),
+      inv('  FUEL PRED', '', '', 'cyan'),
+      fmt(` ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'green'),
+      fmt(' FOB', '', `${performance.fuel ? (performance.fuel/1000).toFixed(1) : '---.-'} T`, 'white'),
+      fmt(' EXTRA', '<', '', 'white'),
+      fmt(' 0.0', '', '', 'magenta'),
+      fmt(' MIN DEST FOB', '', '', 'white'),
+      fmt(' 2.5', '', '', 'green'),
+      fmt(' ALTN', '', '', 'white'),
+      fmt(`   ${route.alternate || '----'}`, '', '', 'green'),
+      fmt('  ALTN FOB', '', '', 'white'),
+      fmt(`   0.0`, '', `${performance.reserve ? (performance.reserve/1000).toFixed(1) : '--.-'}`, 'green'),
+      fmt(' EXTRA/TIME', '', '', 'white'),
+      fmt(' ----     ----', '', '', 'green'),
+      fmt(' FINAL/TIME', '', '', 'white'),
    ],
     lskActions: {
-      L1: null, L2: null, L3: 'set_extra', L4: null,
+      L1: null, L2: null, L3: null, L4: null,
       L5: null, L6: null,
       R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: null,
@@ -256,19 +238,16 @@ export function renderFuelPred(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// SEC F-PLN
-// ============================================================
 export function renderSecFpln(state: FMCState): DisplayData {
   return {
     title: 'SEC F-PLN',
     pageIndicator: '1/1',
     lines: [
-      inv('  SEC F-PLN         1/1'),
-      fmt(' COPY ACTIVE', ''),
-      fmt(' '),
-      fmt(' FROM/TO', '<'),
-      fmt(' ----/----'),
+      inv('  SEC F-PLN         1/1', '', '', 'cyan'),
+      fmt(' COPY ACTIVE', '', '', 'white'),
+      fmt(' ', '', '', 'white'),
+      fmt(' FROM/TO', '<', '', 'white'),
+      fmt(' ----/----', '', '', 'magenta'),
       blank(),
       blank(),
       blank(),
@@ -280,65 +259,59 @@ export function renderSecFpln(state: FMCState): DisplayData {
       blank(),
    ],
     lskActions: {
-      L1: 'copy_active', L2: null, L3: 'set_sec_from_to', L4: null,
+      L1: null, L2: null, L3: null, L4: null,
       L5: null, L6: null,
-      R1: 'activate_sec', R2: null, R3: null, R4: null,
-      R5: null, R6: null,
-    },
-  };
-}
-
-// ============================================================
-// RAD NAV
-// ============================================================
-export function renderRadNav(state: FMCState): DisplayData {
-  return {
-    title: 'RAD NAV',
-    pageIndicator: '1/1',
-    lines: [
-      inv('  RAD NAV           1/1'),
-      fmt(' VOR 1', '<'),
-      fmt(' ----/----'),
-      fmt(' VOR 2', '<'),
-      fmt(' ----/----'),
-      fmt(' ADF 1', '<'),
-      fmt(' ----'),
-      fmt(' ADF 2', '<'),
-      fmt(' ----'),
-      blank(),
-      blank(),
-      blank(),
-      blank(),
-      blank(),
-   ],
-    lskActions: {
-      L1: 'set_vor1', L2: null, L3: 'set_vor2', L4: null,
-      L5: 'set_adf1', L6: null,
       R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: null,
     },
   };
 }
 
-// ============================================================
-// PROG
-// ============================================================
+export function renderRadNav(state: FMCState): DisplayData {
+  return {
+    title: 'RAD NAV',
+    pageIndicator: '1/1',
+    lines: [
+      inv('  RAD NAV           1/1', '', '', 'cyan'),
+      fmt(' VOR 1', '<', '', 'white'),
+      fmt(' ----/----', '', '', 'magenta'),
+      fmt(' VOR 2', '<', '', 'white'),
+      fmt(' ----/----', '', '', 'magenta'),
+      fmt(' ADF 1', '<', '', 'white'),
+      fmt(' ----', '', '', 'magenta'),
+      fmt(' ADF 2', '<', '', 'white'),
+      fmt(' ----', '', '', 'magenta'),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+   ],
+    lskActions: {
+      L1: null, L2: null, L3: null, L4: null,
+      L5: null, L6: null,
+      R1: null, R2: null, R3: null, R4: null,
+      R5: null, R6: null,
+    },
+  };
+}
+
 export function renderProgA320(state: FMCState): DisplayData {
   const { route, performance } = state;
   return {
     title: 'PROG',
     pageIndicator: '',
     lines: [
-      inv('  PROG'),
-      fmt(` ${route.origin || '----'} / ${route.destination || '----'}`),
-      fmt(' CRZ FL', '', `FL${performance.crzAlt ? String(performance.crzAlt).slice(0,3) : '---'}`),
-      fmt(' OPT FL', '', '---'),
-      fmt(' REC MAX FL', '', '---'),
-      fmt(' DIST', '', '---- NM'),
-      fmt(' ETA', '', '----Z'),
-      fmt(' EFOB', '', '---.-'),
-      fmt(' WIND', ''),
-      fmt(' ---°/---'),
+      inv('  PROG', '', '', 'cyan'),
+      fmt(` ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'green'),
+      fmt(' CRZ FL', '', `FL${performance.crzAlt ? String(performance.crzAlt).slice(0,3) : '---'}`, 'white'),
+      fmt(' OPT FL', '', '---', 'white'),
+      fmt(' REC MAX FL', '', '---', 'white'),
+      fmt(' DIST', '', '---- NM', 'white'),
+      fmt(' ETA', '', '----Z', 'white'),
+      fmt(' EFOB', '', '---.-', 'white'),
+      fmt(' WIND', '', '', 'white'),
+      fmt(' ---°/---', '', '', 'green'),
       blank(),
       blank(),
       blank(),
@@ -353,23 +326,20 @@ export function renderProgA320(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// DATA INDEX
-// ============================================================
 export function renderDataIndex(state: FMCState): DisplayData {
   return {
     title: 'DATA',
     pageIndicator: 'INDEX',
     lines: [
-      inv('  DATA          INDEX'),
-      fmt(' A/C STATUS', '<'),
-      fmt(' POSITION MONITOR', '<'),
-      fmt(' IRS MONITOR', '<'),
-      fmt(' GPS MONITOR', '<'),
-      fmt(' WAYPOINTS', '<'),
-      fmt(' NAVAIDS', '<'),
-      fmt(' RUNWAYS', '<'),
-      fmt(' ROUTES', '<'),
+      inv('  DATA          INDEX', '', '', 'cyan'),
+      fmt(' A/C STATUS', '<', '', 'white'),
+      fmt(' POSITION MONITOR', '<', '', 'white'),
+      fmt(' IRS MONITOR', '<', '', 'white'),
+      fmt(' GPS MONITOR', '<', '', 'white'),
+      fmt(' WAYPOINTS', '<', '', 'white'),
+      fmt(' NAVAIDS', '<', '', 'white'),
+      fmt(' RUNWAYS', '<', '', 'white'),
+      fmt(' ROUTES', '<', '', 'white'),
       blank(),
       blank(),
       blank(),
@@ -385,29 +355,25 @@ export function renderDataIndex(state: FMCState): DisplayData {
   };
 }
 
-// ============================================================
-// MCDU MENU
-// ============================================================
 export function renderMcduMenu(state: FMCState): DisplayData {
   return {
     title: 'MCDU MENU',
     pageIndicator: '',
     lines: [
-      [
-      inv('  MCDU MENU'),
-      fmt(' INIT', '<'),
-      fmt(' INITIALIZE'),
-      fmt(' F-PLN', '<'),
-      fmt(' FLIGHT PLAN'),
-      fmt(' PERF', '<'),
-      fmt(' PERFORMANCE'),
-      fmt(' FUEL PRED', '<'),
-      fmt(' FUEL PREDICTION'),
-      fmt(' SEC F-PLN', '<'),
-      fmt(' SECONDARY FLT PLN'),
-      fmt(' RAD NAV', '<'),
-      fmt(' RADIO NAVIGATION'),
-   ]],
+      inv('  MCDU MENU', '', '', 'cyan'),
+      fmt(' INIT', '<', '', 'magenta'),
+      fmt(' INITIALIZE', '', '', 'green'),
+      fmt(' F-PLN', '<', '', 'magenta'),
+      fmt(' FLIGHT PLAN', '', '', 'green'),
+      fmt(' PERF', '<', '', 'magenta'),
+      fmt(' PERFORMANCE', '', '', 'green'),
+      fmt(' FUEL PRED', '<', '', 'magenta'),
+      fmt(' FUEL PREDICTION', '', '', 'green'),
+      fmt(' SEC F-PLN', '<', '', 'magenta'),
+      fmt(' SECONDARY FLT PLN', '', '', 'green'),
+      fmt(' RAD NAV', '<', '', 'magenta'),
+      fmt(' RADIO NAVIGATION', '', '', 'green'),
+    ],
     lskActions: {
       L1: 'init_a', L2: null, L3: 'f_pln', L4: null,
       L5: 'perf_to', L6: null,

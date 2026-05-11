@@ -32,13 +32,16 @@ export function LSKButton({ side, index, label, disabled, highlighted, onPress }
         rounded-sm
         font-cdu font-bold
         text-[10px]
-        transition-all duration-75
+        transition-transform transition-colors
+        duration-100 ease-out
         select-none
+        active:translate-y-[1px]
+        active:scale-[0.97]
         ${highlighted
           ? 'bg-cdu-cyan/15 text-cdu-cyan border border-cdu-cyan/40 animate-pulse'
           : disabled
             ? 'text-cdu-text/20 opacity-40 pointer-events-none'
-            : 'bg-cdu-bezel-light text-cdu-text/70 hover:text-cdu-text hover:bg-cdu-bezel active:scale-95 active:bg-cdu-text/20 border border-cdu-bezel'
+            : 'bg-cdu-bezel-light text-cdu-text/70 hover:text-cdu-text hover:bg-cdu-bezel active:bg-cdu-text/20 border border-cdu-bezel'
         }
       `}
       disabled={disabled && !highlighted}

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint } from '@shared';
 import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
+import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber } from '@shared';
+import { devLog, devError } from '@shared';
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
   return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
@@ -28,6 +30,13 @@ const defaultState = {
   mode: 'STANDBY' as FMCMode,
   connectionStatus: 'DISCONNECTED' as ConnectionStatus,
   connectionMode: 'STANDALONE' as ConnectionMode,
+  connectedAircraft: null as string | null,
+  connectedAircraftType: null as AircraftType | null,
+  connectedCapabilities: [] as string[],
+  lastError: null as string | null,
+  simVariables: {} as Record<string, number>,
+  failureMessage: null as string | null,
+  externalDisplayData: null as DisplayData | null,
 
   // Tutorial state
   tutorialActive: false,
@@ -35,11 +44,25 @@ const defaultState = {
   tutorialStepIndex: 0,
   tutorialCompleted: false,
   tutorialHighlight: null as string | null,
+  tutorialErrors: 0,
+  tutorialStartTime: null as number | null,
+  tutorialHint: null as string | null,
+  tutorialSkipAvailable: false,
 
   legsPageIndex: 0,
   legsPageCount: 1,
   depArrSubPage: 'DEP' as 'DEP' | 'ARR',
   rteSubPage: 0,
+
+  fix: { refFix: '', radial: 0, distance: 0 },
+
+  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as 'L' | 'R' },
+  holdPending: null as FMCState['holdPending'],
+
+  deleteMode: false,
+  editWaypointIndex: null,
+
+  aircraftState: null,
 };
 
 interface FMCActions {
@@ -57,24 +80,70 @@ interface FMCActions {
   setMode: (mode: FMCMode) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
   setConnectionMode: (mode: ConnectionMode) => void;
+  setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => void;
+  setSimVariables: (variables: Record<string, number>) => void;
+  setAircraftState: (state: FMCState['aircraftState']) => void;
+  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => void;
+  setConnectedLastError: (error: string | null) => void;
+  setExternalDisplayData: (data: DisplayData | null) => void;
+  setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
+  clearFailureMode: () => void;
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string }) => void;
   resetState: () => void;
   setAircraft: (type: AircraftType) => void;
+
+  // Waypoint editing actions
+  insertWaypoint: (index: number, ident: string) => void;
+  deleteWaypoint: (index: number) => void;
+  updateWaypointConstraint: (index: number, altitude?: AltitudeConstraint, speed?: SpeedConstraint) => void;
+
+  // Fix page actions
+  setFixRef: (ident: string) => void;
+  setFixRadialDistance: (radial: number, distance: number) => void;
+
+  setHoldFix: (ident: string) => void;
+  setInboundCourse: (crs: number) => void;
+  setLegTime: (time: number) => void;
+  setLegDist: (dist: number) => void;
+  setHoldDirection: (dir: 'L' | 'R') => void;
 
   // Tutorial actions
   startTutorial: (scenarioName: string) => void;
   advanceTutorial: () => void;
   skipTutorial: () => void;
   getCurrentTutorialStep: () => TutorialScenario['steps'][0] | null;
+  recordTutorialError: () => void;
+  skipTutorialStep: () => void;
+  clearTutorialHint: () => void;
 }
 
-export type FMCStore = FMCState & FMCActions;
+interface ConnectionDiagnostics {
+  connectedAircraft: string | null;
+  connectedAircraftType: AircraftType | null;
+  connectedCapabilities: string[] | null;
+  lastError: string | null;
+  simVariables: Record<string, number>;
+}
 
-type StoreAPI = ReturnType<typeof create<FMCStore>>;
+interface TutorialState {
+  tutorialActive: boolean;
+  tutorialCompleted: boolean;
+  tutorialStepIndex: number;
+  tutorialScenario: string | null;
+  tutorialStartTime: number | null;
+  tutorialErrors: number;
+  tutorialHint: string | null;
+  tutorialSkipAvailable: boolean;
+  tutorialHighlight: string | null;
+}
+
+export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & FMCActions;
+
+type StoreAPI = import('zustand').StoreApi<FMCStore>;
 
 function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
-  console.log('tryAdvanceIfMatch called with:', key);
+  devLog('tryAdvanceIfMatch called with:', key);
   const state = get();
   if (!state.tutorialActive || !state.tutorialScenario) return;
 
@@ -102,6 +171,8 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
     F_PLN: 'F_PLN',
     PERF_TAKEOFF: 'PERF_TAKEOFF',
     PROG_A: 'PROG_A',
+    DATA_INDEX: 'DATA_INDEX',
+    DIR_INTC: 'DIR_INTC',
     MCDU_MENU: 'MCDU_MENU',
     RAD_NAV: 'RAD_NAV',
   };
@@ -109,6 +180,8 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
   const mapped = keyMap[key] || key;
   if (mapped === step.expectedAction || step.expectedAction === key) {
     state.advanceTutorial();
+  } else {
+    state.recordTutorialError();
   }
 }
 
@@ -139,22 +212,30 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressKey: (key: CDUKey) => {
-    console.log('pressKey called with:', key);
+    devLog('pressKey called with:', key);
     const { scratchpad, currentPage } = get();
     let handled = false;
 
     // Navigation keys
     if (key === 'INIT_REF') { get().setPage('POS_INIT'); handled = true; }
     else if (key === 'RTE') { get().setPage('RTE'); handled = true; }
-    else if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); handled = true; }
+    else if (key === 'CLB') { get().setPage('CLB'); handled = true; }
+    else if (key === 'CRZ') { get().setPage('CRZ'); handled = true; }
+    else if (key === 'DES') { get().setPage('DES'); handled = true; }
+    else if (key === 'DIR_INTC') { get().setPage('DIR_INTC'); handled = true; }
     else if (key === 'LEGS') { get().setPage('LEGS'); handled = true; }
+    else if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); handled = true; }
+    else if (key === 'HOLD') { get().setPage('HOLD'); handled = true; }
     else if (key === 'PERF') { get().setPage('PERF_INIT'); handled = true; }
     else if (key === 'PROG') { get().setPage('PROGRESS'); handled = true; }
+    else if (key === 'N1_LIMIT') { get().setPage('N1_LIMIT'); handled = true; }
+    else if (key === 'FIX') { get().setPage('FIX'); handled = true; }
     else if (key === 'MENU') { get().setPage('MENU'); handled = true; }
     // Airbus function keys
     else if (key === 'INIT_A') { get().setPage('INIT_A'); handled = true; }
     else if (key === 'INIT_B') { get().setPage('INIT_B'); handled = true; }
     else if (key === 'F_PLN') { get().setPage('F_PLN'); handled = true; }
+    else if (key === 'DATA_INDEX') { get().setPage('DATA_INDEX'); handled = true; }
     else if (key === 'PERF_TAKEOFF') { get().setPage('PERF_TAKEOFF'); handled = true; }
     else if (key === 'PROG_A') { get().setPage('PROG_A'); handled = true; }
     else if (key === 'RAD_NAV') { get().setPage('RAD_NAV'); handled = true; }
@@ -168,10 +249,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       handled = true;
     }
 
-    // Delete (same as CLR for now)
     else if (key === 'DEL') {
       if (scratchpad.length > 0) {
         set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
+      } else if (currentPage === 'LEGS') {
+        set({ deleteMode: !get().deleteMode, scratchpadError: null });
       }
       handled = true;
     }
@@ -189,6 +271,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         set({ legsPageIndex: s.legsPageIndex + 1 });
       } else if (s.currentPage === 'RTE' && s.rteSubPage < 1) {
         set({ rteSubPage: s.rteSubPage + 1 });
+      } else if (s.currentPage === 'PERF_INIT') {
+        set({ currentPage: 'TAKEOFF_REF', scratchpad: '', scratchpadError: null });
+      } else if (s.currentPage === 'TAKEOFF_REF') {
+        set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
       }
       handled = true;
     }
@@ -199,6 +285,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         set({ legsPageIndex: s.legsPageIndex - 1 });
       } else if (s.currentPage === 'RTE' && s.rteSubPage > 0) {
         set({ rteSubPage: s.rteSubPage - 1 });
+      } else if (s.currentPage === 'PERF_INIT') {
+        set({ currentPage: 'TAKEOFF_REF', scratchpad: '', scratchpadError: null });
+      } else if (s.currentPage === 'TAKEOFF_REF') {
+        set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
       }
       handled = true;
     }
@@ -224,7 +314,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const lskId = `${side}${index}` as LSKId;
     let displayData: DisplayData;
     if (state.aircraft === 'AIRBUS_A320') {
-      const r = getAirbusPageRenderer(state.currentPage as any);
+      const r = getAirbusPageRenderer(state.currentPage);
       displayData = r ? r(state) : getPageRenderer('MENU')!(state);
     } else {
       const r = getPageRenderer(state.currentPage);
@@ -269,43 +359,91 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'fpln_prev': state.pressKey('PREV_PAGE'); handled = true; break;
     }
 
+    if (!handled && state.currentPage === 'LEGS') {
+      const wpMatch = action.match(/^(edit_wp|delete_wp|insert_wp)_(\d+)$/);
+      if (wpMatch) {
+        const wpAction = wpMatch[1];
+        const wpIndex = parseInt(wpMatch[2], 10);
+        if (wpAction === 'delete_wp' && state.deleteMode) {
+          state.deleteWaypoint(wpIndex);
+          handled = true;
+        } else if (wpAction === 'edit_wp') {
+          if (scratchpad) {
+            state.insertWaypoint(wpIndex, scratchpad);
+          } else {
+            set({ editWaypointIndex: wpIndex, scratchpad: '', scratchpadError: null });
+          }
+          handled = true;
+        }
+      }
+    }
+
     // Data entry actions (only if not handled by navigation)
     const updates: Partial<FMCState> = {};
 
     if (!handled) {
       switch (action) {
         case 'set_ref_airport':
-        if (scratchpad) updates.position = { ...state.position, refAirport: scratchpad.toUpperCase() };
+        if (scratchpad) {
+          const result = isValidICAO(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.position = { ...state.position, refAirport: scratchpad.toUpperCase() };
+        }
         break;
       case 'set_gate':
         if (scratchpad) updates.position = { ...state.position, gate: scratchpad.toUpperCase() };
         break;
       case 'set_crz_alt':
-        if (scratchpad) updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
+        if (scratchpad) {
+          const result = isValidAltitude(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
+        }
         break;
-      case 'set_cost_index':
-        if (scratchpad) updates.performance = { ...state.performance, costIndex: parseInt(scratchpad) || 0 };
+      case 'set_cost_index': {
+        if (scratchpad) {
+          const ci = parseInt(scratchpad);
+          if (isNaN(ci) || ci < 0 || ci > 500) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, costIndex: ci };
+        }
         break;
-      case 'set_zfw':
-        if (scratchpad) updates.performance = { ...state.performance, zfw: parseFloat(scratchpad) * 1000 || 0 };
+      }
+      case 'set_zfw': {
+        if (scratchpad) {
+          const zfw = parseFloat(scratchpad);
+          if (isNaN(zfw) || zfw <= 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, zfw: zfw * 1000 };
+        }
         break;
-      case 'set_reserve':
-        if (scratchpad) updates.performance = { ...state.performance, reserve: parseFloat(scratchpad) * 1000 || 0 };
+      }
+      case 'set_reserve': {
+        if (scratchpad) {
+          const res = parseFloat(scratchpad);
+          if (isNaN(res) || res < 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, reserve: res * 1000 };
+        }
         break;
+      }
       case 'set_origin':
         if (scratchpad) {
+          const result = isValidICAO(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
           updates.route = { ...state.route, origin: scratchpad.toUpperCase() };
           updates.flightPlan = { ...state.flightPlan, origin: scratchpad.toUpperCase() };
         }
         break;
       case 'set_dest':
         if (scratchpad) {
+          const result = isValidICAO(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
           updates.route = { ...state.route, destination: scratchpad.toUpperCase() };
           updates.flightPlan = { ...state.flightPlan, destination: scratchpad.toUpperCase() };
         }
         break;
       case 'set_flt_no':
         if (scratchpad) {
+          const result = isValidFlightNumber(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
           updates.route = { ...state.route, flightNumber: scratchpad.toUpperCase() };
           updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
         }
@@ -323,67 +461,134 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'select_to2':
         updates.takeoff = { ...state.takeoff, toMode: 'TO 2' };
         break;
-      case 'set_runway':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, runway: scratchpad };
+      case 'set_runway': {
+        if (scratchpad) {
+          if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, runway: scratchpad.toUpperCase() };
+        }
         break;
-      case 'set_to_mode':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, toMode: scratchpad };
+      }
+      case 'set_to_mode': {
+        if (scratchpad) {
+          const mode = scratchpad.toUpperCase();
+          if (!['TO', 'TO 1', 'TO 2'].includes(mode)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, toMode: mode };
+        }
         break;
+      }
       case 'set_v1':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, v1: parseInt(scratchpad) || 0 };
+        if (scratchpad) {
+          const v1 = parseInt(scratchpad) || 0;
+          const result = isValidSpeed(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.takeoff = { ...state.takeoff, v1 };
+        }
         break;
       case 'set_vr':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, vr: parseInt(scratchpad) || 0 };
+        if (scratchpad) {
+          const vr = parseInt(scratchpad) || 0;
+          const result = isValidSpeed(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.takeoff = { ...state.takeoff, vr };
+        }
         break;
       case 'set_v2':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, v2: parseInt(scratchpad) || 0 };
+        if (scratchpad) {
+          const v2 = parseInt(scratchpad) || 0;
+          const result = isValidSpeed(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.takeoff = { ...state.takeoff, v2 };
+        }
         break;
-      case 'set_trim':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, trim: parseFloat(scratchpad) || 0 };
+      case 'set_trim': {
+        if (scratchpad) {
+          const trim = parseFloat(scratchpad);
+          if (isNaN(trim)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, trim };
+        }
         break;
+      }
       case 'set_oat':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, oat: parseInt(scratchpad) || 0 };
+        if (scratchpad) {
+          const result = isValidTemperature(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.takeoff = { ...state.takeoff, oat: parseInt(scratchpad) || 0 };
+        }
         break;
       case 'set_wind':
         if (scratchpad) {
+          const result = isValidWind(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const parts = scratchpad.split('/');
           if (parts.length === 2) {
             updates.takeoff = { ...state.takeoff, windDir: parseInt(parts[0]) || 0, windSpeed: parseInt(parts[1]) || 0 };
           }
         }
         break;
-      case 'set_qnh':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, qnh: parseInt(scratchpad) * 100 || parseFloat(scratchpad) * 100 || 0 };
+      case 'set_qnh': {
+        if (scratchpad) {
+          const qnh = parseFloat(scratchpad);
+          if (isNaN(qnh) || qnh < 900 || qnh > 1100) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, qnh: qnh * 100 };
+        }
         break;
+      }
       // Airbus data entry
-      case 'set_from_to':
+      case 'set_from_to': {
         if (scratchpad && scratchpad.includes('/')) {
           const [from, to] = scratchpad.toUpperCase().split('/');
+          const fromResult = isValidICAO(from);
+          const toResult = isValidICAO(to);
+          if (!fromResult.valid) { set({ scratchpadError: fromResult.error }); return; }
+          if (!toResult.valid) { set({ scratchpadError: toResult.error }); return; }
           updates.route = { ...state.route, origin: from, destination: to };
           updates.flightPlan = { ...state.flightPlan, origin: from, destination: to };
         }
         break;
-      case 'set_crz_fl':
-        if (scratchpad) updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
-        break;
-      case 'set_altn':
-        if (scratchpad) updates.route = { ...state.route, alternate: scratchpad.toUpperCase() };
-        break;
-      case 'set_block':
-        if (scratchpad) updates.performance = { ...state.performance, fuel: parseFloat(scratchpad) * 1000 || 0 };
-        break;
-      case 'set_flt_nbr':
+      }
+      case 'set_crz_fl': {
         if (scratchpad) {
+          const result = isValidAltitude(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
+        }
+        break;
+      }
+      case 'set_altn': {
+        if (scratchpad) {
+          const result = isValidICAO(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.route = { ...state.route, alternate: scratchpad.toUpperCase() };
+        }
+        break;
+      }
+      case 'set_block': {
+        if (scratchpad) {
+          const fuel = parseFloat(scratchpad);
+          if (isNaN(fuel) || fuel <= 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, fuel: fuel * 1000 };
+        }
+        break;
+      }
+      case 'set_flt_nbr': {
+        if (scratchpad) {
+          const result = isValidFlightNumber(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
           updates.route = { ...state.route, flightNumber: scratchpad.toUpperCase() };
           updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
         }
         break;
+      }
       case 'set_sid':
         if (scratchpad) updates.route = { ...state.route, sid: scratchpad.toUpperCase() };
         break;
-      case 'set_rwy':
-        if (scratchpad) updates.route = { ...state.route, runway: scratchpad.toUpperCase() };
+      case 'set_rwy': {
+        if (scratchpad) {
+          if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.route = { ...state.route, runway: scratchpad.toUpperCase() };
+        }
         break;
+      }
       case 'set_star':
         if (scratchpad) updates.route = { ...state.route, star: scratchpad.toUpperCase() };
         break;
@@ -393,19 +598,87 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_flaps':
         if (scratchpad) updates.takeoff = { ...state.takeoff, flaps: scratchpad.toUpperCase() };
         break;
-      case 'set_flex':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, flexTemp: parseInt(scratchpad) || 0 };
+      case 'set_flex': {
+        if (scratchpad) {
+          const temp = parseInt(scratchpad);
+          if (isNaN(temp)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, flexTemp: temp };
+        }
         break;
-      case 'set_cg':
-        if (scratchpad) updates.performance = { ...state.performance, cg: parseFloat(scratchpad) || 0 };
+      }
+      case 'set_cg': {
+        if (scratchpad) {
+          const cg = parseFloat(scratchpad);
+          if (isNaN(cg)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, cg };
+        }
         break;
+      }
       case 'set_extra':
+        break;
+      case 'set_fix_ref':
+        if (scratchpad) {
+          const result = isValidICAO(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          updates.fix = { ...state.fix, refFix: scratchpad.toUpperCase() };
+        }
+        break;
+      case 'set_fix_radial_distance':
+        if (scratchpad) {
+          const parts = scratchpad.split('/');
+          if (parts.length !== 2) { set({ scratchpadError: 'INVALID FORMAT' }); return; }
+          const radial = parseInt(parts[0], 10);
+          const distance = parseInt(parts[1], 10);
+          if (isNaN(radial) || radial < 1 || radial > 360) { set({ scratchpadError: 'INVALID RADIAL' }); return; }
+          if (isNaN(distance) || distance < 0 || distance > 999) { set({ scratchpadError: 'INVALID DISTANCE' }); return; }
+          updates.fix = { ...state.fix, radial, distance };
+        }
+        break;
+      case 'set_hold_fix':
+        if (scratchpad) {
+          const result = isValidWaypoint(scratchpad.toUpperCase());
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          state.setHoldFix(scratchpad.toUpperCase());
+          handled = true;
+        }
+        break;
+      case 'set_inbound_crs':
+        if (scratchpad) {
+          const crs = parseInt(scratchpad, 10);
+          if (isNaN(crs) || crs < 1 || crs > 360) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
+          state.setInboundCourse(crs);
+          handled = true;
+        }
+        break;
+      case 'set_leg_time':
+        if (scratchpad) {
+          const time = parseFloat(scratchpad);
+          if (isNaN(time) || time <= 0 || time > 9.9) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
+          state.setLegTime(time);
+          handled = true;
+        }
+        break;
+      case 'set_leg_dist':
+        if (scratchpad) {
+          const dist = parseFloat(scratchpad);
+          if (isNaN(dist) || dist < 0 || dist > 999) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
+          state.setLegDist(dist);
+          handled = true;
+        }
+        break;
+      case 'set_hold_direction':
+        if (scratchpad) {
+          const dir = scratchpad.toUpperCase();
+          if (dir !== 'L' && dir !== 'R') { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          state.setHoldDirection(dir as 'L' | 'R');
+          handled = true;
+        }
         break;
     }
     } // close if (!handled)
 
     if (Object.keys(updates).length > 0) {
-      set({ isModified: true, execLit: true, scratchpad: '', scratchpadError: null, ...(updates as any) });
+      set({ isModified: true, execLit: true, scratchpad: '', scratchpadError: null, ...updates });
     }
 
     // Tutorial: advance on LSK press (check action matches expectedAction OR validate passes)
@@ -419,6 +692,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const validatePasses = step.validate ? step.validate(scratchpad) : true;
           if (actionMatches || validatePasses) {
             get().advanceTutorial();
+          } else {
+            get().recordTutorialError();
           }
         }
       }
@@ -430,25 +705,116 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressEXEC: () => {
-    const { execLit } = get();
-    if (execLit) {
-      set({ execLit: false, isModified: false, msgLight: false });
+    const state = get();
+    if (state.editWaypointIndex !== null && state.scratchpad.trim()) {
+      const scratchpad = state.scratchpad.trim();
+      const idx = state.editWaypointIndex;
+      let altitude: AltitudeConstraint | undefined;
+      let speed: SpeedConstraint | undefined;
+
+      const altMatch = scratchpad.match(/^(\d{3,5})$/);
+      const spdMatch = scratchpad.match(/^\/(\d{3})$/);
+      const bothMatch = scratchpad.match(/^(\d{3,5})\/(\d{3})$/);
+
+      if (bothMatch) {
+        const alt = parseInt(bothMatch[1], 10);
+        const spd = parseInt(bothMatch[2], 10);
+        altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
+        speed = { type: 'AT', speed: spd };
+      } else if (spdMatch) {
+        speed = { type: 'AT', speed: parseInt(spdMatch[1], 10) };
+      } else if (altMatch) {
+        const alt = parseInt(altMatch[1], 10);
+        altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
+      } else {
+        set({ scratchpadError: 'INVALID FORMAT' });
+        return;
+      }
+
+      state.updateWaypointConstraint(idx, altitude, speed);
+      return;
+    }
+
+    const execUpdates: Partial<FMCState> = {};
+    if (state.holdPending) {
+      execUpdates.hold = state.holdPending;
+      execUpdates.holdPending = null;
+    }
+
+    if (state.execLit) {
+      execUpdates.execLit = false;
+      execUpdates.isModified = false;
+      execUpdates.msgLight = false;
+    }
+
+    if (Object.keys(execUpdates).length > 0) {
+      set(execUpdates);
     }
   },
 
   getDisplayData: () => {
     const state = get();
+    if (state.mode === 'FAIL') {
+      return {
+        title: 'FAIL',
+        pageIndicator: '',
+        lines: [
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '        FAIL            ', leftLabel: '', rightLabel: '', inverse: true, color: 'red' },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+          { text: '                        ', leftLabel: '', rightLabel: '', inverse: false },
+        ],
+        lskActions: {},
+      };
+    }
+    if (state.mode === 'OFF') {
+      return {
+        title: 'OFF',
+        pageIndicator: '',
+        lines: Array(13).fill({ text: '                        ', leftLabel: '', rightLabel: '', inverse: false }),
+        lskActions: {},
+      };
+    }
+    if (state.externalDisplayData && state.connectionMode === 'CONTROL') {
+      return state.externalDisplayData;
+    }
     if (state.aircraft === 'AIRBUS_A320') {
-      const renderer = getAirbusPageRenderer(state.currentPage as any);
+      const renderer = getAirbusPageRenderer(state.currentPage);
       if (renderer) return renderer(state);
     }
-    const renderer = getPageRenderer(state.currentPage as any);
+    const renderer = getPageRenderer(state.currentPage);
     return renderer ? renderer(state) : getPageRenderer('MENU')!(state);
   },
 
   setMode: (mode: FMCMode) => set({ mode }),
   setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),
   setConnectionMode: (mode: ConnectionMode) => set({ connectionMode: mode }),
+  setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => set(diagnostics),
+  setSimVariables: (variables: Record<string, number>) => set((state) => ({
+    simVariables: { ...state.simVariables, ...variables },
+  })),
+  setAircraftState: (state: FMCState['aircraftState']) => set({ aircraftState: state }),
+  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => set({
+    connectedAircraft: aircraft,
+    connectedCapabilities: capabilities ?? [],
+    connectedAircraftType: aircraftType ?? null,
+  }),
+  setConnectedLastError: (error: string | null) => set({ lastError: error }),
+  setExternalDisplayData: (data: DisplayData | null) => set({
+    externalDisplayData: data,
+    scratchpadError: data?.scratchpadError ?? null,
+  }),
+  setFailureMode: (mode, message) => set({ mode, failureMessage: message || (mode === 'FAIL' ? 'FMC FAILURE' : 'CDU OFF') }),
+  clearFailureMode: () => set({ mode: 'ACTIVE', failureMessage: null }),
 
   loadFlightPlan: (data) => {
     set((state) => ({
@@ -460,6 +826,53 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   resetState: () => set(defaultState),
 
+  insertWaypoint: (index: number, ident: string) => {
+    const state = get();
+    const result = isValidWaypoint(ident.toUpperCase());
+    if (!result.valid) { set({ scratchpadError: result.error }); return; }
+    const waypoints = [...state.flightPlan.waypoints];
+    waypoints.splice(index, 0, { ident: ident.toUpperCase(), discontinuity: false });
+    set({
+      flightPlan: { ...state.flightPlan, waypoints },
+      isModified: true,
+      execLit: true,
+      scratchpad: '',
+      scratchpadError: null,
+    });
+  },
+
+  deleteWaypoint: (index: number) => {
+    const state = get();
+    const waypoints = [...state.flightPlan.waypoints];
+    if (index >= 0 && index < waypoints.length) {
+      waypoints.splice(index, 1);
+      set({
+        flightPlan: { ...state.flightPlan, waypoints },
+        isModified: true,
+        execLit: true,
+        deleteMode: false,
+        scratchpad: '',
+        scratchpadError: null,
+      });
+    }
+  },
+
+  updateWaypointConstraint: (index: number, altitude?: AltitudeConstraint, speed?: SpeedConstraint) => {
+    const state = get();
+    const waypoints = [...state.flightPlan.waypoints];
+    if (index >= 0 && index < waypoints.length) {
+      waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
+      set({
+        flightPlan: { ...state.flightPlan, waypoints },
+        isModified: true,
+        execLit: true,
+        editWaypointIndex: null,
+        scratchpad: '',
+        scratchpadError: null,
+      });
+    }
+  },
+
   setAircraft: (type: AircraftType) => {
     const startPage = type === 'BOEING_737' ? 'IDENT' as PageType : 'INIT_A' as PageType;
     set({
@@ -468,6 +881,44 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       currentPage: startPage,
       pageHistory: [],
     });
+  },
+
+  setFixRef: (ident: string) => {
+    set({ fix: { ...get().fix, refFix: ident.toUpperCase() } });
+  },
+
+  setFixRadialDistance: (radial: number, distance: number) => {
+    set({ fix: { ...get().fix, radial, distance } });
+  },
+
+  setHoldFix: (ident: string) => {
+    const state = get();
+    const base = state.holdPending ?? state.hold;
+    set({ holdPending: { ...base, fix: ident.toUpperCase() }, isModified: true, execLit: true });
+  },
+
+  setInboundCourse: (crs: number) => {
+    const state = get();
+    const base = state.holdPending ?? state.hold;
+    set({ holdPending: { ...base, inboundCourse: crs }, isModified: true, execLit: true });
+  },
+
+  setLegTime: (time: number) => {
+    const state = get();
+    const base = state.holdPending ?? state.hold;
+    set({ holdPending: { ...base, legTime: time }, isModified: true, execLit: true });
+  },
+
+  setLegDist: (dist: number) => {
+    const state = get();
+    const base = state.holdPending ?? state.hold;
+    set({ holdPending: { ...base, legDist: dist }, isModified: true, execLit: true });
+  },
+
+  setHoldDirection: (dir: 'L' | 'R') => {
+    const state = get();
+    const base = state.holdPending ?? state.hold;
+    set({ holdPending: { ...base, direction: dir }, isModified: true, execLit: true });
   },
 
   // ---- Tutorial ----
@@ -513,6 +964,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       tutorialStepIndex: 0,
       tutorialCompleted: false,
       tutorialHighlight: firstStep?.highlightField || null,
+      tutorialErrors: 0,
+      tutorialStartTime: Date.now(),
+      tutorialHint: null,
+      tutorialSkipAvailable: false,
       mode: 'TUTORIAL',
       scratchpad: '',
       scratchpadError: null,
@@ -530,10 +985,25 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const currentStep = scenario.steps[tutorialStepIndex];
     const nextIndex = tutorialStepIndex + 1;
     if (nextIndex >= scenario.steps.length) {
+      const elapsed = state.tutorialStartTime ? Date.now() - state.tutorialStartTime : 0;
+      const metrics = {
+        scenario: tutorialScenario,
+        errors: state.tutorialErrors,
+        timeMs: elapsed,
+        completedAt: Date.now(),
+      };
+      try {
+        const history = JSON.parse(localStorage.getItem('cdu-tutorial-metrics') || '[]');
+        history.push(metrics);
+        localStorage.setItem('cdu-tutorial-metrics', JSON.stringify(history.slice(-20)));
+      } catch {
+        devError('[Tutorial] Failed to save metrics');
+      }
       set({
         tutorialActive: false,
         tutorialCompleted: true,
         tutorialHighlight: null,
+        tutorialHint: null,
         mode: 'ACTIVE',
         msgLight: true,
       });
@@ -571,6 +1041,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       tutorialScenario: null,
       tutorialStepIndex: 0,
       tutorialHighlight: null,
+      tutorialErrors: 0,
+      tutorialStartTime: null,
+      tutorialHint: null,
+      tutorialSkipAvailable: false,
       mode: 'STANDBY',
     });
   },
@@ -582,4 +1056,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (!scenario) return null;
     return scenario.steps[tutorialStepIndex] || null;
   },
+
+  recordTutorialError: () => {
+    const state = get();
+    const newErrors = state.tutorialErrors + 1;
+    set({
+      tutorialErrors: newErrors,
+      tutorialSkipAvailable: newErrors >= 3,
+      tutorialHint: state.tutorialHint || 'Check the highlighted field and try again.',
+    });
+  },
+
+  skipTutorialStep: () => {
+    const state = get();
+    if (!state.tutorialActive) return;
+    get().advanceTutorial();
+  },
+
+  clearTutorialHint: () => set({ tutorialHint: null }),
 }));
