@@ -1,8 +1,11 @@
 import { NavigationDisplayModel } from '@shared';
-import { 
-  RangeRings, HeadingRose, AircraftSymbol, NDAnchorZones, 
-  TCASOverlay, WXROverlay, VerticalProfileOverlay 
-} from '../NDFrame';
+import { RangeRings } from '../layers/RangeRings';
+import { HeadingRose } from '../layers/HeadingRose';
+import { AircraftSymbol } from '../symbols/AircraftSymbol';
+import { NDAnchorZones } from '../layers/NDAnchorZones';
+import { TCASOverlay } from '../layers/TCASOverlay';
+import { WXROverlay } from '../layers/WXROverlay';
+import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
 
 interface A320NDProps {
   model: NavigationDisplayModel;

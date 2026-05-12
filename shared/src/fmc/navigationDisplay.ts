@@ -1,5 +1,5 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
-import { projectGeoPointToND, ProjectedNDPoint } from './ndProjection';
+import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
 import { distanceNm, bearingDeg } from './ndGeometry';
 
 export type NDMapMode = 
@@ -31,6 +31,7 @@ export interface NDRoutePoint {
   clipped: boolean;
   distanceNm?: number;
   bearingDeg?: number;
+  relativeBearingDeg?: number;
 }
 
 export interface NDRouteSegment {
@@ -115,7 +116,7 @@ export function buildNavigationDisplayModel(
   // Projection based on mode
   const isPlanMode = resolvedEfis.mode === 'PLAN' || resolvedEfis.mode === 'PLN';
   
-  const aircraftPos = state.aircraftState?.position || { lat: 52.3, lon: 4.7 }; // Default EHAM
+  const aircraftPos = state.aircraftState?.position || { lat: 52.3, lon: 4.7 };
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
@@ -124,17 +125,22 @@ export function buildNavigationDisplayModel(
     ? { lat: activeItem.lat, lon: activeItem.lon }
     : aircraftPos;
 
+  const projectionContext: NDProjectionContext = {
+    style: aircraftStyle,
+    mode: resolvedEfis.mode,
+    rangeNm: resolvedEfis.range,
+    heading,
+    isCentered,
+    aircraftPosition: aircraftPos,
+    planCenter
+  };
+
   const routePoints = routeItems.map((item, index) => {
     let projected: ProjectedNDPoint | null = null;
     if (item.lat !== undefined && item.lon !== undefined) {
       projected = projectGeoPointToND(
         { lat: item.lat, lon: item.lon },
-        aircraftPos,
-        heading,
-        resolvedEfis.range,
-        isPlanMode,
-        isCentered,
-        planCenter
+        projectionContext
       );
     }
     
@@ -142,13 +148,18 @@ export function buildNavigationDisplayModel(
     return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, isCentered, projected);
   });
 
-  const routeSegments = routePoints.slice(1).map((point, index) => ({
-    from: routePoints[index],
-    to: point,
-    dashed: routePoints[index].discontinuity || point.discontinuity,
-    active: point.active && !state.isModified,
-    modified: state.isModified && (point.active || index >= activeIndex),
-  }));
+  const routeSegments = routePoints.slice(1).map((point, index) => {
+    const from = routePoints[index];
+    const to = point;
+    return {
+      from,
+      to,
+      dashed: from.discontinuity || to.discontinuity,
+      active: to.active && !state.isModified,
+      modified: state.isModified && (to.active || index >= activeIndex),
+      visible: from.visible && to.visible, // Only show segments with both ends visible
+    };
+  }).filter(s => s.visible);
 
   const activePoint = routePoints[activeIndex] || routePoints.find(p => !p.discontinuity);
   
@@ -294,7 +305,14 @@ function findActiveRouteIndex(routeItems: RouteItem[], directTo?: string): numbe
     const directIndex = routeItems.findIndex(item => !item.discontinuity && item.ident === directTo);
     if (directIndex >= 0) return directIndex;
   }
-  return routeItems.findIndex(item => !item.discontinuity && !item.airport);
+  
+  // Find first non-discontinuity waypoint that is not an airport (the real waypoints)
+  const waypointIndex = routeItems.findIndex(item => !item.discontinuity && !item.airport);
+  if (waypointIndex >= 0) return waypointIndex;
+
+  // Fallback to first non-discontinuity point (e.g. destination if no waypoints)
+  const fallbackIndex = routeItems.findIndex((item, i) => i > 0 && !item.discontinuity);
+  return fallbackIndex >= 0 ? fallbackIndex : 0;
 }
 
 function projectRoutePoint(
@@ -322,6 +340,7 @@ function projectRoutePoint(
       clipped: projected.clipped,
       distanceNm: projected.distanceNm,
       bearingDeg: projected.bearingDeg,
+      relativeBearingDeg: projected.relativeBearingDeg,
     };
   }
 

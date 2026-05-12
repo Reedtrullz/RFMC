@@ -1,15 +1,6 @@
 import { ReactNode } from 'react';
 import { NavigationDisplayModel } from '@shared';
 
-// Re-export shared primitives from their new locations
-export * from './layers/TCASOverlay';
-export * from './layers/WXROverlay';
-export * from './layers/VerticalProfileOverlay';
-export * from './layers/RangeRings';
-export * from './layers/HeadingRose';
-export * from './layers/NDAnchorZones';
-export * from './symbols/AircraftSymbol';
-
 interface NDFrameProps {
   model: NavigationDisplayModel;
   children: ReactNode;

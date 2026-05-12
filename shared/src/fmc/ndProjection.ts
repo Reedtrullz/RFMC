@@ -10,37 +10,40 @@ export interface ProjectedNDPoint {
   clipped: boolean;
 }
 
+export interface NDProjectionContext {
+  style: 'airbus' | 'boeing';
+  mode: string;
+  rangeNm: number;
+  heading: number;
+  isCentered: boolean;
+  aircraftPosition: LatLon;
+  planCenter?: LatLon;
+}
+
 /**
  * Projects a geographic point (lat, lon) into ND SVG coordinates [0, 100]
  * based on the aircraft position, heading, range, and display mode.
  */
 export function projectGeoPointToND(
   target: LatLon,
-  aircraft: LatLon,
-  heading: number,
-  rangeNm: number,
-  isPlan: boolean,
-  isCentered: boolean,
-  centerPoint?: LatLon // For PLAN mode, the map center might be a specific waypoint
+  context: NDProjectionContext
 ): ProjectedNDPoint | null {
-  const reference = isPlan && centerPoint ? centerPoint : aircraft;
+  const { aircraftPosition, heading, rangeNm, mode, isCentered, planCenter } = context;
+  const isPlan = mode === 'PLAN' || mode === 'PLN';
+  
+  const reference = isPlan && planCenter ? planCenter : aircraftPosition;
   const dist = distanceNm(reference, target);
   const brg = bearingDeg(reference, target);
   
   // 1. Calculate Relative Bearing
   // PLAN mode is always North-up (0).
-  // MAP/ARC/ROSE modes are Heading-up or Track-up.
   const relBrg = isPlan ? brg : relativeBearing(heading, brg);
   
   // 2. Define ND Center and Scaling
-  // Center is usually (50, 50) if centered, or (50, 84) if expanded/ARC.
   const cy = isCentered ? 50 : 84;
   const cx = 50;
   
   // Max visual distance in SVG units (radius of the ND area)
-  // In our SVG: 
-  //   Expanded (ARC/MAP): radius is 68 (from y=84 to y=16)
-  //   Centered (ROSE/PLAN): radius is 34 (from y=50 to y=16)
   const maxVisualDist = isCentered ? 34 : 68;
   
   // 3. Scaling
