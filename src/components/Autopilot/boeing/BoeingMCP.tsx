@@ -37,10 +37,26 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             <MCPSwitch label="N1" active={state.n1} onPress={() => updateState({ n1: !state.n1 })} small />
             <MCPSwitch label="SPEED" active={state.speedMode} onPress={() => pressButton('speedMode')} small />
           </div>
-          <SevenSegmentDisplay digits={3} value={state.speed} color="orange" />
+          <div className="flex items-center gap-2">
+            <button 
+              className="h-4 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-[8px] text-white/60 hover:text-white"
+              onClick={() => pressButton('SPD_MACH_TOGGLE')}
+            >SPD/MACH</button>
+            <SevenSegmentDisplay 
+              digits={3} 
+              value={state.mach !== null ? `.${Math.round(state.mach * 100)}` : state.speed} 
+              color="orange" 
+            />
+          </div>
           <RotaryKnob 
-            value={state.speed || 100} 
-            onRotate={(d) => updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) })} 
+            value={state.mach !== null ? state.mach * 1000 : state.speed || 100} 
+            onRotate={(d) => {
+              if (state.mach !== null) {
+                updateState({ mach: Math.max(0.60, Math.min(0.85, state.mach + d * 0.01)) });
+              } else {
+                updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) });
+              }
+            }} 
           />
           <MCPSwitch label="LVL CHG" active={state.lvlChg} onPress={() => pressButton('lvlChg')} />
         </div>
@@ -90,8 +106,14 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
           <div className="flex gap-4">
              <MCPSwitch label="F/D" active={state.fdRight} onPress={() => updateState({ fdRight: !state.fdRight })} small showAnnunciator={false} />
              <div className="flex flex-col gap-2">
-                <MCPSwitch label="CMD A" active={state.apA} onPress={() => updateState({ apA: !state.apA })} />
-                <MCPSwitch label="CMD B" active={state.apB} onPress={() => updateState({ apB: !state.apB })} />
+                <div className="flex gap-2">
+                  <MCPSwitch label="CMD A" active={state.cmdA} onPress={() => pressButton('cmdA')} />
+                  <MCPSwitch label="CWS A" active={state.cwsA} onPress={() => pressButton('cwsA')} />
+                </div>
+                <div className="flex gap-2">
+                  <MCPSwitch label="CMD B" active={state.cmdB} onPress={() => pressButton('cmdB')} />
+                  <MCPSwitch label="CWS B" active={state.cwsB} onPress={() => pressButton('cwsB')} />
+                </div>
              </div>
           </div>
           <div className="flex gap-2">

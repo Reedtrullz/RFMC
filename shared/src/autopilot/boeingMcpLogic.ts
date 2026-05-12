@@ -50,6 +50,22 @@ export function processBoeingMCPAction(
       }
       return { app: false };
 
+    case 'cmdA':
+      return { cmdA: !state.cmdA, cmdB: false, cwsA: false, cwsB: false };
+    case 'cmdB':
+      return { cmdB: !state.cmdB, cmdA: false, cwsA: false, cwsB: false };
+    case 'cwsA':
+      return { cwsA: !state.cwsA, cmdA: false, cmdB: false, cwsB: false };
+    case 'cwsB':
+      return { cwsB: !state.cwsB, cmdA: false, cmdB: false, cwsA: false };
+
+    case 'SPD_MACH_TOGGLE':
+      if (state.mach === null) {
+        return { mach: 0.78, speed: null };
+      } else {
+        return { speed: 250, mach: null };
+      }
+
     default:
       return {};
   }

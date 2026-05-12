@@ -2,6 +2,7 @@ export type BoeingMCPState = {
   courseL: number;
   courseR: number;
   speed: number | null;
+  mach: number | null;
   heading: number;
   altitude: number;
   verticalSpeed: number | null;
@@ -21,8 +22,10 @@ export type BoeingMCPState = {
   altHold: boolean;
   vs: boolean;
 
-  apA: boolean;
-  apB: boolean;
+  cmdA: boolean;
+  cmdB: boolean;
+  cwsA: boolean;
+  cwsB: boolean;
 };
 
 export type AirbusFCUState = {

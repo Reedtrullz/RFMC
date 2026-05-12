@@ -5,7 +5,8 @@ import { FMCState } from '../types/fmc';
 export function buildBoeingFMAState(mcp: BoeingMCPState, fmc: FMCState): BoeingFMAState {
   let autothrottleMode: BoeingFMAState['autothrottleMode'] = '';
   if (mcp.autothrottleArm) {
-    if (mcp.speedMode) autothrottleMode = 'MCP SPD';
+    if (mcp.mach !== null) autothrottleMode = 'MCP SPD'; // Simplified
+    else if (mcp.speedMode) autothrottleMode = 'MCP SPD';
     else if (mcp.n1) autothrottleMode = 'N1';
     else autothrottleMode = 'ARM';
   }
@@ -17,7 +18,6 @@ export function buildBoeingFMAState(mcp: BoeingMCPState, fmc: FMCState): BoeingF
 
   let pitchMode: BoeingFMAState['pitchMode'] = '';
   if (mcp.vnav) {
-    // In a real sim, this depends on performance data and vertical path
     pitchMode = mcp.altHold ? 'VNAV PTH' : 'VNAV SPD';
   } else if (mcp.altHold) {
     pitchMode = 'ALT HOLD';
@@ -27,7 +27,12 @@ export function buildBoeingFMAState(mcp: BoeingMCPState, fmc: FMCState): BoeingF
     pitchMode = 'LVL CHG';
   }
 
-  const apStatus: BoeingFMAState['apStatus'] = (mcp.apA || mcp.apB) ? 'CMD A' : (mcp.fdLeft || mcp.fdRight) ? 'FD' : '';
+  let apStatus: BoeingFMAState['apStatus'] = '';
+  if (mcp.cmdA) apStatus = 'CMD A';
+  else if (mcp.cmdB) apStatus = 'CMD B';
+  else if (mcp.cwsA) apStatus = 'CWS A';
+  else if (mcp.cwsB) apStatus = 'CWS B';
+  else if (mcp.fdLeft || mcp.fdRight) apStatus = 'FD';
 
   return {
     autothrottleMode,
