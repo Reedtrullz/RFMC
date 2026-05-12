@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { CDU } from './components/CDU/CDU';
-import { AirbusCDU } from './components/CDU/AirbusCDU';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { DemoWelcome } from './components/DemoWelcome';
@@ -63,7 +62,7 @@ export default function App() {
       </div>
 
       <div className="flex min-h-0 min-w-0 items-center justify-center lg:w-[560px] lg:shrink-0 max-lg:flex-1">
-        {aircraft === 'AIRBUS_A320' ? <AirbusCDU /> : <CDU />}
+        <CDU />
       </div>
       {showWelcome && <DemoWelcome />}
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
