@@ -1,5 +1,6 @@
 import type { FlightPlanWaypoint, AltitudeConstraint, SpeedConstraint } from '../types/fmc';
 import { PROCEDURE_LEGS } from './airFMCData';
+import { getAirportCoordinates, getWaypointCoordinates } from './navDatabase';
 
 /**
  * Parse an ICAO route string into an array of waypoints.
@@ -106,7 +107,33 @@ export function parseRouteString(routeString: string): { origin: string; destina
     previousAirway = undefined;
   }
 
+  enrichRouteCoordinates(waypoints, origin, destination);
+
   return { origin, destination, waypoints };
+}
+
+export function enrichRouteCoordinates(waypoints: FlightPlanWaypoint[], origin?: string, destination?: string): void {
+  waypoints.forEach(wp => {
+    if (wp.lat !== undefined && wp.lon !== undefined) {
+      if (!wp.coordinateSource) wp.coordinateSource = 'unknown';
+      return;
+    }
+
+    let coords = null;
+    if (wp.ident === origin || wp.ident === destination || (wp.ident.length === 4 && !/\d/.test(wp.ident))) {
+      coords = getAirportCoordinates(wp.ident);
+    }
+    
+    if (!coords) {
+      coords = getWaypointCoordinates(wp.ident);
+    }
+
+    if (coords) {
+      wp.lat = coords.lat;
+      wp.lon = coords.lon;
+      wp.coordinateSource = 'navdb';
+    }
+  });
 }
 
 function isAirway(token: string): boolean {

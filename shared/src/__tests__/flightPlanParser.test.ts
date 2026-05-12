@@ -54,4 +54,22 @@ describe('Flight Plan Parser', () => {
     expect(result.waypoints.map(w => w.ident)).toContain('SMKEY');
     expect(result.waypoints.map(w => w.ident)).toContain('MCDON');
   });
+
+  it('enriches waypoints with coordinates from the local navdb', () => {
+    const result = parseRouteString('KJFK DCT RBV DCT KDCA');
+    
+    // RBV should be enriched
+    const rbv = result.waypoints.find(w => w.ident === 'RBV');
+    expect(rbv).toBeDefined();
+    expect(rbv?.lat).toBeCloseTo(40.2023, 2);
+    expect(rbv?.lon).toBeCloseTo(-74.4947, 2);
+    expect(rbv?.coordinateSource).toBe('navdb');
+
+    // KDCA should be enriched as an airport
+    const kdca = result.waypoints.find(w => w.ident === 'KDCA');
+    expect(kdca).toBeDefined();
+    expect(kdca?.lat).toBeCloseTo(38.8521, 2);
+    expect(kdca?.coordinateSource).toBe('navdb');
+  });
 });
+

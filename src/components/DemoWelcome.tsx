@@ -41,6 +41,7 @@ export function DemoWelcome() {
         destination: data.destination,
         flightNumber: data.flightNumber,
         route: data.route,
+        waypoints: data.waypoints,
       });
       useFMCStore.setState({ scratchpad: 'SIMBRIEF LOADED' });
       useFMCStore.getState().setMode('ACTIVE');

@@ -58,4 +58,51 @@ describe('SimBrief Parser', () => {
     expect(parseSimBrief(xml).origin).toBe('KJFK');
     expect(parseSimBrief(json).origin).toBe('KJFK');
   });
+
+  it('extracts waypoint coordinates from SimBrief XML navlog', () => {
+    const xml = `
+      <ofp>
+        <origin>KJFK</origin>
+        <destination>KDCA</destination>
+        <navlog>
+          <fix>
+            <ident>RBV</ident>
+            <pos_lat>40.202333</pos_lat>
+            <pos_long>-74.494722</pos_long>
+          </fix>
+          <fix>
+            <ident>DIXIE</ident>
+            <pos_lat>40.063889</pos_lat>
+            <pos_long>-74.155556</pos_long>
+          </fix>
+        </navlog>
+      </ofp>
+    `;
+    const result = parseSimBriefXML(xml);
+    expect(result.waypoints).toBeDefined();
+    expect(result.waypoints).toHaveLength(2);
+    expect(result.waypoints![0].ident).toBe('RBV');
+    expect(result.waypoints![0].lat).toBe(40.202333);
+    expect(result.waypoints![0].lon).toBe(-74.494722);
+    expect(result.waypoints![0].coordinateSource).toBe('simbrief');
+  });
+
+  it('extracts waypoint coordinates from SimBrief JSON navlog', () => {
+    const json = JSON.stringify({
+      origin: 'KJFK',
+      destination: 'KDCA',
+      navlog: {
+        fix: [
+          { ident: 'RBV', pos_lat: '40.202333', pos_long: '-74.494722' }
+        ]
+      }
+    });
+    const result = parseSimBriefJSON(json);
+    expect(result.waypoints).toBeDefined();
+    expect(result.waypoints).toHaveLength(1);
+    expect(result.waypoints![0].ident).toBe('RBV');
+    expect(result.waypoints![0].lat).toBe(40.202333);
+    expect(result.waypoints![0].coordinateSource).toBe('simbrief');
+  });
 });
+

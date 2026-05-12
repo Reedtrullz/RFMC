@@ -140,6 +140,7 @@ export interface FlightPlanWaypoint {
   ident: string;
   lat?: number;
   lon?: number;
+  coordinateSource?: 'navdb' | 'simbrief' | 'manual' | 'synthetic' | 'unknown';
   altitudeConstraint?: AltitudeConstraint;
   speedConstraint?: SpeedConstraint;
   discontinuity: boolean;

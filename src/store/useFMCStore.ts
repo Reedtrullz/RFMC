@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint } from '@shared';
 import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
@@ -140,7 +140,7 @@ interface FMCActions {
   clearFailureMode: () => void;
   setBrightness: (b: number) => void;
 
-  loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string }) => void;
+  loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string; waypoints?: FlightPlanWaypoint[] }) => void;
   resetState: () => void;
   setAircraft: (type: AircraftType) => void;
 
@@ -1105,7 +1105,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       const destination = data.destination || state.flightPlan.destination || state.route.destination;
       const route = data.route || state.flightPlan.route || state.route.routeString;
       const parsed = route ? parseRouteString([origin, route, destination].filter(Boolean).join(' ')) : null;
-      const waypoints = data.waypoints ?? parsed?.waypoints ?? state.flightPlan.waypoints;
+      
+      // Merge SimBrief coordinates if available
+      if (parsed && data.waypoints) {
+        parsed.waypoints.forEach(pwp => {
+          const swp = data.waypoints!.find(w => w.ident === pwp.ident);
+          if (swp && swp.lat !== undefined && swp.lon !== undefined) {
+            pwp.lat = swp.lat;
+            pwp.lon = swp.lon;
+            pwp.coordinateSource = swp.coordinateSource;
+          }
+        });
+      }
+      const waypoints = parsed?.waypoints ?? data.waypoints ?? state.flightPlan.waypoints;
       return {
         flightPlan: { ...state.flightPlan, ...data, origin, destination, route, waypoints },
         route: { ...state.route, origin, destination, routeString: route },
