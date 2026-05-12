@@ -3,7 +3,7 @@ import { getPageRenderer, parseRouteString } from '@shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
   isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure,
-  isValidFrequency, isValidADF
+  isValidFrequency, isValidADF, getTutorialScenario
 } from '@shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
@@ -85,6 +85,16 @@ export class FMCEngine {
         vor2: '115.70',
         adf1: '342',
       },
+      tutorialActive: false,
+      tutorialCompleted: false,
+      tutorialStepIndex: 0,
+      tutorialScenario: null,
+      tutorialStartTime: null,
+      tutorialErrors: 0,
+      tutorialHint: null,
+      tutorialSkipAvailable: false,
+      tutorialHighlight: null,
+      tutorialConfidence: null,
     };
   }
 
@@ -146,13 +156,40 @@ export class FMCEngine {
 
   processInput(key: string): DisplayData {
     this.state.scratchpadError = null;
+    this.state.msgLight = false;
 
+    const spBefore = this.state.scratchpad.trim();
+    let handled = false;
+    let action: string | null = null;
+
+    if (key === 'L1' || key === 'L2' || key === 'L3' || key === 'L4' || key === 'L5' || key === 'L6' ||
+        key === 'R1' || key === 'R2' || key === 'R3' || key === 'R4' || key === 'R5' || key === 'R6') {
+      const display = this.getDisplayData();
+      action = display.lskActions[key];
+      if (action) {
+        handled = this.handleLSKAction(action);
+      }
+    } else {
+      handled = this.handleKeyAction(key);
+    }
+
+    if (this.state.tutorialActive) {
+      this.checkTutorialProgression(key, action, spBefore);
+    }
+
+    return this.getDisplayData();
+  }
+
+  private handleKeyAction(key: string): boolean {
     const functionKeys = ['INIT_REF', 'RTE', 'CLB', 'CRZ', 'DES', 'DIR_INTC', 'DEP_ARR', 'LEGS', 'HOLD', 'FIX', 'PERF', 'PROG', 'N1_LIMIT', 'MENU',
       'INIT_A', 'INIT_B', 'F_PLN', 'PERF_TAKEOFF', 'PROG_A', 'DEP_ARR_A', 'MCDU_MENU', 'RAD_NAV', 'DATA_INDEX'];
 
     if (functionKeys.includes(key)) {
-      this.setPage(key);
-    } else if (key === 'CLR' || key === 'DEL') {
+      this.setPage(key as PageType);
+      return true;
+    }
+
+    if (key === 'CLR' || key === 'DEL') {
       if (key === 'DEL' && this.state.currentPage === 'LEGS' && this.state.scratchpad === '') {
         this.state.deleteMode = !this.state.deleteMode;
       } else if (key === 'CLR' && this.state.scratchpad === '' && this.state.isModified) {
@@ -164,7 +201,10 @@ export class FMCEngine {
       } else {
         this.state.scratchpad = this.state.scratchpad.slice(0, -1);
       }
-    } else if (key === 'EXEC') {
+      return true;
+    }
+
+    if (key === 'EXEC') {
       if (this.state.editWaypointIndex !== null && this.state.scratchpad.trim()) {
         const sp = this.state.scratchpad.trim();
         const idx = this.state.editWaypointIndex;
@@ -187,11 +227,11 @@ export class FMCEngine {
           altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
         } else {
           this.state.scratchpadError = 'INVALID FORMAT';
-          return this.getDisplayData();
+          return true;
         }
 
         this.updateWaypointConstraint(idx, altitude, speed);
-        return this.getDisplayData();
+        return true;
       }
 
       this.state.execLit = false;
@@ -208,29 +248,243 @@ export class FMCEngine {
         this.state.flightPlan = { ...this.state.pendingFlightPlan };
         this.state.pendingFlightPlan = null;
       }
-    } else if (key === 'NEXT_PAGE') {
-      this.advancePage();
-    } else if (key === 'PREV_PAGE') {
-      this.rewindPage();
-    } else if (/^[LR][1-6]$/.test(key)) {
-      const displayData = this.getDisplayData();
-      const lskAction = displayData.lskActions[key];
-      if (lskAction) {
-        this.handleLskAction(lskAction);
-      }
-    } else if (key === 'DOT') {
-      this.state.scratchpad += '.';
-    } else if (key === 'SLASH') {
-      this.state.scratchpad += '/';
-    } else if (key === 'SPACE') {
-      this.state.scratchpad += ' ';
-    } else if (key === 'PLUS_MINUS' || key === '+/-') {
-      this.state.scratchpad += '+/-';
-    } else if (key.length === 1) {
-      this.state.scratchpad += key;
+      return true;
     }
 
-    return this.getDisplayData();
+    if (key === 'NEXT_PAGE') {
+      return this.advancePage();
+    }
+
+    if (key === 'PREV_PAGE') {
+      return this.rewindPage();
+    }
+
+    if (key === 'SPACE') {
+      this.state.scratchpad += ' ';
+      return true;
+    }
+
+    if (key === 'PLUS_MINUS' || key === '+/-') {
+      this.state.scratchpad += '+/-';
+      return true;
+    }
+
+    if (key === 'DOT') {
+      this.state.scratchpad += '.';
+      return true;
+    }
+
+    if (key === 'SLASH') {
+      this.state.scratchpad += '/';
+      return true;
+    }
+
+    if (key.length === 1) {
+      this.state.scratchpad += key;
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleLSKAction(action: string): boolean {
+    const sp = this.state.scratchpad.trim();
+    const err = () => { this.state.scratchpadError = 'INVALID ENTRY'; return true; };
+
+    switch (action) {
+      case 'pos_init': this.setPage('POS_INIT'); return true;
+      case 'perf_init': this.setPage('PERF_INIT'); return true;
+      case 'rte': this.setPage('RTE'); return true;
+      case 'dep_arr': this.setPage('DEP_ARR'); return true;
+      case 'legs': this.setPage('LEGS'); return true;
+      case 'thrust_lim': this.setPage('THRUST_LIM'); return true;
+      case 'takeoff_ref': this.setPage('TAKEOFF_REF'); return true;
+      case 'menu': this.setPage('MENU'); return true;
+      case 'ident': this.setPage('IDENT'); return true;
+      case 'init_a': this.setPage('INIT_A'); return true;
+      case 'init_b': this.setPage('INIT_B'); return true;
+      case 'f_pln': this.setPage('F_PLN'); return true;
+      case 'fuel_pred': this.setPage('FUEL_PRED'); return true;
+      case 'sec_fpln': this.setPage('SEC_FPLN'); return true;
+      case 'rad_nav': this.setPage('RAD_NAV'); return true;
+      case 'data_index': this.setPage('DATA_INDEX'); return true;
+      case 'mcdu_menu': this.setPage('MCDU_MENU'); return true;
+
+      case 'set_ref_airport':
+        if (sp) {
+          const res = isValidICAO(sp.toUpperCase());
+          if (!res.valid) return err();
+          this.state.position = { ...this.state.position, refAirport: sp.toUpperCase() };
+          this.state.scratchpad = '';
+        }
+        return true;
+      case 'set_gate':
+        if (sp) {
+          this.state.position = { ...this.state.position, gate: sp.toUpperCase() };
+          this.state.scratchpad = '';
+        }
+        return true;
+      case 'set_from_to':
+        if (sp) {
+          const parts = sp.split('/');
+          if (parts.length !== 2) return err();
+          const [origin, dest] = parts.map(p => p.toUpperCase());
+          this.state.route = { ...this.state.route, origin, destination: dest };
+          this.state.flightPlan = { ...this.state.flightPlan, origin, destination: dest };
+          this.state.scratchpad = '';
+        }
+        return true;
+      case 'set_cost_index':
+        if (sp) {
+          const ci = parseInt(sp);
+          if (isNaN(ci)) return err();
+          this.state.performance = { ...this.state.performance, costIndex: ci };
+          this.state.scratchpad = '';
+        }
+        return true;
+      case 'set_crz_fl':
+      case 'set_crz_alt':
+        if (sp) {
+          const alt = parseInt(sp);
+          if (isNaN(alt)) return err();
+          this.state.performance = { ...this.state.performance, crzAlt: alt >= 100 ? alt * 100 : alt };
+          this.state.scratchpad = '';
+        }
+        return true;
+      case 'set_zfw': {
+        const zfw = parseFloat(sp);
+        if (isNaN(zfw)) return err();
+        this.state.performance = { ...this.state.performance, zfw: zfw * 1000 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_block': {
+        const fuel = parseFloat(sp);
+        if (isNaN(fuel)) return err();
+        this.state.performance = { ...this.state.performance, fuel: fuel * 1000 };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_vor1': {
+        const freq = isValidFrequency(sp);
+        if (!freq.valid) return err();
+        this.state.radios = { ...this.state.radios, vor1: parseFloat(sp).toFixed(2) };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_vor2': {
+        const freq = isValidFrequency(sp);
+        if (!freq.valid) return err();
+        this.state.radios = { ...this.state.radios, vor2: parseFloat(sp).toFixed(2) };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_adf1': {
+        const adf = isValidADF(sp);
+        if (!adf.valid) return err();
+        this.state.radios = { ...this.state.radios, adf1: sp };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_sid': {
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, sid: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_rwy': {
+        if (sp.length < 2) return err();
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, runway: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_star': {
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, star: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_appr': {
+        const route = this.state.pendingRoute ?? this.state.route;
+        this.state.pendingRoute = { ...route, approach: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flaps': {
+        this.state.takeoff = { ...this.state.takeoff, flaps: sp.toUpperCase() };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_flex': {
+        const temp = parseInt(sp);
+        if (isNaN(temp)) return err();
+        this.state.takeoff = { ...this.state.takeoff, flexTemp: temp };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_cg': {
+        const cg = parseFloat(sp);
+        if (isNaN(cg)) return err();
+        this.state.performance = { ...this.state.performance, cg };
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'erase': {
+        this.state.pendingRoute = null;
+        this.state.pendingFlightPlan = null;
+        this.state.holdPending = null;
+        this.state.isModified = false;
+        this.state.execLit = false;
+        this.state.editWaypointIndex = null;
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'copy_active': {
+        this.state.pendingFlightPlan = { ...this.state.flightPlan };
+        this.state.pendingRoute = { ...this.state.route };
+        this.state.isModified = true;
+        this.state.execLit = true;
+        this.state.scratchpad = 'COPIED TO SEC';
+        return true;
+      }
+    }
+
+    if (action.startsWith('delete_wp_') || action.startsWith('edit_wp_')) {
+      const parts = action.split('_');
+      const wpAction = parts[0] + '_' + parts[1];
+      const wpIndex = parseInt(parts[2], 10);
+      if (wpAction === 'delete_wp') {
+        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+        const waypoints = [...flightPlan.waypoints];
+        waypoints.splice(wpIndex, 1);
+        this.state.pendingFlightPlan = { ...flightPlan, waypoints };
+        this.state.isModified = true;
+        this.state.execLit = true;
+        return true;
+      } else if (wpAction === 'edit_wp') {
+        if (sp) {
+          const ident = sp.toUpperCase();
+          const result = isValidWaypoint(ident);
+          if (!result.valid) {
+            this.state.scratchpadError = result.error ?? 'INVALID ENTRY';
+          } else {
+            const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+            const waypoints = [...flightPlan.waypoints];
+            waypoints.splice(wpIndex, 0, { ident, discontinuity: false });
+            this.state.pendingFlightPlan = { ...flightPlan, waypoints };
+            this.state.scratchpad = '';
+            this.state.isModified = true;
+            this.state.execLit = true;
+          }
+        } else {
+          this.state.editWaypointIndex = wpIndex;
+        }
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private advancePage(): boolean {
@@ -258,21 +512,20 @@ export class FMCEngine {
       }
       this.state.scratchpad = '';
       return true;
+    } else if (this.state.currentPage === 'INIT_A') {
+      this.setPage('INIT_B');
+      return true;
+    } else if (this.state.currentPage === 'INIT_B') {
+      this.setPage('INIT_A');
+      return true;
+    } else if (this.state.currentPage === 'PERF_TAKEOFF') {
+      this.setPage('PERF_APPR');
+      return true;
+    } else if (this.state.currentPage === 'PERF_APPR') {
+      this.setPage('PERF_TAKEOFF');
+      return true;
     }
     return false;
-  }
-
-  private updateWaypointConstraint(index: number, altitude?: any, speed?: any): void {
-    const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-    const waypoints = [...flightPlan.waypoints];
-    if (index >= 0 && index < waypoints.length) {
-      waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
-      this.state.pendingFlightPlan = { ...flightPlan, waypoints };
-      this.state.isModified = true;
-      this.state.execLit = true;
-      this.state.editWaypointIndex = null;
-      this.state.scratchpad = '';
-    }
   }
 
   private rewindPage(): boolean {
@@ -299,8 +552,33 @@ export class FMCEngine {
       }
       this.state.scratchpad = '';
       return true;
+    } else if (this.state.currentPage === 'INIT_A') {
+      this.setPage('INIT_B');
+      return true;
+    } else if (this.state.currentPage === 'INIT_B') {
+      this.setPage('INIT_A');
+      return true;
+    } else if (this.state.currentPage === 'PERF_TAKEOFF') {
+      this.setPage('PERF_APPR');
+      return true;
+    } else if (this.state.currentPage === 'PERF_APPR') {
+      this.setPage('PERF_TAKEOFF');
+      return true;
     }
     return false;
+  }
+
+  private updateWaypointConstraint(index: number, altitude?: any, speed?: any): void {
+    const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+    const waypoints = [...flightPlan.waypoints];
+    if (index >= 0 && index < waypoints.length) {
+      waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
+      this.state.pendingFlightPlan = { ...flightPlan, waypoints };
+      this.state.isModified = true;
+      this.state.execLit = true;
+      this.state.editWaypointIndex = null;
+      this.state.scratchpad = '';
+    }
   }
 
   private handleLskAction(action: string): void {
@@ -925,7 +1203,130 @@ export class FMCEngine {
     return false;
   }
 
+  // ---- Tutorial Methods ----
+
+  startTutorial(scenarioName: string): void {
+    const scenario = getTutorialScenario(scenarioName);
+    if (!scenario) return;
+
+    this.state.tutorialActive = true;
+    this.state.tutorialScenario = scenarioName;
+    this.state.tutorialStepIndex = 0;
+    this.state.tutorialErrors = 0;
+    this.state.tutorialCompleted = false;
+    this.state.tutorialStartTime = Date.now();
+    this.state.tutorialHint = scenario.steps[0].instruction;
+    this.state.tutorialHighlight = scenario.steps[0].highlightField || null;
+
+    // Run setup if needed
+    if (scenario.setup) {
+      const resetFields = scenario.setup();
+      // Logic to reset fields if needed (omitted for brevity, usually starts from default)
+    }
+
+    // Set page to step 0 page
+    if (scenario.steps[0].page) {
+      this.setPage(scenario.steps[0].page);
+    }
+  }
+
+  advanceTutorial(): void {
+    const scenario = getTutorialScenario(this.state.tutorialScenario || '');
+    if (!scenario) return;
+
+    this.state.tutorialStepIndex++;
+    if (this.state.tutorialStepIndex >= scenario.steps.length) {
+      this.state.tutorialCompleted = true;
+      this.state.tutorialActive = false;
+      this.state.tutorialHighlight = null;
+      this.state.tutorialHint = 'Tutorial Complete!';
+    } else {
+      const step = scenario.steps[this.state.tutorialStepIndex];
+      this.state.tutorialHint = step.instruction;
+      this.state.tutorialHighlight = step.highlightField || null;
+      if (step.page) {
+        this.setPage(step.page);
+      }
+    }
+  }
+
+  recordTutorialError(): void {
+    this.state.tutorialErrors++;
+  }
+
+  skipTutorialStep(): void {
+    this.advanceTutorial();
+  }
+
+  setPage(page: PageType): void {
+    this.state.currentPage = page;
+    this.state.scratchpad = '';
+    this.state.scratchpadError = null;
+  }
+
   getState(): FMCState {
     return this.state;
+  }
+
+  private checkTutorialProgression(key: string, action: string | null, sp: string): void {
+    const scenario = getTutorialScenario(this.state.tutorialScenario || '');
+    if (!scenario) return;
+
+    const step = scenario.steps[this.state.tutorialStepIndex];
+    if (!step) return;
+
+    // Map keys for function key matching
+    const keyMap: Record<string, string> = {
+      INIT_REF: 'POS_INIT',
+      RTE: 'RTE',
+      DEP_ARR: 'DEP_ARR',
+      LEGS: 'LEGS',
+      PERF: 'PERF_INIT',
+      PROG: 'PROGRESS',
+      MENU: 'MENU',
+      EXEC: 'EXEC',
+      NEXT_PAGE: 'NEXT_PAGE',
+      PREV_PAGE: 'PREV_PAGE',
+      // Airbus keys
+      INIT_A: 'INIT_A',
+      INIT_B: 'INIT_B',
+      F_PLN: 'F_PLN',
+      PERF_TAKEOFF: 'PERF_TAKEOFF',
+      PROG_A: 'PROG_A',
+      DATA_INDEX: 'DATA_INDEX',
+      DIR_INTC: 'DIR_INTC',
+      MCDU_MENU: 'MCDU_MENU',
+      RAD_NAV: 'RAD_NAV',
+      FUEL_PRED: 'FUEL_PRED',
+      SEC_FPLN: 'SEC_FPLN',
+    };
+
+    const mappedKey = keyMap[key] || key;
+
+    // LSK Action check
+    if (action) {
+      const actionMatches = !step.expectedAction || action === step.expectedAction;
+      const validatePasses = !step.validate || step.validate(sp);
+      if (actionMatches && validatePasses) {
+        this.advanceTutorial();
+      } else {
+        this.recordTutorialError();
+      }
+      return;
+    }
+
+    // Function key check
+    if (mappedKey === step.expectedAction || key === step.expectedAction) {
+      this.advanceTutorial();
+      return;
+    }
+
+    // Alphanumeric keys: don't record errors while typing
+    const isAlphaNumeric = /^[A-Z0-9]$/.test(key) || 
+      ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
+
+    if (!isAlphaNumeric) {
+      this.recordTutorialError();
+    }
   }
 }

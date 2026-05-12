@@ -233,6 +233,8 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
     DIR_INTC: 'DIR_INTC',
     MCDU_MENU: 'MCDU_MENU',
     RAD_NAV: 'RAD_NAV',
+    FUEL_PRED: 'FUEL_PRED',
+    SEC_FPLN: 'SEC_FPLN',
   };
 
   const mapped = keyMap[key] || key;
@@ -958,9 +960,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (scenario) {
         const step = scenario.steps[get().tutorialStepIndex];
         if (step) {
-          const actionMatches = action === step.expectedAction;
-          const validatePasses = step.validate ? step.validate(scratchpad) : true;
-          if (actionMatches || validatePasses) {
+          const actionMatches = !step.expectedAction || action === step.expectedAction;
+          const validatePasses = !step.validate || step.validate(scratchpad);
+          if (actionMatches && validatePasses) {
             get().advanceTutorial();
           } else {
             get().recordTutorialError();

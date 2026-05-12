@@ -76,6 +76,8 @@ export {
   isValidVSpeeds,
   isValidRunway,
   isValidWind,
+  isValidFrequency,
+  isValidADF,
 } from './fmc/validation';
 export type { ValidationResult } from './fmc/validation';
 export { devLog, devWarn, devError } from './logger';

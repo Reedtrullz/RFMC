@@ -341,4 +341,16 @@ export interface FMCState {
   latency: number;
   sessionStartTime: number | null;
   radios: RadioData;
+
+  // Tutorial state
+  tutorialActive: boolean;
+  tutorialCompleted: boolean;
+  tutorialStepIndex: number;
+  tutorialScenario: string | null;
+  tutorialStartTime: number | null;
+  tutorialErrors: number;
+  tutorialHint: string | null;
+  tutorialSkipAvailable: boolean;
+  tutorialHighlight: string | null;
+  tutorialConfidence: number | null;
 }
