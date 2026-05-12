@@ -9,7 +9,7 @@ export function AutopilotTrainer() {
   const pressMCPButton = useFMCStore(s => s.pressMCPButton);
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-testid="autopilot-trainer">
       {aircraft === 'BOEING_737' ? (
         <BoeingMCP state={autopilot.boeing} updateState={updateBoeingMCP} pressButton={pressMCPButton} />
       ) : (

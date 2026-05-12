@@ -17,37 +17,39 @@ export function PrimaryFlightDisplay() {
   const mcp = autopilot.boeing;
   
   return (
-    <InstrumentBezel variant={isBoeing ? 'boeing-pfd' : 'airbus-pfd'} className="h-full w-full">
-      <ScreenGlass className="flex h-full w-full flex-col">
-        <FMA />
-        
-        <div className="flex flex-1 overflow-hidden">
-          {/* Speed Tape */}
-          <SpeedTape 
-            speed={pfd.speed} 
-            targetSpeed={isBoeing ? mcp.speed : autopilot.airbus.speed} 
-          />
+    <div className="h-full w-full" data-testid="primary-flight-display">
+      <InstrumentBezel variant={isBoeing ? 'boeing-pfd' : 'airbus-pfd'} className="h-full w-full">
+        <ScreenGlass className="flex h-full w-full flex-col">
+          <FMA />
           
-          {/* Attitude Center */}
-          <AttitudeSphere 
-            pitch={pfd.pitch} 
-            bank={pfd.bank} 
-          />
+          <div className="flex flex-1 overflow-hidden">
+            {/* Speed Tape */}
+            <SpeedTape 
+              speed={pfd.speed} 
+              targetSpeed={isBoeing ? mcp.speed : autopilot.airbus.speed} 
+            />
+            
+            {/* Attitude Center */}
+            <AttitudeSphere 
+              pitch={pfd.pitch} 
+              bank={pfd.bank} 
+            />
+            
+            {/* Altitude Tape */}
+            <AltitudeTape 
+              altitude={pfd.altitude} 
+              targetAltitude={isBoeing ? mcp.altitude : autopilot.airbus.altitude} 
+            />
+          </div>
           
-          {/* Altitude Tape */}
-          <AltitudeTape 
-            altitude={pfd.altitude} 
-            targetAltitude={isBoeing ? mcp.altitude : autopilot.airbus.altitude} 
-          />
-        </div>
-        
-        {/* Bottom area: Heading / Cues */}
-        <div className="h-10 flex items-center justify-center border-t border-white/10 bg-black/40">
-           <span className="font-mono text-lg text-white font-bold opacity-80">
-             {Math.round(pfd.heading).toString().padStart(3, '0')}
-           </span>
-        </div>
-      </ScreenGlass>
-    </InstrumentBezel>
+          {/* Bottom area: Heading / Cues */}
+          <div className="h-10 flex items-center justify-center border-t border-white/10 bg-black/40">
+             <span className="font-mono text-lg text-white font-bold opacity-80">
+               {Math.round(pfd.heading).toString().padStart(3, '0')}
+             </span>
+          </div>
+        </ScreenGlass>
+      </InstrumentBezel>
+    </div>
   );
 }
