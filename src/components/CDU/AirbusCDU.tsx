@@ -61,7 +61,7 @@ export function AirbusCDU() {
           <MSGLight active={msgLight} />
         </div>
 
-        <div className="w-full grid gap-0" style={{ gridTemplateColumns: 'auto 1fr auto', gridTemplateRows: 'repeat(14, minmax(0, 1fr)) auto' }}>
+        <div className="w-full grid gap-0" style={{ gridTemplateColumns: '48px minmax(0, 1fr) 48px', gridTemplateRows: 'repeat(14, 22px) 28px' }}>
           {LSK_AIRBUS.map(({ row, index }) => (
             <div key={`L${index}`} className="flex items-center" style={{ gridRow: `${row} / ${row + 2}`, gridColumn: 1 }}>
               <LSKButton side="L" index={index} label={getLSKLabel('L', index)} highlighted={isHighlighted(`L${index}`)} onPress={onPressLSK} />
@@ -75,7 +75,7 @@ export function AirbusCDU() {
           <div className="bg-cdu-screen border-2 border-cdu-bezel-light rounded-sm overflow-hidden" style={{ gridRow: '1 / 15', gridColumn: 2 }}>
             <Display variant="airbus" />
           </div>
-          <div className="bg-cdu-screen border-x-2 border-b-2 border-cdu-bezel-light rounded-b-sm" style={{ gridRow: 15, gridColumn: 2 }}>
+          <div className="bg-cdu-screen border-x-2 border-b-2 border-cdu-bezel-light rounded-b-sm overflow-hidden" style={{ gridRow: 15, gridColumn: 2 }}>
             <Scratchpad variant="airbus" />
           </div>
         </div>

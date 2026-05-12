@@ -1,4 +1,5 @@
 import { buildCells, type GridDisplayData } from '@shared';
+import type { CSSProperties } from 'react';
 
 interface CDUDisplayGridProps {
   grid: GridDisplayData;
@@ -9,10 +10,16 @@ interface CDUDisplayGridProps {
 export function CDUDisplayGrid({ grid, variant = 'boeing', className = '' }: CDUDisplayGridProps) {
   const cells = buildCells(grid);
 
+  const style = {
+    '--cdu-cols': grid.columns,
+    '--cdu-rows': grid.rows,
+  } as CSSProperties;
+
   return (
     <div
       className={`cdu-display-matrix cdu-display-matrix--${variant} ${className}`}
       data-testid="cdu-display-grid"
+      style={style}
     >
       {cells.map((cell, idx) => (
         <span

@@ -43,9 +43,7 @@ export function ScratchpadRow({ text, error, variant = 'boeing' }: ScratchpadRow
             variant === 'airbus' ? 'bg-cdu-amber' : 'bg-cdu-text',
           ].join(' ')}
           style={{
-            left: variant === 'boeing' 
-              ? `${(Math.min(text.length, 23) / 24) * 100}%`
-              : `calc(${Math.min(text.length, 23)} * 0.72em)`,
+            left: `${(Math.min(text.length, 23) / 24) * 100}%`,
           }}
           aria-hidden="true"
         />
