@@ -49,7 +49,7 @@ export function AirbusMCDU() {
   const isHighlighted = (id: string) => tutorialHighlight === id;
 
   return (
-    <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
+    <div className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}>
       <AirbusMCDUShell msgLight={msgLight}>
         <AirbusDisplayBay
           brightness={brightness}

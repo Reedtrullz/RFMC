@@ -97,7 +97,19 @@ html, body {
   font-size: clamp(16px, 2.05vw, 22px);
 }
 
-/* Airbus: keep character-cell sizing until Airbus gets its own display bay */
+.airbus-mcdu {
+  --airbus-display-width: 420px;
+  --airbus-row-height: 21px;
+  --airbus-scratchpad-height: 28px;
+}
+
+.airbus-mcdu .cdu-display-matrix--airbus {
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  width: 100%;
+  font-size: 18px;
+}
+
+/* Character-cell sizing fallback */
 .cdu-display-matrix--airbus {
   grid-template-columns: repeat(var(--cdu-cols), 0.72em);
   width: calc(var(--cdu-cols) * 0.72em);

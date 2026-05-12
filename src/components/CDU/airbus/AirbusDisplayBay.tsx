@@ -13,15 +13,13 @@ interface AirbusDisplayBayProps {
 export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPressLSK }: AirbusDisplayBayProps) {
   return (
     <div
-      className="w-full rounded-[5px] border border-black/70 bg-[#101010] p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)]"
+      className="rounded-[5px] border border-black/70 bg-[#101010] p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)]"
       style={{
         display: 'grid',
         gridTemplateColumns: '48px minmax(0, 1fr) 48px',
-        gridTemplateRows: 'repeat(14, var(--mcdu-row-h, 22px)) auto',
+        gridTemplateRows: 'repeat(14, var(--airbus-row-height, 21px)) var(--airbus-scratchpad-height, 28px)',
         columnGap: '0.25rem',
-        // @ts-ignore
-        '--mcdu-row-h': '22px',
-        '--mcdu-row-height': '22px',
+        width: 'var(--airbus-display-width, 420px)',
       }}
     >
       <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
@@ -29,7 +27,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
 
       <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
         <ScreenGlass brightness={brightness} className="rounded-b-none w-full border-cdu-bezel-light/30">
-          <div className="w-full" style={{ height: 'calc(14 * var(--mcdu-row-h, 22px))' }}>
+          <div className="w-full" style={{ height: 'calc(14 * var(--airbus-row-height, 21px))' }}>
             <Display variant="airbus" />
           </div>
         </ScreenGlass>
@@ -40,7 +38,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
           gridRow: 15,
           gridColumn: 2,
           filter: `brightness(${brightness}%)`,
-          height: '28px',
+          height: 'var(--airbus-scratchpad-height, 28px)',
           display: 'flex',
           alignItems: 'center',
         }}
