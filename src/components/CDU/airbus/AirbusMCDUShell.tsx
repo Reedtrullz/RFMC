@@ -12,6 +12,8 @@ export function AirbusMCDUShell({ msgLight, children }: AirbusMCDUShellProps) {
     <InstrumentShell
       title="AIRBUS A320"
       rightSlot={<AnnunciatorLight label="MSG" active={msgLight} tone="amber" />}
+      className="airbus-mcdu-bezel"
+      data-testid="airbus-mcdu"
     >
       {children}
     </InstrumentShell>

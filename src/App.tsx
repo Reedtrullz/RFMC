@@ -7,6 +7,7 @@ import { NavigationDisplay } from './components/ND/NavigationDisplay';
 import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useEffect } from 'react';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -15,6 +16,40 @@ export default function App() {
   const tutorialActive = useFMCStore(s => s.tutorialActive);
   const tutorialCompleted = useFMCStore(s => s.tutorialCompleted);
   const aircraft = useFMCStore(s => s.aircraft);
+  const setAircraft = useFMCStore(s => s.setAircraft);
+  const setPage = useFMCStore(s => s.setPage);
+  const setNDMode = useFMCStore(s => s.setNDMode);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/visual/boeing/pos-init') {
+      setAircraft('BOEING_737');
+      setPage('POS_INIT');
+    } else if (path === '/visual/boeing/rte') {
+      setAircraft('BOEING_737');
+      setPage('RTE');
+    } else if (path === '/visual/boeing/legs') {
+      setAircraft('BOEING_737');
+      setPage('LEGS');
+    } else if (path === '/visual/airbus/dir-intc') {
+      setAircraft('AIRBUS_A320');
+      setPage('DIR_INTC');
+    } else if (path === '/visual/airbus/init-a') {
+      setAircraft('AIRBUS_A320');
+      setPage('INIT_A');
+    } else if (path === '/visual/airbus/f-pln') {
+      setAircraft('AIRBUS_A320');
+      setPage('F_PLN');
+    } else if (path === '/visual/nd/boeing-map') {
+      setAircraft('BOEING_737');
+      setNDMode('L', 'MAP');
+      setShowNd(true);
+    } else if (path === '/visual/nd/airbus-arc') {
+      setAircraft('AIRBUS_A320');
+      setNDMode('L', 'ARC');
+      setShowNd(true);
+    }
+  }, [setAircraft, setPage, setNDMode]);
 
   const showWelcome = mode === 'STANDBY' && !tutorialActive && !tutorialCompleted;
 

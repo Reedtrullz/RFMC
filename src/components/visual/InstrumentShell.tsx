@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
 import { BezelScrew } from './BezelScrew';
 
-interface InstrumentShellProps {
+interface InstrumentShellProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   title: string;
   rightSlot?: ReactNode;
-  className?: string;
 }
 
-export function InstrumentShell({ children, title, rightSlot, className = '' }: InstrumentShellProps) {
+export function InstrumentShell({ children, title, rightSlot, className = '', ...props }: InstrumentShellProps) {
   return (
     <div
       className={[
@@ -17,6 +16,7 @@ export function InstrumentShell({ children, title, rightSlot, className = '' }: 
         'border border-black/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-18px_30px_rgba(0,0,0,0.35),0_10px_30px_rgba(0,0,0,0.55)]',
         className,
       ].join(' ')}
+      {...props}
     >
       <div className="absolute left-2 top-2"><BezelScrew /></div>
       <div className="absolute right-2 top-2"><BezelScrew /></div>

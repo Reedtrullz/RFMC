@@ -12,6 +12,8 @@ export function BoeingCDUShell({ msgLight, children }: BoeingCDUShellProps) {
     <InstrumentShell
       title="BOEING 737-800"
       rightSlot={<AnnunciatorLight label="MSG" active={msgLight} tone="amber" />}
+      className="boeing-cdu"
+      data-testid="boeing-cdu"
     >
       {children}
     </InstrumentShell>
