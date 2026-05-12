@@ -391,4 +391,77 @@ describe('FMC Store', () => {
     expect(state.execLit).toBe(false);
     expect(state.route.routeString).toBe('');
   });
+
+  describe('PLAN mode review actions', () => {
+    const planRoute = {
+      origin: 'KJFK',
+      destination: 'KDCA',
+      flightNumber: '',
+      route: '',
+      waypoints: [
+        { ident: 'RBV', discontinuity: false },
+        { ident: 'DIXIE', discontinuity: false },
+        { ident: 'WHITE', discontinuity: false },
+      ],
+    };
+    // Total route items = origin(1) + 3 waypoints = 4
+
+    it('stepPlanForward increments selectedPlanWaypointIndex', () => {
+      useFMCStore.setState({ flightPlan: planRoute, selectedPlanWaypointIndex: 0 });
+      useFMCStore.getState().stepPlanForward();
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(1);
+    });
+
+    it('stepPlanForward wraps around from last to first', () => {
+      useFMCStore.setState({ flightPlan: planRoute, selectedPlanWaypointIndex: 4 }); // Last index: 1(origin)+3(wpts)+1(dest)=5 total
+      useFMCStore.getState().stepPlanForward();
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(0);
+    });
+
+    it('stepPlanBackward decrements selectedPlanWaypointIndex', () => {
+      useFMCStore.setState({ flightPlan: planRoute, selectedPlanWaypointIndex: 2 });
+      useFMCStore.getState().stepPlanBackward();
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(1);
+    });
+
+    it('stepPlanBackward wraps around from first to last', () => {
+      useFMCStore.setState({ flightPlan: planRoute, selectedPlanWaypointIndex: 0 });
+      useFMCStore.getState().stepPlanBackward();
+      // totalPoints = 1(origin) + 3(waypoints) + 1(dest) = 5, wraps to 4
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(4);
+    });
+
+    it('setSelectedPlanWaypoint sets an arbitrary index', () => {
+      useFMCStore.setState({ flightPlan: planRoute });
+      useFMCStore.getState().setSelectedPlanWaypoint(2);
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(2);
+    });
+
+    it('resetPlanWaypoint resets index to null', () => {
+      useFMCStore.setState({ flightPlan: planRoute, selectedPlanWaypointIndex: 2 });
+      useFMCStore.getState().resetPlanWaypoint();
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBeNull();
+    });
+
+    it('step_plan LSK action calls stepPlanForward', () => {
+      useFMCStore.setState({
+        currentPage: 'LEGS',
+        flightPlan: planRoute,
+        selectedPlanWaypointIndex: 0,
+        efisL: { ...useFMCStore.getState().efisL, mode: 'PLN' },
+      });
+      useFMCStore.getState().pressLSK('R', 6); // R6 is the STEP prompt in PLN mode
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(1);
+    });
+
+    it('stepPlanForward is a no-op when flight plan has no waypoints', () => {
+      useFMCStore.setState({
+        flightPlan: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', route: '', waypoints: [] },
+        selectedPlanWaypointIndex: 0,
+      });
+      useFMCStore.getState().stepPlanForward();
+      // Should not change — returns early
+      expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(0);
+    });
+  });
 });
