@@ -1,0 +1,25 @@
+{
+  "instrument": "Airbus A320 MCDU",
+  "status": "initial target scaffold",
+  "displayGrid": {
+    "columns": 24,
+    "rows": 14,
+    "scratchpadRows": 1
+  },
+  "geometryTargets": {
+    "shellAspectRatio": null,
+    "screenAspectRatio": null,
+    "screenToShellBounds": null,
+    "lskRows": [2, 4, 6, 8, 10, 12],
+    "keypadStyle": "airbus-specific",
+    "titleBarStyle": "amber/yellow"
+  },
+  "layoutTargets": [
+    "INIT A",
+    "INIT B",
+    "F-PLN",
+    "DIR",
+    "PERF TO",
+    "RAD NAV"
+  ]
+}

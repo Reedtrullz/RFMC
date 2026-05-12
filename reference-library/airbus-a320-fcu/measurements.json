@@ -1,0 +1,20 @@
+{
+  "instrument": "Airbus A320 FCU",
+  "status": "initial target scaffold",
+  "geometryTargets": {
+    "panelAspectRatio": null,
+    "sectionWidths": {},
+    "displayWindowBounds": {},
+    "pushPullKnobBounds": {},
+    "buttonBounds": {}
+  },
+  "behaviorTargets": [
+    "selected vs managed mode",
+    "AP1",
+    "AP2",
+    "A/THR",
+    "LOC",
+    "APPR",
+    "EXPED"
+  ]
+}

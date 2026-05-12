@@ -1,0 +1,19 @@
+{
+  "instrument": "Airbus A320 Navigation Display",
+  "status": "initial target scaffold",
+  "geometryTargets": {
+    "displayAspectRatio": null,
+    "frameThickness": null,
+    "arcOrigin": null,
+    "rangeRingRadii": [],
+    "clipBoundary": "display frame"
+  },
+  "symbolTargets": [
+    "waypoint",
+    "airport",
+    "constraint",
+    "heading bug",
+    "track line"
+  ],
+  "modeTargets": ["ARC", "ROSE NAV", "PLAN", "constraints on/off", "approach display"]
+}

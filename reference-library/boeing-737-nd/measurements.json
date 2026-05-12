@@ -1,0 +1,22 @@
+{
+  "instrument": "Boeing 737 Navigation Display",
+  "status": "initial target scaffold",
+  "geometryTargets": {
+    "displayAspectRatio": null,
+    "frameThickness": null,
+    "headingArcRadius": null,
+    "rangeRingRadii": [],
+    "routeLineThickness": null,
+    "clipBoundary": "display frame"
+  },
+  "symbolTargets": [
+    "waypoint",
+    "airport",
+    "fix",
+    "hold",
+    "heading bug",
+    "selected course",
+    "track line"
+  ],
+  "modeTargets": ["MAP", "PLAN", "VOR", "APP", "FIX overlay", "HOLD overlay", "route discontinuity"]
+}

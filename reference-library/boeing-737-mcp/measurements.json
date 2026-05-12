@@ -1,0 +1,24 @@
+{
+  "instrument": "Boeing 737 MCP",
+  "status": "initial target scaffold",
+  "geometryTargets": {
+    "panelAspectRatio": null,
+    "sectionWidths": {},
+    "displayWindowBounds": {},
+    "knobPositions": {},
+    "buttonBounds": {},
+    "screwCount": null
+  },
+  "behaviorTargets": [
+    "F/D left and right",
+    "A/T ARM",
+    "LNAV",
+    "VNAV",
+    "CMD A",
+    "CMD B",
+    "CWS A",
+    "CWS B",
+    "APP",
+    "VOR LOC"
+  ]
+}

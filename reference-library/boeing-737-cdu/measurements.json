@@ -1,0 +1,32 @@
+{
+  "instrument": "Boeing 737 CDU",
+  "status": "initial target scaffold",
+  "displayGrid": {
+    "columns": 24,
+    "rows": 14,
+    "scratchpadRows": 1
+  },
+  "geometryTargets": {
+    "shellAspectRatio": null,
+    "screenAspectRatio": null,
+    "screenToShellBounds": null,
+    "lskRows": [2, 4, 6, 8, 10, 12],
+    "functionKeyRows": 2,
+    "alphaNumericRows": 5,
+    "screwCount": 4
+  },
+  "layoutTargets": [
+    "IDENT",
+    "POS INIT",
+    "RTE 1/2",
+    "RTE 2/2",
+    "DEP/ARR",
+    "LEGS",
+    "PERF INIT",
+    "N1 LIMIT",
+    "TAKEOFF REF",
+    "PROG",
+    "FIX",
+    "HOLD"
+  ]
+}
