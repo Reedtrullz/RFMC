@@ -224,15 +224,14 @@ export interface IdentData {
 }
 
 export interface RouteData {
-  origin: string;
-  destination: string;
-  flightNumber: string;
-  companyRoute: string;
-  routeString: string;
-  runway?: string;
-  sid?: string;
-  star?: string;
-  approach?: string;
+  origin: string | null;
+  destination: string | null;
+  flightNumber: string | null;
+  sid: string | null;
+  star: string | null;
+  approach: string | null;
+  coRoute: string | null;
+  runway: string | null;
   alternate?: string;
   directTo?: string;
 }

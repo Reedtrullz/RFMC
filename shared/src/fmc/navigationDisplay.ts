@@ -1,4 +1,5 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
+import { formatAltitudeConstraint as sharedFormatAlt, formatSpeedConstraint as sharedFormatSpd } from '../navdata/constraints';
 import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
 import { clipRouteSegment } from './ndClipping';
 import { distanceNm, bearingDeg } from './ndGeometry';
@@ -363,26 +364,11 @@ function isPointVisible(point: NDRoutePoint, efis: EFISState, visibleOverlays: E
 }
 
 function formatAltitudeConstraint(waypoint: FlightPlanWaypoint): string | null {
-  const constraint = waypoint.altitudeConstraint;
-  if (!constraint) return null;
-  const altitude = formatAltitude(constraint.altitude);
-  switch (constraint.type) {
-    case 'AT_OR_ABOVE': return `${altitude}A`;
-    case 'AT_OR_BELOW': return `${altitude}B`;
-    case 'BETWEEN': return constraint.altitude2 ? `${altitude}/${formatAltitude(constraint.altitude2)}` : altitude;
-    default: return altitude;
-  }
+  return sharedFormatAlt(waypoint.altitudeConstraint as any) || null;
 }
 
 function formatSpeedConstraint(waypoint: FlightPlanWaypoint): string | null {
-  const constraint = waypoint.speedConstraint;
-  if (!constraint) return null;
-  const suffix = constraint.type === 'AT_OR_ABOVE' ? 'A' : constraint.type === 'AT_OR_BELOW' ? 'B' : '';
-  return `${constraint.speed}${suffix}`;
-}
-
-function formatAltitude(altitude: number): string {
-  return altitude >= 18000 && altitude % 100 === 0 ? `FL${String(Math.round(altitude / 100)).padStart(3, '0')}` : String(altitude);
+  return sharedFormatSpd(waypoint.speedConstraint as any) || null;
 }
 
 function buildFixOverlays(state: FMCState, routePoints: NDRoutePoint[], activePoint?: NDRoutePoint): NDFixOverlay[] {

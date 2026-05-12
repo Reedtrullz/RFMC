@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 
@@ -54,7 +54,7 @@ const defaultState = {
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
-  route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
+  route: { origin: '', destination: '', flightNumber: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
   
   pendingRoute: null as RouteData | null,
@@ -654,8 +654,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const route = state.pendingRoute ?? state.route;
           const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          updates.pendingRoute = { ...route, origin: scratchpad.toUpperCase() };
-          updates.pendingFlightPlan = { ...flightPlan, origin: scratchpad.toUpperCase() };
+          set({ 
+            pendingRoute: { ...route, origin: scratchpad.toUpperCase() },
+            pendingFlightPlan: { ...flightPlan, origin: scratchpad.toUpperCase() },
+            isModified: true,
+            execLit: true,
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       case 'set_dest':
@@ -664,8 +671,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const route = state.pendingRoute ?? state.route;
           const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          updates.pendingRoute = { ...route, destination: scratchpad.toUpperCase() };
-          updates.pendingFlightPlan = { ...flightPlan, destination: scratchpad.toUpperCase() };
+          set({ 
+            pendingRoute: { ...route, destination: scratchpad.toUpperCase() },
+            pendingFlightPlan: { ...flightPlan, destination: scratchpad.toUpperCase() },
+            isModified: true,
+            execLit: true,
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       case 'set_flt_no':
@@ -876,8 +890,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const toResult = isValidICAO(to);
           if (!fromResult.valid) { set({ scratchpadError: fromResult.error }); return; }
           if (!toResult.valid) { set({ scratchpadError: toResult.error }); return; }
-          updates.route = { ...state.route, origin: from, destination: to };
-          updates.flightPlan = { ...state.flightPlan, origin: from, destination: to };
+          set({ 
+            route: { ...state.route, origin: from, destination: to },
+            flightPlan: { ...state.flightPlan, origin: from, destination: to },
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       }
@@ -917,7 +936,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_sid':
         if (scratchpad) {
           const route = state.pendingRoute ?? state.route;
-          updates.pendingRoute = { ...route, sid: scratchpad.toUpperCase() };
+          set({ 
+            pendingRoute: { ...route, sid: scratchpad.toUpperCase() },
+            isModified: true,
+            execLit: true,
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       case 'set_rwy': {
@@ -931,13 +957,27 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_star':
         if (scratchpad) {
           const route = state.pendingRoute ?? state.route;
-          updates.pendingRoute = { ...route, star: scratchpad.toUpperCase() };
+          set({ 
+            pendingRoute: { ...route, star: scratchpad.toUpperCase() },
+            isModified: true,
+            execLit: true,
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       case 'set_appr':
         if (scratchpad) {
           const route = state.pendingRoute ?? state.route;
-          updates.pendingRoute = { ...route, approach: scratchpad.toUpperCase() };
+          set({ 
+            pendingRoute: { ...route, approach: scratchpad.toUpperCase() },
+            isModified: true,
+            execLit: true,
+            scratchpad: ''
+          });
+          get().expandActiveRoute();
+          handled = true;
         }
         break;
       case 'set_flaps':
@@ -1518,6 +1558,35 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   clearTutorialHint: () => set({ tutorialHint: null }),
   setTutorialConfidence: (stars: number) => set({ tutorialConfidence: stars }),
+  expandActiveRoute: () => {
+    const state = get();
+    const route = state.pendingRoute ?? state.route;
+    
+    const expandedLegs = expandRoute(
+      route.origin || '',
+      route.destination || '',
+      route.sid || undefined,
+      route.star || undefined,
+      route.approach || undefined,
+      [] // Add enroute parsing later
+    );
+
+    const waypoints = expandedLegs.map(leg => ({
+      ident: leg.ident,
+      lat: leg.lat,
+      lon: leg.lon,
+      altitudeConstraint: leg.altitudeConstraint,
+      speedConstraint: leg.speedConstraint,
+      discontinuity: false,
+    }));
+
+    if (state.pendingRoute) {
+      set({ pendingFlightPlan: { ...state.flightPlan, waypoints } });
+    } else {
+      set({ flightPlan: { ...state.flightPlan, waypoints } });
+    }
+  },
+
   setLatency: (ms: number) => set({ latency: ms }),
   setSessionStartTime: (time: number | null) => set({ sessionStartTime: time }),
 

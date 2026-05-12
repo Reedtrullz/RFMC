@@ -47,14 +47,8 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
   return boeingPage(segments, getLegsLskActions(state));
 }
 
-function formatAltitude(constraint: { type: string; altitude: number; altitude2?: number }): string {
-  const alt = String(constraint.altitude).padStart(5, ' ');
-  switch (constraint.type) {
-    case 'AT_OR_ABOVE': return `${alt}A`;
-    case 'AT_OR_BELOW': return `${alt}B`;
-    case 'BETWEEN':
-      return constraint.altitude2 ? `${alt}/${String(constraint.altitude2).padStart(5, ' ')}` : alt;
-    default:
-      return alt;
-  }
+import { formatAltitudeConstraint, formatSpeedConstraint } from '@shared';
+
+function formatAltitude(constraint: any): string {
+  return formatAltitudeConstraint(constraint);
 }
