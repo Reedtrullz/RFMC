@@ -30,6 +30,18 @@ export function ConnectionStatus() {
   const latency = useFMCStore(s => s.latency);
   const sessionStartTime = useFMCStore(s => s.sessionStartTime);
   const [uptime, setUptime] = useState('00:00:00');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (!sessionStartTime || connectionStatus !== 'CONNECTED') {
@@ -106,6 +118,11 @@ export function ConnectionStatus() {
             {lastError && (
               <div className="pt-1 text-cdu-error leading-tight">
                 <span className="text-cdu-text/50">LAST ERROR </span>{lastError}
+              </div>
+            )}
+            {isOffline && (
+              <div className="pt-1 text-cdu-amber leading-tight">
+                <span className="text-cdu-text/50">NETWORK </span>OFFLINE (LOCAL CACHE ACTIVE)
               </div>
             )}
             {integrationNote && (

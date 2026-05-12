@@ -43,7 +43,13 @@ export default function App() {
   };
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center gap-4 overflow-hidden bg-[#111] p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] touch-none max-lg:flex-col max-lg:gap-2 max-sm:p-0 max-sm:pb-[env(safe-area-inset-bottom)] max-sm:pt-[env(safe-area-inset-top)]">
+  return (
+    <div className="relative flex h-full w-full items-center justify-center gap-4 overflow-hidden bg-[#111] p-2 
+      pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] 
+      pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))]
+      touch-none max-lg:flex-col max-lg:gap-2 max-sm:p-0 
+      max-sm:pb-[env(safe-area-inset-bottom)] max-sm:pt-[env(safe-area-inset-top)]
+      max-sm:pl-[env(safe-area-inset-left)] max-sm:pr-[env(safe-area-inset-right)]">
       <button
         type="button"
         className="fixed right-2 top-2 z-40 hidden h-8 rounded-sm border border-cdu-cyan/70 bg-black/80 px-3 font-cdu text-[10px] uppercase tracking-[0.16em] text-cdu-cyan max-lg:block"
