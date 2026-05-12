@@ -78,6 +78,8 @@ export interface DisplayLine {
   semantic?: DisplaySemantic;
 }
 
+import type { DisplaySegment } from './display';
+
 /** Full CDU display data — what gets rendered on screen */
 export interface DisplayData {
   /** 14 lines of display content */
@@ -86,6 +88,8 @@ export interface DisplayData {
   title: string;
   /** Page indicator (e.g., "1/2") */
   pageIndicator?: string;
+  /** Optional explicit character segments for true grid rendering */
+  segments?: DisplaySegment[];
   /** LSK handler identifiers — which actions are available on each LSK */
   lskActions: Record<string, string | null>;
   lskLabels?: Record<string, string>;

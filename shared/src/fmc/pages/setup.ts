@@ -1,6 +1,7 @@
 import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
+import { seg, title } from '../displayGrid';
 
 function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
   return {
@@ -49,7 +50,7 @@ export function renderIdentPage(state: FMCState): DisplayData {
 }
 
 export function renderPosInitPage(state: FMCState): DisplayData {
-  const { position, flightPlan } = state;
+  const { position } = state;
   const lastPos = position.lat != null && position.lon != null
     ? `${Math.abs(position.lat).toFixed(1)}${position.lat >= 0 ? 'N' : 'S'} ${Math.abs(position.lon).toFixed(1)}${position.lon >= 0 ? 'E' : 'W'}`
     : '----.-  ----.-';
@@ -57,21 +58,24 @@ export function renderPosInitPage(state: FMCState): DisplayData {
   return {
     title: 'POS INIT',
     pageIndicator: '1/1',
-    lines: [
-      inverse('  POS INIT         1/1', '', '', 'cyan'),
-      fmt(' LAST POS', '', '', 'white'),
-      fmt(` ${lastPos}`, '', '', 'green'),
-      fmt(' REF AIRPORT', '<', '', 'white'),
-      fmt(` ${position.refAirport || '----'}`, '', '', 'green'),
-      fmt(' GATE', '<', '', 'white'),
-      fmt(` ${position.gate || '----'}`, '', '', 'green'),
-      blank(),
-      fmt('', '', 'SET IRS POS', 'white'),
-      fmt('', '', ' □□□□.□ □□□□□.□', 'white'),
-      blank(),
-      blank(),
-      blank(),
-      fmt('', ' <INDEX', 'ROUTE>', 'white'),
+    lines: [], // Keep empty for compatibility
+    segments: [
+      ...title(0, 'POS INIT', '1/1'),
+
+      seg(1, 1, 'LAST POS', 'white', { size: 'small' }),
+      seg(2, 1, lastPos, 'green'),
+
+      seg(3, 0, '<REF AIRPORT', 'white', { size: 'small' }),
+      seg(4, 1, position.refAirport || '----', 'green'),
+
+      seg(5, 0, '<GATE', 'white', { size: 'small' }),
+      seg(6, 1, position.gate || '----', 'green'),
+
+      seg(8, 13, 'SET IRS POS', 'white', { size: 'small' }),
+      seg(9, 10, '□□□□.□ □□□□□.□', 'white'),
+
+      seg(13, 0, '<INDEX', 'white'),
+      seg(13, 18, 'ROUTE>', 'white'),
     ],
     lskActions: {
       L1: 'set_ref_airport',

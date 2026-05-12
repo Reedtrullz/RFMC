@@ -65,8 +65,11 @@ export {
   displayDataToGrid,
   displayLineToSegments,
   scratchpadToGridSegment,
+  seg,
+  title,
+  buildCells,
 } from './fmc/displayGrid';
-export type { DisplaySegment, DisplayTextSize, GridDisplayData } from './fmc/displayGrid';
+export type { DisplaySegment, DisplayTextSize, GridDisplayData, CellData } from './types/display';
 export {
   AIRBUS_SEMANTIC_COLORS,
   BOEING_SEMANTIC_COLORS,

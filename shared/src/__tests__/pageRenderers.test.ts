@@ -73,7 +73,11 @@ describe('Page Renderers', () => {
 
     for (const renderer of renderers) {
       const data = renderer(baseState);
-      expect(data.lines[0].semantic, data.title).toBe('title');
+      if (data.segments && data.segments.length > 0) {
+        expect(data.segments.some(s => s.semantic === 'title')).toBe(true);
+      } else if (data.lines && data.lines.length > 0) {
+        expect(data.lines[0].semantic, data.title).toBe('title');
+      }
     }
   });
 
@@ -103,7 +107,9 @@ describe('Page Renderers', () => {
   it('renders POS INIT page', () => {
     const data = renderPosInitPage(baseState);
     expect(data.title).toBe('POS INIT');
-    expect(data.lines.some(l => l.text.includes('REF AIRPORT'))).toBe(true);
+    const hasRefAirport = data.segments?.some(s => s.text.includes('REF AIRPORT')) || 
+                          data.lines?.some(l => l.text.includes('REF AIRPORT'));
+    expect(hasRefAirport).toBe(true);
   });
 
   it('renders authentic Boeing PROGRESS page layout', () => {

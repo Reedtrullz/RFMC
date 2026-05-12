@@ -17,8 +17,12 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
       style={{
         display: 'grid',
         gridTemplateColumns: '44px minmax(0, 1fr) 44px',
-        gridTemplateRows: 'repeat(14, minmax(0, 1fr)) auto',
+        gridTemplateRows: 'repeat(14, var(--cdu-row-h, 21px)) auto',
         columnGap: '0.35rem',
+        // @ts-ignore
+        '--cdu-row-h': '21px',
+        '--cdu-row-height': '21px',
+        '--cdu-inverse-bg': '#39ff14',
       }}
     >
       <BoeingLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
@@ -26,7 +30,7 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
 
       <div style={{ gridRow: '1 / 15', gridColumn: 2 }}>
         <ScreenGlass brightness={brightness} className="rounded-b-none">
-          <div style={{ minHeight: '18.2em' }}>
+          <div style={{ height: 'calc(14 * var(--cdu-row-h, 21px))' }}>
             <Display />
           </div>
         </ScreenGlass>
@@ -37,6 +41,10 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
           gridRow: 15,
           gridColumn: 2,
           filter: `brightness(${brightness}%)`,
+          height: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: '4px',
         }}
       >
         <Scratchpad />

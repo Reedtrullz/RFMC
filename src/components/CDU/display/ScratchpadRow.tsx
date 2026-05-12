@@ -24,26 +24,26 @@ export function ScratchpadRow({ text, error, variant = 'boeing' }: ScratchpadRow
   });
 
   return (
-    <div className="relative border-b border-cdu-bezel-light" data-testid="scratchpad">
+    <div className="relative" data-testid="scratchpad">
       <CDUDisplayGrid
         variant={variant}
         grid={{
-          rows: 14,
+          rows: 1,
           columns: 24,
           segments: [segment],
-          scratchpad: [segment],
+          scratchpad: [],
         }}
-        className="h-[1.6em] overflow-hidden text-[13px]"
+        className="overflow-hidden"
       />
       {!error && (
         <span
           className={[
-            'absolute top-1/2 -translate-y-1/2 w-[7px] h-[12px]',
+            'absolute top-1/2 -translate-y-1/2 w-[2px] h-[14px]',
             cursorVisible ? 'opacity-100' : 'opacity-0',
             variant === 'airbus' ? 'bg-cdu-amber' : 'bg-cdu-text',
           ].join(' ')}
           style={{
-            left: `calc(0.25rem + ${Math.min(text.length, 23)}ch + 0.25rem)`,
+            left: `calc(${Math.min(text.length, 23)} * 0.62em)`,
           }}
           aria-hidden="true"
         />

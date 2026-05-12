@@ -2,25 +2,65 @@ import type { DisplayColor } from './displayColors';
 import type { DisplaySemantic } from './displaySemantics';
 import type { DisplayData, DisplayLine } from '../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from './constants';
+import type { DisplaySegment, GridDisplayData, DisplayTextSize, CellData } from '../types/display';
 
-export type DisplayTextSize = 'small' | 'normal';
+export type { DisplaySegment, GridDisplayData, DisplayTextSize, CellData };
 
-export interface DisplaySegment {
-  row: number;
-  col: number;
-  text: string;
-  size?: DisplayTextSize;
-  color?: DisplayColor;
-  inverse?: boolean;
-  blink?: boolean;
-  semantic?: DisplaySemantic;
+export function buildCells(grid: GridDisplayData): CellData[] {
+  const cells: CellData[] = [];
+  
+  for (let r = 0; r < grid.rows; r++) {
+    for (let c = 0; c < grid.columns; c++) {
+      cells.push({ row: r, col: c, char: ' ' });
+    }
+  }
+
+  for (const segment of grid.segments) {
+    for (let i = 0; i < segment.text.length; i++) {
+      const col = segment.col + i;
+      if (col < grid.columns && segment.row < grid.rows) {
+        const index = segment.row * grid.columns + col;
+        if (cells[index]) {
+          cells[index] = {
+            row: segment.row,
+            col,
+            char: segment.text[i],
+            color: segment.color,
+            inverse: segment.inverse,
+            blink: segment.blink,
+            size: segment.size,
+            semantic: segment.semantic,
+          };
+        }
+      }
+    }
+  }
+
+  return cells;
 }
 
-export interface GridDisplayData {
-  rows: 14;
-  columns: 24;
-  segments: DisplaySegment[];
-  scratchpad: DisplaySegment[];
+export function seg(
+  row: number,
+  col: number,
+  text: string,
+  color: DisplayColor = 'white',
+  options: Partial<DisplaySegment> = {}
+): DisplaySegment {
+  return {
+    row,
+    col,
+    text,
+    color,
+    ...options,
+  };
+}
+
+export function title(row: number, titleText: string, page: string): DisplaySegment[] {
+  return [
+    seg(row, 0, ' '.repeat(PAGE_WIDTH), 'cyan', { inverse: true, semantic: 'title' }),
+    seg(row, 2, titleText, 'black', { inverse: true, semantic: 'title' }),
+    seg(row, PAGE_WIDTH - page.length - 1, page, 'black', { inverse: true, semantic: 'title' }),
+  ];
 }
 
 export function clampDisplayText(text: string, width = PAGE_WIDTH): string {
@@ -55,6 +95,15 @@ export function displayLineToSegments(line: DisplayLine, row: number): DisplaySe
 }
 
 export function displayDataToGrid(displayData: DisplayData): GridDisplayData {
+  if (displayData.segments) {
+    return {
+      rows: PAGE_LINES,
+      columns: PAGE_WIDTH,
+      segments: displayData.segments,
+      scratchpad: [],
+    };
+  }
+
   const segments = Array.from({ length: PAGE_LINES }).flatMap((_, row) => {
     const line = displayData.lines[row] ?? { text: '' };
     return displayLineToSegments(line, row);
