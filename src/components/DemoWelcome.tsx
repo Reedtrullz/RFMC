@@ -9,6 +9,7 @@ export function DemoWelcome() {
   const aircraft = useFMCStore(s => s.aircraft);
 
   const [showSimBrief, setShowSimBrief] = useState(false);
+  const [tab, setTab] = useState<'demos' | 'training'>('training');
   const [pilotId, setPilotId] = useState(() => localStorage.getItem('cdu-simbrief-pilot-id') || '');
   const [loading, setLoading] = useState(false);
   const [simBriefMessage, setSimBriefMessage] = useState<string | null>(null);
@@ -89,25 +90,52 @@ export function DemoWelcome() {
           </button>
         </div>
 
-        <h2 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">Choose a Demo</h2>
-        <div className="flex flex-col gap-1.5 mb-4">
-          {scenarios.map((s) => (
-            <button key={s.name} onClick={() => startTutorial(s.name)}
-              className="flex items-start gap-3 w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors group"
-            >
-              <div className="flex-shrink-0 w-8 h-8 rounded bg-cdu-cyan/10 border border-cdu-cyan/20 flex items-center justify-center mt-0.5">
-                <span className="text-cdu-cyan text-sm font-cdu font-bold">?</span>
-              </div>
-              <div>
-                <div className="text-cdu-text text-sm font-cdu font-bold group-hover:text-cdu-cyan transition-colors">{s.name}</div>
-                <div className="text-cdu-text/40 text-[10px] font-cdu mt-0.5">{s.description}</div>
-              </div>
-            </button>
-          ))}
-          {scenarios.length === 0 && (
-            <p className="text-cdu-text/30 text-xs font-cdu text-center py-4">More tutorials coming soon</p>
-          )}
+        <div className="mb-4 flex bg-cdu-bezel-light/20 p-1 rounded-lg">
+          <button
+            onClick={() => setTab('demos')}
+            className={`flex-1 py-1.5 rounded text-[10px] font-cdu uppercase transition-all ${
+              tab === 'demos' ? 'bg-cdu-cyan/20 text-cdu-cyan font-bold' : 'text-cdu-text/40'
+            }`}
+          >
+            Demos
+          </button>
+          <button
+            onClick={() => setTab('training')}
+            className={`flex-1 py-1.5 rounded text-[10px] font-cdu uppercase transition-all ${
+              tab === 'training' ? 'bg-cdu-cyan/20 text-cdu-cyan font-bold' : 'text-cdu-text/40'
+            }`}
+          >
+            Curriculum
+          </button>
         </div>
+
+        {tab === 'demos' ? (
+          <>
+            <h2 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">Choose a Demo</h2>
+            <div className="flex flex-col gap-1.5 mb-4">
+              {scenarios.map((s) => (
+                <button key={s.name} onClick={() => startTutorial(s.name)}
+                  className="flex items-start gap-3 w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors group"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded bg-cdu-cyan/10 border border-cdu-cyan/20 flex items-center justify-center mt-0.5">
+                    <span className="text-cdu-cyan text-sm font-cdu font-bold">?</span>
+                  </div>
+                  <div>
+                    <div className="text-cdu-text text-sm font-cdu font-bold group-hover:text-cdu-cyan transition-colors">{s.name}</div>
+                    <div className="text-cdu-text/40 text-[10px] font-cdu mt-0.5">{s.description}</div>
+                  </div>
+                </button>
+              ))}
+              {scenarios.length === 0 && (
+                <p className="text-cdu-text/30 text-xs font-cdu text-center py-4">More tutorials coming soon</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="mb-4 max-h-[300px] overflow-y-auto pr-1">
+             <LessonSelectorInlined aircraft={aircraft} />
+          </div>
+        )}
 
         <div className="mb-4">
           <button
@@ -162,3 +190,37 @@ export function DemoWelcome() {
     </div>
   );
 }
+
+import { boeingLessons, airbusLessons } from '@shared';
+
+function LessonSelectorInlined({ aircraft }: { aircraft: string }) {
+  const lessons = aircraft === 'BOEING_737' ? boeingLessons : airbusLessons;
+  const startTraining = useFMCStore(s => s.startTraining);
+  const levels = Array.from(new Set(lessons.map(l => l.level))).sort((a, b) => a - b);
+
+  return (
+    <div className="space-y-4">
+      {levels.map(level => (
+        <div key={level} className="space-y-2">
+          <h3 className="text-cdu-text/40 font-cdu uppercase text-[9px] tracking-widest px-2">Level {level}</h3>
+          <div className="space-y-1">
+            {lessons.filter(l => l.level === level).map(lesson => (
+              <button
+                key={lesson.id}
+                onClick={() => startTraining(lesson.id)}
+                className="w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors flex items-center gap-3 group"
+              >
+                <div className="w-2 h-2 rounded-full bg-cdu-cyan/30 group-hover:bg-cdu-cyan transition-colors" />
+                <div>
+                  <div className="text-cdu-text text-[11px] font-cdu font-bold group-hover:text-cdu-cyan">{lesson.title}</div>
+                  <div className="text-cdu-text/40 text-[9px] font-cdu">{lesson.estimatedMinutes} MIN • {lesson.difficulty}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+

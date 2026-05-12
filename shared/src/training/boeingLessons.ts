@@ -1,0 +1,198 @@
+import { TrainingScenario } from './trainingTypes';
+
+export const boeingLessons: TrainingScenario[] = [
+  {
+    id: 'b737-mcp-basics',
+    aircraft: 'BOEING_737',
+    title: 'Boeing 737 — MCP Basics',
+    description: 'Learn to use the Mode Control Panel (MCP) for basic flight guidance.',
+    level: 1,
+    category: 'autopilot',
+    difficulty: 'basic',
+    estimatedMinutes: 5,
+    setup: {
+      page: 'MENU',
+      autopilot: {
+        boeing: {
+          fdLeft: false,
+          fdRight: false,
+          speed: 100,
+          heading: 360,
+          altitude: 0,
+          cmdA: false
+        }
+      }
+    },
+    steps: [
+      {
+        id: 'fd-on',
+        instruction: 'Turn on the Flight Director (F/D) for the pilot side.',
+        objective: 'Enable flight guidance.',
+        expectedAction: { type: 'set_mcp', field: 'fdLeft', value: true },
+        hint: 'Flip the FD switch on the left side of the MCP.',
+        validation: 'mcp.fdLeft === true'
+      },
+      {
+        id: 'set-speed',
+        instruction: 'Set the target speed to 250 knots.',
+        objective: 'Configure climb speed.',
+        expectedAction: { type: 'set_mcp', field: 'speed', value: 250 },
+        hint: 'Rotate the IAS/MACH knob.',
+        validation: 'mcp.speed === 250'
+      },
+      {
+        id: 'set-heading',
+        instruction: 'Set the target heading to 220 degrees.',
+        objective: 'Configure initial turn.',
+        expectedAction: { type: 'set_mcp', field: 'heading', value: 220 },
+        hint: 'Rotate the HEADING knob.',
+        validation: 'mcp.heading === 220'
+      },
+      {
+        id: 'set-altitude',
+        instruction: 'Set the target altitude to 10,000 feet.',
+        objective: 'Set initial clearance.',
+        expectedAction: { type: 'set_mcp', field: 'altitude', value: 10000 },
+        hint: 'Rotate the ALTITUDE knob.',
+        validation: 'mcp.altitude === 10000'
+      },
+      {
+        id: 'engage-cmd-a',
+        instruction: 'Engage Autopilot Command A (CMD A).',
+        objective: 'Hand over control to the autopilot.',
+        expectedAction: { type: 'set_mcp', field: 'cmdA', value: true },
+        hint: 'Press the CMD A button.',
+        validation: 'mcp.cmdA === true'
+      },
+      {
+        id: 'verify-fma',
+        instruction: 'Verify the FMA shows MCP SPD | HDG SEL | ALT ACQ.',
+        objective: 'Confirm autopilot modes.',
+        expectedAction: { type: 'verify_fma', mode: 'MCP SPD | HDG SEL | ALT ACQ' },
+        hint: 'Look at the top of the PFD.',
+        validation: 'fma.status === "ACTIVE"'
+      }
+    ],
+    passCriteria: {
+      minScore: 80,
+      maxMistakes: 2
+    }
+  },
+  {
+    id: 'b737-lnav-vnav-departure',
+    aircraft: 'BOEING_737',
+    title: 'Boeing 737 — LNAV/VNAV Departure',
+    description: 'Execute a departure using advanced lateral and vertical navigation modes.',
+    level: 3,
+    category: 'navigation',
+    difficulty: 'intermediate',
+    estimatedMinutes: 8,
+    setup: {
+      page: 'TAKEOFF_REF',
+      // ... more setup would go here in a real impl
+    },
+    steps: [
+      {
+        id: 'arm-lnav',
+        instruction: 'Arm LNAV on the MCP.',
+        objective: 'Prepare lateral navigation.',
+        expectedAction: { type: 'set_mcp', field: 'lnav', value: true },
+        hint: 'Press the LNAV button.',
+        validation: 'mcp.lnav === true'
+      },
+      {
+        id: 'arm-vnav',
+        instruction: 'Arm VNAV on the MCP.',
+        objective: 'Prepare vertical navigation.',
+        expectedAction: { type: 'set_mcp', field: 'vnav', value: true },
+        hint: 'Press the VNAV button.',
+        validation: 'mcp.vnav === true'
+      },
+      {
+        id: 'verify-fma-armed',
+        instruction: 'Verify LNAV and VNAV are armed (white) on the FMA.',
+        objective: 'Ensure modes will capture after takeoff.',
+        expectedAction: { type: 'verify_fma', mode: 'LNAV/VNAV Armed' },
+        validation: 'fma.armed.includes("LNAV") && fma.armed.includes("VNAV")'
+      },
+      {
+        id: 'observe-nd',
+        instruction: 'Observe the ND to confirm the active route (magenta line).',
+        objective: 'Monitor navigation path.',
+        expectedAction: { type: 'verify_nd', condition: 'magenta_line_active' },
+        validation: 'nd.activeRoute === true'
+      }
+    ],
+    passCriteria: {
+      minScore: 85,
+      maxMistakes: 1
+    }
+  },
+  {
+    id: 'b737-pos-init',
+    aircraft: 'BOEING_737',
+    title: 'Boeing 737 — Position Initialization',
+    description: 'Learn how to tell the FMC where you are so the IRS can align.',
+    level: 2,
+    category: 'fmc',
+    difficulty: 'basic',
+    estimatedMinutes: 4,
+    setup: {
+      page: 'IDENT'
+    },
+    steps: [
+      {
+        id: 'press-init-ref',
+        instruction: 'Press the INIT REF button to go to the POS INIT page.',
+        objective: 'Navigate to position initialization.',
+        expectedAction: { type: 'press_key', key: 'INIT_REF' },
+        validation: 'currentPage === "POS_INIT"'
+      },
+      {
+        id: 'enter-ref-arpt',
+        instruction: 'Type KJFK in the scratchpad and press LSK L1.',
+        objective: 'Set reference airport.',
+        expectedAction: { type: 'enter_scratchpad', value: 'KJFK' },
+        validation: 'position.refAirport === "KJFK"'
+      }
+    ],
+    passCriteria: {
+      minScore: 90,
+      maxMistakes: 0
+    }
+  },
+  {
+    id: 'b737-approach-mode',
+    aircraft: 'BOEING_737',
+    title: 'Boeing 737 — Approach Mode',
+    description: 'Arm and capture the ILS for landing.',
+    level: 5,
+    category: 'approach',
+    difficulty: 'intermediate',
+    estimatedMinutes: 6,
+    setup: {
+      page: 'LEGS'
+    },
+    steps: [
+      {
+        id: 'arm-app',
+        instruction: 'Arm the APP mode on the MCP.',
+        objective: 'Prepare for ILS capture.',
+        expectedAction: { type: 'set_mcp', field: 'app', value: true },
+        hint: 'Press the APP button on the MCP.',
+        validation: 'mcp.app === true'
+      },
+      {
+        id: 'verify-fma-capture',
+        instruction: 'Verify VOR/LOC and G/S are armed (white) on the FMA.',
+        objective: 'Confirm approach arming.',
+        expectedAction: { type: 'verify_fma', mode: 'VOR/LOC | G/S' },
+        validation: 'fma.armed.includes("VOR/LOC")'
+      }
+    ],
+    passCriteria: {
+      minScore: 85,
+      maxMistakes: 1
+    }
+  }
+];

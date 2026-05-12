@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 
@@ -89,6 +89,15 @@ const defaultState = {
   tutorialHint: null as string | null,
   tutorialSkipAvailable: false,
   tutorialConfidence: null as number | null,
+
+  // New Training state
+  trainingActive: false,
+  trainingScenario: null as TrainingScenario | null,
+  trainingEngine: null as TrainingScenarioEngine | null,
+  trainingMistakes: [] as TrainingMistake[],
+  trainingScore: null as TrainingScore | null,
+  trainingStepIndex: 0,
+  trainingCompleted: false,
 
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
   holdPending: null as any,
@@ -229,6 +238,11 @@ interface FMCActions {
   setTutorialConfidence: (stars: number) => void;
   setLatency: (ms: number) => void;
   setSessionStartTime: (time: number | null) => void;
+
+  // Training actions
+  startTraining: (scenarioId: string) => void;
+  stopTraining: () => void;
+  processTrainingAction: (action: any) => void;
 
   setNDMode: (side: 'L' | 'R', mode: string) => void;
   setNDRange: (side: 'L' | 'R', range: number) => void;
@@ -474,6 +488,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       handled = true;
     }
 
+    // Training engine hook
+    if (get().trainingActive) {
+      get().processTrainingAction({ type: 'press_key', key });
+    }
+
     // Tutorial: advance if action matches expected (runs after all key handling)
     if (handled) {
       tryAdvanceIfMatch(get, key);
@@ -494,6 +513,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const action = displayData.lskActions[lskId];
 
     if (!action) return;
+
+    // Training engine hook
+    if (state.trainingActive) {
+      state.processTrainingAction({ type: 'press_lsk', side, index });
+    }
 
     const scratchpad = state.scratchpad.trim();
     let handled = false;
@@ -1598,6 +1622,70 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const key = side === 'L' ? 'efisL' : 'efisR';
     set({ [key]: { ...get()[key], range } });
   },
+
+  // ---- Training Curriculum ----
+  startTraining: (scenarioId: string) => {
+    const scenario = [...boeingLessons, ...airbusLessons].find(s => s.id === scenarioId);
+    if (!scenario) return;
+
+    const engine = new TrainingScenarioEngine(scenario);
+    const firstStep = engine.start();
+
+    // Setup initial state
+    if (scenario.setup.page) {
+      get().setPage(scenario.setup.page);
+    }
+
+    set({
+      trainingActive: true,
+      trainingScenario: scenario,
+      trainingEngine: engine,
+      trainingMistakes: [],
+      trainingScore: null,
+      trainingStepIndex: 0,
+      trainingCompleted: false,
+      tutorialActive: false, // Deactivate legacy tutorial
+      mode: 'TUTORIAL'
+    });
+  },
+
+  stopTraining: () => {
+    set({
+      trainingActive: false,
+      trainingScenario: null,
+      trainingEngine: null,
+      mode: 'ACTIVE'
+    });
+  },
+
+  processTrainingAction: (action: any) => {
+    const { trainingActive, trainingEngine, trainingScenario } = get();
+    if (!trainingActive || !trainingEngine || !trainingScenario) return;
+
+    const result = trainingEngine.processAction(action, get());
+    
+    if (result.success) {
+      if (result.completed) {
+        const summary = trainingEngine.getSummary();
+        set({ 
+          trainingCompleted: true, 
+          trainingActive: false,
+          trainingScore: summary.score 
+        });
+        progressManager.completeLesson(trainingScenario.id, summary.score.total);
+      } else {
+        set({ 
+          trainingStepIndex: get().trainingStepIndex + 1,
+          tutorialHint: null
+        });
+      }
+    } else if (result.mistake) {
+      set((state) => ({
+        trainingMistakes: [...state.trainingMistakes, result.mistake!],
+        tutorialHint: result.mistake!.description
+      }));
+    }
+  },
   toggleNDOverlay: (side, overlayKey) => {
     const key = side === 'L' ? 'efisL' : 'efisR';
     const efis = get()[key];
@@ -1609,22 +1697,36 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({ [efisKey]: { ...efis, centered: !efis.centered } });
   },
 
-  updateBoeingMCP: (update) => {
+  updateBoeingMCP: (update: Partial<BoeingMCPState>) => {
     set((state) => ({
       autopilot: {
         ...state.autopilot,
         boeing: { ...state.autopilot.boeing, ...update }
       }
     }));
+    
+    // Training hook
+    if (get().trainingActive) {
+      Object.entries(update).forEach(([field, value]) => {
+        get().processTrainingAction({ type: 'set_mcp', field, value });
+      });
+    }
   },
 
-  updateAirbusFCU: (update) => {
+  updateAirbusFCU: (update: Partial<AirbusFCUState>) => {
     set((state) => ({
       autopilot: {
         ...state.autopilot,
         airbus: { ...state.autopilot.airbus, ...update }
       }
     }));
+
+    // Training hook
+    if (get().trainingActive) {
+      Object.entries(update).forEach(([field, value]) => {
+        get().processTrainingAction({ type: 'set_mcp', field, value });
+      });
+    }
   },
 
   pressMCPButton: (action) => {

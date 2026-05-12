@@ -10,6 +10,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useEffect } from 'react';
 import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
 import { PrimaryFlightDisplay } from './components/PFD/PrimaryFlightDisplay';
+import { TrainingOverlay } from './components/Training/TrainingOverlay';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -118,6 +119,7 @@ export default function App() {
       </main>
       {showWelcome && <DemoWelcome />}
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
+      <TrainingOverlay />
       {!isKiosk && <ConnectionStatus />}
 
       {/* PWA Update Prompt */}
