@@ -13,10 +13,11 @@ interface BoeingLSKColumnProps {
   side: 'L' | 'R';
   getLabel: (side: 'L' | 'R', index: number) => string | undefined;
   isHighlighted: (id: string) => boolean;
+  hintLevel?: number;
   onPress: (side: 'L' | 'R', index: number) => void;
 }
 
-export function BoeingLSKColumn({ side, getLabel, isHighlighted, onPress }: BoeingLSKColumnProps) {
+export function BoeingLSKColumn({ side, getLabel, isHighlighted, hintLevel, onPress }: BoeingLSKColumnProps) {
   return (
     <>
       {LSK_BOEING.map(({ row, index }) => (
@@ -33,6 +34,7 @@ export function BoeingLSKColumn({ side, getLabel, isHighlighted, onPress }: Boei
             index={index}
             label={getLabel(side, index)}
             highlighted={isHighlighted(`${side}${index}`)}
+            hintLevel={isHighlighted(`${side}${index}`) ? hintLevel : 0}
             onPress={onPress}
           />
         </div>

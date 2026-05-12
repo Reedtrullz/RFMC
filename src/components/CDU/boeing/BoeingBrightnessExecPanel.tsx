@@ -7,6 +7,7 @@ interface BoeingBrightnessExecPanelProps {
   brightness: number;
   onBrightnessChange: (brightness: number) => void;
   onPress: (key: string) => void;
+  hintLevel?: number;
 }
 
 export function BoeingBrightnessExecPanel({
@@ -15,6 +16,7 @@ export function BoeingBrightnessExecPanel({
   brightness,
   onBrightnessChange,
   onPress,
+  hintLevel,
 }: BoeingBrightnessExecPanelProps) {
   return (
     <div className="mt-1 grid grid-cols-[1.4fr_0.7fr_1fr_1fr] gap-1">
@@ -23,6 +25,7 @@ export function BoeingBrightnessExecPanel({
         variant="exec"
         lit={execLit}
         active={highlightedExec}
+        hintLevel={highlightedExec ? hintLevel : 0}
         onPress={() => onPress('EXEC')}
       />
       <div className="flex flex-col items-center justify-end rounded-[4px] border border-black/60 bg-black/25 px-1 pb-1">

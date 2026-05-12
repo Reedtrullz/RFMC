@@ -19,6 +19,7 @@ export function Boeing737CDU() {
   const connectionMode = useFMCStore(s => s.connectionMode);
   const connectionStatus = useFMCStore(s => s.connectionStatus);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const tutorialHintLevel = useFMCStore(s => s.tutorialHintLevel);
   const brightness = useFMCStore(s => s.brightness);
   const setBrightness = useFMCStore(s => s.setBrightness);
   const displayData = useFMCStore(s => s.getDisplayData());

@@ -29,9 +29,10 @@ const row2: FunctionKey[] = [
 interface BoeingFunctionKeyPanelProps {
   onPress: (key: string) => void;
   isHighlighted: (id: string) => boolean;
+  hintLevel?: number;
 }
 
-export function BoeingFunctionKeyPanel({ onPress, isHighlighted }: BoeingFunctionKeyPanelProps) {
+export function BoeingFunctionKeyPanel({ onPress, isHighlighted, hintLevel }: BoeingFunctionKeyPanelProps) {
   return (
     <div className="mt-2 w-full rounded-[5px] border border-black/50 bg-black/20 p-1.5">
       {[row1, row2].map((row, rowIndex) => (
@@ -42,6 +43,7 @@ export function BoeingFunctionKeyPanel({ onPress, isHighlighted }: BoeingFunctio
               label={item.label}
               variant="function"
               active={isHighlighted(item.highlight)}
+              hintLevel={isHighlighted(item.highlight) ? hintLevel : 0}
               onPress={() => onPress(item.key)}
               className="h-9 w-full"
             />

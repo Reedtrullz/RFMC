@@ -25,7 +25,8 @@ export function AvionicsKey({
   variant = 'boeing', 
   onPress,
   className = '',
-  disabled
+  disabled,
+  hintLevel,
 }: AvionicsKeyProps) {
   return (
     <button
