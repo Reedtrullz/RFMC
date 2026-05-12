@@ -18,6 +18,8 @@ export default function App() {
   const aircraft = useFMCStore(s => s.aircraft);
   const setAircraft = useFMCStore(s => s.setAircraft);
   const setPage = useFMCStore(s => s.setPage);
+  const setRteSubPage = useFMCStore(s => s.setRteSubPage);
+  const setTakeoffRefPageIndex = useFMCStore(s => s.setTakeoffRefPageIndex);
   const setNDMode = useFMCStore(s => s.setNDMode);
 
   useEffect(() => {
@@ -25,12 +27,24 @@ export default function App() {
     if (path === '/visual/boeing/pos-init') {
       setAircraft('BOEING_737');
       setPage('POS_INIT');
-    } else if (path === '/visual/boeing/rte') {
+    } else if (path === '/visual/boeing/ident') {
+      setAircraft('BOEING_737');
+      setPage('IDENT');
+    } else if (path === '/visual/boeing/rte-1') {
       setAircraft('BOEING_737');
       setPage('RTE');
+      setRteSubPage(0);
+    } else if (path === '/visual/boeing/rte-2') {
+      setAircraft('BOEING_737');
+      setPage('RTE');
+      setRteSubPage(1);
     } else if (path === '/visual/boeing/legs') {
       setAircraft('BOEING_737');
       setPage('LEGS');
+    } else if (path === '/visual/boeing/takeoff-ref') {
+      setAircraft('BOEING_737');
+      setPage('TAKEOFF_REF');
+      setTakeoffRefPageIndex(0);
     } else if (path === '/visual/airbus/dir-intc') {
       setAircraft('AIRBUS_A320');
       setPage('DIR_INTC');
@@ -49,7 +63,7 @@ export default function App() {
       setNDMode('L', 'ARC');
       setShowNd(true);
     }
-  }, [setAircraft, setPage, setNDMode]);
+  }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex]);
 
   const showWelcome = mode === 'STANDBY' && !tutorialActive && !tutorialCompleted;
 

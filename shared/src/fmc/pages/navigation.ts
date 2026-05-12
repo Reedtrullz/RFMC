@@ -118,7 +118,7 @@ function formatAltitude(constraint: { type: string; altitude: number; altitude2?
   }
 }
 
-function getLegsLskActions(state: FMCState): Record<string, string | null> {
+export function getLegsLskActions(state: FMCState): Record<string, string | null> {
   const actions: Record<string, string | null> = {};
   const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
   const { legsPageIndex, deleteMode } = state;

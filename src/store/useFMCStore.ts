@@ -184,6 +184,9 @@ interface FMCActions {
   setNDRange: (side: 'L' | 'R', range: number) => void;
   toggleNDOverlay: (side: 'L' | 'R', key: keyof EFISState['overlays']) => void;
   toggleNDCenter: (side: 'L' | 'R') => void;
+
+  setRteSubPage: (page: number) => void;
+  setTakeoffRefPageIndex: (page: number) => void;
 }
 
 interface ConnectionDiagnostics {
@@ -1481,8 +1484,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const efis = get()[key];
     set({ [key]: { ...efis, overlays: { ...efis.overlays, [overlayKey]: !efis.overlays[overlayKey as keyof typeof efis.overlays] } } });
   },
-  toggleNDCenter: (side) => {
-    const key = side === 'L' ? 'efisL' : 'efisR';
-    set({ [key]: { ...get()[key], centered: !get()[key].centered } });
+  toggleNDCenter: (side: 'L' | 'R') => {
+    const efisKey = side === 'L' ? 'efisL' : 'efisR';
+    const efis = get()[efisKey];
+    set({ [efisKey]: { ...efis, centered: !efis.centered } });
   },
+
+  setRteSubPage: (page: number) => set({ rteSubPage: page }),
+  setTakeoffRefPageIndex: (page: number) => set({ takeoffRefPageIndex: page }),
 }));

@@ -8,6 +8,11 @@ import { renderDesPage } from './descent';
 import { renderDirIntcPage } from './direct';
 import { renderN1LimitPage } from './n1limit';
 import { getAirbusPageRenderer } from './airbus';
+import { renderBoeingIdentGrid } from './boeing/ident.grid';
+import { renderBoeingPosInitGrid } from './boeing/posInit.grid';
+import { renderBoeingRteGrid } from './boeing/route.grid';
+import { renderBoeingLegsGrid } from './boeing/legs.grid';
+import { renderBoeingTakeoffRefGrid } from './boeing/takeoffRef.grid';
 
 export { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
 export { renderRtePage, renderDepArrPage } from './route';
@@ -21,14 +26,14 @@ export { getAirbusPageRenderer } from './airbus';
 
 export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
   const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
-    IDENT: renderIdentPage,
-    POS_INIT: renderPosInitPage,
-    RTE: renderRtePage,
+    IDENT: renderBoeingIdentGrid,
+    POS_INIT: renderBoeingPosInitGrid,
+    RTE: renderBoeingRteGrid,
     DEP_ARR: renderDepArrPage,
     PERF_INIT: renderPerfInitPage,
     THRUST_LIM: renderThrustLimPage,
-    TAKEOFF_REF: renderTakeoffRefPage,
-    LEGS: renderLegsPage,
+    TAKEOFF_REF: renderBoeingTakeoffRefGrid,
+    LEGS: renderBoeingLegsGrid,
     PROGRESS: renderProgressPage,
     HOLD: renderHoldPage,
     FIX: renderFixPage,
