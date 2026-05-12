@@ -50,6 +50,27 @@ export interface NDHoldOverlay {
   y: number;
 }
 
+export interface TCASTarget {
+  id: string;
+  ident?: string;
+  x: number;
+  y: number;
+  relativeAltitude: number; // hundreds of feet, e.g., +12, -05
+  trend: 'climb' | 'descend' | 'level';
+  threatLevel: 'other' | 'proximate' | 'traffic' | 'resolution';
+}
+
+export interface WXRData {
+  intensity: 'none' | 'light' | 'medium' | 'heavy';
+  points: Array<{ x: number; y: number; r: number }>;
+}
+
+export interface VerticalProfilePoint {
+  label: string; // T/C, T/D, S/C, etc.
+  x: number;
+  y: number;
+}
+
 export interface NavigationDisplayModel {
   aircraft: AircraftType;
   style: 'boeing' | 'airbus';
@@ -62,6 +83,9 @@ export interface NavigationDisplayModel {
   routeSegments: NDRouteSegment[];
   fixOverlays: NDFixOverlay[];
   holdOverlay: NDHoldOverlay | null;
+  tcasTargets: TCASTarget[];
+  wxrData: WXRData | null;
+  verticalProfilePoints: VerticalProfilePoint[];
   anchorZones: NDAnchorZones;
   overlays: EFISState['overlays'];
   isModified: boolean;
@@ -116,11 +140,52 @@ export function buildNavigationDisplayModel(
     routeSegments,
     fixOverlays,
     holdOverlay: visibleOverlays.hold ? buildHoldOverlay(state, routePoints, activePoint) : null,
+    tcasTargets: visibleOverlays.tfc ? buildTCASTargets(state, resolvedEfis) : [],
+    wxrData: visibleOverlays.wxr ? buildWXRData(state, resolvedEfis) : null,
+    verticalProfilePoints: buildVerticalProfilePoints(state, routePoints, activeIndex),
     anchorZones,
     overlays: visibleOverlays,
     isModified: state.isModified,
     centered: resolvedEfis.centered,
   };
+}
+
+function buildTCASTargets(state: FMCState, efis: EFISState): TCASTarget[] {
+  const cy = efis.centered ? 50 : 84;
+  return [
+    { id: 'T1', x: 45, y: cy - 25, relativeAltitude: 12, trend: 'climb', threatLevel: 'proximate' },
+    { id: 'T2', x: 65, y: cy - 15, relativeAltitude: -5, trend: 'descend', threatLevel: 'traffic' },
+    { id: 'T3', x: 50, y: cy - 45, relativeAltitude: 0, trend: 'level', threatLevel: 'other' },
+  ];
+}
+
+function buildWXRData(state: FMCState, efis: EFISState): WXRData {
+  const cy = efis.centered ? 50 : 84;
+  return {
+    intensity: 'medium',
+    points: [
+      { x: 30, y: cy - 40, r: 8 },
+      { x: 35, y: cy - 45, r: 10 },
+      { x: 40, y: cy - 38, r: 6 },
+    ]
+  };
+}
+
+function buildVerticalProfilePoints(state: FMCState, routePoints: NDRoutePoint[], activeIndex: number): VerticalProfilePoint[] {
+  if (routePoints.length < 2 || activeIndex < 0) return [];
+  const activePoint = routePoints[activeIndex];
+  const nextPoint = routePoints[activeIndex + 1];
+  
+  if (!nextPoint) return [];
+
+  // Mock a T/D halfway between active and next point
+  return [
+    {
+      label: 'T/D',
+      x: (activePoint.x + nextPoint.x) / 2,
+      y: (activePoint.y + nextPoint.y) / 2
+    }
+  ];
 }
 
 function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {

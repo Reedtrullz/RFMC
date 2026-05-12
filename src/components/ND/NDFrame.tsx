@@ -41,6 +41,11 @@ export function NDFrame({ model, children }: NDFrameProps) {
         {/* Dynamic Content (Aircraft Specific Renderers) */}
         {children}
 
+        {/* Advanced Overlays */}
+        <WXROverlay data={model.wxrData} />
+        <VerticalProfileOverlay points={model.verticalProfilePoints} />
+        <TCASOverlay targets={model.tcasTargets} />
+
         {/* Shared Foreground Overlays (Anchor Zones) */}
         <NDAnchorZones model={model} colors={colors} />
 
@@ -58,6 +63,82 @@ export function NDFrame({ model, children }: NDFrameProps) {
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%]" />
       )}
     </div>
+  );
+}
+
+function TCASOverlay({ targets }: { targets: any[] }) {
+  return (
+    <g data-testid="nd-tcas-overlay">
+      {targets.map(t => (
+        <g key={t.id} transform={`translate(${t.x} ${t.y})`}>
+          {/* Symbol based on threat level */}
+          {t.threatLevel === 'resolution' ? (
+            <rect x="-2.5" y="-2.5" width="5" height="5" fill="#ff0000" />
+          ) : t.threatLevel === 'traffic' ? (
+            <circle r="2.5" fill="#ffcc00" />
+          ) : t.threatLevel === 'proximate' ? (
+            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="#ffffff" />
+          ) : (
+            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="none" stroke="#ffffff" strokeWidth="0.5" />
+          )}
+          
+          {/* Altitude Tag */}
+          <text
+            y={t.relativeAltitude > 0 ? -5 : 7}
+            x="4"
+            fill={t.threatLevel === 'resolution' ? '#ff0000' : t.threatLevel === 'traffic' ? '#ffcc00' : '#ffffff'}
+            fontSize="2.8"
+            fontWeight="bold"
+          >
+            {t.relativeAltitude > 0 ? `+${t.relativeAltitude}` : t.relativeAltitude}
+          </text>
+          
+          {/* Trend Arrow */}
+          {t.trend !== 'level' && (
+            <path
+              d={t.trend === 'climb' ? 'M7 -4 L7 -7 L6 -6 M7 -7 L8 -6' : 'M7 4 L7 7 L6 6 M7 7 L8 6'}
+              stroke={t.threatLevel === 'resolution' ? '#ff0000' : t.threatLevel === 'traffic' ? '#ffcc00' : '#ffffff'}
+              strokeWidth="0.5"
+              fill="none"
+            />
+          )}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function WXROverlay({ data }: { data: any }) {
+  if (!data) return null;
+  return (
+    <g data-testid="nd-wxr-overlay" opacity="0.4">
+      {data.points.map((p: any, i: number) => (
+        <circle
+          key={i}
+          cx={p.x}
+          cy={p.y}
+          r={p.r}
+          fill={data.intensity === 'heavy' ? '#ff0000' : data.intensity === 'medium' ? '#ffff00' : '#00ff00'}
+          filter="url(#crt-bloom)"
+        />
+      ))}
+    </g>
+  );
+}
+
+function VerticalProfileOverlay({ points }: { points: any[] }) {
+  return (
+    <g data-testid="nd-vertical-overlay">
+      {points.map((p, i) => (
+        <g key={i} transform={`translate(${p.x} ${p.y})`}>
+          <circle r="1.5" fill="none" stroke="#00ffff" strokeWidth="0.5" />
+          <circle r="0.5" fill="#00ffff" />
+          <text y="-3" textAnchor="middle" fill="#00ffff" fontSize="2.8" fontWeight="bold">
+            {p.label}
+          </text>
+        </g>
+      ))}
+    </g>
   );
 }
 
