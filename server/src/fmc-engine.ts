@@ -159,6 +159,35 @@ export class FMCEngine {
         this.state.scratchpad = this.state.scratchpad.slice(0, -1);
       }
     } else if (key === 'EXEC') {
+      if (this.state.editWaypointIndex !== null && this.state.scratchpad.trim()) {
+        const sp = this.state.scratchpad.trim();
+        const idx = this.state.editWaypointIndex;
+        let altitude: any;
+        let speed: any;
+
+        const altMatch = sp.match(/^(\d{3,5})$/);
+        const spdMatch = sp.match(/^\/(\d{3})$/);
+        const bothMatch = sp.match(/^(\d{3,5})\/(\d{3})$/);
+
+        if (bothMatch) {
+          const alt = parseInt(bothMatch[1], 10);
+          const spd = parseInt(bothMatch[2], 10);
+          altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
+          speed = { type: 'AT', speed: spd };
+        } else if (spdMatch) {
+          speed = { type: 'AT', speed: parseInt(spdMatch[1], 10) };
+        } else if (altMatch) {
+          const alt = parseInt(altMatch[1], 10);
+          altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
+        } else {
+          this.state.scratchpadError = 'INVALID FORMAT';
+          return this.getDisplayData();
+        }
+
+        this.updateWaypointConstraint(idx, altitude, speed);
+        return this.getDisplayData();
+      }
+
       this.state.execLit = false;
       this.state.isModified = false;
       if (this.state.holdPending) {
@@ -227,6 +256,19 @@ export class FMCEngine {
     return false;
   }
 
+  private updateWaypointConstraint(index: number, altitude?: any, speed?: any): void {
+    const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
+    const waypoints = [...flightPlan.waypoints];
+    if (index >= 0 && index < waypoints.length) {
+      waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
+      this.state.pendingFlightPlan = { ...flightPlan, waypoints };
+      this.state.isModified = true;
+      this.state.execLit = true;
+      this.state.editWaypointIndex = null;
+      this.state.scratchpad = '';
+    }
+  }
+
   private rewindPage(): boolean {
     if (this.state.currentPage === 'RTE') {
       const prev = this.state.rteSubPage;
@@ -279,12 +321,36 @@ export class FMCEngine {
       data_index: 'DATA_INDEX',
       mcdu_menu: 'MCDU_MENU',
       fpln_dep_arr: 'DEP_ARR_A',
+      erase: this.state.currentPage,
+      copy_active: this.state.currentPage,
+      set_vor1: this.state.currentPage,
+      set_vor2: this.state.currentPage,
+      set_adf1: this.state.currentPage,
+      set_adf2: this.state.currentPage,
     };
 
     const targetPage = pageNavMap[action];
     if (targetPage) {
-      this.state.pageHistory.push(this.state.currentPage);
-      this.state.currentPage = targetPage;
+      if (action === 'erase') {
+        this.state.pendingRoute = null;
+        this.state.pendingFlightPlan = null;
+        this.state.holdPending = null;
+        this.state.isModified = false;
+        this.state.execLit = false;
+        this.state.editWaypointIndex = null;
+        this.state.scratchpad = '';
+      } else if (action === 'copy_active') {
+        this.state.pendingFlightPlan = { ...this.state.flightPlan };
+        this.state.pendingRoute = { ...this.state.route };
+        this.state.isModified = true;
+        this.state.execLit = true;
+        this.state.scratchpad = 'COPIED TO SEC';
+      } else if (action.startsWith('set_vor') || action.startsWith('set_adf')) {
+        this.state.scratchpad = '';
+      } else {
+        this.state.pageHistory.push(this.state.currentPage);
+        this.state.currentPage = targetPage;
+      }
       this.state.scratchpad = '';
       handled = true;
     } else if (action === 'dep_page') {

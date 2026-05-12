@@ -443,6 +443,39 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); handled = true; break;
       case 'fpln_next': state.pressKey('NEXT_PAGE'); handled = true; break;
       case 'fpln_prev': state.pressKey('PREV_PAGE'); handled = true; break;
+      case 'erase':
+        set({
+          pendingRoute: null,
+          pendingFlightPlan: null,
+          holdPending: null,
+          isModified: false,
+          execLit: false,
+          editWaypointIndex: null,
+          scratchpad: '',
+          scratchpadError: null,
+        });
+        handled = true;
+        break;
+      case 'copy_active':
+        set({
+          pendingFlightPlan: { ...state.flightPlan },
+          pendingRoute: { ...state.route },
+          isModified: true,
+          execLit: true,
+          scratchpad: 'COPIED TO SEC',
+          msgLight: true,
+        });
+        handled = true;
+        break;
+      case 'set_vor1':
+      case 'set_vor2':
+      case 'set_adf1':
+      case 'set_adf2':
+        if (scratchpad) {
+          set({ scratchpad: '', scratchpadError: null });
+        }
+        handled = true;
+        break;
     }
 
     if (!handled && state.currentPage === 'LEGS') {
@@ -1102,11 +1135,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   updateWaypointConstraint: (index: number, altitude?: AltitudeConstraint, speed?: SpeedConstraint) => {
     const state = get();
-    const waypoints = [...state.flightPlan.waypoints];
+    const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
     if (index >= 0 && index < waypoints.length) {
       waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
       set({
-        flightPlan: { ...state.flightPlan, waypoints },
+        pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
         isModified: true,
         execLit: true,
         editWaypointIndex: null,

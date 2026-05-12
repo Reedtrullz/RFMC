@@ -84,6 +84,10 @@ export function renderLegsPage(state: FMCState): DisplayData {
     }
   }
 
+  if (state.isModified) {
+    lines[11] = fmt(' ERASE', '<', '', 'amber');
+  }
+
   while (lines.length < PAGE_LINES) {
     lines.push(blank());
   }
@@ -132,6 +136,10 @@ function getLegsLskActions(state: FMCState): Record<string, string | null> {
     if (legsPageIndex > 0) {
       actions['R6'] = 'prev_page';
     }
+  }
+
+  if (state.isModified) {
+    actions['L6'] = 'erase';
   }
 
   return actions;

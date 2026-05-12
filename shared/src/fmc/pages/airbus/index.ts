@@ -120,7 +120,21 @@ function buildFplnActions(state: FMCState): Record<string, string | null> {
   const actions: Record<string, string | null> = {};
   for (let i = 1; i <= 6; i++) { actions[`L${i}`] = null; actions[`R${i}`] = null; }
   actions['L1'] = 'fpln_dep_arr';
-  actions['R6'] = null;
+  
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const wpts = flightPlan.waypoints;
+  const deleteMode = state.deleteMode;
+  
+  // Basic editing: L2-L6 handle waypoints
+  for (let i = 0; i < Math.min(wpts.length, 5); i++) {
+    const action = deleteMode ? `delete_wp_${i}` : `edit_wp_${i}`;
+    actions[`L${i + 2}`] = action;
+  }
+  
+  if (state.isModified) {
+    actions['R6'] = 'erase';
+  }
+  
   return actions;
 }
 
@@ -265,7 +279,7 @@ export function renderSecFpln(state: FMCState): DisplayData {
       blank(),
    ],
     lskActions: {
-      L1: null, L2: null, L3: null, L4: null,
+      L1: 'copy_active', L2: null, L3: null, L4: null,
       L5: null, L6: null,
       R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: null,
@@ -294,7 +308,7 @@ export function renderRadNav(state: FMCState): DisplayData {
       blank(),
    ],
     lskActions: {
-      L1: null, L2: null, L3: null, L4: null,
+      L1: 'set_vor1', L2: 'set_vor2', L3: 'set_adf1', L4: 'set_adf2',
       L5: null, L6: null,
       R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: null,
