@@ -2,70 +2,30 @@ import { describe, expect, it } from 'vitest';
 import type { FMCState } from '../types/fmc';
 import { buildNavigationDisplayModel } from '../fmc/navigationDisplay';
 
-const baseState: FMCState = {
-  aircraft: 'BOEING_737',
-  currentPage: 'IDENT',
-  pageHistory: [],
-  scratchpad: '',
-  scratchpadError: null,
-  ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '' },
-  performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
-  takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
-  landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
-  route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
-  flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
-  pendingRoute: null,
-  pendingFlightPlan: null,
-  isModified: false,
-  execLit: false,
-  msgLight: false,
-  mode: 'STANDBY',
-  connectionStatus: 'DISCONNECTED',
-  connectionMode: 'STANDALONE',
-  connectedAircraft: null,
-  connectedAircraftType: null,
-  connectedCapabilities: [],
-  lastError: null,
-  simVariables: {},
-  failureMessage: null,
-  externalDisplayData: null,
-  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
-  holdPending: null,
-  fix: { refFix: '', radial: 0, distance: 0 },
-  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
-  legsPageIndex: 0,
-  legsPageCount: 1,
-  depArrSubPage: 'DEP',
-  rteSubPage: 0,
-  takeoffRefPageIndex: 0,
-  deleteMode: false,
-  editWaypointIndex: null,
-  aircraftState: null,
+import { createBaseState } from './testUtils';
+
+const baseState = createBaseState({
   efisL: {
     mode: 'MAP',
     range: 40,
-    overlays: {
-      fix: true, hold: true, wpt: true, arpt: true, sta: true,
-      data: false, pos: false, terr: false, wxr: false, tfc: true
-    },
     centered: false,
     side: 'L',
+    overlays: {
+      wpt: true, arpt: true, sta: true, fix: true, hold: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
   },
   efisR: {
     mode: 'MAP',
     range: 40,
-    overlays: {
-      fix: true, hold: true, wpt: true, arpt: true, sta: true,
-      data: false, pos: false, terr: false, wxr: false, tfc: true
-    },
     centered: false,
     side: 'R',
+    overlays: {
+      wpt: true, arpt: true, sta: true, fix: true, hold: true,
+      data: false, pos: false, terr: false, wxr: false, tfc: true
+    },
   },
-  brightness: 100,
-  latency: 0,
-  sessionStartTime: null,
-};
+});
 
 describe('Navigation Display model', () => {
   it('projects route waypoints into display points and segments', () => {

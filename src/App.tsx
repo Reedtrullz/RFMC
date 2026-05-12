@@ -4,7 +4,7 @@ import { AirbusCDU } from './components/CDU/AirbusCDU';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { DemoWelcome } from './components/DemoWelcome';
-import { NavigationDisplay } from './components/NavigationDisplay';
+import { NavigationDisplay } from './components/ND/NavigationDisplay';
 import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
 import { useRegisterSW } from 'virtual:pwa-register/react';
@@ -42,7 +42,6 @@ export default function App() {
     setNeedRefresh(false);
   };
 
-  return (
   return (
     <div className="relative flex h-full w-full items-center justify-center gap-4 overflow-hidden bg-[#111] p-2 
       pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] 

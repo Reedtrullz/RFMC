@@ -287,205 +287,7 @@ export class FMCEngine {
     return false;
   }
 
-  private handleLSKAction(action: string): boolean {
-    const sp = this.state.scratchpad.trim();
-    const err = () => { this.state.scratchpadError = 'INVALID ENTRY'; return true; };
 
-    switch (action) {
-      case 'pos_init': this.setPage('POS_INIT'); return true;
-      case 'perf_init': this.setPage('PERF_INIT'); return true;
-      case 'rte': this.setPage('RTE'); return true;
-      case 'dep_arr': this.setPage('DEP_ARR'); return true;
-      case 'legs': this.setPage('LEGS'); return true;
-      case 'thrust_lim': this.setPage('THRUST_LIM'); return true;
-      case 'takeoff_ref': this.setPage('TAKEOFF_REF'); return true;
-      case 'menu': this.setPage('MENU'); return true;
-      case 'ident': this.setPage('IDENT'); return true;
-      case 'init_a': this.setPage('INIT_A'); return true;
-      case 'init_b': this.setPage('INIT_B'); return true;
-      case 'f_pln': this.setPage('F_PLN'); return true;
-      case 'fuel_pred': this.setPage('FUEL_PRED'); return true;
-      case 'sec_fpln': this.setPage('SEC_FPLN'); return true;
-      case 'rad_nav': this.setPage('RAD_NAV'); return true;
-      case 'data_index': this.setPage('DATA_INDEX'); return true;
-      case 'mcdu_menu': this.setPage('MCDU_MENU'); return true;
-
-      case 'set_ref_airport':
-        if (sp) {
-          const res = isValidICAO(sp.toUpperCase());
-          if (!res.valid) return err();
-          this.state.position = { ...this.state.position, refAirport: sp.toUpperCase() };
-          this.state.scratchpad = '';
-        }
-        return true;
-      case 'set_gate':
-        if (sp) {
-          this.state.position = { ...this.state.position, gate: sp.toUpperCase() };
-          this.state.scratchpad = '';
-        }
-        return true;
-      case 'set_from_to':
-        if (sp) {
-          const parts = sp.split('/');
-          if (parts.length !== 2) return err();
-          const [origin, dest] = parts.map(p => p.toUpperCase());
-          this.state.route = { ...this.state.route, origin, destination: dest };
-          this.state.flightPlan = { ...this.state.flightPlan, origin, destination: dest };
-          this.state.scratchpad = '';
-        }
-        return true;
-      case 'set_cost_index':
-        if (sp) {
-          const ci = parseInt(sp);
-          if (isNaN(ci)) return err();
-          this.state.performance = { ...this.state.performance, costIndex: ci };
-          this.state.scratchpad = '';
-        }
-        return true;
-      case 'set_crz_fl':
-      case 'set_crz_alt':
-        if (sp) {
-          const alt = parseInt(sp);
-          if (isNaN(alt)) return err();
-          this.state.performance = { ...this.state.performance, crzAlt: alt >= 100 ? alt * 100 : alt };
-          this.state.scratchpad = '';
-        }
-        return true;
-      case 'set_zfw': {
-        const zfw = parseFloat(sp);
-        if (isNaN(zfw)) return err();
-        this.state.performance = { ...this.state.performance, zfw: zfw * 1000 };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_block': {
-        const fuel = parseFloat(sp);
-        if (isNaN(fuel)) return err();
-        this.state.performance = { ...this.state.performance, fuel: fuel * 1000 };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_vor1': {
-        const freq = isValidFrequency(sp);
-        if (!freq.valid) return err();
-        this.state.radios = { ...this.state.radios, vor1: parseFloat(sp).toFixed(2) };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_vor2': {
-        const freq = isValidFrequency(sp);
-        if (!freq.valid) return err();
-        this.state.radios = { ...this.state.radios, vor2: parseFloat(sp).toFixed(2) };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_adf1': {
-        const adf = isValidADF(sp);
-        if (!adf.valid) return err();
-        this.state.radios = { ...this.state.radios, adf1: sp };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_sid': {
-        const route = this.state.pendingRoute ?? this.state.route;
-        this.state.pendingRoute = { ...route, sid: sp.toUpperCase() };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_rwy': {
-        if (sp.length < 2) return err();
-        const route = this.state.pendingRoute ?? this.state.route;
-        this.state.pendingRoute = { ...route, runway: sp.toUpperCase() };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_star': {
-        const route = this.state.pendingRoute ?? this.state.route;
-        this.state.pendingRoute = { ...route, star: sp.toUpperCase() };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_appr': {
-        const route = this.state.pendingRoute ?? this.state.route;
-        this.state.pendingRoute = { ...route, approach: sp.toUpperCase() };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_flaps': {
-        this.state.takeoff = { ...this.state.takeoff, flaps: sp.toUpperCase() };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_flex': {
-        const temp = parseInt(sp);
-        if (isNaN(temp)) return err();
-        this.state.takeoff = { ...this.state.takeoff, flexTemp: temp };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'set_cg': {
-        const cg = parseFloat(sp);
-        if (isNaN(cg)) return err();
-        this.state.performance = { ...this.state.performance, cg };
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'erase': {
-        this.state.pendingRoute = null;
-        this.state.pendingFlightPlan = null;
-        this.state.holdPending = null;
-        this.state.isModified = false;
-        this.state.execLit = false;
-        this.state.editWaypointIndex = null;
-        this.state.scratchpad = '';
-        return true;
-      }
-      case 'copy_active': {
-        this.state.pendingFlightPlan = { ...this.state.flightPlan };
-        this.state.pendingRoute = { ...this.state.route };
-        this.state.isModified = true;
-        this.state.execLit = true;
-        this.state.scratchpad = 'COPIED TO SEC';
-        return true;
-      }
-    }
-
-    if (action.startsWith('delete_wp_') || action.startsWith('edit_wp_')) {
-      const parts = action.split('_');
-      const wpAction = parts[0] + '_' + parts[1];
-      const wpIndex = parseInt(parts[2], 10);
-      if (wpAction === 'delete_wp') {
-        const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-        const waypoints = [...flightPlan.waypoints];
-        waypoints.splice(wpIndex, 1);
-        this.state.pendingFlightPlan = { ...flightPlan, waypoints };
-        this.state.isModified = true;
-        this.state.execLit = true;
-        return true;
-      } else if (wpAction === 'edit_wp') {
-        if (sp) {
-          const ident = sp.toUpperCase();
-          const result = isValidWaypoint(ident);
-          if (!result.valid) {
-            this.state.scratchpadError = result.error ?? 'INVALID ENTRY';
-          } else {
-            const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-            const waypoints = [...flightPlan.waypoints];
-            waypoints.splice(wpIndex, 0, { ident, discontinuity: false });
-            this.state.pendingFlightPlan = { ...flightPlan, waypoints };
-            this.state.scratchpad = '';
-            this.state.isModified = true;
-            this.state.execLit = true;
-          }
-        } else {
-          this.state.editWaypointIndex = wpIndex;
-        }
-        return true;
-      }
-    }
-
-    return false;
-  }
 
   private advancePage(): boolean {
     if (this.state.currentPage === 'RTE') {
@@ -581,7 +383,7 @@ export class FMCEngine {
     }
   }
 
-  private handleLskAction(action: string): void {
+  private handleLSKAction(action: string): boolean {
     let handled = false;
 
     const pageNavMap: Record<string, PageType> = {
@@ -724,6 +526,7 @@ export class FMCEngine {
     if (!handled) {
       this.state.scratchpadError = 'NOT SUPPORTED';
     }
+    return handled;
   }
 
   private handleDataEntry(action: string): boolean | 'error' {
@@ -1258,11 +1061,7 @@ export class FMCEngine {
     this.advanceTutorial();
   }
 
-  setPage(page: PageType): void {
-    this.state.currentPage = page;
-    this.state.scratchpad = '';
-    this.state.scratchpadError = null;
-  }
+
 
   getState(): FMCState {
     return this.state;
