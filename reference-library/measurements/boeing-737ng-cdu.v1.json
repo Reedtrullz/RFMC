@@ -1,0 +1,46 @@
+{
+  "id": "boeing-737ng-cdu-v1",
+  "profileId": "boeing-737ng-cdu-v1",
+  "units": "normalized",
+  "status": "initial-derived-fiducials",
+  "redistribution": "derived-measurements-only",
+  "sourceReferences": [
+    "local-737-a320-cdu-mcdu-pdf",
+    "b737-org-fmc"
+  ],
+  "geometry": {
+    "displayAperture": { "x": 0.2, "y": 0.08, "width": 0.6, "height": 0.39 },
+    "functionKeyBounds": { "x": 0.08, "y": 0.5, "width": 0.84, "height": 0.12 },
+    "keyMatrixBounds": { "x": 0.09, "y": 0.64, "width": 0.82, "height": 0.28 },
+    "leftLskCenters": [
+      { "x": 0.12, "y": 0.14 },
+      { "x": 0.12, "y": 0.19 },
+      { "x": 0.12, "y": 0.24 },
+      { "x": 0.12, "y": 0.29 },
+      { "x": 0.12, "y": 0.34 },
+      { "x": 0.12, "y": 0.39 }
+    ],
+    "rightLskCenters": [
+      { "x": 0.88, "y": 0.14 },
+      { "x": 0.88, "y": 0.19 },
+      { "x": 0.88, "y": 0.24 },
+      { "x": 0.88, "y": 0.29 },
+      { "x": 0.88, "y": 0.34 },
+      { "x": 0.88, "y": 0.39 }
+    ],
+    "screwCenters": [
+      { "x": 0.04, "y": 0.04 },
+      { "x": 0.96, "y": 0.04 },
+      { "x": 0.04, "y": 0.96 },
+      { "x": 0.96, "y": 0.96 }
+    ]
+  },
+  "acceptanceTargets": {
+    "displayCellDriftMax": 0.25,
+    "apertureAspectRatioErrorMax": 0.005,
+    "criticalEdgeOffsetMaxShellWidth": 0.008,
+    "screwCenterErrorMaxShellWidth": 0.005,
+    "keyWidthHeightVarianceMax": 0.02
+  },
+  "notes": "Initial normalized fiducials seed profile-driven tests. Replace with rectified, rights-cleared measurements before claiming measured hardware fidelity."
+}

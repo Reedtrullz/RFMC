@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useTouchFeedback } from '../../hooks/useTouchFeedback';
+import { AvionicsKey } from '../visual/AvionicsKey';
 
 interface CDUButtonProps {
   label: string;
@@ -11,46 +10,17 @@ interface CDUButtonProps {
 }
 
 export function CDUButton({ label, className = '', variant = 'default', disabled, active, onPress }: CDUButtonProps) {
-  const handlePress = useCallback(() => {
-    if (!disabled && onPress) onPress();
-  }, [disabled, onPress]);
-
-  const { touchHandlers } = useTouchFeedback({
-    minPressDuration: 80,
-    onPress: handlePress,
-  });
-
-  const base = `
-    cdu-button ripple-effect
-    flex items-center justify-center
-    rounded font-cdu font-bold border
-    transition-transform transition-colors
-    duration-100 ease-out
-    select-none
-    active:translate-y-[1px]
-    active:scale-[0.97]
-  `;
-  const size = 'min-w-[44px] min-h-[30px] px-1';
-
-  const variants = {
-    default: 'bg-cdu-bezel-light text-cdu-white/80 border-cdu-bezel-light hover:bg-cdu-bezel hover:text-cdu-white active:bg-cdu-white/20',
-    exec: 'bg-cdu-exec/10 text-cdu-exec border-cdu-exec/30 hover:bg-cdu-exec/20 active:bg-cdu-exec/30',
-    function: 'bg-cdu-bezel text-cdu-cyan/80 border-cdu-cyan/20 hover:bg-cdu-cyan/10 hover:text-cdu-cyan',
-    highlight: 'bg-cdu-cyan/15 text-cdu-cyan border-cdu-cyan/50 animate-pulse hover:bg-cdu-cyan/25',
-  };
-
   return (
-    <button
-      className={`
-        ${base} ${size} ${variants[variant]} ${className}
-        ${active ? 'bg-cdu-white/20 !text-cdu-white border-cdu-white/50' : ''}
-        ${disabled ? 'opacity-40 pointer-events-none' : ''}
-      `}
+    <AvionicsKey
+      label={label}
+      shape={variant === 'function' ? 'function' : variant === 'exec' ? 'exec' : 'alpha'}
+      tone={variant === 'function' || variant === 'highlight' ? 'cyan' : 'white'}
+      lit={variant === 'exec'}
+      highlighted={variant === 'highlight'}
+      active={active}
       disabled={disabled}
-      onClick={handlePress}
-      {...touchHandlers}
-    >
-      {label}
-    </button>
+      className={className}
+      onPress={onPress}
+    />
   );
 }

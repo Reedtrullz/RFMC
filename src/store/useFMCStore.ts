@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth } from '@shared';
 import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
@@ -70,6 +70,8 @@ const defaultState = {
   connectedAircraft: null as string | null,
   connectedAircraftType: null as AircraftType | null,
   connectedCapabilities: null as string[] | null,
+  structuredCapabilities: null as AdapterCapabilities | null,
+  adapterHealth: null as AdapterHealth | null,
   lastError: null as string | null,
   simVariables: {} as Record<string, number>,
   failureMessage: null as string | null,
@@ -188,6 +190,8 @@ interface ConnectionDiagnostics {
   connectedAircraft: string | null;
   connectedAircraftType: AircraftType | null;
   connectedCapabilities: string[] | null;
+  structuredCapabilities: AdapterCapabilities | null;
+  adapterHealth: AdapterHealth | null;
   lastError: string | null;
   simVariables: Record<string, number>;
 }

@@ -1,14 +1,8 @@
 # VirtualCDU Implementation Status
 
-## Verification Results (Latest Run)
-- TypeScript: 0 errors (all 3 workspaces)
-- Unit tests: 112/112 pass
-- E2E tests: 15 passed, 2 skipped
-- Build: successful (265.54KB JS, 20.76KB CSS)
-- Test Coverage: 51.75% (All Files)
-- Visual Regression: 4/4 Baselines Generated (IDENT, POS INIT, RTE, N1 LIMIT)
-- npm audit: 2 moderate vulnerabilities in esbuild/vite dev dependencies (documented exception — fixing requires `--force` breaking change)
-- **Oracle Round 29: APPROVED** — all critical blockers resolved after Round 28 re-verification
+## Current Verification Source
+
+Current automated baseline, build/audit state, latest reviewed commit, and validation caveats are tracked in `docs/STATUS.md`. This file records implementation history and capability state only.
 
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.
@@ -181,8 +175,8 @@
 - [x] T6.5: Performance metrics (time tracking, localStorage, completion screen)
 
 ### Phase 7 (Testing, CI & Quality) — COMPLETE
-- [x] T7.1: Vitest installed and configured (50% coverage thresholds enforced)
-- [x] T7.2-T7.6: 112 unit tests (100% pass), 15 E2E tests (100% pass), 4 Visual Regression baselines.
+- [x] T7.1: Vitest installed and configured with coverage thresholds.
+- [x] T7.2-T7.6: Automated unit, E2E, and visual-regression baselines established. Current counts live in `docs/STATUS.md`.
 - [x] T7.7: Audit Policy established in AUDIT_POLICY.md.
 
 ## Post-Oracle Fixes Applied
@@ -204,9 +198,9 @@
 - [x] Backend FMC engine support added for new Boeing pages
 
 ### Round 3
-- [x] TypeScript compilation clean (0 errors)
-- [x] All tests passing (43 unit, 5 E2E)
-- [x] Build successful
+- [x] TypeScript compilation clean.
+- [x] Automated unit and E2E tests passing at the time of that round.
+- [x] Build successful.
 
 ### Round 4
 - [x] 5 empty catch blocks replaced with devError logging
@@ -375,4 +369,4 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ## Conclusion
 
-VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. TypeScript compiles clean, all 98 unit tests pass, 11 E2E tests pass with 2 skipped live/optional tests, and the build succeeds.
+VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. Current automated counts and build/audit status live in `docs/STATUS.md`.

@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useTouchFeedback } from '../../hooks/useTouchFeedback';
+import { AvionicsKey } from '../visual/AvionicsKey';
 
 interface LSKButtonProps {
   side: 'L' | 'R';
@@ -13,43 +12,18 @@ interface LSKButtonProps {
 export function LSKButton({ side, index, label, disabled, highlighted, onPress }: LSKButtonProps) {
   const displayLabel = label || (side === 'L' ? '◄' : '►');
 
-  const handlePress = useCallback(() => {
-    if (!disabled && onPress) onPress(side, index);
-  }, [disabled, onPress, side, index]);
-
-  const { touchHandlers } = useTouchFeedback({
-    minPressDuration: 80,
-    onPress: handlePress,
-  });
-
   return (
-    <button
-      className={`
-        cdu-button ripple-effect
-        flex items-center justify-center
-        w-full h-full
-        px-1
-        rounded-sm
-        font-cdu font-bold
-        text-[10px]
-        transition-transform transition-colors
-        duration-100 ease-out
-        select-none
-        active:translate-y-[1px]
-        active:scale-[0.97]
-        ${highlighted
-          ? 'bg-cdu-cyan/15 text-cdu-cyan border border-cdu-cyan/40 animate-pulse'
-          : disabled
-            ? 'text-cdu-text/20 opacity-40 pointer-events-none'
-            : 'bg-cdu-bezel-light text-cdu-text/70 hover:text-cdu-text hover:bg-cdu-bezel active:bg-cdu-text/20 border border-cdu-bezel'
-        }
-      `}
+    <AvionicsKey
+      label={displayLabel}
+      shape="lsk"
+      tone="green"
+      highlighted={highlighted}
       disabled={disabled && !highlighted}
-      onClick={handlePress}
-      aria-label={`LSK ${side}${index}`}
-      {...touchHandlers}
-    >
-      {displayLabel}
-    </button>
+      className="h-full w-full"
+      ariaLabel={`LSK ${side}${index}`}
+      onPress={() => {
+        if (!disabled && onPress) onPress(side, index);
+      }}
+    />
   );
 }

@@ -140,4 +140,56 @@ describe('bridge server', () => {
 
     ws.close();
   });
+
+  it('rejects unknown WebSocket message types', async () => {
+    bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+    const port = await bridge.start();
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`);
+    const messages = new MessageCollector(ws);
+    await waitOpen(ws);
+
+    await messages.next(); // fmc.display
+    await messages.next(); // sim.disconnected
+    ws.send(JSON.stringify({ type: 'unknown.command' }));
+
+    await expect(messages.next()).resolves.toMatchObject({
+      type: 'error',
+      message: 'Unknown or invalid message type',
+    });
+
+    ws.close();
+  });
+
+  it('rejects clients from disallowed origins', async () => {
+    bridge = createBridgeServer({
+      aircraft: new MockSimConnectAdapter(),
+      allowedOrigins: ['https://trainer.example.test'],
+    });
+    const port = await bridge.start();
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`, {
+      headers: { Origin: 'https://evil.example.test' },
+    });
+
+    await expect(new Promise<void>((resolve, reject) => {
+      ws.once('open', () => resolve());
+      ws.once('unexpected-response', (_request, response) => {
+        reject(new Error(`unexpected-response:${response.statusCode}`));
+      });
+      ws.once('error', reject);
+    })).rejects.toThrow('unexpected-response:403');
+
+    ws.close();
+  });
+
+  it('sets baseline security headers on HTTP responses', async () => {
+    bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+    const port = await bridge.start();
+
+    const response = await fetch(`http://127.0.0.1:${port}/health`);
+
+    expect(response.headers.get('x-powered-by')).toBeNull();
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+    expect(response.headers.get('content-security-policy')).toContain("default-src 'self'");
+  });
 });

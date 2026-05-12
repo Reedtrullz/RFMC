@@ -1,0 +1,14 @@
+{
+  "id": "canonical-avionics-states-v1",
+  "states": [
+    { "id": "boeing-ident", "aircraft": "BOEING_737", "surface": "CDU", "page": "IDENT" },
+    { "id": "boeing-pos-init", "aircraft": "BOEING_737", "surface": "CDU", "page": "POS_INIT" },
+    { "id": "boeing-rte", "aircraft": "BOEING_737", "surface": "CDU", "page": "RTE" },
+    { "id": "boeing-legs", "aircraft": "BOEING_737", "surface": "CDU", "page": "LEGS" },
+    { "id": "boeing-takeoff-ref", "aircraft": "BOEING_737", "surface": "CDU", "page": "TAKEOFF_REF" },
+    { "id": "boeing-nd-map", "aircraft": "BOEING_737", "surface": "ND", "mode": "MAP" },
+    { "id": "airbus-init-a", "aircraft": "AIRBUS_A320", "surface": "MCDU", "page": "INIT_A" },
+    { "id": "airbus-f-pln", "aircraft": "AIRBUS_A320", "surface": "MCDU", "page": "F_PLN" }
+  ],
+  "notes": "These states define initial screenshot/replay coverage targets. They are not certification evidence."
+}

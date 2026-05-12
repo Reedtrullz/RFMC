@@ -78,6 +78,7 @@ async function seedBoeingRoute(page: Page) {
 
 test.describe('VirtualCDU baseline screenshots', () => {
   test.skip(!process.env.CAPTURE_BASELINE, 'Baseline capture only runs through npm run capture:baseline');
+  test.setTimeout(120_000);
 
   test('captures Phase 0 desktop baseline screens', async ({ page }, testInfo) => {
     const records: CaptureRecord[] = [];

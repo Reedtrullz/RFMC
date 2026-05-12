@@ -1,16 +1,16 @@
 # VirtualCDU Test Matrix
 
-Status source: `IMPLEMENTATION_STATUS.md`.
+Status source: `docs/STATUS.md`.
 
-## Current Automated Baseline
+## Automated Gates
 
 | Gate | Command | Current status | Required status |
 | --- | --- | --- | --- |
-| Shared/frontend/server TypeScript | `npm run typecheck:all` | Passing | 0 errors |
-| Unit/regression tests | `npm test -- --run` | 98/98 passing | 100% pass |
-| Playwright E2E | `npm run test:e2e` | 11 passed, 2 skipped | 100% pass for runnable tests |
-| Production build | `npm run build` | Passing | Successful build |
-| Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; 2 moderate Vite/esbuild dev issues deferred | No high/critical issues |
+| Shared/frontend/server TypeScript | `npm run typecheck:all` | See `docs/STATUS.md` | 0 errors |
+| Unit/regression tests | `npm test -- --run` | See `docs/STATUS.md` | 100% pass |
+| Playwright E2E | `npm run test:e2e` | See `docs/STATUS.md` | 100% pass for runnable tests |
+| Production build | `npm run build` | See `docs/STATUS.md` | Successful build |
+| Audit policy | `npm audit --audit-level=high` | See `docs/STATUS.md` | No high/critical issues |
 
 ## Major Flow Coverage
 

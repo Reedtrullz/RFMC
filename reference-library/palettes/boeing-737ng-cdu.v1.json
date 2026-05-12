@@ -1,0 +1,24 @@
+{
+  "id": "boeing-737ng-cdu-palette-v1",
+  "profileId": "boeing-737ng-cdu-v1",
+  "status": "app-token-baseline",
+  "redistribution": "derived-colour-tokens-only",
+  "tokens": {
+    "title": "#00d0ff",
+    "label": "#ffffff",
+    "activeData": "#39ff14",
+    "modified": "#e5e5e5",
+    "guidance": "#e879f9",
+    "warning": "#ffb000",
+    "error": "#ff3333",
+    "glass": "#0a0a0a",
+    "bezel": "#171717",
+    "keycap": "#262626"
+  },
+  "acceptanceTargets": {
+    "deltaEMeanMax": 3,
+    "deltaEMax": 5,
+    "warningDeltaEMeanMax": 2.5
+  },
+  "notes": "Current app tokens are recorded as a baseline. Calibrated hardware swatches must replace these before colour-accuracy claims are made."
+}

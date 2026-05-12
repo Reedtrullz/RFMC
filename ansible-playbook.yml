@@ -7,6 +7,7 @@
     container_name: "virtual-cdu"
     host_port: "8082"
     container_port: "8080"
+    public_origin: "https://fmc.reidar.tech"
 
   tasks:
     - name: Ensure app directory exists
@@ -47,6 +48,8 @@
         restart_policy: unless-stopped
         ports:
           - "127.0.0.1:{{ host_port }}:{{ container_port }}"
+        memory: "512m"
+        cpus: 1.0
         log_driver: "json-file"
         log_options:
           max-size: "10m"
@@ -60,6 +63,8 @@
         env:
           NODE_ENV: production
           PORT: "{{ container_port }}"
+          WS_ALLOWED_ORIGINS: "{{ public_origin }}"
+          WS_MAX_MESSAGE_BYTES: "65536"
 
     - name: Wait for health check
       uri:

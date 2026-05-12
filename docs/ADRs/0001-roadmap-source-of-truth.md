@@ -12,12 +12,13 @@ The repo had multiple overlapping planning documents with stale findings mixed w
 
 Use this hierarchy:
 
-1. `ROADMAP.md` for phase order and implementation direction.
-2. `METRICS.md` for measured baselines and phase gates.
-3. `TEST_MATRIX.md` for automated/manual/live test coverage.
-4. `PILOT_REVIEW_RUBRIC.md` for human validation.
-5. `KNOWN_LIMITATIONS.md` for honest product scope.
-6. `IMPLEMENTATION_STATUS.md` for current implementation state.
+1. `STATUS.md` for current automated counts, build/audit state, latest reviewed commit, and validation caveats.
+2. `ROADMAP.md` for phase order and implementation direction.
+3. `METRICS.md` for measurement methods and phase gates.
+4. `TEST_MATRIX.md` for automated/manual/live test coverage.
+5. `PILOT_REVIEW_RUBRIC.md` for human validation.
+6. `KNOWN_LIMITATIONS.md` for honest product scope.
+7. `IMPLEMENTATION_STATUS.md` for implementation history and capability state.
 
 Historical plan files remain in the repo, but they are explicitly marked superseded or planning-baseline-only.
 

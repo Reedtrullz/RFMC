@@ -2,15 +2,17 @@
 
 This file records measured baselines and phase gates. Do not present estimated scores as factual results unless the measurement method and evidence are recorded here.
 
+Current pass/fail counts and build/audit status live in `docs/STATUS.md`.
+
 ## Baseline Commands
 
-| Metric | Command or method | Current result |
+| Metric | Command or method | Current result source |
 | --- | --- | --- |
-| TypeScript | `npm run typecheck:all` | Passing |
-| Unit tests | `npm test -- --run` | 112/112 passing |
-| E2E tests | `npm run test:e2e` | 15/15 passing |
-| Build | `npm run build` | Passing |
-| Audit | `npm audit` | 2 deferred moderate dev-dependency issues |
+| TypeScript | `npm run typecheck:all` | `docs/STATUS.md` |
+| Unit tests | `npm test -- --run` | `docs/STATUS.md` |
+| E2E tests | `npm run test:e2e` | `docs/STATUS.md` |
+| Build | `npm run build` | `docs/STATUS.md` |
+| Audit | `npm audit` | `docs/STATUS.md` |
 | Baseline screenshots | `npm run capture:baseline` | Script added; run output is under Playwright test-results |
 
 ## Visual Measurement Method

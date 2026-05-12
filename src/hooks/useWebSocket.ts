@@ -146,6 +146,10 @@ function handleServerMessage(msg: ServerMessage): void {
     case 'sim.connected':
       store.setConnectionStatus('CONNECTED');
       store.setConnectionMode('CONTROL');
+      store.setConnectionDiagnostics({
+        structuredCapabilities: msg.structuredCapabilities ?? null,
+        adapterHealth: msg.adapterHealth ?? null,
+      });
       store.setConnectedAircraft(msg.aircraft, msg.capabilities ?? null, msg.aircraftType ?? null);
       store.setConnectedLastError(msg.lastError ?? null);
       store.setSessionStartTime(Date.now());
@@ -154,6 +158,10 @@ function handleServerMessage(msg: ServerMessage): void {
       store.setConnectionStatus('DISCONNECTED');
       store.setConnectionMode('STANDALONE');
       store.setConnectedAircraft(null, null, null);
+      store.setConnectionDiagnostics({
+        structuredCapabilities: null,
+        adapterHealth: null,
+      });
       store.setAircraftState(null);
       store.setConnectedLastError(msg.lastError ?? null);
       store.setSessionStartTime(null);

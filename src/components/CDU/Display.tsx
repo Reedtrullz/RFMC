@@ -1,6 +1,6 @@
 import { useFMCStore } from '../../store/useFMCStore';
-import { PAGE_LINES } from '@shared';
-import { DisplayLine } from './DisplayLine';
+import { displayDataToGrid } from '@shared';
+import { CDUDisplayGrid } from './display/CDUDisplayGrid';
 
 interface DisplayProps {
   variant?: 'boeing' | 'airbus';
@@ -10,29 +10,9 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
   const displayData = useFMCStore(s => s.getDisplayData());
   const aircraft = useFMCStore(s => s.aircraft);
   const isAirbus = variant === 'airbus' || aircraft === 'AIRBUS_A320';
-  const maxLines = PAGE_LINES; // 14 lines for both Boeing and Airbus MCDU
-  const colorClass = isAirbus ? 'text-cdu-amber text-glow-amber' : 'text-cdu-text text-glow';
-  const lines = displayData.lines;
+  const grid = displayDataToGrid(displayData);
 
   return (
-    <div className={`flex flex-col px-1 py-0.5 font-cdu text-[11px] ${colorClass}`}>
-      {Array.from({ length: maxLines }).map((_, i) => {
-        const line = lines[i] || { text: '', leftLabel: '', rightLabel: '', inverse: false };
-        return (
-          <DisplayLine
-            key={i}
-            text={line.text}
-            leftLabel={line.leftLabel}
-            rightLabel={line.rightLabel}
-            inverse={line.inverse}
-            small={line.small}
-            blinking={line.blinking}
-            variant={isAirbus ? 'airbus' : 'boeing'}
-            color={line.color}
-            semantic={line.semantic}
-          />
-        );
-      })}
-    </div>
+    <CDUDisplayGrid grid={grid} variant={isAirbus ? 'airbus' : 'boeing'} />
   );
 }

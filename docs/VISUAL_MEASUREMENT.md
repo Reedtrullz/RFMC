@@ -29,6 +29,9 @@ Use `reference-library/references.json` for source metadata. Before a reference 
 - Normalize the app and reference crop to the CDU/MCDU display area.
 - Fit a 24-column x 14-row grid.
 - Measure row baselines, column anchors, left/right label alignment, and scratchpad alignment.
+- Use the `DisplaySegment`/`GridDisplayData` model as the app-side measurement contract. Every rendered glyph must have stable row and column coordinates exposed through DOM measurement hooks.
+- Boeing CDU shell checks should include display bay bounds, LSK vertical alignment, keycap dimensions, key gaps, screw positions, bezel thickness, and function-key row placement.
+- ND checks should include arc/rose center, clipping boundary, range-ring radii, route-segment clipping, FIX ring scale, and HOLD racetrack orientation once aircraft-specific ND frames are implemented.
 - Phase 1 target: Boeing character-position variance <= 4%.
 - End-state target: Boeing character-position variance <= 3%.
 

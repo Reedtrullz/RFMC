@@ -25,6 +25,8 @@ export function ConnectionStatus() {
   const connectedAircraft = useFMCStore(s => s.connectedAircraft);
   const connectedAircraftType = useFMCStore(s => s.connectedAircraftType);
   const connectedCapabilities = useFMCStore(s => s.connectedCapabilities);
+  const adapterHealth = useFMCStore(s => s.adapterHealth);
+  const structuredCapabilities = useFMCStore(s => s.structuredCapabilities);
   const lastError = useFMCStore(s => s.lastError);
   const aircraftState = useFMCStore(s => s.aircraftState);
   const latency = useFMCStore(s => s.latency);
@@ -110,7 +112,10 @@ export function ConnectionStatus() {
             {connectionStatus === 'CONNECTED' && (
               <>
                 <DiagnosticRow label="AIRCRAFT" value={aircraftType} />
+                <DiagnosticRow label="HEALTH" value={adapterHealth?.state ?? connectionStatus} className={adapterHealth?.state === 'CONNECTED' ? 'text-cdu-exec' : 'text-cdu-amber'} />
+                <DiagnosticRow label="PROFILE" value={adapterHealth?.profileVersion ?? '---'} />
                 <DiagnosticRow label="CAPS" value={capabilities.length ? capabilities.join(', ') : '---'} />
+                <DiagnosticRow label="DATA" value={structuredCapabilities?.data.length ? structuredCapabilities.data.join(', ') : '---'} />
                 <DiagnosticRow label="LATENCY" value={`${latency} MS`} className={latency > 100 ? 'text-cdu-amber' : 'text-cdu-exec'} />
                 <DiagnosticRow label="UPTIME" value={uptime} className="text-cdu-cyan" />
               </>

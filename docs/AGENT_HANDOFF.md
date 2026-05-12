@@ -7,14 +7,14 @@ This handoff is for the next agent continuing implementation work in `/Users/rei
 - Active branch: `main`
 - Latest pushed commit before this continuation slice: `672415a Add agent handoff instructions`
 - This handoff was updated during the next roadmap slice; check `git log -1 --oneline` for the newest commit after that slice is committed.
-- Current authoritative status document: `IMPLEMENTATION_STATUS.md`
+- Current authoritative status document: `STATUS.md`
 - Current roadmap: `ROADMAP.md`
 - Current test matrix: `TEST_MATRIX.md`
 - Current scope boundaries: `SCOPE.md` and `KNOWN_LIMITATIONS.md`
 - Current pilot review criteria: `PILOT_REVIEW_RUBRIC.md`
 - Current metrics/measurement plan: `METRICS.md`
 
-Do not treat older roadmap files as current truth unless `IMPLEMENTATION_STATUS.md` or `ROADMAP.md` explicitly says the work is still active. The older FMS accuracy plans were consolidated into the current roadmap/status documents.
+Do not treat older roadmap files as current truth unless `STATUS.md`, `IMPLEMENTATION_STATUS.md`, or `ROADMAP.md` explicitly says the work is still active. The older FMS accuracy plans were consolidated into the current roadmap/status documents.
 
 ## Uncommitted Local Files To Leave Alone
 
@@ -35,11 +35,8 @@ These are useful as local references, but prior commits intentionally excluded t
 
 Latest verified automated baseline:
 
-- `npm run typecheck:all` passes across shared, frontend, and server.
-- `npm test -- --run` passes with `98/98` tests.
-- `npm run test:e2e` passes with `11 passed, 2 skipped`.
-- `npm run build` succeeds with the current bundle at about `263.93KB` JS and `20.76KB` CSS.
-- `npm audit --audit-level=high` exits successfully for the high/critical policy, while still reporting the documented 2 moderate Vite/esbuild dev advisories.
+- Current automated counts, build size, and audit state live in `docs/STATUS.md`.
+- Do not duplicate those live values in handoff notes; run the commands and update `STATUS.md` when the baseline changes.
 
 Do not claim live MSFS/PMDG validation from this macOS workspace. PMDG work is scaffolded and mock-tested, but live round-trip validation belongs in the Windows/MSFS/PMDG matrix documented in `docs/MSFS_LIVE_VALIDATION.md`.
 
@@ -122,7 +119,7 @@ Tests:
 
 ## Implementation Rules For The Next Agent
 
-1. Read `IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, and `TEST_MATRIX.md` before choosing work.
+1. Read `STATUS.md`, `IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, and `TEST_MATRIX.md` before choosing work.
 2. Keep status documents evidence-backed. If a command was not run, do not say it passed.
 3. Preserve the distinction between:
    - implemented,
@@ -264,6 +261,6 @@ A roadmap slice is done when:
 - Frontend and backend CONTROL-mode behavior are in parity where applicable.
 - Unit/regression tests cover the new behavior.
 - Playwright coverage is added if the user-facing workflow changes.
-- `IMPLEMENTATION_STATUS.md` and `TEST_MATRIX.md` are updated with measured results.
+- `STATUS.md` is updated with measured results; implementation/test docs link to it instead of duplicating live counts.
 - The full validation command set passes or any skipped/unrun command is clearly documented.
 - The commit excludes unrelated local artifacts.

@@ -4,8 +4,36 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, DisplayData, ServerMessage } from '@shared';
 import { devError, devLog } from '@shared';
 import { createAircraftAdapter } from './aircraft-adapters';
+import { getAdapterHealth, toAdapterCapabilities } from './aircraft-adapters/adapter-health';
 import type { IAircraftAdapter } from './aircraft-adapters/IAircraftAdapter';
 import { FMCEngine } from './fmc-engine';
+
+function parseAllowedOrigins(value: string | undefined): string[] {
+  if (!value) return [];
+  return value.split(',').map(origin => origin.trim()).filter(Boolean);
+}
+
+function isOriginAllowed(origin: string | undefined, allowedOrigins: string[]): boolean {
+  if (!origin) return true;
+  if (allowedOrigins.length === 0) return true;
+  return allowedOrigins.includes(origin);
+}
+
+function isClientMessage(value: unknown): value is ClientMessage {
+  if (!value || typeof value !== 'object') return false;
+  const message = value as { type?: unknown; key?: unknown; mode?: unknown };
+  switch (message.type) {
+    case 'fmc.input':
+      return typeof message.key === 'string';
+    case 'sim.connect':
+    case 'sim.disconnect':
+      return true;
+    case 'mode':
+      return message.mode === 'STANDALONE' || message.mode === 'SYNC' || message.mode === 'CONTROL';
+    default:
+      return false;
+  }
+}
 
 export interface BridgeServerOptions {
   port?: number;
@@ -13,6 +41,8 @@ export interface BridgeServerOptions {
   fmc?: FMCEngine;
   serveStatic?: boolean;
   watchdogInterval?: number;
+  allowedOrigins?: string[];
+  maxMessageBytes?: number;
 }
 
 export interface BridgeServer {
@@ -29,11 +59,36 @@ export interface BridgeServer {
 export function createBridgeServer(options: BridgeServerOptions = {}): BridgeServer {
   const app = express();
   const server = http.createServer(app);
-  const wss = new WebSocketServer({ server });
+  const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(process.env.WS_ALLOWED_ORIGINS);
+  const maxMessageBytes = options.maxMessageBytes ?? parseInt(process.env.WS_MAX_MESSAGE_BYTES || '65536', 10);
+  const wss = new WebSocketServer({
+    server,
+    maxPayload: maxMessageBytes,
+    verifyClient: ({ origin }, done) => {
+      if (isOriginAllowed(origin, allowedOrigins)) {
+        done(true);
+        return;
+      }
+      done(false, 403, 'Forbidden origin');
+    },
+  });
   const fmc = options.fmc ?? new FMCEngine();
   const aircraft = options.aircraft ?? createAircraftAdapter();
   let pollInterval: ReturnType<typeof setInterval> | null = null;
   let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
+  app.disable('x-powered-by');
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; connect-src 'self' ws: wss: https://www.simbrief.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    );
+    next();
+  });
 
   function startHeartbeat(): void {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -61,6 +116,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       aircraft: aircraft.isConnected ? aircraft.name : 'none',
       aircraftType: aircraft.aircraftType,
       capabilities: aircraft.capabilities,
+      structuredCapabilities: toAdapterCapabilities(aircraft),
+      adapterHealth: getAdapterHealth(aircraft),
       connectionStatus: aircraft.connectionStatus,
       lastError: aircraft.lastError,
       clients: wss.clients.size,
@@ -154,6 +211,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         aircraft: aircraft.name,
         aircraftType: aircraft.aircraftType,
         capabilities: aircraft.capabilities,
+        structuredCapabilities: toAdapterCapabilities(aircraft),
+        adapterHealth: getAdapterHealth(aircraft),
         connectionStatus: aircraft.connectionStatus,
         lastError: aircraft.lastError,
       } as ServerMessage);
@@ -179,13 +238,33 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       aircraft: aircraft.name,
       aircraftType: aircraft.aircraftType,
       capabilities: aircraft.capabilities,
+      structuredCapabilities: toAdapterCapabilities(aircraft),
+      adapterHealth: getAdapterHealth(aircraft),
       connectionStatus: aircraft.connectionStatus,
       lastError: aircraft.lastError,
     } as ServerMessage));
 
     ws.on('message', (raw) => {
       try {
-        const msg: ClientMessage = JSON.parse(raw.toString());
+        const rawText = raw.toString();
+        if (Buffer.byteLength(rawText, 'utf8') > maxMessageBytes) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Message too large',
+          } as ServerMessage));
+          return;
+        }
+
+        const parsed = JSON.parse(rawText) as unknown;
+        if (!isClientMessage(parsed)) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Unknown or invalid message type',
+          } as ServerMessage));
+          return;
+        }
+
+        const msg = parsed;
 
         switch (msg.type) {
           case 'fmc.input': {
@@ -210,6 +289,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
                   aircraft: aircraft.name,
                   aircraftType: aircraft.aircraftType,
                   capabilities: aircraft.capabilities,
+                  structuredCapabilities: toAdapterCapabilities(aircraft),
+                  adapterHealth: getAdapterHealth(aircraft),
                   connectionStatus: aircraft.connectionStatus,
                   lastError: aircraft.lastError,
                 } as ServerMessage);

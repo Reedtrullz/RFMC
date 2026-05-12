@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { CDUKey, DisplayData, ConnectionMode, AircraftType, ConnectionStatus } from './fmc';
+import type { AdapterCapabilities, AdapterHealth } from '../avionics/profiles';
 
 // ---- Client → Server Messages ----
 
@@ -42,6 +43,8 @@ export interface SimConnectedMessage {
   aircraft: string;
   aircraftType?: AircraftType;
   capabilities?: string[];
+  structuredCapabilities?: AdapterCapabilities;
+  adapterHealth?: AdapterHealth;
   connectionStatus?: ConnectionStatus;
   lastError?: string | null;
 }

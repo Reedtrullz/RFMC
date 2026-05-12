@@ -60,6 +60,14 @@ export {
 } from './fmc/displayColors';
 export type { DisplayColor, BoeingColor, AirbusColor } from './fmc/displayColors';
 export {
+  clampDisplayText,
+  composeLegacyDisplayLine,
+  displayDataToGrid,
+  displayLineToSegments,
+  scratchpadToGridSegment,
+} from './fmc/displayGrid';
+export type { DisplaySegment, DisplayTextSize, GridDisplayData } from './fmc/displayGrid';
+export {
   AIRBUS_SEMANTIC_COLORS,
   BOEING_SEMANTIC_COLORS,
   getSemanticColor,
@@ -80,4 +88,25 @@ export {
   isValidADF,
 } from './fmc/validation';
 export type { ValidationResult } from './fmc/validation';
+export {
+  BOEING_737NG_AIRCRAFT_PROFILE,
+  BOEING_737NG_DISPLAY_PROFILE,
+} from './avionics/profiles';
+export type {
+  AdapterCapabilities,
+  AdapterHealth,
+  AdapterHealthState,
+  AircraftFamily,
+  AircraftProfile,
+  ColourTokens,
+  DisplayProfile,
+  FlightPlanModel,
+  InputProfile,
+  LightingMode,
+  LightingProfile,
+  Point,
+  Rect,
+  ShellGeometry,
+  TelemetryFrame,
+} from './avionics/profiles';
 export { devLog, devWarn, devError } from './logger';

@@ -6,7 +6,7 @@ A web-based Boeing 737 NG Flight Management Computer (FMC) / Control Display Uni
 
 ## What is this?
 
-VirtualCDU is a fully functional simulation of a Boeing 737 FMC — the computer pilots use to enter flight plans, manage performance data, and navigate the aircraft. It looks and behaves like the real unit in the cockpit.
+VirtualCDU is a web-based Boeing 737 NG FMC/CDU procedure trainer for practicing flows and reviewing trainer-level navigation context. It is not certified, not approved for real-world operations, and visual fidelity is still being measured against hardware references.
 
 Use it to:
 - **Learn** 737 FMC procedures without a simulator
@@ -38,6 +38,8 @@ Use it to:
 | **Backend** | Node.js, Express, WebSocket (ws), tsx |
 | **Shared** | TypeScript types, FMC state machine page functions |
 | **Deploy** | Docker, Ansible, Caddy, GitHub Actions |
+
+Current validation status lives in [`docs/STATUS.md`](docs/STATUS.md). Avoid copying live test counts into this README.
 
 ## Architecture
 

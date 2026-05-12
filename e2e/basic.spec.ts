@@ -95,7 +95,7 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'L3');
     await enterText(page, 'AA123');
     await lsk(page, 'R1');
-    await lsk(page, 'L6');
+    await press(page, 'NEXT');
     await enterText(page, 'KJFK DCT RBV DIXIE KDCA');
     await lsk(page, 'L1');
     await expectScreenText(page, 'RBV');
@@ -110,7 +110,7 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'L2');
     await enterText(page, '04L');
     await lsk(page, 'L3');
-    await lsk(page, 'L6');
+    await press(page, 'NEXT');
     await enterText(page, 'FRDMM2');
     await lsk(page, 'L2');
     await enterText(page, 'ILS19');

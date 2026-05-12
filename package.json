@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "check:status-docs": "node scripts/check-status-docs.mjs",
     "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=chromium"
   },
   "devDependencies": {
