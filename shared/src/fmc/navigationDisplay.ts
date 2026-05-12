@@ -92,7 +92,10 @@ export function buildNavigationDisplayModel(
     centered: isCentered,
     heading: state.aircraftState?.heading || 0,
     track: state.aircraftState?.track || state.aircraftState?.heading || 0,
-    selectedHeading: state.aircraftState?.selectedHeading || null,
+    selectedHeading: aircraftStyle === 'boeing' 
+      ? state.autopilot.boeing.heading 
+      : state.autopilot.airbus.heading ?? null,
+    selectedCourse: aircraftStyle === 'boeing' ? state.autopilot.boeing.courseL : null,
   };
 }
 

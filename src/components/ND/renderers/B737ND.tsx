@@ -68,6 +68,13 @@ export function B737ND({ model }: B737NDProps) {
       {/* Aircraft Symbol */}
       <AircraftSymbol centered={model.centered} color={colors.active} style="boeing" />
 
+      {/* Track Line (Boeing style) */}
+      {!model.centered && model.mode !== 'PLN' && (
+        <g transform={`rotate(${model.track - model.heading} 50 ${cy})`}>
+          <line x1="50" y1={cy} x2="50" y2={cy - 45} stroke="#ffffff" strokeWidth="0.5" strokeDasharray="2 2" opacity="0.6" />
+        </g>
+      )}
+
       {/* MOD Annunciation */}
       {model.isModified && (
         <text x="50" y="92" textAnchor="middle" fill="white" fontSize="4" fontWeight="bold">MOD</text>

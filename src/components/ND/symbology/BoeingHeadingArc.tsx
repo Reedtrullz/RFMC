@@ -74,6 +74,21 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
         <path d="M48.5 35 L51.5 35 L50 39 Z" fill="white" transform={`translate(0 ${cy - 84})`} />
       )}
       
+      {/* Selected Heading Bug (Magenta) */}
+      {model.selectedHeading !== null && (
+        <g transform={`rotate(${model.selectedHeading - model.heading} 50 ${cy})`}>
+          <path d="M48 35 L52 35 L52 38 L51 38 L51 36 L49 36 L49 38 L48 38 Z" fill="#ff00ff" />
+        </g>
+      )}
+
+      {/* Selected Course Line (Magenta) */}
+      {model.selectedCourse !== null && (
+        <g transform={`rotate(${model.selectedCourse - model.heading} 50 ${cy})`}>
+          <line x1="50" y1={cy - radius} x2="50" y2={cy + radius} stroke="#ff00ff" strokeWidth="0.8" strokeDasharray="4 4" />
+          <path d="M48 39 L52 39 L50 35 Z" fill="#ff00ff" />
+        </g>
+      )}
+
       {/* Track Diamond */}
       {model.track !== model.heading && (
         <g transform={`rotate(${model.track - model.heading} 50 ${cy})`}>

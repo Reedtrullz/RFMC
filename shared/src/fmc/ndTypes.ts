@@ -115,4 +115,5 @@ export interface NavigationDisplayModel {
   heading: number;
   track: number;
   selectedHeading: number | null;
+  selectedCourse: number | null;
 }

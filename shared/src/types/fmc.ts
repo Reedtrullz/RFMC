@@ -265,8 +265,18 @@ export interface TutorialScenario {
 
 // ---- Full FMC State (for shared logic) ----
 
+import type { AutopilotState } from '../autopilot/autopilotTypes';
+
 export interface FMCState {
   aircraft: AircraftType;
+  mode: FMCMode;
+  page: PageType;
+  
+  autopilot: AutopilotState;
+  
+  efisL: EFISState;
+  efisR: EFISState;
+
   currentPage: PageType;
   pageHistory: PageType[];
   scratchpad: string;

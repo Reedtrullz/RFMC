@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 
@@ -114,6 +114,50 @@ const defaultState = {
     adf1: '342',
   },
 
+  autopilot: {
+    boeing: {
+      courseL: 0,
+      courseR: 0,
+      speed: 100,
+      heading: 0,
+      altitude: 10000,
+      verticalSpeed: 0,
+      fdLeft: false,
+      fdRight: false,
+      autothrottleArm: false,
+      n1: false,
+      speedMode: false,
+      lnav: false,
+      vnav: false,
+      lvlChg: false,
+      hdgSel: false,
+      vorLoc: false,
+      app: false,
+      altHold: false,
+      vs: false,
+      apA: false,
+      apB: false,
+    },
+    airbus: {
+      speed: 100,
+      speedManaged: true,
+      heading: 0,
+      headingManaged: true,
+      altitude: 10000,
+      altitudeManaged: true,
+      verticalSpeed: 0,
+      fpa: 0,
+      fd1: false,
+      fd2: false,
+      athr: false,
+      ap1: false,
+      ap2: false,
+      loc: false,
+      appr: false,
+      exped: false,
+    }
+  },
+
   efisL: createDefaultEFIS('BOEING_737', 'L'),
   efisR: createDefaultEFIS('BOEING_737', 'R'),
 };
@@ -146,6 +190,9 @@ interface FMCActions {
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string; waypoints?: FlightPlanWaypoint[] }) => void;
   resetState: () => void;
   setAircraft: (type: AircraftType) => void;
+  updateBoeingMCP: (update: Partial<BoeingMCPState>) => void;
+  updateAirbusFCU: (update: Partial<AirbusFCUState>) => void;
+  pressMCPButton: (action: string) => void;
 
   // Waypoint editing actions
   insertWaypoint: (index: number, ident: string) => void;
@@ -1488,6 +1535,32 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const efisKey = side === 'L' ? 'efisL' : 'efisR';
     const efis = get()[efisKey];
     set({ [efisKey]: { ...efis, centered: !efis.centered } });
+  },
+
+  updateBoeingMCP: (update) => {
+    set((state) => ({
+      autopilot: {
+        ...state.autopilot,
+        boeing: { ...state.autopilot.boeing, ...update }
+      }
+    }));
+  },
+
+  updateAirbusFCU: (update) => {
+    set((state) => ({
+      autopilot: {
+        ...state.autopilot,
+        airbus: { ...state.autopilot.airbus, ...update }
+      }
+    }));
+  },
+
+  pressMCPButton: (action) => {
+    const state = get();
+    if (state.aircraft === 'BOEING_737') {
+      const update = processBoeingMCPAction(state.autopilot.boeing, action as any);
+      state.updateBoeingMCP(update);
+    }
   },
 
   setRteSubPage: (page: number) => set({ rteSubPage: page }),

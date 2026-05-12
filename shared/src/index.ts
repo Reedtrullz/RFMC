@@ -113,3 +113,5 @@ export type {
   TelemetryFrame,
 } from './avionics/profiles';
 export { devLog, devWarn, devError } from './logger';
+export * from './autopilot/autopilotTypes';
+export * from './autopilot/boeingMcpLogic';

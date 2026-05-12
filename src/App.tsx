@@ -8,6 +8,8 @@ import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useEffect } from 'react';
+import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
+import { FMA } from './components/PFD/FMA';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -91,28 +93,32 @@ export default function App() {
   };
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center gap-4 overflow-hidden bg-[#111] p-2 
-      pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] 
-      pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))]
-      touch-none max-lg:flex-col max-lg:gap-2 max-sm:p-0 
-      max-sm:pb-[env(safe-area-inset-bottom)] max-sm:pt-[env(safe-area-inset-top)]
-      max-sm:pl-[env(safe-area-inset-left)] max-sm:pr-[env(safe-area-inset-right)]">
-      <button
-        type="button"
-        className="fixed right-2 top-2 z-40 hidden h-8 rounded-sm border border-cdu-cyan/70 bg-black/80 px-3 font-cdu text-[10px] uppercase tracking-[0.16em] text-cdu-cyan max-lg:block"
-        aria-pressed={showNd}
-        onClick={() => setShowNd(current => !current)}
-      >
-        ND
-      </button>
-
-      <div className={`${showNd ? 'flex' : 'hidden'} h-[min(72vh,460px)] w-full justify-center lg:flex lg:h-[min(88vh,560px)] lg:w-[430px] lg:shrink-0`}>
-        <NavigationDisplay />
+    <div className="flex min-h-screen flex-col bg-black">
+      <div className="flex w-full justify-center py-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
+        <AutopilotTrainer />
       </div>
 
-      <div className="flex min-h-0 min-w-0 items-center justify-center lg:w-[560px] lg:shrink-0 max-lg:flex-1">
-        <CDU />
-      </div>
+      <main className="flex flex-1 flex-wrap items-center justify-center gap-8 p-4 lg:gap-16 max-sm:px-0">
+        <button
+          type="button"
+          className="fixed right-2 top-2 z-40 hidden h-8 rounded-sm border border-cdu-cyan/70 bg-black/80 px-3 font-cdu text-[10px] uppercase tracking-[0.16em] text-cdu-cyan max-lg:block"
+          aria-pressed={showNd}
+          onClick={() => setShowNd(current => !current)}
+        >
+          ND
+        </button>
+
+        <div className={`${showNd ? 'flex' : 'hidden'} flex-col items-center gap-4 w-full justify-center lg:flex lg:w-[430px] lg:shrink-0`}>
+          <FMA />
+          <div className="h-[min(72vh,460px)] w-full lg:h-[min(88vh,560px)]">
+            <NavigationDisplay />
+          </div>
+        </div>
+
+        <div className="flex min-h-0 min-w-0 items-center justify-center lg:w-[560px] lg:shrink-0 max-lg:flex-1">
+          <CDU />
+        </div>
+      </main>
       {showWelcome && <DemoWelcome />}
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
       {!isKiosk && <ConnectionStatus />}
