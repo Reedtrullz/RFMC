@@ -97,20 +97,38 @@ export function renderFpln(state: FMCState): DisplayData {
   const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
   const wpts = flightPlan.waypoints;
   const title = state.isModified ? 'TMPY F-PLN' : 'F-PLN';
+  const { legsPageIndex } = state;
+  const perPage = 5;
+  const start = legsPageIndex * perPage;
+  const pageWaypoints = wpts.slice(start, start + perPage);
+
   const lines = [inv(`  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan')];
   
-  for (let i = 0; i < Math.min(wpts.length, 10); i++) {
-    const wp = wpts[i];
+  for (let i = 0; i < pageWaypoints.length; i++) {
+    const wp = pageWaypoints[i];
     if (wp.discontinuity) {
       lines.push(fmt(' ----- DISCONTINUITY', '', '', 'amber'));
+      lines.push(blank());
     } else {
       lines.push(fmt(` ${wp.ident}`, '', '', 'green'));
+      lines.push(blank());
     }
   }
+
+  // Update planCenterIndex for Airbus PLAN mode
+  if (state.efisL?.mode === 'PLAN') {
+    // Traditionally, the 2nd line of the F-PLN page is the center point in PLAN mode
+    const centerIndex = start; 
+    if (state.planCenterIndex !== centerIndex) {
+      // Note: We can't call set() here because this is a renderer.
+      // We'll rely on the STEP/Scroll actions to update the state.
+    }
+  }
+
   while (lines.length < 14) lines.push(blank());
   return {
     title: 'F-PLN',
-    pageIndicator: '1',
+    pageIndicator: `${legsPageIndex + 1}/${Math.max(1, Math.ceil(wpts.length / perPage))}`,
     lines: lines.slice(0, 14),
     lskActions: buildFplnActions(state),
   };
@@ -134,6 +152,11 @@ function buildFplnActions(state: FMCState): Record<string, string | null> {
   if (state.isModified) {
     actions['R6'] = 'erase';
   }
+
+  const perPage = 5;
+  const totalPages = Math.max(1, Math.ceil(wpts.length / perPage));
+  if (state.legsPageIndex < totalPages - 1) actions['L6'] = 'next_page';
+  if (state.legsPageIndex > 0) actions['R6'] = 'prev_page';
   
   return actions;
 }

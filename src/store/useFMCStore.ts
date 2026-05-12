@@ -361,6 +361,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else {
           set({ currentPage: 'PERF_INIT', takeoffRefPageIndex: 0, scratchpad: '', scratchpadError: null });
         }
+      } else if (s.currentPage === 'F_PLN') {
+        const flightPlan = s.isModified && s.pendingFlightPlan ? s.pendingFlightPlan : s.flightPlan;
+        const totalPages = Math.max(1, Math.ceil(flightPlan.waypoints.length / 5));
+        if (s.legsPageIndex < totalPages - 1) {
+          const nextIndex = s.legsPageIndex + 1;
+          const perPage = 5;
+          const nextUpdates: Partial<FMCState> = { legsPageIndex: nextIndex };
+          if (s.efisL?.mode === 'PLAN') nextUpdates.planCenterIndex = nextIndex * perPage;
+          set(nextUpdates);
+        }
       }
       handled = true;
     }
@@ -378,6 +388,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           set({ takeoffRefPageIndex: s.takeoffRefPageIndex - 1, scratchpad: '', scratchpadError: null });
         } else {
           set({ currentPage: 'PERF_INIT', scratchpad: '', scratchpadError: null });
+        }
+      } else if (s.currentPage === 'F_PLN') {
+        if (s.legsPageIndex > 0) {
+          const nextIndex = s.legsPageIndex - 1;
+          const perPage = 5;
+          const nextUpdates: Partial<FMCState> = { legsPageIndex: nextIndex };
+          if (s.efisL?.mode === 'PLAN') nextUpdates.planCenterIndex = nextIndex * perPage;
+          set(nextUpdates);
         }
       }
       handled = true;
@@ -448,6 +466,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'sec_fpln': state.setPage('SEC_FPLN'); handled = true; break;
       case 'rad_nav': state.setPage('RAD_NAV'); handled = true; break;
       case 'data_index': state.setPage('DATA_INDEX'); handled = true; break;
+      case 'step_plan':
+        const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+        const totalWaypoints = flightPlan.waypoints.length + 1; // +1 for origin
+        const currentStep = state.planCenterIndex ?? 0;
+        set({ planCenterIndex: (currentStep + 1) % totalWaypoints });
+        handled = true;
+        break;
       case 'mcdu_menu': state.setPage('MCDU_MENU'); handled = true; break;
       case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); handled = true; break;
       case 'fpln_next': state.pressKey('NEXT_PAGE'); handled = true; break;

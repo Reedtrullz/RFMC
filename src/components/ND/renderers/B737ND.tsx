@@ -21,114 +21,149 @@ export function B737ND({ model }: B737NDProps) {
   };
 
   const isMap = model.mode === 'MAP';
+  const cy = model.centered ? 50 : 84;
 
   return (
     <g data-testid="b737-nd-renderer">
+      <defs>
+        <clipPath id="b737-nd-clip">
+          {model.centered ? (
+            <circle cx="50" cy={cy} r="45" />
+          ) : (
+            <path d={`M0 0 L0 ${cy} A50 50 0 0 1 100 ${cy} L100 0 Z`} />
+          )}
+        </clipPath>
+      </defs>
+
       {/* Background Layers */}
       <g opacity="0.4">
         <RangeRings range={model.range} centered={model.centered} color="#003344" />
         <HeadingRose centered={model.centered} />
       </g>
 
-      {/* Mode / Source Top Left */}
+      {/* Header Info */}
       <g transform="translate(4 6)" fontSize="3.2" fill={colors.active} fontWeight="bold">
         <text>{model.mode} {model.centered ? 'CTR' : ''}</text>
       </g>
-
-      {/* Procedure Label */}
       <text x="4" y="15" fill={colors.text} fontSize="3.5" fontWeight="bold" opacity="0.8">
         {model.procedureLabel}
       </text>
 
-      {/* Active Route Segments */}
-      {model.activeRouteSegments.map((segment, i) => (
-        <line
-          key={`active-seg-${i}`}
-          x1={segment.from.x} y1={segment.from.y}
-          x2={segment.to.x} y2={segment.to.y}
-          stroke={isMap ? colors.magenta : colors.active}
-          strokeWidth={segment.active ? '1.8' : '1.2'}
-          strokeDasharray={segment.dashed ? '2 2' : undefined}
-          opacity={0.9}
-        />
-      ))}
+      {/* Dynamic Overlay Legend (Left) */}
+      <g transform="translate(4 25)" fontSize="2.8" fill={colors.active} fontWeight="bold">
+        {model.overlays.arpt && <text>ARPT</text>}
+        {model.overlays.sta && <text y="4">STA</text>}
+        {model.overlays.wpt && <text y="8">WPT</text>}
+        {model.overlays.data && <text y="12" fill={colors.text}>DATA</text>}
+      </g>
 
-      {/* Pending Route Segments */}
-      {model.pendingRouteSegments.map((segment, i) => (
-        <line
-          key={`pending-seg-${i}`}
-          x1={segment.from.x} y1={segment.from.y}
-          x2={segment.to.x} y2={segment.to.y}
-          stroke={colors.modified}
-          strokeWidth="1.2"
-          strokeDasharray={segment.dashed ? '2 2' : '4 2'}
-          opacity={0.9}
-        />
-      ))}
+      <g clipPath="url(#b737-nd-clip)">
+        {/* Background Waypoints */}
+        {model.backgroundWaypoints.map(point => (
+          <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.5">
+            <path d="M0 -1.5 L1.5 1.5 L-1.5 1.5 Z" fill="none" stroke={colors.active} strokeWidth="0.4" />
+            <text x="2" y="1" fill={colors.active} fontSize="2.2">{point.label}</text>
+          </g>
+        ))}
 
-      {/* Active Waypoints & Labels */}
-      {model.activeRoutePoints.map(point => (
-        <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
-          {point.discontinuity ? (
-            <path d="M-2-2L2 2M2-2L-2 2" stroke="#ffaa00" strokeWidth="1" />
-          ) : (
-            <path
-              d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
-              fill={point.active ? colors.magenta : 'none'}
-              stroke={point.active ? colors.magenta : colors.active}
-              strokeWidth="0.8"
-            />
-          )}
-          <text x="3" y="1" fill={point.active ? colors.magenta : colors.text} fontSize="3.2" fontWeight="bold">
-            {point.label}
-          </text>
-          
-          {/* DATA Overlay: Constraints */}
-          {model.overlays.data && !point.discontinuity && (
-            <g transform="translate(0 4)" fontSize="2.4" fill={colors.text} opacity="0.8">
-              {point.speedLabel && <text y="0">{point.speedLabel}</text>}
-              {point.altitudeLabel && <text y={point.speedLabel ? 3 : 0}>{point.altitudeLabel}</text>}
-            </g>
-          )}
-        </g>
-      ))}
+        {/* Background Airports */}
+        {model.backgroundAirports.map(point => (
+          <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.6">
+            <path d="M-1.5 -1.5h3v3h-3z" fill="none" stroke={colors.active} strokeWidth="0.5" />
+            <text x="2.5" y="1" fill={colors.active} fontSize="2.4">{point.label}</text>
+          </g>
+        ))}
 
-      {/* Pending Waypoints & Labels */}
-      {model.pendingRoutePoints.map(point => (
-        <g key={`pending-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
-          {!point.discontinuity && (
-            <path
-              d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
-              fill="none"
-              stroke={colors.modified}
-              strokeWidth="0.8"
-            />
-          )}
-          <text x="3" y="1" fill={colors.modified} fontSize="3.2" fontWeight="bold">
-            {point.label}
-          </text>
-        </g>
-      ))}
+        {/* Active Route Segments */}
+        {model.activeRouteSegments.map((segment, i) => (
+          <line
+            key={`active-seg-${i}`}
+            x1={segment.from.x} y1={segment.from.y}
+            x2={segment.to.x} y2={segment.to.y}
+            stroke={isMap ? colors.magenta : colors.active}
+            strokeWidth={segment.active ? '1.8' : '1.2'}
+            strokeDasharray={segment.dashed ? '2 2' : undefined}
+            opacity={0.9}
+          />
+        ))}
 
-      {/* Overlays (Fix/Hold) */}
-      {model.fixOverlays.map((f, i) => (
-        <g key={`fix-${i}`} transform={`translate(${f.x} ${f.y})`} opacity="0.8" data-testid="nd-fix-overlay">
-          <circle r="0.8" fill={colors.active} />
-          <circle r="8" fill="none" stroke={colors.active} strokeWidth="0.5" strokeDasharray="1 1" />
-          <text x="2" y="-5" fill={colors.active} fontSize="2.8">{f.refFix}</text>
-        </g>
-      ))}
-      
-      {model.holdOverlay && (
-        <g transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`} data-testid="nd-hold-overlay">
-          <ellipse rx="10" ry="4" fill="none" stroke={colors.magenta} strokeWidth="0.8" transform={`rotate(${model.holdOverlay.inboundCourse})`} />
-        </g>
-      )}
+        {/* Pending Route Segments */}
+        {model.pendingRouteSegments.map((segment, i) => (
+          <line
+            key={`pending-seg-${i}`}
+            x1={segment.from.x} y1={segment.from.y}
+            x2={segment.to.x} y2={segment.to.y}
+            stroke={colors.modified}
+            strokeWidth="1.2"
+            strokeDasharray={segment.dashed ? '2 2' : '4 2'}
+            opacity={0.9}
+          />
+        ))}
 
-      {/* Overlays */}
-      <WXROverlay data={model.wxrData} />
-      <VerticalProfileOverlay points={model.verticalProfilePoints} />
-      <TCASOverlay targets={model.tcasTargets} />
+        {/* Active Waypoints & Labels */}
+        {model.activeRoutePoints.map(point => (
+          <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
+            {point.discontinuity ? (
+              <path d="M-2-2L2 2M2-2L-2 2" stroke="#ffaa00" strokeWidth="1" />
+            ) : (
+              <path
+                d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
+                fill={point.active ? colors.magenta : 'none'}
+                stroke={point.active ? colors.magenta : colors.active}
+                strokeWidth="0.8"
+              />
+            )}
+            <text x="3" y="1" fill={point.active ? colors.magenta : colors.text} fontSize="3.2" fontWeight="bold">
+              {point.label}
+            </text>
+            
+            {/* DATA Overlay: Constraints */}
+            {model.overlays.data && !point.discontinuity && (
+              <g transform="translate(0 4)" fontSize="2.4" fill={colors.text} opacity="0.8">
+                {point.speedLabel && <text y="0">{point.speedLabel}</text>}
+                {point.altitudeLabel && <text y={point.speedLabel ? 3 : 0}>{point.altitudeLabel}</text>}
+              </g>
+            )}
+          </g>
+        ))}
+
+        {/* Pending Waypoints & Labels */}
+        {model.pendingRoutePoints.map(point => (
+          <g key={`pending-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
+            {!point.discontinuity && (
+              <path
+                d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
+                fill="none"
+                stroke={colors.modified}
+                strokeWidth="0.8"
+              />
+            )}
+            <text x="3" y="1" fill={colors.modified} fontSize="3.2" fontWeight="bold">
+              {point.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Overlays (Fix/Hold) */}
+        {model.fixOverlays.map((f, i) => (
+          <g key={`fix-${i}`} transform={`translate(${f.x} ${f.y})`} opacity="0.8" data-testid="nd-fix-overlay">
+            <circle r="0.8" fill={colors.active} />
+            <circle r="8" fill="none" stroke={colors.active} strokeWidth="0.5" strokeDasharray="1 1" />
+            <text x="2" y="-5" fill={colors.active} fontSize="2.8">{f.refFix}</text>
+          </g>
+        ))}
+        
+        {model.holdOverlay && (
+          <g transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`} data-testid="nd-hold-overlay">
+            <ellipse rx="10" ry="4" fill="none" stroke={colors.magenta} strokeWidth="0.8" transform={`rotate(${model.holdOverlay.inboundCourse})`} />
+          </g>
+        )}
+
+        {/* Overlays */}
+        <WXROverlay data={model.wxrData} />
+        <VerticalProfileOverlay points={model.verticalProfilePoints} />
+        <TCASOverlay targets={model.tcasTargets} />
+      </g>
       
       {/* Anchor Zones */}
       <NDAnchorZones model={model} colors={colors} />

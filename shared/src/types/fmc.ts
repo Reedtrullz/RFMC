@@ -347,6 +347,7 @@ export interface FMCState {
   tutorialActive: boolean;
   tutorialCompleted: boolean;
   tutorialStepIndex: number;
+  planCenterIndex?: number;
   tutorialScenario: string | null;
   tutorialStartTime: number | null;
   tutorialErrors: number;

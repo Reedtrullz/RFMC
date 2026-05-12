@@ -92,6 +92,8 @@ export interface NavigationDisplayModel {
   activeRouteSegments: NDRouteSegment[];
   pendingRoutePoints: NDRoutePoint[];
   pendingRouteSegments: NDRouteSegment[];
+  backgroundAirports: NDRoutePoint[];
+  backgroundWaypoints: NDRoutePoint[];
   fixOverlays: NDFixOverlay[];
   holdOverlay: NDHoldOverlay | null;
   tcasTargets: TCASTarget[];

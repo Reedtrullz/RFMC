@@ -1,6 +1,7 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
 import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
 import { distanceNm, bearingDeg } from './ndGeometry';
+import { getAllAirports, getAllWaypoints } from './navDatabase';
 import type { 
   NDMapMode, NDRange, NDAnchorZones, NDRoutePoint, NDRouteSegment, 
   NDFixOverlay, NDHoldOverlay, TCASTarget, WXRData, VerticalProfilePoint, 
@@ -31,7 +32,8 @@ export function buildNavigationDisplayModel(
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
-  const activeItem = primaryRouteItems[primaryActiveIndex];
+  const planIndex = state.planCenterIndex ?? primaryActiveIndex;
+  const activeItem = primaryRouteItems[planIndex] || primaryRouteItems[primaryActiveIndex];
   const planCenter = (isPlanMode && activeItem?.lat !== undefined && activeItem?.lon !== undefined)
     ? { lat: activeItem.lat, lon: activeItem.lon }
     : aircraftPos;
@@ -76,6 +78,8 @@ export function buildNavigationDisplayModel(
     activeRouteSegments: activeRouteData.segments,
     pendingRoutePoints: pendingRouteData.points,
     pendingRouteSegments: pendingRouteData.segments,
+    backgroundAirports: buildBackgroundPoints(state, resolvedEfis.overlays.arpt, 'airport', projectionContext, activeRouteItems),
+    backgroundWaypoints: buildBackgroundPoints(state, resolvedEfis.overlays.wpt || resolvedEfis.overlays.sta, 'waypoint', projectionContext, activeRouteItems),
     fixOverlays,
     holdOverlay: buildHoldOverlay(state, primaryPointsForOverlays, activePointForOverlays),
     tcasTargets: buildTCASTargets(state, resolvedEfis, isCentered),
@@ -407,4 +411,42 @@ function processRoute(
     points: routePoints.filter(p => isPointVisible(p, efis, visibleOverlays)),
     segments: routeSegments
   };
+}
+
+function buildBackgroundPoints(
+  state: FMCState,
+  enabled: boolean,
+  type: 'airport' | 'waypoint',
+  context: NDProjectionContext,
+  activeRouteItems: RouteItem[]
+): NDRoutePoint[] {
+  if (!enabled) return [];
+
+  const db = type === 'airport' ? getAllAirports() : getAllWaypoints();
+  const activeIdents = new Set(activeRouteItems.map(item => item.ident));
+  const points: NDRoutePoint[] = [];
+
+  Object.entries(db).forEach(([ident, pos], index) => {
+    if (activeIdents.has(ident)) return;
+
+    const projected = projectGeoPointToND(pos, context);
+    if (projected && projected.visible) {
+      points.push({
+        id: `bg-${type}-${ident}-${index}`,
+        label: ident,
+        altitudeLabel: null,
+        speedLabel: null,
+        x: projected.x,
+        y: projected.y,
+        active: false,
+        discontinuity: false,
+        airport: type === 'airport',
+        navaid: type === 'waypoint',
+        visible: true,
+        clipped: projected.clipped,
+      });
+    }
+  });
+
+  return points;
 }

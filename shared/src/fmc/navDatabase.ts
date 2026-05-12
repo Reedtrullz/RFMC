@@ -47,3 +47,16 @@ export function getWaypointCoordinates(ident: string): GeoPoint | null {
   if (!ident) return null;
   return WAYPOINT_DB[ident.toUpperCase()] || null;
 }
+/**
+ * Get all airports in the database.
+ */
+export function getAllAirports(): Record<string, GeoPoint> {
+  return { ...AIRPORT_DB };
+}
+
+/**
+ * Get all waypoints in the database.
+ */
+export function getAllWaypoints(): Record<string, GeoPoint> {
+  return { ...WAYPOINT_DB };
+}

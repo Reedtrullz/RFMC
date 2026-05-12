@@ -93,6 +93,11 @@ export function renderLegsPage(state: FMCState): DisplayData {
     lines.push(blank());
   }
 
+  const isBoeingPlanMode = state.efisL?.mode === 'PLN';
+  if (isBoeingPlanMode) {
+    lines[11] = fmt(lines[11] ? lines[11].text.substring(0, 14) : '', '', 'STEP>', 'white');
+  }
+
   return {
     title: isLive ? 'LEGS LIVE' : 'LEGS',
     pageIndicator: `${legsPageIndex + 1}/${totalPages}`,
@@ -141,6 +146,11 @@ function getLegsLskActions(state: FMCState): Record<string, string | null> {
 
   if (state.isModified) {
     actions['L6'] = 'erase';
+  }
+
+  const isBoeingPlanMode = state.efisL?.mode === 'PLN';
+  if (isBoeingPlanMode) {
+    actions['R6'] = 'step_plan';
   }
 
   return actions;
