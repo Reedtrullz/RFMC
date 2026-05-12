@@ -77,20 +77,31 @@ html, body {
   --cdu-row-h: var(--cdu-row-height, 1.22em);
 
   display: grid;
-  grid-template-columns: repeat(var(--cdu-cols), minmax(0, 1fr));
   grid-template-rows: repeat(var(--cdu-rows), var(--cdu-row-h));
   align-content: start;
   justify-content: start;
 
-  width: 100%;
   height: calc(var(--cdu-rows) * var(--cdu-row-h));
 
   font-family: 'B612 Mono', monospace;
-  font-size: clamp(16px, 2.05vw, 22px);
   line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   background-color: transparent;
+}
+
+/* Boeing: fill the screen width */
+.cdu-display-matrix--boeing {
+  grid-template-columns: repeat(var(--cdu-cols), minmax(0, 1fr));
+  width: 100%;
+  font-size: clamp(16px, 2.05vw, 22px);
+}
+
+/* Airbus: keep character-cell sizing until Airbus gets its own display bay */
+.cdu-display-matrix--airbus {
+  grid-template-columns: repeat(var(--cdu-cols), 0.72em);
+  width: calc(var(--cdu-cols) * 0.72em);
+  font-size: clamp(14px, 1.45vw, 18px);
 }
 
 .cdu-display-cell {

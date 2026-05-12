@@ -328,127 +328,6 @@ export const takeoffScenario: TutorialScenario = {
 /**
  * In-flight review — check progress, flight plan, and arrival selection.
  */
-/**
- * Airbus A320 MCDU Basics — INIT, F-PLN, and RAD NAV.
- */
-export const airbusBasicsScenario: TutorialScenario = {
-  name: 'Airbus A320 Basics',
-  description: 'Learn the fundamentals of the Airbus MCDU — INIT page setup, flight plan review, and radio navigation tuning.',
-  steps: [
-    // --- MCDU MENU / INIT ---
-    {
-      id: 'airbus_init_nav',
-      instruction: 'Welcome to the A320 MCDU. Press INIT (or LSK L1 from MENU) to start the initialization. WHY: Unlike Boeing, Airbus uses the INIT page to define both the route endpoints and performance data across two subpages (A and B).',
-      expectedAction: 'INIT_A',
-      validate: () => true,
-      page: 'MCDU_MENU',
-      highlightField: 'L1',
-    },
-    {
-      id: 'airbus_from_to',
-      instruction: 'Enter the origin and destination airports. Type KJFK/KORD and press LSK L1. This defines the route endpoints and initializes the navigation database for the flight.',
-      expectedAction: 'set_from_to',
-      validate: (input: string) => input.toUpperCase().includes('/'),
-      page: 'INIT_A',
-      highlightField: 'L1',
-    },
-    {
-      id: 'airbus_flt_nr',
-      instruction: 'Enter your flight number (e.g., AAL456) and press LSK R2. This callsign is used for ATC communication and AOC data link.',
-      expectedAction: 'set_flt_nbr',
-      validate: (input: string) => input.length >= 3,
-      page: 'INIT_A',
-      highlightField: 'R2',
-    },
-    {
-      id: 'airbus_ci',
-      instruction: 'Enter the Cost Index (CI). For the A320, CI 20-35 is typical. Type 30 and press LSK L2. CI determines the profile speed — higher CI prioritizes speed over fuel economy.',
-      expectedAction: 'set_cost_index',
-      validate: (input: string) => parseInt(input) > 0,
-      page: 'INIT_A',
-      highlightField: 'L2',
-    },
-    {
-      id: 'airbus_crz_fl',
-      instruction: 'Enter your cruise flight level. Type 320 (for FL320) and press LSK L3. The FMGS uses this to calculate climb, cruise, and descent performance.',
-      expectedAction: 'set_crz_fl',
-      validate: (input: string) => parseInt(input) >= 100,
-      page: 'INIT_A',
-      highlightField: 'L3',
-    },
-    
-    // --- INIT B ---
-    {
-      id: 'airbus_init_b',
-      instruction: 'Press NEXT PAGE (or LSK R6) to go to INIT page B. WHY: Page B is used for fuel and weight predictions. This data must be entered before engine start.',
-      expectedAction: 'NEXT_PAGE',
-      validate: () => true,
-      page: 'INIT_A',
-      highlightField: 'R6',
-    },
-    {
-      id: 'airbus_zfw',
-      instruction: 'Enter the Zero Fuel Weight (ZFW). For a typical A320, enter 60.0 and press LSK L1. The aircraft weight is critical for speed and fuel calculations.',
-      expectedAction: 'set_zfw',
-      validate: (input: string) => parseFloat(input) > 40,
-      page: 'INIT_B',
-      highlightField: 'L1',
-    },
-    {
-      id: 'airbus_block',
-      instruction: 'Enter the Block Fuel. Enter 8.5 (for 8,500 kg) and press LSK L2. This is the total fuel on board at the gate.',
-      expectedAction: 'set_block',
-      validate: (input: string) => parseFloat(input) > 1,
-      page: 'INIT_B',
-      highlightField: 'L2',
-    },
-
-    // --- F-PLN ---
-    {
-      id: 'airbus_fpln_nav',
-      instruction: 'Press F-PLN to review your route. The Flight Plan page shows every waypoint and constraint. Green text indicates active/committed data.',
-      expectedAction: 'F_PLN',
-      validate: () => true,
-      page: 'INIT_B',
-      highlightField: 'F_PLN',
-    },
-    {
-      id: 'airbus_departure',
-      instruction: 'Select a departure. Press LSK L1 next to KJFK. This opens the LATERAL REVISION page where you can select SIDs, airways, and arrivals.',
-      expectedAction: 'fpln_dep_arr',
-      validate: () => true,
-      page: 'F_PLN',
-      highlightField: 'L1',
-    },
-
-    // --- RAD NAV ---
-    {
-      id: 'airbus_radnav_nav',
-      instruction: 'Press RAD NAV. WHY: The Radio Navigation page allows you to manually tune VOR, ILS, and ADF frequencies. Normally the FMGS auto-tunes these, but pilots manually tune them for cross-checking or specific procedures.',
-      expectedAction: 'RAD_NAV',
-      validate: () => true,
-      page: 'F_PLN',
-      highlightField: 'RAD_NAV',
-    },
-    {
-      id: 'airbus_tune_vor',
-      instruction: 'Tune VOR 1 to a frequency. Type 115.70 and press LSK L1. You will see the frequency update in the VOR1 field.',
-      expectedAction: 'set_vor1',
-      validate: (input: string) => parseFloat(input) >= 108 && parseFloat(input) <= 118,
-      page: 'RAD_NAV',
-      highlightField: 'L1',
-    },
-    {
-      id: 'airbus_complete',
-      instruction: 'Basic A320 setup complete! You have initialized the route, weights, reviewed the flight plan, and tuned a radio. Press MCDU MENU to return.',
-      expectedAction: 'MCDU_MENU',
-      validate: () => true,
-      page: 'RAD_NAV',
-      highlightField: 'MCDU_MENU',
-    },
-  ],
-  setup: () => ['aircraft'],
-};
 
 export const cruiseScenario: TutorialScenario = {
   name: 'In-Flight Review',
@@ -526,11 +405,14 @@ export const tutorialScenarios: TutorialScenario[] = [
   preflightScenario,
   takeoffScenario,
   cruiseScenario,
-  airbusBasicsScenario,
 ];
 
+import { airbusTutorialScenarios } from './tutorials/airbus-tutorials';
+
 export function getTutorialScenario(name: string): TutorialScenario | undefined {
-  return tutorialScenarios.find(s => s.name === name);
+  return [...tutorialScenarios, ...airbusTutorialScenarios].find(
+    s => s.name === name
+  );
 }
 
 export function calculateTutorialGrade(errors: number, timeMs: number, stepCount: number, scenarioStandardTime?: number): { grade: 'A' | 'B' | 'C' | 'D'; score: number } {
