@@ -40,9 +40,8 @@ export function BoeingFunctionKeyPanel({ onPress, isHighlighted }: BoeingFunctio
             <AvionicsKey
               key={item.key}
               label={item.label}
-              shape="function"
-              tone="cyan"
-              highlighted={isHighlighted(item.highlight)}
+              variant="function"
+              active={isHighlighted(item.highlight)}
               onPress={() => onPress(item.key)}
               className="h-9 w-full"
             />

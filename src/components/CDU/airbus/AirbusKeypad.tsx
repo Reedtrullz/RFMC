@@ -35,7 +35,7 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
               <AvionicsKey
                 key={k}
                 label={k}
-                shape="numeric"
+                variant="airbus"
                 onPress={() => onPress(k)}
                 className="flex-1 h-9"
               />
@@ -49,21 +49,21 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
             <AvionicsKey
               key={k}
               label={k}
-              shape="alpha"
+              variant="airbus"
               onPress={() => onPress(k === 'SP' ? 'SPACE' : k)}
               className="h-9"
             />
           ))}
         </div>
         <div className="flex gap-1 mt-1">
-          <AvionicsKey label="/" shape="function" onPress={() => onPress('SLASH')} className="flex-1 h-9" />
-          <AvionicsKey label="CLR" shape="wide" onPress={() => onPress('CLR')} className="flex-[2] h-9" />
-          <AvionicsKey label="DEL" shape="function" onPress={() => onPress('DEL')} className="flex-1 h-9" />
+          <AvionicsKey label="/" variant="function" onPress={() => onPress('SLASH')} className="flex-1 h-9" />
+          <AvionicsKey label="CLR" variant="airbus" onPress={() => onPress('CLR')} className="flex-[2] h-9" />
+          <AvionicsKey label="DEL" variant="function" onPress={() => onPress('DEL')} className="flex-1 h-9" />
           <AvionicsKey
             label="EXEC"
-            shape="wide"
+            variant="exec"
             lit={execLit}
-            highlighted={highlight === 'EXEC'}
+            active={highlight === 'EXEC'}
             onPress={() => onPress('EXEC')}
             className="flex-[2] h-9"
           />

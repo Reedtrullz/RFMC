@@ -7,6 +7,7 @@ import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
 import { BoeingCDUShell } from './BoeingCDUShell';
 import { BoeingDisplayBay } from './BoeingDisplayBay';
 import { BoeingFunctionKeyPanel } from './BoeingFunctionKeyPanel';
+import { AnnunciatorLight } from '../../visual/AnnunciatorLight';
 
 export function Boeing737CDU() {
   const isKiosk = useKioskMode();
@@ -63,7 +64,7 @@ export function Boeing737CDU() {
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <BoeingCDUShell msgLight={msgLight}>
+      <BoeingCDUShell msgLight={<AnnunciatorLight label="MSG" active={msgLight} color="amber" />}>
         <BoeingDisplayBay
           brightness={brightness}
           getLSKLabel={getLSKLabel}

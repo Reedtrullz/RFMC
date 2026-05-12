@@ -20,9 +20,9 @@ export function BoeingBrightnessExecPanel({
     <div className="mt-1 grid grid-cols-[1.4fr_0.7fr_1fr_1fr] gap-1">
       <AvionicsKey
         label="EXEC"
-        shape="exec"
+        variant="exec"
         lit={execLit}
-        highlighted={highlightedExec}
+        active={highlightedExec}
         onPress={() => onPress('EXEC')}
       />
       <div className="flex flex-col items-center justify-end rounded-[4px] border border-black/60 bg-black/25 px-1 pb-1">
@@ -37,9 +37,8 @@ export function BoeingBrightnessExecPanel({
           className="h-1 w-full appearance-none rounded-full bg-cdu-bezel-light outline-none [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cdu-white"
         />
       </div>
-      <AvionicsKey label="NEXT" shape="wide" tone="cyan" onPress={() => onPress('NEXT_PAGE')} />
-      <AvionicsKey label="PREV" shape="wide" tone="cyan" onPress={() => onPress('PREV_PAGE')} />
-      <AnnunciatorLight label="EXEC" active={execLit} className="col-span-4 justify-self-start" />
+      <AvionicsKey label="NEXT" variant="boeing" onPress={() => onPress('NEXT_PAGE')} />
+      <AvionicsKey label="PREV" variant="boeing" onPress={() => onPress('PREV_PAGE')} />
     </div>
   );
 }

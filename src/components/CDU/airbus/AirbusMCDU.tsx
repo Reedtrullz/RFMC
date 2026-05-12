@@ -7,6 +7,7 @@ import { AirbusMCDUShell } from './AirbusMCDUShell';
 import { AirbusDisplayBay } from './AirbusDisplayBay';
 import { AirbusFunctionKeyPanel } from './AirbusFunctionKeyPanel';
 import { AirbusKeypad } from './AirbusKeypad';
+import { AnnunciatorLight } from '../../visual/AnnunciatorLight';
 
 export function AirbusMCDU() {
   const isKiosk = useKioskMode();
@@ -50,7 +51,7 @@ export function AirbusMCDU() {
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <AirbusMCDUShell msgLight={msgLight}>
+      <AirbusMCDUShell msgLight={<AnnunciatorLight label="MSG" active={msgLight} color="amber" />}>
         <AirbusDisplayBay
           brightness={brightness}
           getLSKLabel={getLSKLabel}

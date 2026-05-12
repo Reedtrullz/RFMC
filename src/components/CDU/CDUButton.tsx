@@ -13,14 +13,12 @@ export function CDUButton({ label, className = '', variant = 'default', disabled
   return (
     <AvionicsKey
       label={label}
-      shape={variant === 'function' ? 'function' : variant === 'exec' ? 'exec' : 'alpha'}
-      tone={variant === 'function' || variant === 'highlight' ? 'cyan' : 'white'}
+      variant={variant === 'function' ? 'function' : variant === 'exec' ? 'exec' : 'boeing'}
       lit={variant === 'exec'}
-      highlighted={variant === 'highlight'}
-      active={active}
+      active={active || variant === 'highlight'}
       disabled={disabled}
       className={className}
-      onPress={onPress}
+      onPress={onPress || (() => {})}
     />
   );
 }

@@ -40,7 +40,7 @@ export function BoeingAlphaNumericKeypad({
               <AvionicsKey
                 key={key}
                 label={key}
-                shape="numeric"
+                variant="boeing"
                 onPress={() => onPress(key)}
               />
             ))}
@@ -54,18 +54,18 @@ export function BoeingAlphaNumericKeypad({
               <AvionicsKey
                 key={key}
                 label={key}
-                shape="alpha"
+                variant="boeing"
                 onPress={() => onPress(key)}
               />
             ))}
           </div>
         ))}
         <div className="mt-1 grid grid-cols-[0.7fr_1.3fr_1.3fr_0.7fr_1fr] gap-1">
-          <AvionicsKey label="/" shape="function" onPress={() => onPress('SLASH')} />
-          <AvionicsKey label="CLR" shape="wide" onPress={() => onPress('CLR')} />
-          <AvionicsKey label="SP" shape="wide" onPress={() => onPress('SPACE')} />
-          <AvionicsKey label="Z" shape="alpha" onPress={() => onPress('Z')} />
-          <AvionicsKey label="DEL" shape="function" onPress={() => onPress('DEL')} />
+          <AvionicsKey label="/" variant="function" onPress={() => onPress('SLASH')} />
+          <AvionicsKey label="CLR" variant="boeing" onPress={() => onPress('CLR')} />
+          <AvionicsKey label="SP" variant="boeing" onPress={() => onPress('SPACE')} />
+          <AvionicsKey label="Z" variant="boeing" onPress={() => onPress('Z')} />
+          <AvionicsKey label="DEL" variant="function" onPress={() => onPress('DEL')} />
         </div>
         <BoeingBrightnessExecPanel
           execLit={execLit}

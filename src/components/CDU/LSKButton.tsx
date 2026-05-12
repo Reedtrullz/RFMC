@@ -5,22 +5,20 @@ interface LSKButtonProps {
   index: number;
   label?: string;
   disabled?: boolean;
-  highlighted?: boolean;
+  active?: boolean;
   onPress?: (side: 'L' | 'R', index: number) => void;
 }
 
-export function LSKButton({ side, index, label, disabled, highlighted, onPress }: LSKButtonProps) {
+export function LSKButton({ side, index, label, disabled, active, onPress }: LSKButtonProps) {
   const displayLabel = label || (side === 'L' ? '◄' : '►');
 
   return (
     <AvionicsKey
       label={displayLabel}
-      shape="lsk"
-      tone="green"
-      highlighted={highlighted}
-      disabled={disabled && !highlighted}
+      variant="lsk"
+      active={active}
+      disabled={disabled}
       className="h-full w-full"
-      ariaLabel={`LSK ${side}${index}`}
       onPress={() => {
         if (!disabled && onPress) onPress(side, index);
       }}
