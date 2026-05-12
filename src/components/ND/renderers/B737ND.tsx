@@ -20,7 +20,6 @@ export function B737ND({ model }: B737NDProps) {
     warning: '#ffcc00',
   };
 
-  const isPln = model.mode === 'PLN';
   const isMap = model.mode === 'MAP';
 
   return (

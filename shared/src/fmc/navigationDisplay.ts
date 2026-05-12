@@ -40,6 +40,7 @@ export interface NDRouteSegment {
   dashed: boolean;
   active: boolean;
   modified: boolean;
+  visible: boolean;
 }
 
 export interface NDFixOverlay {

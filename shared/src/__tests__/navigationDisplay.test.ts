@@ -197,4 +197,89 @@ describe('Navigation Display model', () => {
     expect(model.procedureLabel).toBe('NO PROC');
     expect(model.range).toBe(40);
   });
+
+  it('omits route segments with clipped endpoints', () => {
+    const stateWithGeo = {
+      ...baseState,
+      aircraftState: { position: { lat: 0, lon: 0 }, speed: 0, heading: 0, altitude: 0 },
+      flightPlan: {
+        origin: '', destination: '', flightNumber: '', route: '',
+        waypoints: [
+          { ident: 'WPT1', lat: 0.1, lon: 0, discontinuity: false }, // ~6nm (visible)
+          { ident: 'WPT2', lat: 1.0, lon: 0, discontinuity: false }, // ~60nm (clipped, range is 40)
+        ],
+      },
+    };
+    const model = buildNavigationDisplayModel(stateWithGeo);
+    expect(model.routePoints.some(p => p.label === 'WPT1')).toBe(true);
+    expect(model.routePoints.some(p => p.label === 'WPT2')).toBe(false);
+    expect(model.routeSegments.length).toBe(0); // The segment connects visible to clipped, so it's omitted
+  });
+
+  it('includes relativeBearingDeg on geo-projected points', () => {
+    const stateWithGeo = {
+      ...baseState,
+      aircraftState: { position: { lat: 0, lon: 0 }, speed: 0, heading: 90, altitude: 0 },
+      flightPlan: {
+        origin: '', destination: '', flightNumber: '', route: '',
+        waypoints: [{ ident: 'WPT1', lat: 0.1, lon: 0, discontinuity: false }], // North
+      },
+    };
+    const model = buildNavigationDisplayModel(stateWithGeo);
+    const p1 = model.routePoints[0];
+    expect(p1.bearingDeg).toBeCloseTo(0, 0);
+    expect(p1.relativeBearingDeg).toBe(-90); // North (0) relative to heading 90
+  });
+
+  it('uses direct-to target for active waypoint block', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      aircraftState: { position: { lat: 0, lon: 0 }, speed: 200, heading: 0, altitude: 0 },
+      route: { ...baseState.route, directTo: 'DIXIE' },
+      flightPlan: {
+        origin: '', destination: '', flightNumber: '', route: '',
+        waypoints: [
+          { ident: 'RBV', lat: 0.1, lon: 0, discontinuity: false },
+          { ident: 'DIXIE', lat: 0.2, lon: 0, discontinuity: false },
+        ],
+      },
+    });
+    expect(model.anchorZones.waypointBlock?.ident).toBe('DIXIE');
+  });
+
+  it('selects destination as active target for origin/destination-only route', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      flightPlan: { ...baseState.flightPlan, origin: 'KJFK', destination: 'KDCA', waypoints: [] },
+    });
+    expect(model.routePoints[0].label).toBe('KJFK');
+    expect(model.routePoints[1].label).toBe('KDCA');
+    expect(model.routePoints[1].active).toBe(true);
+  });
+
+  it('sets centered correctly for Boeing modes', () => {
+    const modelMapUncentered = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'MAP', centered: false });
+    expect(modelMapUncentered.centered).toBe(false);
+
+    const modelMapCentered = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'MAP', centered: true });
+    expect(modelMapCentered.centered).toBe(true);
+
+    const modelPln = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'PLN', centered: false });
+    expect(modelPln.centered).toBe(true);
+
+    const modelApp = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'APP', centered: false });
+    expect(modelApp.centered).toBe(true);
+  });
+
+  it('sets centered correctly for Airbus modes', () => {
+    const modelArc = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'ARC', centered: true });
+    expect(modelArc.centered).toBe(false);
+
+    const modelPlan = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'PLAN', centered: false });
+    expect(modelPlan.centered).toBe(true);
+
+    const modelRoseNav = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'ROSE_NAV', centered: false });
+    expect(modelRoseNav.centered).toBe(true);
+  });
 });
+

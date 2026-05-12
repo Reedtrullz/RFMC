@@ -21,8 +21,6 @@ export function A320ND({ model }: A320NDProps) {
   };
 
   const isArc = model.mode === 'ARC';
-  const isPlan = model.mode === 'PLAN';
-  const isRose = model.mode.startsWith('ROSE');
 
   return (
     <g data-testid="a320-nd-renderer" filter="url(#glow)">
