@@ -89,29 +89,28 @@ describe('FMCEngine', () => {
   it('handles DEP/ARR procedure entries in backend CONTROL mode', () => {
     const engine = new FMCEngine();
     engine.processInput('DEP_ARR');
-    enter(engine, 'MERIT4');
-    engine.processInput('L2');
-    enter(engine, '04L');
-    engine.processInput('L3');
-    engine.processInput('L6');
-    enter(engine, 'FRDMM2');
-    engine.processInput('L2');
-    enter(engine, 'ILS19');
-    engine.processInput('L3');
-
+    engine.processInput('L6'); // Go to ARR page (while not modified)
+    
+    for (const key of 'CAMRN1') engine.processInput(key);
+    engine.processInput('L2'); // Set STAR
+    
+    for (const key of 'ILS19') engine.processInput(key);
+    engine.processInput('L3'); // Set APPR
+    
+    for (const key of '04L') engine.processInput(key);
+    engine.processInput('L4'); // Set RWY
+    
     expect(engine.getState().pendingRoute).toMatchObject({
-      sid: 'MERIT4',
-      runway: '04L',
-      star: 'FRDMM2',
+      star: 'CAMRN1',
       approach: 'ILS19',
+      runway: '04L',
     });
 
     engine.processInput('EXEC');
     expect(engine.getState().route).toMatchObject({
-      sid: 'MERIT4',
-      runway: '04L',
-      star: 'FRDMM2',
+      star: 'CAMRN1',
       approach: 'ILS19',
+      runway: '04L',
     });
   });
 

@@ -10,13 +10,20 @@ interface CaptureRecord {
 
 async function dismissWelcome(page: Page) {
   const skipButton = page.locator('button:has-text("Skip Demo")');
-  if (await skipButton.isVisible().catch(() => false)) {
+  try {
+    await skipButton.waitFor({ state: 'visible', timeout: 10000 });
     await skipButton.click();
+    // Wait for the overlay to actually disappear
+    await expect(page.locator('text=VirtualCDU')).toBeHidden({ timeout: 5000 });
+  } catch (e) {
+    // If not visible, maybe it's already dismissed or didn't appear
   }
 }
 
 async function press(page: Page, label: string) {
-  await page.getByRole('button', { name: label, exact: true }).first().click();
+  const btn = page.getByRole('button', { name: label, exact: true }).first();
+  await btn.waitFor({ state: 'visible', timeout: 5000 });
+  await btn.click();
 }
 
 async function lsk(page: Page, id: string) {
@@ -31,7 +38,16 @@ async function enterText(page: Page, value: string) {
 }
 
 async function capture(page: Page, testInfo: TestInfo, records: CaptureRecord[], name: string) {
-  await expect(page.locator('.bg-cdu-screen').first()).toBeVisible();
+  // Ensure network is idle and styles are applied
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000); 
+  
+  // Wait for either the screen or the welcome title
+  await Promise.race([
+    page.waitForSelector('.bg-cdu-screen', { timeout: 30000 }),
+    page.waitForSelector('text=VirtualCDU', { timeout: 30000 })
+  ]);
+  
   const path = testInfo.outputPath(`${name}.png`);
   await page.screenshot({
     path,

@@ -6,7 +6,7 @@ export type NDRange = 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
 export interface NDAnchorZones {
   speedBlock: { tas: number; gs: number };
   windBlock: { dir: number; speed: number };
-  waypointBlock: { ident: string; brg: number; dist: number; eta: string } | null;
+  waypointBlock: { ident: string; brg: number; dist: number; eta: string; ete: string } | null;
   navaidBlocks: Array<{ ident: string; freq: string; dist: number; vor: boolean }>;
   annunciations: string[];
 }
@@ -263,16 +263,29 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
 function buildAnchorZones(state: FMCState, efis: EFISState): NDAnchorZones {
   const aircraftState = state.aircraftState;
   const activeWP = (state.isModified ? state.pendingFlightPlan : state.flightPlan)?.waypoints[0];
+  const gs = (aircraftState?.speed ?? 0) + 5; // Simplified GS
 
-  return {
-    speedBlock: { tas: aircraftState?.speed ?? 0, gs: (aircraftState?.speed ?? 0) + 5 },
-    windBlock: { dir: state.takeoff.windDir, speed: state.takeoff.windSpeed },
-    waypointBlock: activeWP ? {
+  let waypointBlock: NDAnchorZones['waypointBlock'] = null;
+  if (activeWP) {
+    const dist = 12.4; // Still mocked until we have real coordinate math
+    const eteMinutes = gs > 0 ? (dist / gs) * 60 : 0;
+    const etaDate = new Date(Date.now() + eteMinutes * 60000);
+    const etaStr = `${String(etaDate.getUTCHours()).padStart(2, '0')}:${String(etaDate.getUTCMinutes()).padStart(2, '0')}z`;
+    const eteStr = `${Math.floor(eteMinutes / 60)}h${Math.round(eteMinutes % 60)}m`;
+
+    waypointBlock = {
       ident: activeWP.ident,
       brg: 342,
-      dist: 12.4,
-      eta: '12:45z'
-    } : null,
+      dist,
+      eta: etaStr,
+      ete: eteStr
+    };
+  }
+
+  return {
+    speedBlock: { tas: aircraftState?.speed ?? 0, gs },
+    windBlock: { dir: state.takeoff.windDir, speed: state.takeoff.windSpeed },
+    waypointBlock,
     navaidBlocks: [],
     annunciations: state.isModified ? ['MOD'] : [],
   };

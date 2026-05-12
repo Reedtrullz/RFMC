@@ -196,6 +196,7 @@ function NavigationDisplaySvg({ model }: { model: NavigationDisplayModel }) {
             <text x="96" y="6" fill={colors.active}>{model.anchorZones.waypointBlock.ident}</text>
             <text x="96" y="10" fill="#ffffff">{model.anchorZones.waypointBlock.dist} NM</text>
             <text x="82" y="10" fill="#ffffff">{model.anchorZones.waypointBlock.eta}</text>
+            <text x="82" y="6" fill="#ffffff" fontSize="2.8" opacity="0.6">{model.anchorZones.waypointBlock.ete}</text>
           </g>
         )}
 

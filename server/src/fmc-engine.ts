@@ -2,7 +2,8 @@ import type { FMCState, DisplayData, PageType } from '@shared';
 import { getPageRenderer, parseRouteString } from '@shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
-  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure
+  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure,
+  isValidFrequency, isValidADF
 } from '@shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
@@ -79,6 +80,11 @@ export class FMCEngine {
       brightness: 100,
       latency: 0,
       sessionStartTime: null,
+      radios: {
+        vor1: '113.90',
+        vor2: '115.70',
+        adf1: '342',
+      },
     };
   }
 
@@ -841,6 +847,27 @@ export class FMCEngine {
         this.state.scratchpad = '';
         return true;
       }
+      case 'set_vor1': {
+        const v1 = isValidFrequency(sp);
+        if (!v1.valid) return icaoErr(v1);
+        this.state.radios.vor1 = parseFloat(sp).toFixed(2);
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_vor2': {
+        const v2 = isValidFrequency(sp);
+        if (!v2.valid) return icaoErr(v2);
+        this.state.radios.vor2 = parseFloat(sp).toFixed(2);
+        this.state.scratchpad = '';
+        return true;
+      }
+      case 'set_adf1': {
+        const a1 = isValidADF(sp);
+        if (!a1.valid) return icaoErr(a1);
+        this.state.radios.adf1 = sp;
+        this.state.scratchpad = '';
+        return true;
+      }
       case 'set_sid': {
         const route = this.state.pendingRoute ?? this.state.route;
         this.state.pendingRoute = { ...route, sid: sp.toUpperCase() };
@@ -883,6 +910,14 @@ export class FMCEngine {
         if (isNaN(cg)) return err();
         this.state.performance = { ...this.state.performance, cg };
         this.state.scratchpad = '';
+        return true;
+      }
+      case 'arr_page': {
+        this.state.depArrSubPage = 'ARR';
+        return true;
+      }
+      case 'dep_page': {
+        this.state.depArrSubPage = 'DEP';
         return true;
       }
     }

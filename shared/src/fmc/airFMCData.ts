@@ -230,15 +230,33 @@ export const WAYPOINTS: Record<string, { lat: number; lon: number }> = {
   DFW: { lat: 32.900, lon: -97.033 },
   IAH: { lat: 29.983, lon: -95.350 },
   AUS: { lat: 30.200, lon: -97.667 },
-  SAT: { lat: 29.533, lon: -98.467 },
+  SAT: { lat: 29.5337, lon: -98.467 },
   ELP: { lat: 31.800, lon: -106.400 },
   ABQ: { lat: 35.050, lon: -106.617 },
   DEN: { lat: 39.858, lon: -104.667 },
   COS: { lat: 38.800, lon: -104.700 },
   PHX: { lat: 33.433, lon: -112.017 },
-  TUS: { lat: 32.117, lon: -110.933 },
-  SAN: { lat: 32.733, lon: -117.190 },
-  SNA: { lat: 33.667, lon: -117.867 },
+  SAN: { lat: 32.7336, lon: -117.190 },
+  SNA: { lat: 33.6757, lon: -117.867 },
+  SAT: { lat: 29.5337, lon: -98.467 },
+
+  // --- Procedure waypoints for major hubs ---
+  SMKEY: { lat: 33.364, lon: -83.921 },
+  MCDON: { lat: 33.442, lon: -84.148 },
+  DAWGS: { lat: 33.567, lon: -84.453 },
+  VRSTY: { lat: 33.742, lon: -84.582 },
+  UGRAA: { lat: 33.865, lon: -84.712 },
+  NEPTS: { lat: 33.987, lon: -84.842 },
+  AVERY: { lat: 33.152, lon: -84.341 },
+  BURNY: { lat: 33.284, lon: -84.212 },
+  
+  ORCKA: { lat: 34.012, lon: -118.512 },
+  ZIGGY: { lat: 34.123, lon: -118.623 },
+  ANJLL: { lat: 33.845, lon: -118.212 },
+  
+  ELX:   { lat: 42.112, lon: -87.812 },
+  BENKY: { lat: 41.812, lon: -87.612 },
+  MYKIE: { lat: 41.712, lon: -87.512 },
 };
 
 // ============================================================================
@@ -374,17 +392,26 @@ export const SID_STARS: Record<string, { sids: string[]; stars: string[] }> = {
 // ============================================================================
 
 export const PROCEDURE_LEGS: Record<string, string[]> = {
-  // KJFK SID
   BETTE1: ['JFK', 'BETTE', 'RBV'],
   DEEZZ1: ['JFK', 'DEEZZ', 'NELIE', 'VIKNG'],
-  // KJFK STAR
   CAMRN1: ['FRDMM', 'CAMRN', 'JFK'],
-  LENDY1: ['LENDY', 'LGA', 'JFK'], // LGA is not in our mock, but this is ARINC-lite. Let's use existing points.
-  // We'll map LENDY1 to existing ones.
-  // Wait, let's just make sure the waypoints exist.
+  LENDY1: ['LENDY', 'DIXIE', 'JFK'],
+  
+  // KATL
+  SMKEY2: ['KATL', 'DAWGS', 'MCDON', 'SMKEY'],
+  VRSTY2: ['KATL', 'NEPTS', 'UGRAA', 'VRSTY'],
+  AVERY2: ['AVERY', 'KATL'],
+  BURNY2: ['BURNY', 'KATL'],
+  
+  // KLAX
+  ORCKA1: ['KLAX', 'ZIGGY', 'ORCKA'],
+  ANJLL1: ['ANJLL', 'KLAX'],
+  
+  // KORD
+  ELX1:   ['KORD', 'ELX'],
+  BENKY1: ['BENKY', 'KORD'],
+  MYKIE1: ['MYKIE', 'KORD'],
 };
-
-PROCEDURE_LEGS['LENDY1'] = ['LENDY', 'DIXIE', 'JFK'];
 
 // ============================================================================
 // Helper functions

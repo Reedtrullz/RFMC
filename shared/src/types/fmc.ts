@@ -182,6 +182,12 @@ export interface LandingData {
   course: number;
 }
 
+export interface RadioData {
+  vor1: string;
+  vor2: string;
+  adf1: string;
+}
+
 export interface PerformanceData {
   crzAlt: number;
   costIndex: number;
@@ -334,4 +340,5 @@ export interface FMCState {
   brightness: number;
   latency: number;
   sessionStartTime: number | null;
+  radios: RadioData;
 }

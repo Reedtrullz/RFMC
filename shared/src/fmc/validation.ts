@@ -92,3 +92,20 @@ export function isValidWind(wind: string): ValidationResult {
   }
   return { valid: true };
 }
+
+export function isValidFrequency(freq: string): ValidationResult {
+  const num = parseFloat(freq);
+  if (isNaN(num) || num < 108.00 || num > 117.95) {
+    return { valid: false, error: 'OUT OF RANGE' };
+  }
+  return { valid: true };
+}
+
+export function isValidADF(freq: string): ValidationResult {
+  const num = parseInt(freq);
+  if (isNaN(num) || num < 190 || num > 1750) {
+    return { valid: false, error: 'OUT OF RANGE' };
+  }
+  return { valid: true };
+}
+

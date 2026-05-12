@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan } from '@shared';
 import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios } from '@shared';
-import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber } from '@shared';
+import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
@@ -103,6 +103,11 @@ const defaultState = {
   brightness: 100,
   latency: 0,
   sessionStartTime: null as number | null,
+  radios: {
+    vor1: '113.90',
+    vor2: '115.70',
+    adf1: '342',
+  },
 
   efisL: createDefaultEFIS('BOEING_737', 'L'),
   efisR: createDefaultEFIS('BOEING_737', 'R'),
@@ -470,11 +475,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_vor1':
       case 'set_vor2':
       case 'set_adf1':
-      case 'set_adf2':
         if (scratchpad) {
-          set({ scratchpad: '', scratchpadError: null });
+          if (action === 'set_vor1') {
+            const v1 = isValidFrequency(scratchpad);
+            if (!v1.valid) { set({ scratchpadError: v1.error }); return; }
+            set({ radios: { ...state.radios, vor1: parseFloat(scratchpad).toFixed(2) }, scratchpad: '' });
+          } else if (action === 'set_vor2') {
+            const v2 = isValidFrequency(scratchpad);
+            if (!v2.valid) { set({ scratchpadError: v2.error }); return; }
+            set({ radios: { ...state.radios, vor2: parseFloat(scratchpad).toFixed(2) }, scratchpad: '' });
+          } else if (action === 'set_adf1') {
+            const a1 = isValidADF(scratchpad);
+            if (!a1.valid) { set({ scratchpadError: a1.error }); return; }
+            set({ radios: { ...state.radios, adf1: scratchpad }, scratchpad: '' });
+          }
+          handled = true;
         }
-        handled = true;
         break;
     }
 

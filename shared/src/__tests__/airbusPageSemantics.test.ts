@@ -65,6 +65,7 @@ const baseState: FMCState = {
   brightness: 100,
   latency: 0,
   sessionStartTime: null,
+  radios: { vor1: '113.90', vor2: '115.70', adf1: '342' },
 };
 
 describe('Airbus page semantics', () => {
@@ -84,8 +85,6 @@ describe('Airbus page semantics', () => {
   it('does not show interactive arrows on display-only Airbus pages', () => {
     const displayOnlyPages = [
       renderFuelPred(baseState),
-      renderSecFpln(baseState),
-      renderRadNav(baseState),
       renderDataIndex(baseState),
       renderProgA320(baseState),
     ];

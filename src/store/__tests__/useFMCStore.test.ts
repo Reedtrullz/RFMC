@@ -304,20 +304,24 @@ describe('FMC Store', () => {
     const store = useFMCStore.getState();
     useFMCStore.setState({ currentPage: 'DEP_ARR', route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' } });
 
-    for (const key of 'MERIT4') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
-    store.pressLSK('L', 2);
-    for (const key of '04L') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
-    store.pressLSK('L', 3);
-    store.pressLSK('L', 6);
-    for (const key of 'FRDMM2') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
-    store.pressLSK('L', 2);
+    store.pressKey('DEP_ARR');
+    store.pressLSK('L', 6); // Go to ARR page (while not modified)
+    
+    for (const key of 'CAMRN1') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 2); // Set STAR
     for (const key of 'ILS19') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
-    store.pressLSK('L', 3);
-
+    store.pressLSK('L', 3); // Set APPR
+    for (const key of '04L') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
+    store.pressLSK('L', 4); // Set RWY
+    
     let state = useFMCStore.getState();
-    expect(state.pendingRoute).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
+    expect(state.pendingRoute).toMatchObject({
+      star: 'CAMRN1',
+      approach: 'ILS19',
+      runway: '04L',
+    });
     store.pressEXEC();
-    expect(useFMCStore.getState().route).toMatchObject({ sid: 'MERIT4', runway: '04L', star: 'FRDMM2', approach: 'ILS19' });
+    expect(useFMCStore.getState().route).toMatchObject({ star: 'CAMRN1', runway: '04L', approach: 'ILS19' });
 
     store.setPage('DIR_INTC');
     for (const key of 'DIXIE') store.pressKey(key as Parameters<typeof store.pressKey>[0]);

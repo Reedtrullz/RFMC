@@ -47,4 +47,11 @@ describe('Flight Plan Parser', () => {
     // Plus the destination KJFK
     expect(result.waypoints.map(w => w.ident)).toEqual(['LENDY', 'DIXIE', 'JFK', 'KJFK']);
   });
+
+  it('unrolls KATL SMKEY2 procedure', () => {
+    const result = parseRouteString('KATL SMKEY2 KORD');
+    // SMKEY2 expands to ['KATL', 'DAWGS', 'MCDON', 'SMKEY']
+    expect(result.waypoints.map(w => w.ident)).toContain('SMKEY');
+    expect(result.waypoints.map(w => w.ident)).toContain('MCDON');
+  });
 });
