@@ -27,6 +27,10 @@ export interface NDRoutePoint {
   discontinuity: boolean;
   airport: boolean;
   navaid?: boolean;
+  visible: boolean;
+  clipped: boolean;
+  distanceNm?: number;
+  bearingDeg?: number;
 }
 
 export interface NDRouteSegment {
@@ -103,6 +107,7 @@ export function buildNavigationDisplayModel(
 ): NavigationDisplayModel {
   const aircraftStyle = state.aircraft === 'AIRBUS_A320' ? 'airbus' : 'boeing';
   const resolvedEfis = efis || createDefaultEFIS(state.aircraft, 'L');
+  const isCentered = isDisplayCentered(aircraftStyle, resolvedEfis.mode, resolvedEfis.centered);
 
   const routeItems = buildRouteItems(state);
   const activeIndex = findActiveRouteIndex(routeItems, state.route.directTo);
@@ -114,7 +119,10 @@ export function buildNavigationDisplayModel(
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
-  const planCenter = isPlanMode ? (routeItems[activeIndex] ? { lat: routeItems[activeIndex].lat!, lon: routeItems[activeIndex].lon! } : aircraftPos) : undefined;
+  const activeItem = routeItems[activeIndex];
+  const planCenter = (isPlanMode && activeItem?.lat !== undefined && activeItem?.lon !== undefined)
+    ? { lat: activeItem.lat, lon: activeItem.lon }
+    : aircraftPos;
 
   const routePoints = routeItems.map((item, index) => {
     let projected: ProjectedNDPoint | null = null;
@@ -125,13 +133,13 @@ export function buildNavigationDisplayModel(
         heading,
         resolvedEfis.range,
         isPlanMode,
-        resolvedEfis.centered,
+        isCentered,
         planCenter
       );
     }
     
     // Fallback to synthetic projection if no lat/lon or projection failed
-    return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, resolvedEfis.centered, projected);
+    return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, isCentered, projected);
   });
 
   const routeSegments = routePoints.slice(1).map((point, index) => ({
@@ -152,7 +160,7 @@ export function buildNavigationDisplayModel(
   }
 
   const fixOverlays = buildFixOverlays(state, routePoints, activePoint);
-  const anchorZones = buildAnchorZones(state, resolvedEfis);
+  const anchorZones = buildAnchorZones(state, resolvedEfis, activeIndex, routeItems);
 
   return {
     aircraft: state.aircraft,
@@ -166,20 +174,27 @@ export function buildNavigationDisplayModel(
     routeSegments,
     fixOverlays,
     holdOverlay: buildHoldOverlay(state, routePoints, activePoint),
-    tcasTargets: buildTCASTargets(state, resolvedEfis),
-    wxrData: buildWXRData(state, resolvedEfis),
+    tcasTargets: buildTCASTargets(state, resolvedEfis, isCentered),
+    wxrData: buildWXRData(state, resolvedEfis, isCentered),
     verticalProfilePoints: buildVerticalProfilePoints(state, routePoints, activeIndex),
     anchorZones,
     overlays: visibleOverlays,
     isModified: state.isModified,
-    centered: resolvedEfis.centered,
+    centered: isCentered,
   };
 }
 
-function buildTCASTargets(state: FMCState, efis: EFISState): TCASTarget[] {
+function isDisplayCentered(style: 'airbus' | 'boeing', mode: string, efisCentered: boolean): boolean {
+  if (style === 'airbus') {
+    return mode === 'PLAN' || mode.startsWith('ROSE');
+  }
+  return efisCentered || mode === 'PLN' || mode === 'APP' || mode === 'VOR';
+}
+
+function buildTCASTargets(state: FMCState, efis: EFISState, isCentered: boolean): TCASTarget[] {
   if (!state.demoMode && !state.tutorialActive) return [];
   if (!efis.overlays.tfc) return [];
-  const cy = efis.centered ? 50 : 84;
+  const cy = isCentered ? 50 : 84;
   return [
     { id: 'T1', x: 45, y: cy - 25, relativeAltitude: 12, trend: 'climb', threatLevel: 'proximate' },
     { id: 'T2', x: 65, y: cy - 15, relativeAltitude: -5, trend: 'descend', threatLevel: 'traffic' },
@@ -187,10 +202,10 @@ function buildTCASTargets(state: FMCState, efis: EFISState): TCASTarget[] {
   ];
 }
 
-function buildWXRData(state: FMCState, efis: EFISState): WXRData | null {
+function buildWXRData(state: FMCState, efis: EFISState, isCentered: boolean): WXRData | null {
   if (!state.demoMode && !state.tutorialActive) return null;
   if (!efis.overlays.wxr) return null;
-  const cy = efis.centered ? 50 : 84;
+  const cy = isCentered ? 50 : 84;
   return {
     intensity: 'medium',
     points: [
@@ -303,6 +318,10 @@ function projectRoutePoint(
       discontinuity: item.discontinuity,
       airport: item.airport,
       navaid: item.navaid,
+      visible: projected.visible,
+      clipped: projected.clipped,
+      distanceNm: projected.distanceNm,
+      bearingDeg: projected.bearingDeg,
     };
   }
 
@@ -329,10 +348,13 @@ function projectRoutePoint(
     discontinuity: item.discontinuity,
     airport: item.airport,
     navaid: item.navaid,
+    visible: true,
+    clipped: false,
   };
 }
 
 function isPointVisible(point: NDRoutePoint, efis: EFISState, visibleOverlays: EFISState['overlays']): boolean {
+  if (!point.visible) return false;
   if (point.active || !point.navaid) return true; // Flight plan waypoints always visible
   if (point.airport && !visibleOverlays.arpt) return false;
   if (point.navaid && !visibleOverlays.sta) return false;
@@ -384,11 +406,10 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
   return { ...hold, x: point?.x ?? 50, y: point?.y ?? 48 };
 }
 
-function buildAnchorZones(state: FMCState, efis: EFISState): NDAnchorZones {
+function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number, routeItems: RouteItem[]): NDAnchorZones {
   const aircraftState = state.aircraftState;
   const aircraftPos = aircraftState?.position || { lat: 52.3, lon: 4.7 };
-  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-  const activeWP = flightPlan.waypoints[0];
+  const activeWP = routeItems[activeIndex];
   const gs = aircraftState?.speed ?? 0;
 
   let waypointBlock: NDAnchorZones['waypointBlock'] = null;
