@@ -115,3 +115,5 @@ export type {
 export { devLog, devWarn, devError } from './logger';
 export * from './autopilot/autopilotTypes';
 export * from './autopilot/boeingMcpLogic';
+export * from './pfd/pfdTypes';
+export * from './pfd/boeingPfdModel';

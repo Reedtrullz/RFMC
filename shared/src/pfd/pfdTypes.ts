@@ -1,0 +1,44 @@
+export type BoeingFMAState = {
+  autothrottleMode: 'ARM' | 'N1' | 'MCP SPD' | 'THR HLD' | 'RETARD' | '';
+  rollMode: 'LNAV' | 'HDG SEL' | 'VOR/LOC' | 'ROLLOUT' | '';
+  pitchMode: 'VNAV SPD' | 'VNAV PTH' | 'LVL CHG' | 'ALT HOLD' | 'G/S' | '';
+  armedRollMode: 'VOR/LOC' | 'APP' | '';
+  armedPitchMode: 'G/S' | 'VNAV' | '';
+  apStatus: 'CMD A' | 'CMD B' | 'FD' | '';
+};
+
+export type AirbusFMAState = {
+  autothrustMode: 'SPEED' | 'MACH' | 'THR CLB' | 'THR IDLE' | 'RETARD' | '';
+  verticalMode: 'CLB' | 'DES' | 'ALT' | 'ALT*' | 'OP CLB' | 'OP DES' | 'V/S' | 'FPA' | '';
+  lateralMode: 'NAV' | 'HDG' | 'LOC' | 'APP NAV' | '';
+  armedModes: string[];
+  status: {
+    ap1: boolean;
+    ap2: boolean;
+    fd1: boolean;
+    fd2: boolean;
+    athr: boolean;
+  };
+};
+
+export type PFDState = {
+  heading: number;
+  altitude: number;
+  speed: number;
+  verticalSpeed: number;
+  pitch: number;
+  bank: number;
+  radioAltitude: number | null;
+  flightDirector: {
+    visible: boolean;
+    pitch: number;
+    roll: number;
+  };
+};
+
+export type PFDModel = {
+  aircraft: 'BOEING_737' | 'AIRBUS_A320';
+  pfd: PFDState;
+  boeingFma?: BoeingFMAState;
+  airbusFma?: AirbusFMAState;
+};
