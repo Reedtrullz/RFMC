@@ -11,7 +11,7 @@ import { useWakeLock } from '../../hooks/useWakeLock';
 import { InstrumentFit } from '../layout/InstrumentFit';
 
 export function CockpitLayout() {
-  const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('pfd-nd-cdu');
+  const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('fmc-focus');
   const brightness = useFMCStore(s => s.brightness);
   const orientation = useOrientation();
   
@@ -58,10 +58,12 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-8">
         <div className="w-full max-w-[400px]">
-          {mode === 'cdu-only' && <CDU />}
-          {mode === 'cdu-nd' && <NavigationDisplay />}
-          {mode === 'pfd-nd-cdu' && <PrimaryFlightDisplay />}
-          {mode === 'autopilot-trainer' && <AutopilotTrainer />}
+          {mode === 'fmc-focus' && <CDU />}
+          {mode === 'navigation' && <NavigationDisplay />}
+          {mode === 'automation' && <AutopilotTrainer />}
+          {mode === 'approach' && <PrimaryFlightDisplay />}
+          {mode === 'full-deck' && <NavigationDisplay />}
+          {mode === 'free-practice' && <PrimaryFlightDisplay />}
         </div>
         <p className="text-[10px] font-cdu text-white/20 uppercase">
           Switch modes or rotate to landscape for multi-instrument view
@@ -72,18 +74,18 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
 
   // Landscape Layouts
   switch (mode) {
-    case 'cdu-only':
+    case 'fmc-focus':
       return (
-        <div className="cockpit-stage cockpit-stage--cdu-only">
+        <div className="cockpit-stage cockpit-stage--fmc-focus">
           <InstrumentFit target="boeingCdu">
             <CDU />
           </InstrumentFit>
         </div>
       );
     
-    case 'cdu-nd':
+    case 'navigation':
       return (
-        <div className="cockpit-stage cockpit-stage--cdu-nd">
+        <div className="cockpit-stage cockpit-stage--navigation">
           <InstrumentFit target="boeingNd">
             <NavigationDisplay />
           </InstrumentFit>
@@ -93,28 +95,13 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         </div>
       );
 
-    case 'pfd-nd-cdu':
+    case 'automation':
       return (
-        <div className="cockpit-stage cockpit-stage--full-deck">
-          <InstrumentFit target="boeingPfd">
-            <PrimaryFlightDisplay />
-          </InstrumentFit>
-          <InstrumentFit target="boeingNd">
-            <NavigationDisplay />
-          </InstrumentFit>
-          <InstrumentFit target="boeingCdu" preferredScale={0.82}>
-            <CDU />
-          </InstrumentFit>
-        </div>
-      );
-
-    case 'autopilot-trainer':
-      return (
-        <div className="cockpit-stage cockpit-stage--autopilot">
+        <div className="cockpit-stage cockpit-stage--automation">
           <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.9}>
             <AutopilotTrainer />
           </InstrumentFit>
-          <div className="cockpit-autopilot-displays">
+          <div className="cockpit-pfd-nd-displays">
             <InstrumentFit target="boeingPfd">
               <PrimaryFlightDisplay />
             </InstrumentFit>
@@ -125,9 +112,43 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         </div>
       );
 
-    case 'split-instruments':
+    case 'approach':
       return (
-        <div className="cockpit-stage cockpit-stage--split">
+        <div className="cockpit-stage cockpit-stage--approach">
+          <div className="cockpit-pfd-nd-displays">
+            <InstrumentFit target="boeingPfd">
+              <PrimaryFlightDisplay />
+            </InstrumentFit>
+            <InstrumentFit target="boeingNd">
+              <NavigationDisplay />
+            </InstrumentFit>
+          </div>
+          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.9}>
+            <AutopilotTrainer />
+          </InstrumentFit>
+        </div>
+      );
+
+    case 'full-deck':
+      return (
+        <div className="cockpit-stage cockpit-stage--full-deck">
+          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.82}>
+            <AutopilotTrainer />
+          </InstrumentFit>
+          <div className="cockpit-pfd-nd-displays">
+            <InstrumentFit target="boeingPfd">
+              <PrimaryFlightDisplay />
+            </InstrumentFit>
+            <InstrumentFit target="boeingNd">
+              <NavigationDisplay />
+            </InstrumentFit>
+          </div>
+        </div>
+      );
+
+    case 'free-practice':
+      return (
+        <div className="cockpit-stage cockpit-stage--free-practice">
           <InstrumentFit target="boeingPfd" className="cockpit-split-panel">
             <PrimaryFlightDisplay />
           </InstrumentFit>

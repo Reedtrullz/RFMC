@@ -1,11 +1,12 @@
 import React from 'react';
 
 export type CockpitLayoutMode =
-  | 'cdu-only'
-  | 'cdu-nd'
-  | 'pfd-nd-cdu'
-  | 'autopilot-trainer'
-  | 'split-instruments';
+  | 'fmc-focus'
+  | 'navigation'
+  | 'automation'
+  | 'approach'
+  | 'full-deck'
+  | 'free-practice';
 
 export function DisplaySelector({ 
   current, 
@@ -14,12 +15,13 @@ export function DisplaySelector({
   current: CockpitLayoutMode; 
   onSelect: (mode: CockpitLayoutMode) => void 
 }) {
-  const modes: { id: CockpitLayoutMode; label: string; icon: string }[] = [
-    { id: 'cdu-only', label: 'CDU Only', icon: '⌨️' },
-    { id: 'cdu-nd', label: 'CDU + ND', icon: '🗺️' },
-    { id: 'pfd-nd-cdu', label: 'Full Deck', icon: '✈️' },
-    { id: 'autopilot-trainer', label: 'Autopilot', icon: '🤖' },
-    { id: 'split-instruments', label: 'Split', icon: '✂️' },
+  const modes: { id: CockpitLayoutMode; label: string }[] = [
+    { id: 'fmc-focus', label: 'FMC Focus' },
+    { id: 'navigation', label: 'Navigation' },
+    { id: 'automation', label: 'Automation' },
+    { id: 'approach', label: 'Approach' },
+    { id: 'full-deck', label: 'Full Deck' },
+    { id: 'free-practice', label: 'Free Practice' },
   ];
 
   return (
@@ -35,7 +37,6 @@ export function DisplaySelector({
               : 'text-white/40 hover:text-white/60 hover:bg-white/5'}
           `}
         >
-          <span className="text-sm">{m.icon}</span>
           <span className="text-[10px] font-cdu uppercase tracking-wider">{m.label}</span>
         </button>
       ))}
