@@ -49,7 +49,7 @@ describe('Navigation Display model', () => {
     expect(model.activeRoutePoints[1].active).toBe(true);
   });
 
-  it('preserves route discontinuities as dashed ND segments', () => {
+  it('does not draw route segments across route discontinuities', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
       flightPlan: {
@@ -66,7 +66,9 @@ describe('Navigation Display model', () => {
     });
 
     expect(model.activeRoutePoints.some(point => point.discontinuity)).toBe(true);
-    expect(model.activeRouteSegments.some(segment => segment.dashed)).toBe(true);
+    // KJFK -> RBV is drawn, but RBV -> DISCO and DISCO -> KDCA are omitted
+    expect(model.activeRouteSegments.some(s => s.from.label === 'RBV' && s.to.label === 'DISCO')).toBe(false);
+    expect(model.activeRouteSegments.some(s => s.from.label === 'DISCO' && s.to.label === 'KDCA')).toBe(false);
   });
 
   it('creates hold and fix overlays from FMC state', () => {

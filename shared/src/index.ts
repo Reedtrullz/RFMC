@@ -16,7 +16,7 @@ export type {
   NDHoldOverlay,
   NDRoutePoint,
   NDRouteSegment,
-} from './fmc/navigationDisplay';
+} from './fmc/ndTypes';
 export { tutorialScenarios, getTutorialScenario, calculateTutorialGrade, isStepComplete } from './fmc/tutorialEngine';
 export {
   AIRPORTS,

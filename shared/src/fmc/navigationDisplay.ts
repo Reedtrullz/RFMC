@@ -1,109 +1,11 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
 import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
 import { distanceNm, bearingDeg } from './ndGeometry';
-
-export type NDMapMode = 
-  | 'MAP' | 'PLN' | 'APP' | 'VOR' // Boeing
-  | 'ROSE_NAV' | 'ARC' | 'PLAN' | 'ROSE_ILS' | 'ROSE_VOR'; // Airbus
-
-export type NDRange = 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
-
-export interface NDAnchorZones {
-  speedBlock: { tas: number; gs: number };
-  windBlock: { dir: number; speed: number };
-  waypointBlock: { ident: string; brg: number; dist: number; eta: string; ete: string } | null;
-  navaidBlocks: Array<{ ident: string; freq: string; dist: number; vor: boolean }>;
-  annunciations: string[];
-}
-
-export interface NDRoutePoint {
-  id: string;
-  label: string;
-  altitudeLabel: string | null;
-  speedLabel: string | null;
-  x: number;
-  y: number;
-  active: boolean;
-  discontinuity: boolean;
-  airport: boolean;
-  navaid?: boolean;
-  visible: boolean;
-  clipped: boolean;
-  distanceNm?: number;
-  bearingDeg?: number;
-  relativeBearingDeg?: number;
-}
-
-export interface NDRouteSegment {
-  from: NDRoutePoint;
-  to: NDRoutePoint;
-  dashed: boolean;
-  active: boolean;
-  modified: boolean;
-  visible: boolean;
-}
-
-export interface NDFixOverlay {
-  refFix: string;
-  radial: number;
-  distance: number;
-  x: number;
-  y: number;
-}
-
-export interface NDHoldOverlay {
-  fix: string;
-  inboundCourse: number;
-  legTime: number;
-  legDist: number;
-  direction: 'L' | 'R';
-  x: number;
-  y: number;
-}
-
-export interface TCASTarget {
-  id: string;
-  ident?: string;
-  x: number;
-  y: number;
-  relativeAltitude: number; // hundreds of feet, e.g., +12, -05
-  trend: 'climb' | 'descend' | 'level';
-  threatLevel: 'other' | 'proximate' | 'traffic' | 'resolution';
-}
-
-export interface WXRData {
-  intensity: 'none' | 'light' | 'medium' | 'heavy';
-  points: Array<{ x: number; y: number; r: number }>;
-}
-
-export interface VerticalProfilePoint {
-  label: string; // T/C, T/D, S/C, etc.
-  x: number;
-  y: number;
-}
-
-export interface NavigationDisplayModel {
-  aircraft: AircraftType;
-  style: 'boeing' | 'airbus';
-  mode: string;
-  range: number;
-  origin: string;
-  destination: string;
-  procedureLabel: string;
-  activeRoutePoints: NDRoutePoint[];
-  activeRouteSegments: NDRouteSegment[];
-  pendingRoutePoints: NDRoutePoint[];
-  pendingRouteSegments: NDRouteSegment[];
-  fixOverlays: NDFixOverlay[];
-  holdOverlay: NDHoldOverlay | null;
-  tcasTargets: TCASTarget[];
-  wxrData: WXRData | null;
-  verticalProfilePoints: VerticalProfilePoint[];
-  anchorZones: NDAnchorZones;
-  overlays: EFISState['overlays'];
-  isModified: boolean;
-  centered: boolean;
-}
+import type { 
+  NDMapMode, NDRange, NDAnchorZones, NDRoutePoint, NDRouteSegment, 
+  NDFixOverlay, NDHoldOverlay, TCASTarget, WXRData, VerticalProfilePoint, 
+  NavigationDisplayModel 
+} from './ndTypes';
 
 export function buildNavigationDisplayModel(
   state: FMCState,
@@ -337,6 +239,7 @@ function projectRoutePoint(
   const progress = total <= 1 ? 0.5 : index / (total - 1);
   
   let x: number, y: number;
+  // If we lack projection coordinates, use a simple synthetic fallback
   if (isPlan) {
     x = 16 + progress * 68;
     y = 50 - Math.sin(index * 1.5) * 5; // Fake path for PLAN mode
@@ -489,13 +392,14 @@ function processRoute(
   const routeSegments = routePoints.slice(1).map((point, index) => {
     const from = routePoints[index];
     const to = point;
+    const hasDiscontinuity = from.discontinuity || to.discontinuity;
     return {
       from,
       to,
-      dashed: from.discontinuity || to.discontinuity,
+      dashed: hasDiscontinuity, // Dashed usually isn't drawn at all if invisible, but we keep it
       active: to.active,
       modified: isModified,
-      visible: from.visible && to.visible,
+      visible: from.visible && to.visible && !hasDiscontinuity, // Do not draw segments connected to a discontinuity
     };
   }).filter(s => s.visible);
 
