@@ -78,8 +78,9 @@ export function renderLegsPage(state: FMCState): DisplayData {
         lines.push(fmt(`${marker} ${delLabel}`, '<', '', 'red'));
         lines.push(fmt(`  ${alt} ${spd}`, '', '', 'red'));
       } else {
-        lines.push(modData(`${marker} ${wp.ident}`, state.isModified, '<'));
-        lines.push(modData(`  ${alt} ${spd}`, state.isModified, '', ''));
+        const color = isCurrent ? 'magenta' : undefined;
+        lines.push(modData(`${marker} ${wp.ident}`, state.isModified, '<', '', color));
+        lines.push(modData(`  ${alt} ${spd}`, state.isModified, '', '', color));
       }
     }
   }

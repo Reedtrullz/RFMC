@@ -554,8 +554,16 @@ export class FMCEngine {
         if (!result.valid) return icaoErr(result);
         const route = this.state.pendingRoute ?? this.state.route;
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-        this.state.pendingRoute = { ...route, origin: sp.toUpperCase() };
-        this.state.pendingFlightPlan = { ...flightPlan, origin: sp.toUpperCase() };
+        const origin = sp.toUpperCase();
+        
+        this.state.pendingRoute = { ...route, origin };
+        this.state.pendingFlightPlan = { ...flightPlan, origin };
+        
+        // If no waypoints, initialize with origin-dest if possible
+        if (flightPlan.waypoints.length === 0 && flightPlan.destination) {
+          this.state.pendingFlightPlan.waypoints = [{ ident: flightPlan.destination, discontinuity: false }];
+        }
+        
         this.state.scratchpad = '';
         return true;
       }
@@ -564,8 +572,16 @@ export class FMCEngine {
         if (!result.valid) return icaoErr(result);
         const route = this.state.pendingRoute ?? this.state.route;
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-        this.state.pendingRoute = { ...route, destination: sp.toUpperCase() };
-        this.state.pendingFlightPlan = { ...flightPlan, destination: sp.toUpperCase() };
+        const destination = sp.toUpperCase();
+        
+        this.state.pendingRoute = { ...route, destination };
+        this.state.pendingFlightPlan = { ...flightPlan, destination };
+        
+        // If no waypoints, initialize with destination
+        if (flightPlan.waypoints.length === 0) {
+          this.state.pendingFlightPlan.waypoints = [{ ident: destination, discontinuity: false }];
+        }
+        
         this.state.scratchpad = '';
         return true;
       }
