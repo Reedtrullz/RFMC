@@ -72,7 +72,7 @@ export const PROCEDURES: Procedure[] = [
     runway: '01L',
     legs: [
       { type: 'IF', fixIdent: 'ENGM' },
-      { type: 'TF', fixIdent: 'SOXOT', courseDeg: 010, distanceNm: 5 },
+      { type: 'TF', fixIdent: 'SOXOT', courseDeg: 10, distanceNm: 5 },
       { type: 'TF', fixIdent: 'LUNIP', courseDeg: 280, distanceNm: 15, altitudeConstraint: { value: 7000, type: 'ABOVE' } },
     ]
   },

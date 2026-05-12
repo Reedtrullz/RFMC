@@ -11,6 +11,8 @@
   "dependencies": {
     "@virtual-cdu/shared": "*",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.5.1",
+    "helmet": "^8.1.0",
     "node-simconnect": "^4.2.0",
     "tsx": "^4.15.0",
     "ws": "^8.17.0"

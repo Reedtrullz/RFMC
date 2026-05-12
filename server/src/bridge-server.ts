@@ -7,6 +7,10 @@ import { createAircraftAdapter } from './aircraft-adapters';
 import { getAdapterHealth, toAdapterCapabilities } from './aircraft-adapters/adapter-health';
 import type { IAircraftAdapter } from './aircraft-adapters/IAircraftAdapter';
 import { FMCEngine } from './fmc-engine';
+import { configureSecurity } from './security';
+import { logger, LogEvent } from './logging';
+import { metrics } from './metrics';
+import { validateClientMessage, WSRateLimiter } from './websocketValidation';
 
 function parseAllowedOrigins(value: string | undefined): string[] {
   if (!value) return [];
@@ -17,22 +21,6 @@ function isOriginAllowed(origin: string | undefined, allowedOrigins: string[]): 
   if (!origin) return true;
   if (allowedOrigins.length === 0) return true;
   return allowedOrigins.includes(origin);
-}
-
-function isClientMessage(value: unknown): value is ClientMessage {
-  if (!value || typeof value !== 'object') return false;
-  const message = value as { type?: unknown; key?: unknown; mode?: unknown };
-  switch (message.type) {
-    case 'fmc.input':
-      return typeof message.key === 'string';
-    case 'sim.connect':
-    case 'sim.disconnect':
-      return true;
-    case 'mode':
-      return message.mode === 'STANDALONE' || message.mode === 'SYNC' || message.mode === 'CONTROL';
-    default:
-      return false;
-  }
 }
 
 export interface BridgeServerOptions {
@@ -59,8 +47,13 @@ export interface BridgeServer {
 export function createBridgeServer(options: BridgeServerOptions = {}): BridgeServer {
   const app = express();
   const server = http.createServer(app);
+  
+  // Apply production security hardening
+  configureSecurity(app);
+
   const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(process.env.WS_ALLOWED_ORIGINS);
   const maxMessageBytes = options.maxMessageBytes ?? parseInt(process.env.WS_MAX_MESSAGE_BYTES || '65536', 10);
+  
   const wss = new WebSocketServer({
     server,
     maxPayload: maxMessageBytes,
@@ -72,23 +65,11 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       done(false, 403, 'Forbidden origin');
     },
   });
+
   const fmc = options.fmc ?? new FMCEngine();
   const aircraft = options.aircraft ?? createAircraftAdapter();
   let pollInterval: ReturnType<typeof setInterval> | null = null;
   let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
-
-  app.disable('x-powered-by');
-  app.use((_req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('Referrer-Policy', 'no-referrer');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    res.setHeader(
-      'Content-Security-Policy',
-      "default-src 'self'; connect-src 'self' ws: wss: https://www.simbrief.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
-    );
-    next();
-  });
 
   function startHeartbeat(): void {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -113,14 +94,11 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
+      ...metrics.getMetrics(),
       aircraft: aircraft.isConnected ? aircraft.name : 'none',
       aircraftType: aircraft.aircraftType,
-      capabilities: aircraft.capabilities,
-      structuredCapabilities: toAdapterCapabilities(aircraft),
-      adapterHealth: getAdapterHealth(aircraft),
       connectionStatus: aircraft.connectionStatus,
-      lastError: aircraft.lastError,
-      clients: wss.clients.size,
+      adapterHealth: getAdapterHealth(aircraft),
     });
   });
 
@@ -181,6 +159,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         }
       } catch (err) {
         devError('[Poll] Error:', err);
+        metrics.simError();
       }
     }, 100);
   }
@@ -202,7 +181,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     }
     if (!shouldBeConnected || aircraft.isConnected) return;
     
-    devLog('[Watchdog] Attempting auto-reconnect...');
+    logger.info(LogEvent.SIM_CONNECTED, { message: 'Attempting auto-reconnect' });
     const connected = await aircraft.connect();
     if (connected) {
       startPolling();
@@ -222,7 +201,13 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   }
 
   wss.on('connection', (ws: WebSocket) => {
-    devLog(`[WS] Client connected (total: ${wss.clients.size})`);
+    metrics.clientConnected();
+    const rateLimiter = new WSRateLimiter();
+    
+    logger.info(LogEvent.WS_CLIENT_CONNECTED, { 
+      clients: wss.clients.size,
+      adapter: aircraft.name 
+    });
     
     if (wss.clients.size === 1) {
       startHeartbeat();
@@ -246,40 +231,42 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
     ws.on('message', (raw) => {
       try {
+        if (!rateLimiter.isAllowed()) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Too many messages' } as ServerMessage));
+          return;
+        }
+
         const rawText = raw.toString();
         if (Buffer.byteLength(rawText, 'utf8') > maxMessageBytes) {
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: 'Message too large',
-          } as ServerMessage));
+          ws.send(JSON.stringify({ type: 'error', message: 'Message too large' } as ServerMessage));
+          metrics.validationError();
           return;
         }
 
-        const parsed = JSON.parse(rawText) as unknown;
-        if (!isClientMessage(parsed)) {
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: 'Unknown or invalid message type',
-          } as ServerMessage));
+        const parsed = JSON.parse(rawText);
+        const msg = validateClientMessage(parsed);
+        
+        if (!msg) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format or type' } as ServerMessage));
+          metrics.validationError();
+          logger.warn(LogEvent.WS_VALIDATION_ERROR, { payload: rawText.substring(0, 100) });
           return;
         }
-
-        const msg = parsed;
 
         switch (msg.type) {
           case 'fmc.input': {
             const displayData = fmc.processInput(msg.key);
             broadcast({ type: 'fmc.display', data: displayData });
             if (aircraft.isConnected) {
-              aircraft.sendKeypress(msg.key).catch(err =>
-                devError('[Aircraft] sendKeypress error:', err)
-              );
+              aircraft.sendKeypress(msg.key).catch(err => {
+                devError('[Aircraft] sendKeypress error:', err);
+                metrics.simError();
+              });
             }
             break;
           }
 
           case 'sim.connect': {
-            devLog('[WS] Client requested sim connection');
             shouldBeConnected = true;
             aircraft.connect().then(connected => {
               if (connected) {
@@ -299,11 +286,11 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
                   type: 'error',
                   message: aircraft.lastError ?? 'Failed to connect to MSFS',
                 } as ServerMessage));
-                // Start watchdog even if first attempt fails
                 if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
               }
             }).catch(err => {
               devError('[SimConnect] Error:', err);
+              metrics.simError();
               ws.send(JSON.stringify({
                 type: 'error',
                 message: 'Failed to connect to MSFS',
@@ -314,7 +301,6 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
           }
 
           case 'sim.disconnect': {
-            devLog('[WS] Client requested disconnect');
             shouldBeConnected = false;
             if (retryTimeout) {
               clearTimeout(retryTimeout);
@@ -328,24 +314,22 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
           }
 
           case 'mode':
-            devLog('[WS] Mode changed:', msg.mode);
+            // Already validated, but could add specific mode handling here
             break;
         }
       } catch (err) {
-        devError('[WS] Invalid message:', err);
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format',
-        } as ServerMessage));
+        metrics.validationError();
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON' } as ServerMessage));
       }
     });
 
     ws.on('close', () => {
-      devLog(`[WS] Client disconnected (remaining: ${wss.clients.size - 1})`);
+      metrics.clientDisconnected();
+      logger.info(LogEvent.WS_CLIENT_DISCONNECTED, { remaining: wss.clients.size });
     });
 
     ws.on('error', (err) => {
-      devError('[WS] Client error:', err);
+      logger.error(LogEvent.SIM_ERROR, { error: String(err) });
     });
   });
 
@@ -360,10 +344,12 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       server.listen(options.port ?? 0, () => {
         const address = server.address();
         const port = typeof address === 'object' && address ? address.port : options.port ?? 0;
+        logger.info(LogEvent.SERVER_START, { port });
         resolve(port);
       });
     }),
     stop: async () => {
+      logger.info(LogEvent.SERVER_STOP, {});
       stopPolling();
       stopHeartbeat();
       await aircraft.disconnect();

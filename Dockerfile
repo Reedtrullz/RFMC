@@ -1,5 +1,5 @@
 # Stage 1: Build frontend
-FROM node:20-alpine AS builder
+FROM node:20.12-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,10 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production runtime
-FROM node:20-alpine
+FROM node:20.12-alpine
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
@@ -39,6 +42,9 @@ ENV PORT=8080
 
 RUN chown -R node:node /app
 USER node
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
 
 EXPOSE 8080
 
