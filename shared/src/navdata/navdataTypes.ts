@@ -34,6 +34,16 @@ export type ProcedureLeg = {
   isFlyOver?: boolean;
 };
 
+export type ExpandedLeg = {
+  ident: string;
+  lat: number;
+  lon: number;
+  type: string;
+  altitudeConstraint?: AltitudeConstraint;
+  speedConstraint?: SpeedConstraint;
+  isFlyOver?: boolean;
+};
+
 export type Procedure = {
   airport: string;
   type: ProcedureType;

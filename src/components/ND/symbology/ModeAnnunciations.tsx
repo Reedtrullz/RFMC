@@ -18,6 +18,16 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
       <g transform="translate(4 6)" fontSize="3.5" fill={colors.active} fontWeight="bold">
         <text>{model.mode} {model.centered ? 'CTR' : ''}</text>
       </g>
+
+      <g transform="translate(50 6)" fontSize="3.2" fill={colors.text} fontWeight="bold" textAnchor="middle">
+        <text>{isAirbus ? 'AIRBUS' : 'BOEING'}</text>
+      </g>
+
+      {model.procedureLabel && model.procedureLabel !== 'NO PROC' && (
+        <g transform="translate(50 11)" fontSize="3" fill={colors.magenta} fontWeight="bold" textAnchor="middle">
+          <text>{model.procedureLabel}</text>
+        </g>
+      )}
       
       {/* Range (Top Right) */}
       <g transform="translate(96 6)" fontSize="3.5" fill={colors.active} fontWeight="bold" textAnchor="end">
@@ -34,7 +44,7 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
       )}
 
       {/* GS / TAS (Top Left) */}
-      <g transform="translate(4 15)" fontSize="3" fill={colors.text} fontWeight="bold">
+      <g transform="translate(4 17)" fontSize="3" fill={colors.text} fontWeight="bold">
         <text>GS 450</text>
         <text y="4">TAS 462</text>
       </g>

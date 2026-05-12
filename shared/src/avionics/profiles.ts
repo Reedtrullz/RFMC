@@ -157,6 +157,8 @@ export const BOEING_737NG_DISPLAY_PROFILE: DisplayProfile = {
       placeholder: 'white',
       scratchpad: 'white',
       inverse: 'white',
+      titleBackground: 'cyan',
+      pageIndicator: 'white',
     },
     shell: {
       bezel: '#171717',

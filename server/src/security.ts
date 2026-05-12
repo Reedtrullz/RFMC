@@ -23,6 +23,9 @@ export function configureSecurity(app: Express) {
         upgradeInsecureRequests: [],
       },
     },
+    frameguard: {
+      action: 'deny',
+    },
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
   }));

@@ -117,7 +117,17 @@ export * from './autopilot/autopilotTypes';
 export * from './autopilot/boeingMcpLogic';
 export * from './pfd/pfdTypes';
 export * from './pfd/boeingPfdModel';
-export * from './navdata/navdataTypes';
+export type {
+  Airport,
+  ArincLegType,
+  ExpandedLeg,
+  FixType,
+  NavFix,
+  Procedure,
+  ProcedureType as NavProcedureType,
+  ProcedureLeg as NavProcedureLeg,
+  Runway,
+} from './navdata/navdataTypes';
 export * from './navdata/navdataStore';
 export * from './navdata/routeExpansion';
 export * from './navdata/procedureSelection';

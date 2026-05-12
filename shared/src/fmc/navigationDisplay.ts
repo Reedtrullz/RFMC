@@ -1,5 +1,4 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
-import { formatAltitudeConstraint as sharedFormatAlt, formatSpeedConstraint as sharedFormatSpd } from '../navdata/constraints';
 import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
 import { clipRouteSegment } from './ndClipping';
 import { distanceNm, bearingDeg } from './ndGeometry';
@@ -278,7 +277,7 @@ function buildRouteItems(flightPlan: FMCState['flightPlan'], route: FMCState['ro
   return points;
 }
 
-function isAirportWaypoint(waypoint: FlightPlanWaypoint, destination: string): boolean {
+function isAirportWaypoint(waypoint: FlightPlanWaypoint, destination?: string | null): boolean {
   return waypoint.ident === destination || (/^[A-Z]{4}$/.test(waypoint.ident) && !waypoint.discontinuity);
 }
 
@@ -364,11 +363,40 @@ function isPointVisible(point: NDRoutePoint, efis: EFISState, visibleOverlays: E
 }
 
 function formatAltitudeConstraint(waypoint: FlightPlanWaypoint): string | null {
-  return sharedFormatAlt(waypoint.altitudeConstraint as any) || null;
+  const constraint = waypoint.altitudeConstraint;
+  if (!constraint || waypoint.discontinuity) return null;
+
+  const altitude = constraint.altitude.toString();
+  switch (constraint.type) {
+    case 'AT':
+      return constraint.altitude >= 18000
+        ? `FL${Math.round(constraint.altitude / 100).toString().padStart(3, '0')}`
+        : altitude;
+    case 'AT_OR_ABOVE':
+      return `${altitude}A`;
+    case 'AT_OR_BELOW':
+      return `${altitude}B`;
+    case 'BETWEEN':
+      return `${altitude}B${constraint.altitude2 ?? ''}A`;
+    default:
+      return null;
+  }
 }
 
 function formatSpeedConstraint(waypoint: FlightPlanWaypoint): string | null {
-  return sharedFormatSpd(waypoint.speedConstraint as any) || null;
+  const constraint = waypoint.speedConstraint;
+  if (!constraint || waypoint.discontinuity) return null;
+
+  switch (constraint.type) {
+    case 'AT':
+      return constraint.speed.toString();
+    case 'AT_OR_ABOVE':
+      return `${constraint.speed}A`;
+    case 'AT_OR_BELOW':
+      return `${constraint.speed}B`;
+    default:
+      return null;
+  }
 }
 
 function buildFixOverlays(state: FMCState, routePoints: NDRoutePoint[], activePoint?: NDRoutePoint): NDFixOverlay[] {

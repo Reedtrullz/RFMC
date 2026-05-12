@@ -2,17 +2,29 @@ import type { FMCState, DisplayData } from '@shared';
 import { boeingPage, boeingTitle, seg } from './boeingGridHelpers';
 
 export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
-  const { takeoff, takeoffRefPageIndex } = state;
+  const { takeoff, landing, takeoffRefPageIndex } = state;
 
   if (takeoffRefPageIndex === 1) {
     // Page 2
     return boeingPage([
       ...boeingTitle('TAKEOFF REF', '2/2'),
       seg(1, 1, 'LANDING RW', 'white', { size: 'small' }),
-      seg(2, 1, state.landing.runway || '---', 'green'),
+      seg(2, 1, landing.runway || state.route.runway || takeoff.runway || '---', 'green'),
+      seg(5, 1, 'FLAPS', 'white', { size: 'small' }),
+      seg(6, 1, landing.flaps || '[  ]', landing.flaps ? 'green' : 'white'),
+      seg(5, 19, 'VREF', 'white', { size: 'small' }),
+      seg(6, 18, landing.vref ? `${landing.vref}KT` : '[   ]', landing.vref ? 'green' : 'white'),
+      seg(7, 1, 'ILS FREQ', 'white', { size: 'small' }),
+      seg(8, 1, landing.ilsFrequency || '---.--', landing.ilsFrequency ? 'green' : 'white'),
+      seg(7, 19, 'CRS', 'white', { size: 'small' }),
+      seg(8, 19, landing.course ? `${landing.course}` : '---', landing.course ? 'green' : 'white'),
       seg(13, 0, '<PREV PAGE', 'white'),
     ], {
       L1: 'set_landing_runway',
+      L3: 'set_landing_flaps',
+      L4: 'set_ils_frequency',
+      R3: 'set_landing_vref',
+      R4: 'set_ils_course',
       L6: 'prev_page',
     });
   }

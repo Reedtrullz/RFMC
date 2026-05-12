@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 interface ScreenGlassProps {
   children: ReactNode;
-  variant?: 'boeing' | 'airbus' | 'nd' | 'pfd';
+  variant?: 'boeing' | 'airbus' | 'airbus-crt' | 'nd' | 'pfd';
   brightness?: number;
   className?: string;
 }

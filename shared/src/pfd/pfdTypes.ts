@@ -1,10 +1,10 @@
 export type BoeingFMAState = {
   autothrottleMode: 'ARM' | 'N1' | 'MCP SPD' | 'THR HLD' | 'RETARD' | '';
   rollMode: 'LNAV' | 'HDG SEL' | 'VOR/LOC' | 'ROLLOUT' | '';
-  pitchMode: 'VNAV SPD' | 'VNAV PTH' | 'LVL CHG' | 'ALT HOLD' | 'G/S' | '';
+  pitchMode: 'VNAV SPD' | 'VNAV PTH' | 'LVL CHG' | 'ALT HOLD' | 'G/S' | 'V/S' | '';
   armedRollMode: 'VOR/LOC' | 'APP' | '';
   armedPitchMode: 'G/S' | 'VNAV' | '';
-  apStatus: 'CMD A' | 'CMD B' | 'FD' | '';
+  apStatus: 'CMD A' | 'CMD B' | 'CWS A' | 'CWS B' | 'FD' | '';
 };
 
 export type AirbusFMAState = {

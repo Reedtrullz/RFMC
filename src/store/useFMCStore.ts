@@ -43,6 +43,7 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
 
 const defaultState = {
   aircraft: 'BOEING_737' as AircraftType,
+  page: 'IDENT' as PageType,
   currentPage: 'IDENT' as PageType,
   pageHistory: [] as PageType[],
   scratchpad: '',
@@ -54,7 +55,7 @@ const defaultState = {
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
-  route: { origin: '', destination: '', flightNumber: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
+  route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
   
   pendingRoute: null as RouteData | null,
@@ -237,6 +238,7 @@ interface FMCActions {
   skipTutorialStep: () => void;
   clearTutorialHint: () => void;
   setTutorialConfidence: (stars: number) => void;
+  expandActiveRoute: () => void;
   setLatency: (ms: number) => void;
   setSessionStartTime: (time: number | null) => void;
 
@@ -278,7 +280,17 @@ interface TutorialState {
   tutorialConfidence: number | null;
 }
 
-export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & FMCActions & { brightness: number };
+interface TrainingState {
+  trainingActive: boolean;
+  trainingScenario: TrainingScenario | null;
+  trainingEngine: TrainingScenarioEngine | null;
+  trainingMistakes: TrainingMistake[];
+  trainingScore: TrainingScore | null;
+  trainingStepIndex: number;
+  trainingCompleted: boolean;
+}
+
+export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & TrainingState & FMCActions & { brightness: number };
 
 type StoreAPI = import('zustand').StoreApi<FMCStore>;
 
@@ -1258,9 +1270,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   loadFlightPlan: (data) => {
     set((state) => {
-      const origin = data.origin || state.flightPlan.origin || state.route.origin;
-      const destination = data.destination || state.flightPlan.destination || state.route.destination;
-      const route = data.route || state.flightPlan.route || state.route.routeString;
+      const origin = data.origin || state.flightPlan.origin || state.route.origin || '';
+      const destination = data.destination || state.flightPlan.destination || state.route.destination || '';
+      const route = data.route || state.flightPlan.route || state.route.routeString || '';
       const parsed = route ? parseRouteString([origin, route, destination].filter(Boolean).join(' ')) : null;
       
       // Merge SimBrief coordinates if available
@@ -1607,8 +1619,6 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       ident: leg.ident,
       lat: leg.lat,
       lon: leg.lon,
-      altitudeConstraint: leg.altitudeConstraint,
-      speedConstraint: leg.speedConstraint,
       discontinuity: false,
     }));
 

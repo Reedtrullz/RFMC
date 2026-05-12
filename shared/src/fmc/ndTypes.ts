@@ -48,10 +48,13 @@ export interface NDRouteSegment {
 
 export interface NDFixOverlay {
   refFix: string;
+  ident?: string;
   radial: number;
   distance: number;
   x: number;
   y: number;
+  refX?: number;
+  refY?: number;
   radialX: number;
   radialY: number;
   radius: number;
@@ -66,6 +69,7 @@ export interface NDHoldOverlay {
   x: number;
   y: number;
   visible: boolean;
+  isPending?: boolean;
 }
 
 export interface TCASTarget {

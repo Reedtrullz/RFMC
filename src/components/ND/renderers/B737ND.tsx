@@ -11,6 +11,7 @@ import { ModeAnnunciations } from '../symbology/ModeAnnunciations';
 import { TCASOverlay } from '../layers/TCASOverlay';
 import { WXROverlay } from '../layers/WXROverlay';
 import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
+import { AircraftSymbol } from '../symbols/AircraftSymbol';
 
 interface B737NDProps {
   model: NavigationDisplayModel;

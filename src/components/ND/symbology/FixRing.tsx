@@ -14,20 +14,22 @@ export function FixRing({ model }: FixRingProps) {
   return (
     <g>
       {fixes.map((fix, i) => {
-        if (!fix.refX || !fix.refY) return null;
+        const refX = fix.refX ?? fix.x;
+        const refY = fix.refY ?? fix.y;
+        if (refX === undefined || refY === undefined) return null;
         
         // Scale distance to pixels
         const distPx = fix.distance * (45 / model.range);
 
         return (
-          <g key={i}>
+          <g key={i} data-testid="nd-fix-overlay">
             {/* Radial Line */}
             {fix.radial > 0 && (
               <line
-                x1={fix.refX}
-                y1={fix.refY}
-                x2={fix.refX + Math.sin(fix.radial * Math.PI / 180) * 100}
-                y2={fix.refY - Math.cos(fix.radial * Math.PI / 180) * 100}
+                x1={refX}
+                y1={refY}
+                x2={refX + Math.sin(fix.radial * Math.PI / 180) * 100}
+                y2={refY - Math.cos(fix.radial * Math.PI / 180) * 100}
                 stroke={color}
                 strokeWidth="0.4"
                 strokeDasharray="2 2"
@@ -38,8 +40,8 @@ export function FixRing({ model }: FixRingProps) {
             {/* Distance Circle */}
             {fix.distance > 0 && (
               <circle
-                cx={fix.refX}
-                cy={fix.refY}
+                cx={refX}
+                cy={refY}
                 r={distPx}
                 fill="none"
                 stroke={color}
@@ -51,14 +53,14 @@ export function FixRing({ model }: FixRingProps) {
 
             {/* Fix Label */}
             <text
-              x={fix.refX + 2}
-              y={fix.refY - 2}
+              x={refX + 2}
+              y={refY - 2}
               fill={color}
               fontSize="2.4"
               fontWeight="bold"
               opacity="0.9"
             >
-              {fix.ident}
+              {fix.ident ?? fix.refFix}
             </text>
           </g>
         );

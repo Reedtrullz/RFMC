@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "types": ["vitest/globals", "node"],
     "paths": {
       "@shared": ["../shared/src"],
       "@shared/*": ["../shared/src/*"]

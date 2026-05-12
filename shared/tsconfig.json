@@ -6,7 +6,13 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vitest/globals", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@shared": ["src/index.ts"],
+      "@shared/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }

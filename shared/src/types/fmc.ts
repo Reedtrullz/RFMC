@@ -227,11 +227,13 @@ export interface RouteData {
   origin: string | null;
   destination: string | null;
   flightNumber: string | null;
-  sid: string | null;
-  star: string | null;
-  approach: string | null;
-  coRoute: string | null;
-  runway: string | null;
+  routeString?: string;
+  companyRoute?: string;
+  sid?: string | null;
+  star?: string | null;
+  approach?: string | null;
+  coRoute?: string | null;
+  runway?: string | null;
   alternate?: string;
   directTo?: string;
 }
@@ -297,7 +299,6 @@ export interface FMCState {
   execLit: boolean;
   msgLight: boolean;
   
-  mode: FMCMode;
   connectionStatus: ConnectionStatus;
   connectionMode: ConnectionMode;
   connectedAircraft: string | null;
@@ -307,9 +308,6 @@ export interface FMCState {
   simVariables: Record<string, number>;
   failureMessage: string | null;
   externalDisplayData: DisplayData | null;
-
-  efisL: EFISState;
-  efisR: EFISState;
 
   hold: {
     fix: string;

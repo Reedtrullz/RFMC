@@ -3,6 +3,9 @@ interface AvionicsKeyProps {
   subLabel?: string;
   active?: boolean;
   lit?: boolean;
+  highlighted?: boolean;
+  tone?: string;
+  shape?: string;
   variant?: 'boeing' | 'airbus' | 'function' | 'exec' | 'lsk';
   onPress: () => void;
   className?: string;
@@ -14,6 +17,8 @@ export function AvionicsKey({
   subLabel, 
   active, 
   lit, 
+  highlighted,
+  shape,
   variant = 'boeing', 
   onPress,
   className = '',
@@ -27,6 +32,8 @@ export function AvionicsKey({
         'avionics-key',
         `avionics-key--${variant}`,
         active ? 'avionics-key--active' : '',
+        highlighted ? 'avionics-key--highlighted' : '',
+        shape ? `avionics-key--${shape}` : '',
         lit ? 'avionics-key--lit' : '',
         className,
       ].join(' ')}

@@ -247,7 +247,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         const msg = validateClientMessage(parsed);
         
         if (!msg) {
-          ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format or type' } as ServerMessage));
+          ws.send(JSON.stringify({ type: 'error', message: 'Unknown or invalid message type' } as ServerMessage));
           metrics.validationError();
           logger.warn(LogEvent.WS_VALIDATION_ERROR, { payload: rawText.substring(0, 100) });
           return;

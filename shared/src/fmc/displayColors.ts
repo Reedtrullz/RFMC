@@ -3,6 +3,7 @@ export type BoeingColor =
   | 'green'
   | 'magenta'
   | 'white'
+  | 'black'
   | 'shaded'
   | 'amber'
   | 'red';
@@ -22,6 +23,7 @@ export const COLOR_CLASSES: Record<DisplayColor, string> = {
   green: 'text-cdu-text',
   magenta: 'text-fuchsia-400',
   white: 'text-white',
+  black: 'text-black',
   shaded: 'text-gray-200',
   amber: 'text-cdu-amber',
   red: 'text-cdu-error',
@@ -33,6 +35,7 @@ export const COLOR_HEX: Record<DisplayColor, string> = {
   green: '#39ff14',
   magenta: '#e879f9',
   white: '#ffffff',
+  black: '#000000',
   shaded: '#e5e5e5',
   amber: '#ffb000',
   red: '#ff3333',

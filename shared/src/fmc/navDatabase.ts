@@ -1,4 +1,5 @@
-import { NAV_FIXES, NavFix } from '../navdata/navdataStore';
+import { NAV_FIXES } from '../navdata/navdataStore';
+import type { NavFix } from '../navdata/navdataTypes';
 
 interface GeoPoint {
   lat: number;

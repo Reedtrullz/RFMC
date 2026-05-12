@@ -11,7 +11,9 @@ export type DisplaySemantic =
   | 'warning'
   | 'placeholder'
   | 'scratchpad'
-  | 'inverse';
+  | 'inverse'
+  | 'titleBackground'
+  | 'pageIndicator';
 
 export const BOEING_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   title: 'cyan',
@@ -24,6 +26,8 @@ export const BOEING_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   placeholder: 'white',
   scratchpad: 'white',
   inverse: 'white',
+  titleBackground: 'cyan',
+  pageIndicator: 'white',
 };
 
 export const AIRBUS_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
@@ -37,6 +41,8 @@ export const AIRBUS_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   placeholder: 'amber',
   scratchpad: 'white',
   inverse: 'white',
+  titleBackground: 'white',
+  pageIndicator: 'white',
 };
 
 export function getSemanticColor(aircraft: AircraftType, semantic: DisplaySemantic): DisplayColor {

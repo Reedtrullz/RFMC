@@ -18,7 +18,7 @@ export function HoldPattern({ model }: HoldPatternProps) {
   const radius = 3;
 
   return (
-    <g transform={`translate(${hold.x} ${hold.y}) rotate(${hold.inboundCourse})`}>
+    <g data-testid="nd-hold-overlay" transform={`translate(${hold.x} ${hold.y}) rotate(${hold.inboundCourse})`}>
       {/* Racetrack path */}
       <path
         d={`
