@@ -1,5 +1,6 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
-import { projectGeoPointToND } from './ndProjection';
+import { projectGeoPointToND, ProjectedNDPoint } from './ndProjection';
+import { distanceNm, bearingDeg } from './ndGeometry';
 
 export type NDMapMode = 
   | 'MAP' | 'PLN' | 'APP' | 'VOR' // Boeing
@@ -112,8 +113,11 @@ export function buildNavigationDisplayModel(
   const aircraftPos = state.aircraftState?.position || { lat: 52.3, lon: 4.7 }; // Default EHAM
   const heading = state.aircraftState?.heading || 0;
 
+  // For PLAN mode, we center on the active waypoint or a selected one
+  const planCenter = isPlanMode ? (routeItems[activeIndex] ? { lat: routeItems[activeIndex].lat!, lon: routeItems[activeIndex].lon! } : aircraftPos) : undefined;
+
   const routePoints = routeItems.map((item, index) => {
-    let projected = null;
+    let projected: ProjectedNDPoint | null = null;
     if (item.lat !== undefined && item.lon !== undefined) {
       projected = projectGeoPointToND(
         { lat: item.lat, lon: item.lon },
@@ -121,7 +125,8 @@ export function buildNavigationDisplayModel(
         heading,
         resolvedEfis.range,
         isPlanMode,
-        resolvedEfis.centered
+        resolvedEfis.centered,
+        planCenter
       );
     }
     
@@ -219,8 +224,9 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
     mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
     range: 40,
     overlays: {
-      fix: true, hold: true, wpt: true, arpt: true, sta: true, 
-      data: true, pos: false, terr: false, wxr: false, tfc: true
+      wpt: true, arpt: true, sta: true, 
+      data: true, pos: false, terr: false, wxr: false, tfc: true,
+      cstr: aircraft === 'AIRBUS_A320'
     },
     centered: false,
     side,
@@ -283,7 +289,7 @@ function projectRoutePoint(
   isPlan: boolean, 
   active: boolean, 
   centered: boolean,
-  projected: { x: number, y: number } | null
+  projected: ProjectedNDPoint | null
 ): NDRoutePoint {
   if (projected) {
     return {
@@ -380,21 +386,28 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
 
 function buildAnchorZones(state: FMCState, efis: EFISState): NDAnchorZones {
   const aircraftState = state.aircraftState;
-  const activeWP = (state.isModified ? state.pendingFlightPlan : state.flightPlan)?.waypoints[0];
-  const gs = (aircraftState?.speed ?? 0) + 5; // Simplified GS
+  const aircraftPos = aircraftState?.position || { lat: 52.3, lon: 4.7 };
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const activeWP = flightPlan.waypoints[0];
+  const gs = aircraftState?.speed ?? 0;
 
   let waypointBlock: NDAnchorZones['waypointBlock'] = null;
-  if (activeWP) {
-    const dist = 12.4; // Still mocked until we have real coordinate math
-    const eteMinutes = gs > 0 ? (dist / gs) * 60 : 0;
+  if (activeWP && activeWP.lat !== undefined && activeWP.lon !== undefined) {
+    const target = { lat: activeWP.lat, lon: activeWP.lon };
+    const dist = distanceNm(aircraftPos, target);
+    const brg = bearingDeg(aircraftPos, target);
+    
+    const eteMinutes = gs > 50 ? (dist / gs) * 60 : 0;
     const etaDate = new Date(Date.now() + eteMinutes * 60000);
     const etaStr = `${String(etaDate.getUTCHours()).padStart(2, '0')}:${String(etaDate.getUTCMinutes()).padStart(2, '0')}z`;
-    const eteStr = `${Math.floor(eteMinutes / 60)}h${Math.round(eteMinutes % 60)}m`;
+    const eteStr = eteMinutes > 60 
+      ? `${Math.floor(eteMinutes / 60)}h${Math.round(eteMinutes % 60)}m`
+      : `${Math.round(eteMinutes)}m`;
 
     waypointBlock = {
       ident: activeWP.ident,
-      brg: 342,
-      dist,
+      brg: Math.round(brg),
+      dist: Math.round(dist * 10) / 10,
       eta: etaStr,
       ete: eteStr
     };

@@ -32,8 +32,9 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
     mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
     range: 40,
     overlays: {
-      fix: true, hold: true, wpt: true, arpt: true, sta: true,
-      data: true, pos: false, terr: false, wxr: false, tfc: true
+      wpt: true, arpt: true, sta: true,
+      data: true, pos: false, terr: false, wxr: false, tfc: true,
+      cstr: aircraft === 'AIRBUS_A320'
     },
     centered: false,
     side,
@@ -46,7 +47,7 @@ const defaultState = {
   pageHistory: [] as PageType[],
   scratchpad: '',
   scratchpadError: null as string | null,
-  demoMode: true,
+  demoMode: false,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: { refAirport: '', gate: '' },

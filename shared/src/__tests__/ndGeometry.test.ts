@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distanceNm, bearingDeg, relativeBearing } from '../ndGeometry';
+import { distanceNm, bearingDeg, relativeBearing } from '../fmc/ndGeometry';
 
 describe('ND Geometry', () => {
   it('calculates distance correctly', () => {

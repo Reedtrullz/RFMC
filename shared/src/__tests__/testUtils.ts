@@ -51,8 +51,6 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
       centered: false,
       side: 'L',
       overlays: {
-        fix: false,
-        hold: false,
         wpt: false,
         arpt: false,
         sta: false,
@@ -61,6 +59,7 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
         terr: false,
         wxr: false,
         tfc: false,
+        cstr: false,
       },
     },
     efisR: {
@@ -69,8 +68,6 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
       centered: false,
       side: 'R',
       overlays: {
-        fix: false,
-        hold: false,
         wpt: false,
         arpt: false,
         sta: false,
@@ -79,6 +76,7 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
         terr: false,
         wxr: false,
         tfc: false,
+        cstr: false,
       },
     },
     brightness: 100,

@@ -20,8 +20,8 @@ const baseState = createBaseState({
     centered: false,
     side: 'L',
     overlays: {
-      wpt: true, arpt: true, sta: true, fix: true, hold: true,
-      data: false, pos: false, terr: false, wxr: false, tfc: true
+      wpt: true, arpt: true, sta: true, data: false, 
+      pos: false, terr: false, wxr: false, tfc: true, cstr: false
     },
   },
   efisR: {
@@ -30,8 +30,8 @@ const baseState = createBaseState({
     centered: false,
     side: 'R',
     overlays: {
-      wpt: true, arpt: true, sta: true, fix: true, hold: true,
-      data: false, pos: false, terr: false, wxr: false, tfc: true
+      wpt: true, arpt: true, sta: true, data: false, 
+      pos: false, terr: false, wxr: false, tfc: true, cstr: false
     },
   },
 });

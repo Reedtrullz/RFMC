@@ -12,8 +12,6 @@ export interface EFISState {
   mode: string;           // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
   range: number;          // 10, 20, 40, 80, 160, 320, 640
   overlays: {
-    fix: boolean;
-    hold: boolean;
     wpt: boolean;
     arpt: boolean;
     sta: boolean;
@@ -22,6 +20,7 @@ export interface EFISState {
     terr: boolean;
     wxr: boolean;
     tfc: boolean;
+    cstr: boolean;
   };
   centered: boolean;      // 737 CTR toggle
   side: 'L' | 'R';

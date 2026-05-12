@@ -82,6 +82,18 @@ export function A320ND({ model }: A320NDProps) {
           <text x="3" y="1" fill={colors.text} fontSize="3.2" fontWeight="normal">
             {point.label}
           </text>
+          
+          {/* CSTR Overlay: Constraints */}
+          {model.overlays.cstr && !point.discontinuity && (
+            <g fontSize="2.4">
+              {point.speedLabel && (
+                <text x="3" y="4.5" fill={colors.magenta}>{point.speedLabel}</text>
+              )}
+              {point.altitudeLabel && (
+                <text x="3" y={point.speedLabel ? 7.5 : 4.5} fill={colors.magenta}>{point.altitudeLabel}</text>
+              )}
+            </g>
+          )}
         </g>
       ))}
 
