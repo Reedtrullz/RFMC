@@ -174,6 +174,12 @@ const defaultState = {
 
   efisL: createDefaultEFIS('BOEING_737', 'L'),
   efisR: createDefaultEFIS('BOEING_737', 'R'),
+
+  // Cockpit Layout
+  cockpitLayoutMode: 'fmc-focus' as CockpitLayoutMode,
+  hiddenPanels: [] as PanelId[],
+  pinnedPanels: [] as PanelId[],
+  focusedPanel: null as PanelId | null,
 };
 
 interface FMCActions {
@@ -237,6 +243,7 @@ interface FMCActions {
   recordTutorialError: () => void;
   skipTutorialStep: () => void;
   clearTutorialHint: () => void;
+  resetTutorialHints: () => void;
   setTutorialConfidence: (stars: number) => void;
   expandActiveRoute: () => void;
   setLatency: (ms: number) => void;
@@ -255,6 +262,12 @@ interface FMCActions {
   setRteSubPage: (page: number) => void;
   setTakeoffRefPageIndex: (page: number) => void;
   setCockpitMode: (enabled: boolean) => void;
+  setCockpitLayoutMode: (mode: CockpitLayoutMode) => void;
+  setHiddenPanels: (panels: PanelId[]) => void;
+  setPinnedPanels: (panels: PanelId[]) => void;
+  setFocusedPanel: (panel: PanelId | null) => void;
+  togglePanelHidden: (panelId: PanelId) => void;
+  togglePanelPinned: (panelId: PanelId) => void;
 }
 
 interface ConnectionDiagnostics {
@@ -277,6 +290,8 @@ interface TutorialState {
   tutorialHint: string | null;
   tutorialSkipAvailable: boolean;
   tutorialHighlight: string | null;
+  tutorialHintLevel: number; // 0=none, 1=glow, 2=tooltip, 3=arrow
+  tutorialHintTimer: any | null;
   tutorialConfidence: number | null;
 }
 
@@ -1083,6 +1098,30 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           handled = true;
         }
         break;
+      case 'set_irs_pos':
+        if (scratchpad) {
+          // Simulate IRS alignment
+          set((s) => ({
+            position: { ...s.position, irsAligned: false, irsAlignmentProgress: 0 }
+          }));
+          
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += 10;
+            set((s) => ({
+              position: { ...s.position, irsAlignmentProgress: progress }
+            }));
+            
+            if (progress >= 100) {
+              clearInterval(interval);
+              set((s) => ({
+                position: { ...s.position, irsAligned: true, irsAlignmentProgress: 100 }
+              }));
+            }
+          }, 1000);
+          handled = true;
+        }
+        break;
       case 'set_inbound_crs':
         if (scratchpad) {
           const crs = parseInt(scratchpad, 10);
@@ -1329,8 +1368,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const state = get();
     const result = isValidWaypoint(ident.toUpperCase());
     if (!result.valid) { set({ scratchpadError: result.error }); return; }
+    
+    // Check Nav Database
+    const id = ident.toUpperCase();
+    const dbPoint = getWaypoint(id) || getAirport(id);
+    if (!dbPoint) { set({ scratchpadError: 'NOT IN DATABASE' }); return; }
+
     const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
-    const nextWaypoint = { ident: ident.toUpperCase(), discontinuity: false };
+    const nextWaypoint = { ident: id, discontinuity: false };
     if (waypoints[index]?.discontinuity) {
       waypoints[index] = nextWaypoint;
     } else {
@@ -1478,12 +1523,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       tutorialStartTime: Date.now(),
       tutorialHint: null,
       tutorialSkipAvailable: false,
+      tutorialHintLevel: 0,
       mode: 'TUTORIAL',
       scratchpad: '',
       scratchpadError: null,
       currentPage: target,
       pageHistory: [],
     });
+
+    get().resetTutorialHints();
   },
 
   advanceTutorial: () => {
@@ -1524,9 +1572,27 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({
       tutorialStepIndex: nextIndex,
       tutorialHighlight: nextStep.highlightField || null,
+      tutorialHintLevel: 0,
       scratchpad: '',
       scratchpadError: null,
     });
+
+    state.resetTutorialHints();
+
+    // Lesson-aware layout automation
+    if (nextStep.preferredLayout) {
+      set({ cockpitLayoutMode: nextStep.preferredLayout });
+    }
+    if (nextStep.focusPanel) {
+      set({ focusedPanel: nextStep.focusPanel });
+    }
+    if (nextStep.requiredPanels) {
+      const { hiddenPanels } = get();
+      const nextHidden = hiddenPanels.filter(p => !nextStep.requiredPanels?.includes(p));
+      if (nextHidden.length !== hiddenPanels.length) {
+        set({ hiddenPanels: nextHidden });
+      }
+    }
 
     const currentStepPage = currentStep?.page;
     const nextStepPage = nextStep?.page;
@@ -1598,6 +1664,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const state = get();
     if (!state.tutorialActive) return;
     get().advanceTutorial();
+  },
+
+  resetTutorialHints: () => {
+    const timer = get().tutorialHintTimer;
+    if (timer) clearTimeout(timer);
+    
+    const newTimer = setTimeout(() => {
+      const state = get();
+      if (!state.tutorialActive) return;
+      
+      set((s) => ({ tutorialHintLevel: Math.min(s.tutorialHintLevel + 1, 3) }));
+      get().resetTutorialHints();
+    }, 15000); // 15 seconds per hint level
+
+    set({ tutorialHintTimer: newTimer });
   },
 
   clearTutorialHint: () => set({ tutorialHint: null }),
@@ -1758,4 +1839,27 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setRteSubPage: (page: number) => set({ rteSubPage: page }),
   setTakeoffRefPageIndex: (page: number) => set({ takeoffRefPageIndex: page }),
   setCockpitMode: (enabled: boolean) => set({ cockpitMode: enabled }),
+  setCockpitLayoutMode: (mode) => set({ cockpitLayoutMode: mode }),
+  setHiddenPanels: (panels) => set({ hiddenPanels: panels }),
+  setPinnedPanels: (panels) => set({ pinnedPanels: panels }),
+  setFocusedPanel: (panel) => set({ focusedPanel: panel }),
+  togglePanelHidden: (panelId) => {
+    const { hiddenPanels } = get();
+    if (hiddenPanels.includes(panelId)) {
+      set({ hiddenPanels: hiddenPanels.filter(p => p !== panelId) });
+    } else {
+      set({ hiddenPanels: [...hiddenPanels, panelId] });
+    }
+  },
+  togglePanelPinned: (panelId) => {
+    const { pinnedPanels, hiddenPanels } = get();
+    if (pinnedPanels.includes(panelId)) {
+      set({ pinnedPanels: pinnedPanels.filter(p => p !== panelId) });
+    } else {
+      set({ 
+        pinnedPanels: [...pinnedPanels, panelId],
+        hiddenPanels: hiddenPanels.filter(p => p !== panelId)
+      });
+    }
+  },
 }));

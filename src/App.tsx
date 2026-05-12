@@ -12,6 +12,7 @@ import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
 import { PrimaryFlightDisplay } from './components/PFD/PrimaryFlightDisplay';
 import { TrainingOverlay } from './components/Training/TrainingOverlay';
 import { CockpitLayout } from './components/CockpitMode/CockpitLayout';
+import { SettingsPanel, ChecklistPanel } from './components/CockpitMode/CockpitPanels';
 import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
@@ -103,6 +104,10 @@ export default function App() {
     return (
       <>
         <CockpitLayout />
+        <SettingsPanel />
+        <ChecklistPanel />
+        <TrainingOverlay />
+        <ConnectionStatus />
         <PerformanceOverlay enabled={import.meta.env.DEV} />
         <OrientationPrompt />
       </>

@@ -12,6 +12,7 @@ import { TCASOverlay } from '../layers/TCASOverlay';
 import { WXROverlay } from '../layers/WXROverlay';
 import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
 import { AircraftSymbol } from '../symbols/AircraftSymbol';
+import { ConstraintsOverlay } from '../symbology/ConstraintsOverlay';
 
 interface A320NDProps {
   model: NavigationDisplayModel;
@@ -45,6 +46,7 @@ export function A320ND({ model }: A320NDProps) {
         <AirportSymbol model={model} />
         <RouteLine model={model} />
         <WaypointSymbol model={model} />
+        <ConstraintsOverlay model={model} />
         <HoldPattern model={model} />
         <FixRing model={model} />
         

@@ -14,31 +14,31 @@ export interface InstrumentDimensions {
 
 export const instrumentDimensions: Record<InstrumentTarget, InstrumentDimensions> = {
   boeingCdu: {
-    idealWidth: 520,
-    idealHeight: 760,
-    minReadableWidth: 420,
+    idealWidth: 540,
+    idealHeight: 780,
+    minReadableWidth: 430,
     maxWidth: 620,
   },
   airbusMcdu: {
-    idealWidth: 500,
-    idealHeight: 780,
-    minReadableWidth: 420,
+    idealWidth: 520,
+    idealHeight: 800,
+    minReadableWidth: 430,
     maxWidth: 600,
   },
   boeingNd: {
-    idealWidth: 500,
+    idealWidth: 520,
     idealHeight: 560,
-    minReadableWidth: 360,
+    minReadableWidth: 400,
     maxWidth: 620,
   },
   boeingPfd: {
-    idealWidth: 430,
+    idealWidth: 450,
     idealHeight: 560,
-    minReadableWidth: 340,
+    minReadableWidth: 360,
     maxWidth: 560,
   },
   boeingMcp: {
-    idealWidth: 1360,
+    idealWidth: 1200,
     idealHeight: 240,
     minReadableWidth: 850,
     maxWidth: 1360,

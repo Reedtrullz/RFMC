@@ -1,12 +1,7 @@
 import React from 'react';
 
-export type CockpitLayoutMode =
-  | 'fmc-focus'
-  | 'navigation'
-  | 'automation'
-  | 'approach'
-  | 'full-deck'
-  | 'free-practice';
+import type { CockpitLayoutMode } from '@shared';
+export { CockpitLayoutMode };
 
 export function DisplaySelector({ 
   current, 

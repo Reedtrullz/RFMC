@@ -11,6 +11,7 @@ import { useWakeLock } from '../../hooks/useWakeLock';
 import { InstrumentFit } from '../layout/InstrumentFit';
 import { InstrumentHeader } from '../workspace/InstrumentHeader';
 import { FocusOverlay } from '../workspace/FocusOverlay';
+import { CockpitToolbar } from './CockpitToolbar';
 import { PanelTray } from '../workspace/PanelTray';
 import type { PanelId } from '../workspace/panelTypes';
 
@@ -23,10 +24,14 @@ interface LayoutControls {
 }
 
 export function CockpitLayout() {
-  const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('fmc-focus');
-  const [focusedPanel, setFocusedPanel] = useState<PanelId | null>(null);
-  const [hiddenPanels, setHiddenPanels] = useState<Set<PanelId>>(() => new Set());
-  const [pinnedPanels, setPinnedPanels] = useState<Set<PanelId>>(() => new Set());
+  const layoutMode = useFMCStore(s => s.cockpitLayoutMode);
+  const setLayoutMode = useFMCStore(s => s.setCockpitLayoutMode);
+  const focusedPanel = useFMCStore(s => s.focusedPanel);
+  const setFocusedPanel = useFMCStore(s => s.setFocusedPanel);
+  const hiddenPanels = useFMCStore(s => s.hiddenPanels);
+  const pinnedPanels = useFMCStore(s => s.pinnedPanels);
+  const togglePanelHidden = useFMCStore(s => s.togglePanelHidden);
+  const togglePanelPinned = useFMCStore(s => s.togglePanelPinned);
   const brightness = useFMCStore(s => s.brightness);
   const orientation = useOrientation();
   
@@ -35,29 +40,11 @@ export function CockpitLayout() {
 
   const isNight = brightness < 40;
   const controls: LayoutControls = {
-    hiddenPanels,
-    pinnedPanels,
+    hiddenPanels: new Set(hiddenPanels),
+    pinnedPanels: new Set(pinnedPanels),
     onFocus: setFocusedPanel,
-    onHide: panelId => {
-      setFocusedPanel(current => (current === panelId ? null : current));
-      setHiddenPanels(current => new Set(current).add(panelId));
-    },
-    onTogglePin: panelId => {
-      setPinnedPanels(current => {
-        const next = new Set(current);
-        if (next.has(panelId)) {
-          next.delete(panelId);
-        } else {
-          next.add(panelId);
-          setHiddenPanels(hidden => {
-            const visible = new Set(hidden);
-            visible.delete(panelId);
-            return visible;
-          });
-        }
-        return next;
-      });
-    },
+    onHide: togglePanelHidden,
+    onTogglePin: togglePanelPinned,
   };
 
   useEffect(() => {
@@ -77,43 +64,33 @@ export function CockpitLayout() {
       `}
       style={{
         '--cockpit-brightness': brightness / 100,
-        '--cockpit-text-glow': brightness / 100,
-        '--cockpit-annun-intensity': brightness / 100,
-        '--cockpit-backlight': (brightness / 100) * 0.9,
+        '--cockpit-contrast': isNight ? 1.2 : 1.0,
       } as React.CSSProperties}
     >
       {/* Top Controller Bar */}
-      <div className="px-4 py-2 flex flex-wrap items-center justify-between gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
-        <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
-        <div className="flex items-center gap-4">
-           <BrightnessPanel />
-           <div className="hidden lg:flex flex-col items-end">
-             <span className="text-[10px] font-cdu text-cdu-cyan uppercase font-bold tracking-tighter">Cockpit Mode</span>
-             <span className="text-[8px] font-cdu text-white/30 uppercase">v1.2.0-STABLE</span>
-           </div>
+      <div className="px-4 py-2 flex flex-col gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
+          <div className="flex items-center gap-4">
+             <BrightnessPanel />
+             <div className="hidden lg:flex flex-col items-end">
+               <span className="text-[10px] font-cdu text-cdu-cyan uppercase font-bold tracking-tighter">Cockpit Mode</span>
+               <span className="text-[8px] font-cdu text-white/30 uppercase">v1.2.0-STABLE</span>
+             </div>
+          </div>
         </div>
+        <CockpitToolbar />
       </div>
 
-      {/* Main Content Area */}
-      <main className="cockpit-main relative">
-        {renderLayout(layoutMode, orientation, controls)}
-        <PanelTray
-          hiddenPanels={Array.from(hiddenPanels)}
-          onShow={panelId => {
-            setHiddenPanels(current => {
-              const next = new Set(current);
-              next.delete(panelId);
-              return next;
-            });
-          }}
-        />
+      <main className="cockpit-main">
+        {focusedPanel ? (
+          <FocusOverlay onClose={() => setFocusedPanel(null)}>
+            {renderFocusedPanel(focusedPanel)}
+          </FocusOverlay>
+        ) : (
+          renderLayout(layoutMode, orientation, controls)
+        )}
       </main>
-
-      {focusedPanel && (
-        <FocusOverlay panelId={focusedPanel} onClose={() => setFocusedPanel(null)}>
-          {renderFocusedPanel(focusedPanel)}
-        </FocusOverlay>
-      )}
     </div>
   );
 }
@@ -125,23 +102,13 @@ function renderLayout(
 ) {
   if (orientation === 'portrait') {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-8">
-        <div className="w-full max-w-[400px]">
-          {mode === 'fmc-focus' && <CDU />}
-          {mode === 'navigation' && <NavigationDisplay />}
-          {mode === 'automation' && <AutopilotTrainer />}
-          {mode === 'approach' && <PrimaryFlightDisplay />}
-          {mode === 'full-deck' && <NavigationDisplay />}
-          {mode === 'free-practice' && <PrimaryFlightDisplay />}
-        </div>
-        <p className="text-[10px] font-cdu text-white/20 uppercase">
-          Switch modes or rotate to landscape for multi-instrument view
-        </p>
+      <div className="cockpit-stage cockpit-stage--portrait">
+        {renderInstrumentPanel('nd', controls)}
+        {renderInstrumentPanel('cdu', controls)}
       </div>
     );
   }
 
-  // Landscape Layouts
   switch (mode) {
     case 'fmc-focus':
       return (
@@ -154,14 +121,14 @@ function renderLayout(
       return (
         <div className="cockpit-stage cockpit-stage--navigation">
           {renderInstrumentPanel('nd', controls)}
-          {renderInstrumentPanel('cdu', controls, { preferredScale: 0.9 })}
+          {renderInstrumentPanel('cdu', controls)}
         </div>
       );
 
     case 'automation':
       return (
         <div className="cockpit-stage cockpit-stage--automation">
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.9 })}
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot' })}
           <div className="cockpit-pfd-nd-displays">
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
@@ -176,18 +143,7 @@ function renderLayout(
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
           </div>
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.9 })}
-        </div>
-      );
-
-    case 'full-deck':
-      return (
-        <div className="cockpit-stage cockpit-stage--full-deck">
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.82 })}
-          <div className="cockpit-pfd-nd-displays">
-            {renderInstrumentPanel('pfd', controls)}
-            {renderInstrumentPanel('nd', controls)}
-          </div>
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot' })}
         </div>
       );
 
@@ -233,7 +189,7 @@ function renderInstrumentPanel(
 
 function renderFocusedPanel(panelId: PanelId) {
   return (
-    <InstrumentFit target={targetForPanel(panelId)} preferredScale={panelId === 'mcp' ? 0.9 : 1}>
+    <InstrumentFit target={targetForPanel(panelId)}>
       {renderPanel(panelId)}
     </InstrumentFit>
   );

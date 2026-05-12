@@ -6,16 +6,22 @@ interface MCPSwitchProps {
   onPress: () => void;
   showAnnunciator?: boolean;
   small?: boolean;
+  highlighted?: boolean;
 }
 
-export function MCPSwitch({ label, active, onPress, showAnnunciator = true, small = false }: MCPSwitchProps) {
+import { tactile } from '../../../utils/tactile';
+
+export function MCPSwitch({ label, active, onPress, showAnnunciator = true, small = false, highlighted }: MCPSwitchProps) {
   return (
     <div className="flex flex-col items-center gap-2">
       <button
-        onClick={onPress}
+        onClick={() => {
+          tactile.feedback();
+          onPress();
+        }}
         className={`relative flex items-center justify-center rounded-sm border-b-4 border-[#1a1a1a] bg-[#3a3d3d] text-center font-bold text-white shadow-lg transition-all hover:bg-[#4a4d4d] active:translate-y-1 active:border-b-0 ${
           small ? 'h-11 w-16 text-[10px]' : 'h-14 w-20 text-[11px]'
-        }`}
+        } ${highlighted ? 'ring-4 ring-cdu-cyan animate-pulse shadow-[0_0_20px_rgba(0,255,255,0.4)]' : ''}`}
       >
         <span className="uppercase tracking-tighter leading-tight px-1">{label}</span>
         

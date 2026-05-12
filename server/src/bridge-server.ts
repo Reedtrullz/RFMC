@@ -1,5 +1,6 @@
 import express from 'express';
 import http from 'http';
+import path from 'path';
 import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMessage, DisplayData, ServerMessage } from '@shared';
 import { devError, devLog } from '@shared';
@@ -87,10 +88,6 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     }
   }
 
-  if (options.serveStatic) {
-    app.use(express.static('../dist'));
-  }
-
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
@@ -101,6 +98,13 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       adapterHealth: getAdapterHealth(aircraft),
     });
   });
+
+  if (options.serveStatic) {
+    app.use(express.static('../dist'));
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve('../dist/index.html'));
+    });
+  }
 
   function broadcast(msg: ServerMessage): void {
     const data = JSON.stringify(msg);

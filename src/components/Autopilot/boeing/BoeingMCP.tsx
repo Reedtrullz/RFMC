@@ -1,4 +1,5 @@
 import { BoeingMCPState } from '@shared';
+import { useFMCStore } from '../../../store/useFMCStore';
 import { CockpitPanel } from '../../visual/CockpitPanel';
 import { SevenSegmentDisplay } from '../../visual/SevenSegmentDisplay';
 import { RotaryKnob } from '../../visual/RotaryKnob';
@@ -11,14 +12,15 @@ interface BoeingMCPProps {
 }
 
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
+  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   return (
     <CockpitPanel variant="boeing" className="w-full">
       <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-2">
         
         {/* FD LEFT */}
         <div className="flex flex-col gap-4 pr-4 border-r border-black/20">
-          <MCPSwitch label="F/D" active={state.fdLeft} onPress={() => updateState({ fdLeft: !state.fdLeft })} small showAnnunciator={false} />
-          <MCPSwitch label="A/T ARM" active={state.autothrottleArm} onPress={() => updateState({ autothrottleArm: !state.autothrottleArm })} small />
+          <MCPSwitch label="F/D" active={state.fdLeft} onPress={() => updateState({ fdLeft: !state.fdLeft })} small showAnnunciator={false} highlighted={tutorialHighlight === 'FD_LEFT'} />
+          <MCPSwitch label="A/T ARM" active={state.autothrottleArm} onPress={() => updateState({ autothrottleArm: !state.autothrottleArm })} small highlighted={tutorialHighlight === 'AT_ARM'} />
         </div>
 
         {/* COURSE L */}
@@ -28,14 +30,16 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
           <RotaryKnob 
             value={state.courseL} 
             onRotate={(d) => updateState({ courseL: (state.courseL + d + 360) % 360 })} 
+            highlighted={tutorialHighlight === 'COURSE_L'}
+            label="COURSE"
           />
         </div>
 
         {/* SPEED Section */}
         <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
           <div className="flex gap-4">
-            <MCPSwitch label="N1" active={state.n1} onPress={() => updateState({ n1: !state.n1 })} small />
-            <MCPSwitch label="SPEED" active={state.speedMode} onPress={() => pressButton('speedMode')} small />
+            <MCPSwitch label="N1" active={state.n1} onPress={() => updateState({ n1: !state.n1 })} small highlighted={tutorialHighlight === 'N1'} />
+            <MCPSwitch label="SPEED" active={state.speedMode} onPress={() => pressButton('speedMode')} small highlighted={tutorialHighlight === 'SPEED_MODE'} />
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -57,22 +61,26 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
                 updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) });
               }
             }} 
+            highlighted={tutorialHighlight === 'IAS_SEL'}
+            label="SPD/MACH"
           />
-          <MCPSwitch label="LVL CHG" active={state.lvlChg} onPress={() => pressButton('lvlChg')} />
+          <MCPSwitch label="LVL CHG" active={state.lvlChg} onPress={() => pressButton('lvlChg')} highlighted={tutorialHighlight === 'LVL_CHG'} />
         </div>
 
         {/* HEADING Section */}
         <div className="flex flex-col items-center gap-4 px-4">
           <div className="flex gap-4">
-            <MCPSwitch label="LNAV" active={state.lnav} onPress={() => pressButton('lnav')} />
-            <MCPSwitch label="VNAV" active={state.vnav} onPress={() => pressButton('vnav')} />
+            <MCPSwitch label="LNAV" active={state.lnav} onPress={() => pressButton('lnav')} highlighted={tutorialHighlight === 'LNAV'} />
+            <MCPSwitch label="VNAV" active={state.vnav} onPress={() => pressButton('vnav')} highlighted={tutorialHighlight === 'VNAV'} />
           </div>
           <SevenSegmentDisplay digits={3} value={state.heading.toString().padStart(3, '0')} color="orange" />
           <RotaryKnob 
             value={state.heading} 
             onRotate={(d) => updateState({ heading: (state.heading + d + 360) % 360 })} 
+            highlighted={tutorialHighlight === 'HDG_SEL'}
+            label="HEADING"
           />
-          <MCPSwitch label="HDG SEL" active={state.hdgSel} onPress={() => pressButton('hdgSel')} />
+          <MCPSwitch label="HDG SEL" active={state.hdgSel} onPress={() => pressButton('hdgSel')} highlighted={tutorialHighlight === 'HDG_SEL_BTN'} />
         </div>
 
         {/* ALTITUDE Section */}
@@ -81,8 +89,10 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
           <RotaryKnob 
             value={state.altitude / 100} 
             onRotate={(d) => updateState({ altitude: Math.max(0, Math.min(50000, state.altitude + d * 100)) })} 
+            highlighted={tutorialHighlight === 'ALT_SEL'}
+            label="ALTITUDE"
           />
-          <MCPSwitch label="ALT HOLD" active={state.altHold} onPress={() => pressButton('altHold')} />
+          <MCPSwitch label="ALT HOLD" active={state.altHold} onPress={() => pressButton('altHold')} highlighted={tutorialHighlight === 'ALT_HOLD'} />
         </div>
 
         {/* V/S Section */}
@@ -98,7 +108,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
-          <MCPSwitch label="V/S" active={state.vs} onPress={() => pressButton('vs')} />
+          <MCPSwitch label="V/S" active={state.vs} onPress={() => pressButton('vs')} highlighted={tutorialHighlight === 'VS_MODE'} />
         </div>
 
         {/* AP ENGAGE Section */}
@@ -117,8 +127,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
              </div>
           </div>
           <div className="flex gap-2">
-            <MCPSwitch label="APP" active={state.app} onPress={() => pressButton('app')} />
-            <MCPSwitch label="VOR LOC" active={state.vorLoc} onPress={() => pressButton('vorLoc')} />
+            <MCPSwitch label="APP" active={state.app} onPress={() => pressButton('app')} highlighted={tutorialHighlight === 'APP_MODE'} />
+            <MCPSwitch label="VOR LOC" active={state.vorLoc} onPress={() => pressButton('vorLoc')} highlighted={tutorialHighlight === 'VOR_LOC'} />
           </div>
         </div>
 

@@ -5,9 +5,7 @@ interface WindVectorProps {
 }
 
 export function WindVector({ model }: WindVectorProps) {
-  // Use sim variables or model properties for wind
-  const windDir = 240; // Hardcoded for now
-  const windSpeed = 15;
+  const { dir: windDir, speed: windSpeed } = model.anchorZones.windBlock;
   const isAirbus = model.style === 'airbus';
   const color = isAirbus ? '#00ff00' : '#00ccff';
 

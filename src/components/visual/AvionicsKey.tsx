@@ -1,3 +1,5 @@
+import { tactile } from '../../utils/tactile';
+
 interface AvionicsKeyProps {
   label: string;
   subLabel?: string;
@@ -10,6 +12,7 @@ interface AvionicsKeyProps {
   onPress: () => void;
   className?: string;
   disabled?: boolean;
+  hintLevel?: number;
 }
 
 export function AvionicsKey({ 
@@ -33,11 +36,17 @@ export function AvionicsKey({
         `avionics-key--${variant}`,
         active ? 'avionics-key--active' : '',
         highlighted ? 'avionics-key--highlighted' : '',
+        hintLevel ? `avionics-key--hint-${hintLevel}` : '',
         shape ? `avionics-key--${shape}` : '',
         lit ? 'avionics-key--lit' : '',
         className,
       ].join(' ')}
-      onClick={onPress}
+      onClick={() => {
+        if (!disabled) {
+          tactile.feedback();
+          onPress();
+        }
+      }}
     >
       <span className="avionics-key__legend">{label}</span>
       {subLabel && <span className="avionics-key__sublabel">{subLabel}</span>}

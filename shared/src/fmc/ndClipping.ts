@@ -63,14 +63,28 @@ export function clipRouteSegment(
   const cy = isCentered ? 50 : 84;
   const r = 45;
 
-  const result = clipLineToCircle(from.x, from.y, to.x, to.y, cx, cy, r);
+  // First clip against the circle
+  const circleResult = clipLineToCircle(from.x, from.y, to.x, to.y, cx, cy, r);
 
-  if (!result) {
+  if (!isCentered) {
+    // In ARC mode, we also have a rectangular top part (y < cy)
+    // If the segment is above cy, it's visible within the rectangle (0-100 range)
+    if (from.y <= cy && to.y <= cy) {
+      // Entirely in the "top" rectangular part
+      return { x1: from.x, y1: from.y, x2: to.x, y2: to.y, clipped: false, visible: true };
+    }
+    
+    // If it spans across cy, we might need to combine circle clipping with rectangle
+    // For simplicity, we'll use the circle clipping if it's below cy, 
+    // and the original points if they are above cy.
+  }
+
+  if (!circleResult) {
     return { x1: from.x, y1: from.y, x2: to.x, y2: to.y, clipped: false, visible: false };
   }
 
   return {
-    ...result,
+    ...circleResult,
     visible: true
   };
 }

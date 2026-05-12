@@ -44,6 +44,7 @@ export interface NDRouteSegment {
   modified: boolean;
   visible: boolean;
   clipped: boolean;
+  arcPath?: string; // SVG path data for curved segments
 }
 
 export interface NDFixOverlay {

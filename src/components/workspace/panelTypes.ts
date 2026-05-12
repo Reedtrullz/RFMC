@@ -1,4 +1,5 @@
-export type PanelId = 'cdu' | 'nd' | 'pfd' | 'mcp';
+import type { PanelId } from '@shared';
+export { PanelId };
 
 export type PanelState = {
   id: PanelId;
@@ -13,4 +14,8 @@ export const panelLabels: Record<PanelId, string> = {
   nd: 'ND',
   pfd: 'PFD',
   mcp: 'MCP',
+  instructor: 'Instructor',
+  checklist: 'Checklist',
+  connection: 'Connection',
+  settings: 'Settings',
 };

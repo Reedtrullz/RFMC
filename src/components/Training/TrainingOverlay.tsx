@@ -15,9 +15,14 @@ export function TrainingOverlay() {
   const stopTraining = useFMCStore(s => s.stopTraining);
   const startTraining = useFMCStore(s => s.startTraining);
 
+  const isHidden = useFMCStore(s => s.hiddenPanels.includes('instructor'));
+  const cockpitMode = useFMCStore(s => s.cockpitMode);
+
   if (!trainingActive && !trainingCompleted) {
-    // Optionally show the lesson selector if in a specific "Training" mode
-    // For now we'll just return null and assume the LessonSelector is rendered elsewhere
+    return null;
+  }
+
+  if (cockpitMode && isHidden) {
     return null;
   }
 

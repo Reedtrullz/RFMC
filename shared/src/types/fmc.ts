@@ -214,6 +214,8 @@ export interface PositionData {
   gate: string;
   lat?: number;
   lon?: number;
+  irsAligned: boolean;
+  irsAlignmentProgress: number; // 0-100
 }
 
 export interface IdentData {
@@ -246,6 +248,8 @@ export interface FixEntry {
 
 // ---- Tutorial Types ----
 
+import type { PanelId, CockpitLayoutMode } from './cockpit';
+
 export interface TutorialStep {
   id: string;
   instruction: string;
@@ -254,6 +258,9 @@ export interface TutorialStep {
   page: PageType;
   highlightField?: string;
   role?: 'PF' | 'PM';
+  requiredPanels?: PanelId[];
+  preferredLayout?: CockpitLayoutMode;
+  focusPanel?: PanelId;
 }
 
 export interface TutorialScenario {
@@ -370,4 +377,10 @@ export interface FMCState {
   tutorialSkipAvailable: boolean;
   tutorialHighlight: string | null;
   tutorialConfidence: number | null;
+
+  // Cockpit Layout State
+  cockpitLayoutMode: CockpitLayoutMode;
+  hiddenPanels: PanelId[];
+  pinnedPanels: PanelId[];
+  focusedPanel: PanelId | null;
 }

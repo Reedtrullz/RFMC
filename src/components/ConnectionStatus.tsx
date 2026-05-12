@@ -18,6 +18,10 @@ export function ConnectionStatus() {
   const [showSettings, setShowSettings] = useState(false);
   const [serverUrl, setServerUrl] = useState(getServerUrl());
   const { connect, disconnect } = useWebSocket({ autoConnect: false });
+  const isHidden = useFMCStore(s => s.hiddenPanels.includes('connection'));
+  const cockpitMode = useFMCStore(s => s.cockpitMode);
+  
+  if (cockpitMode && isHidden) return null;
 
   const connectionStatus = useFMCStore(s => s.connectionStatus);
   const connectionMode = useFMCStore(s => s.connectionMode);

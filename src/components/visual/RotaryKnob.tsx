@@ -5,16 +5,18 @@ interface RotaryKnobProps {
   onRotate: (delta: number) => void;
   size?: 'sm' | 'md' | 'lg';
   label?: string;
+  highlighted?: boolean;
 }
 
-export function RotaryKnob({ value, onRotate, size = 'md', label }: RotaryKnobProps) {
+import { tactile } from '../../utils/tactile';
+
+export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }: RotaryKnobProps) {
   const [isDragging, setIsDragging] = useState(false);
   const lastY = useRef(0);
 
-  const sizeMap = {
-    sm: 'h-[52px] w-[52px]', // Cockpit minimum
-    md: 'h-16 w-16',
-    lg: 'h-24 w-24',
+  const triggerRotate = (delta: number) => {
+    tactile.vibrate(5);
+    onRotate(delta);
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -27,7 +29,7 @@ export function RotaryKnob({ value, onRotate, size = 'md', label }: RotaryKnobPr
     if (!isDragging) return;
     const deltaY = lastY.current - e.clientY;
     if (Math.abs(deltaY) > 5) {
-      onRotate(deltaY > 0 ? 1 : -1);
+      triggerRotate(deltaY > 0 ? 1 : -1);
       lastY.current = e.clientY;
     }
   };
@@ -36,23 +38,45 @@ export function RotaryKnob({ value, onRotate, size = 'md', label }: RotaryKnobPr
     setIsDragging(false);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      triggerRotate(1);
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+      triggerRotate(-1);
+      e.preventDefault();
+    }
+  };
+
+  const sizeMap = {
+    sm: 'h-[52px] w-[52px]', // Cockpit minimum
+    md: 'h-16 w-16',
+    lg: 'h-24 w-24',
+  };
+
   return (
     <div className="flex flex-col items-center gap-1 select-none">
       {label && <span className="text-[9px] font-bold text-[#c8c8c8] uppercase tracking-wider">{label}</span>}
       
       <div 
+        tabIndex={0}
+        role="slider"
+        aria-label={label}
+        aria-valuenow={value}
         className={`
           ${sizeMap[size]} relative cursor-ns-resize rounded-full bg-[#1a1a1a] 
           shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_2px_4px_rgba(255,255,255,0.1)] 
-          transition-transform active:scale-95 touch-none
-          ${isDragging ? 'ring-2 ring-cdu-cyan/50' : ''}
+          transition-transform active:scale-95 touch-none outline-none
+          ${isDragging ? 'ring-2 ring-cdu-cyan/50' : 'focus:ring-2 focus:ring-white/20'}
+          ${highlighted ? 'ring-4 ring-cdu-cyan animate-pulse shadow-[0_0_20px_rgba(0,255,255,0.4)]' : ''}
         `}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onKeyDown={handleKeyDown}
         onWheel={(e) => {
           const delta = e.deltaY < 0 ? 1 : -1;
-          onRotate(delta);
+          triggerRotate(delta);
         }}
       >
         {/* Grip ridges */}

@@ -1,5 +1,6 @@
 import { useFMCStore } from '../../store/useFMCStore';
 import { BoeingMCP } from './boeing/BoeingMCP';
+import { AirbusFCU } from './airbus/AirbusFCU';
 
 export function AutopilotTrainer() {
   const aircraft = useFMCStore(s => s.aircraft);
@@ -13,9 +14,7 @@ export function AutopilotTrainer() {
       {aircraft === 'BOEING_737' ? (
         <BoeingMCP state={autopilot.boeing} updateState={updateBoeingMCP} pressButton={pressMCPButton} />
       ) : (
-        <div className="rounded-xl border-4 border-dashed border-white/10 p-20 text-center">
-          <span className="text-white/20 font-bold uppercase tracking-widest">Airbus FCU coming soon</span>
-        </div>
+        <AirbusFCU state={autopilot.airbus} updateState={updateAirbusFCU} pressButton={pressMCPButton} />
       )}
     </div>
   );

@@ -20,7 +20,11 @@ export function renderBoeingPosInitGrid(state: FMCState): DisplayData {
     seg(6, 1, state.position.gate || '----', 'green'),
 
     seg(8, 13, 'SET IRS POS', 'white', { size: 'small' }),
-    seg(9, 10, '□□□□.□ □□□□□.□', 'green'),
+    state.position.irsAligned 
+      ? seg(9, 10, lastPos, 'green')
+      : state.position.irsAlignmentProgress > 0
+        ? seg(9, 10, 'ALIGNING...', 'white', { blinking: true })
+        : seg(9, 10, '□□□□.□ □□□□□.□', 'green'),
 
     seg(13, 0, '<INDEX', 'white'),
     seg(13, 18, 'ROUTE>', 'white'),

@@ -40,4 +40,15 @@ test.describe('Visual Regression', () => {
       maxDiffPixelRatio: 0.05
     });
   });
+
+  test('Cockpit Layout (Full View)', async ({ page }) => {
+    const enterButton = page.getByRole('button', { name: 'Enter Cockpit' });
+    if (await enterButton.isVisible()) {
+      await enterButton.click();
+    }
+    await expect(page.locator('.cockpit-layout')).toBeVisible();
+    await expect(page.locator('.cockpit-layout')).toHaveScreenshot('cockpit-full-layout.png', {
+      maxDiffPixelRatio: 0.1
+    });
+  });
 });

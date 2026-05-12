@@ -20,6 +20,9 @@ export const preflightScenario: TutorialScenario = {
       page: 'IDENT',
       highlightField: 'POS_INIT',
       role: 'PM',
+      requiredPanels: ['cdu'],
+      preferredLayout: 'fmc-focus',
+      focusPanel: 'cdu',
     },
 
     // --- POS INIT --- 

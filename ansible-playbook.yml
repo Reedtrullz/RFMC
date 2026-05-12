@@ -35,71 +35,100 @@
         force_source: true
       register: build_result
 
-    - name: Stop existing container
+    - name: Stop any stale canary container
       community.docker.docker_container:
-        name: "{{ container_name }}"
+        name: "{{ container_name }}_canary"
         state: absent
 
-    - name: Start container
+    - name: Start canary container for health check
       community.docker.docker_container:
-        name: "{{ container_name }}"
+        name: "{{ container_name }}_canary"
         image: "{{ container_name }}"
         state: started
-        restart_policy: unless-stopped
         ports:
-          - "127.0.0.1:{{ host_port }}:{{ container_port }}"
-        memory: "512m"
-        cpus: 1.0
-        log_driver: "json-file"
-        log_options:
-          max-size: "10m"
-          max-file: "3"
-        healthcheck:
-          test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:{{ container_port }}/health', r => process.exit(r.statusCode === 200 ? 0 : 1))\""]
-          interval: 30s
-          timeout: 10s
-          retries: 3
-          start_period: 20s
+          - "127.0.0.1:8083:{{ container_port }}"
         env:
           NODE_ENV: production
           PORT: "{{ container_port }}"
           AIRCRAFT_ADAPTER: "mock"
           WS_ALLOWED_ORIGINS: "{{ public_origin }}"
-          WS_MAX_MESSAGE_BYTES: "65536"
+        healthcheck:
+          test: ["CMD-SHELL", "curl -f http://localhost:{{ container_port }}/health || exit 1"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 5s
 
-    - name: Wait for health check
+    - name: Wait for canary health check
       block:
-        - name: Poll container health endpoint
+        - name: Poll canary health endpoint
           uri:
-            url: "http://localhost:{{ host_port }}/health"
+            url: "http://localhost:8083/health"
             return_content: true
             timeout: 5
-          register: health_check
-          until: health_check is succeeded and health_check.json.status == "ok"
-          retries: 10
+          register: canary_health
+          until: canary_health is succeeded and canary_health.json.status == "ok"
+          retries: 12
           delay: 5
       rescue:
-        - name: Inspect container state
-          shell: docker inspect {{ container_name }} --format '{% raw %}{{.State.Status}} {{.State.ExitCode}} {{.State.Error}}{% endraw %}'
-          register: container_state
+        - name: Inspect canary failure
+          shell: docker inspect {{ container_name }}_canary --format '{% raw %}{{.State.Status}} {{.State.ExitCode}} {{.State.Error}}{% endraw %}'
+          register: canary_inspect
           ignore_errors: true
 
-        - name: Print container state
-          debug:
-            var: container_state.stdout_lines
-
-        - name: Show container logs on health failure
-          shell: docker logs --tail=200 {{ container_name }}
-          register: container_logs
+        - name: Show canary logs on failure
+          shell: docker logs --tail=200 {{ container_name }}_canary
+          register: canary_logs
           ignore_errors: true
 
-        - name: Print container logs
+        - name: Print canary diagnostics
           debug:
-            var: container_logs.stdout_lines
+            msg: 
+              - "Canary Health Failed!"
+              - "Status: {{ canary_inspect.stdout | default('unknown') }}"
+              - "Logs: {{ canary_logs.stdout_lines | default([]) }}"
 
-        - name: Fail deployment after health check diagnostics
+        - name: Cleanup canary
+          community.docker.docker_container:
+            name: "{{ container_name }}_canary"
+            state: absent
+
+        - name: Fail deployment (Old container is still running)
           fail:
-            msg: "VirtualCDU health check failed at http://localhost:{{ host_port }}/health"
+            msg: "Deployment aborted: New image failed health check."
+
+    - name: Promote canary to production
+      block:
+        - name: Stop existing production container
+          community.docker.docker_container:
+            name: "{{ container_name }}"
+            state: absent
+
+        - name: Start production container
+          community.docker.docker_container:
+            name: "{{ container_name }}"
+            image: "{{ container_name }}"
+            state: started
+            restart_policy: unless-stopped
+            ports:
+              - "127.0.0.1:{{ host_port }}:{{ container_port }}"
+            memory: "512m"
+            cpus: 1.0
+            log_driver: "json-file"
+            log_options:
+              max-size: "10m"
+              max-file: "3"
+            env:
+              NODE_ENV: production
+              PORT: "{{ container_port }}"
+              AIRCRAFT_ADAPTER: "mock"
+              WS_ALLOWED_ORIGINS: "{{ public_origin }}"
+              WS_MAX_MESSAGE_BYTES: "65536"
+
+        - name: Remove canary container
+          community.docker.docker_container:
+            name: "{{ container_name }}_canary"
+            state: absent
 
     - name: Ensure Caddy config includes fmc.reidar.tech
       become: true

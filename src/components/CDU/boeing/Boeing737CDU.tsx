@@ -69,12 +69,14 @@ export function Boeing737CDU() {
           brightness={brightness}
           getLSKLabel={getLSKLabel}
           isHighlighted={isHighlighted}
+          hintLevel={tutorialHintLevel}
           onPressLSK={onPressLSK}
         />
-        <BoeingFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
+        <BoeingFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} hintLevel={tutorialHintLevel} />
         <BoeingAlphaNumericKeypad
           onPress={onPressKey}
           highlight={tutorialHighlight}
+          hintLevel={tutorialHintLevel}
           execLit={execLit}
           brightness={brightness}
           onBrightnessChange={setBrightness}

@@ -19,6 +19,7 @@ export function ScreenGlass({ children, variant = 'boeing', brightness = 100, cl
       <div className="screen-glass__scanlines" />
       <div className="screen-glass__reflection" />
       <div className="screen-glass__vignette" />
+      <div className="screen-glass__grain" />
     </div>
   );
 }
