@@ -20,7 +20,7 @@ import { devLog, devError } from '@shared';
 export class FBWA320Adapter implements IAircraftAdapter {
   readonly name = 'FBW A320neo';
   readonly aircraftType: AircraftType = 'AIRBUS_A320';
-  readonly capabilities = ['position', 'heading', 'speed', 'altitude', 'display'];
+  readonly capabilities = ['position', 'heading', 'speed', 'altitude', 'display', 'radios'];
   connectionStatus: ConnectionStatus = 'DISCONNECTED';
   lastError: string | null = null;
   isConnected = false;
@@ -189,6 +189,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
       altitude: this.simState.altitude,
       speed: this.simState.ias,
       verticalSpeed: this.simState.vs,
+      radios: (this.simState as any).radios,
     };
   }
 
@@ -241,6 +242,9 @@ export class FBWA320Adapter implements IAircraftAdapter {
       handle.addToDataDefinition(DEFINITION_ID, 'Plane Heading Degrees True', 'degrees', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'Airspeed Indicated', 'knots', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'Vertical Speed', 'feet per minute', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
 
       handle.requestDataOnSimObject(REQUEST_ID, DEFINITION_ID, 0, SimConnectPeriod.SECOND);
 
@@ -256,6 +260,12 @@ export class FBWA320Adapter implements IAircraftAdapter {
               tas: 0, gs: 0,
               vs: recvSimObjectData.data.readFloat64(),
             };
+            // Read radios
+            const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
+            const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
+            const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
+            
+            (this.simState as any).radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[FBW A320] Error reading aircraft state:', readErr);
           }

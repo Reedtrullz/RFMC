@@ -96,4 +96,48 @@ describe('bridge server', () => {
     expect(adapter.recordedKeypresses).toContain('RTE');
     ws.close();
   });
+
+  it('automatically reconnects when connection is lost (watchdog)', async () => {
+    const adapter = new MockSimConnectAdapter();
+    bridge = createBridgeServer({ aircraft: adapter, watchdogInterval: 10 });
+    const port = await bridge.start();
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`);
+    const messages = new MessageCollector(ws);
+    await waitOpen(ws);
+
+    // Initial messages
+    await messages.next(); // fmc.display
+    await messages.next(); // sim.disconnected
+
+    // 1. Connect
+    ws.send(JSON.stringify({ type: 'sim.connect' }));
+    await messages.next(); // sim.connected
+
+    // 2. Simulate disconnection by the aircraft adapter
+    (adapter as any).connectionStatus = 'DISCONNECTED';
+    
+    // 3. The watchdog should try to reconnect. 
+    // In our implementation, it retries every 10 seconds. 
+    // For the test, we'll wait for the sim.connected message that indicates the watchdog succeeded.
+    // Note: MockSimConnectAdapter.connect() always succeeds in this test.
+    
+    let reconnected: ServerMessage | null = null;
+    // We might get some fmc.display or sim.data messages while polling was active (if it wasn't stopped)
+    // But pollInterval stops if !aircraft.isConnected.
+    
+    for (let i = 0; i < 20; i++) {
+      const msg = await messages.next();
+      if (msg.type === 'sim.connected') {
+        reconnected = msg;
+        break;
+      }
+    }
+
+    expect(reconnected).toMatchObject({
+      type: 'sim.connected',
+      aircraft: 'Mock SimConnect Adapter',
+    });
+
+    ws.close();
+  });
 });

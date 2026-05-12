@@ -109,6 +109,11 @@ export class MockSimConnectAdapter implements IAircraftAdapter {
       altitude: 12000,
       speed: 280,
       verticalSpeed: 0,
+      radios: {
+        vor1: '113.90',
+        vor2: '115.70',
+        adf1: '342',
+      },
     };
   }
 

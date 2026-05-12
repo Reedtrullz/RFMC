@@ -78,7 +78,7 @@ const PMDG_NOTIFY_GROUP = 1;
 
 export class PMDG737Adapter implements IAircraftAdapter {
   readonly aircraftType: AircraftType = 'BOEING_737';
-  readonly capabilities = ['position', 'heading', 'speed', 'altitude', 'display'];
+  readonly capabilities = ['position', 'heading', 'speed', 'altitude', 'display', 'radios'];
   connectionStatus: ConnectionStatus = 'DISCONNECTED';
   lastError: string | null = null;
   isConnected = false;
@@ -254,6 +254,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
       altitude: this.simState.altitude,
       speed: this.simState.ias,
       verticalSpeed: this.simState.vs,
+      radios: (this.simState as any).radios,
     };
   }
 
@@ -359,6 +360,9 @@ export class PMDG737Adapter implements IAircraftAdapter {
         'feet per minute',
         SimConnectDataType.FLOAT64
       );
+      handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
 
       handle.requestDataOnSimObject(
         REQUEST_ID,
@@ -380,6 +384,11 @@ export class PMDG737Adapter implements IAircraftAdapter {
               gs: recvSimObjectData.data.readFloat64(),
               vs: recvSimObjectData.data.readFloat64(),
             };
+            const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
+            const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
+            const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
+            
+            (this.simState as any).radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[PMDG] Error reading aircraft state:', readErr);
           }

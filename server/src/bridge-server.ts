@@ -12,6 +12,7 @@ export interface BridgeServerOptions {
   aircraft?: IAircraftAdapter;
   fmc?: FMCEngine;
   serveStatic?: boolean;
+  watchdogInterval?: number;
 }
 
 export interface BridgeServer {
@@ -75,22 +76,36 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     });
   }
 
+  let lastDisplayJSON: string | null = null;
+  let lastStateJSON: string | null = null;
+
   function startPolling(): void {
     if (pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(async () => {
-      if (!aircraft.isConnected) return;
+      if (!aircraft.isConnected) {
+        if (shouldBeConnected && !retryTimeout) {
+          retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
+        }
+        return;
+      }
       try {
         const simDisplay = await aircraft.readDisplay();
         const aircraftState = await aircraft.readAircraftState();
+        
         const displayData: DisplayData = {
           title: simDisplay.title,
           pageIndicator: '',
           lines: simDisplay.lines.map(text => ({ text, leftLabel: '', rightLabel: '', inverse: false })),
           lskActions: {},
         };
-        broadcast({ type: 'fmc.display', data: displayData } as ServerMessage);
-        broadcast({
-          type: 'sim.data',
+
+        const currentDisplayJSON = JSON.stringify(displayData);
+        if (currentDisplayJSON !== lastDisplayJSON) {
+          broadcast({ type: 'fmc.display', data: displayData } as ServerMessage);
+          lastDisplayJSON = currentDisplayJSON;
+        }
+
+        const statePayload = {
           variables: { brightness: simDisplay.brightness },
           aircraftState: {
             position: aircraftState.position,
@@ -98,8 +113,15 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
             altitude: aircraftState.altitude,
             speed: aircraftState.speed,
             verticalSpeed: aircraftState.verticalSpeed,
+            radios: aircraftState.radios,
           },
-        });
+        };
+
+        const currentStateJSON = JSON.stringify(statePayload);
+        if (currentStateJSON !== lastStateJSON) {
+          broadcast({ type: 'sim.data', ...statePayload } as ServerMessage);
+          lastStateJSON = currentStateJSON;
+        }
       } catch (err) {
         devError('[Poll] Error:', err);
       }
@@ -110,6 +132,33 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     if (pollInterval) {
       clearInterval(pollInterval);
       pollInterval = null;
+    }
+  }
+
+  let shouldBeConnected = false;
+  let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  async function attemptReconnect(): Promise<void> {
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+      retryTimeout = null;
+    }
+    if (!shouldBeConnected || aircraft.isConnected) return;
+    
+    devLog('[Watchdog] Attempting auto-reconnect...');
+    const connected = await aircraft.connect();
+    if (connected) {
+      startPolling();
+      broadcast({
+        type: 'sim.connected',
+        aircraft: aircraft.name,
+        aircraftType: aircraft.aircraftType,
+        capabilities: aircraft.capabilities,
+        connectionStatus: aircraft.connectionStatus,
+        lastError: aircraft.lastError,
+      } as ServerMessage);
+    } else {
+      retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
     }
   }
 
@@ -152,6 +201,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
           case 'sim.connect': {
             devLog('[WS] Client requested sim connection');
+            shouldBeConnected = true;
             aircraft.connect().then(connected => {
               if (connected) {
                 startPolling();
@@ -168,6 +218,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
                   type: 'error',
                   message: aircraft.lastError ?? 'Failed to connect to MSFS',
                 } as ServerMessage));
+                // Start watchdog even if first attempt fails
+                if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
               }
             }).catch(err => {
               devError('[SimConnect] Error:', err);
@@ -175,12 +227,18 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
                 type: 'error',
                 message: 'Failed to connect to MSFS',
               } as ServerMessage));
+              if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
             });
             break;
           }
 
           case 'sim.disconnect': {
             devLog('[WS] Client requested disconnect');
+            shouldBeConnected = false;
+            if (retryTimeout) {
+              clearTimeout(retryTimeout);
+              retryTimeout = null;
+            }
             stopPolling();
             aircraft.disconnect().then(() => {
               broadcast({ type: 'sim.disconnected', lastError: aircraft.lastError } as ServerMessage);

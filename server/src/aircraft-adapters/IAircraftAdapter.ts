@@ -27,6 +27,12 @@ export interface AircraftState {
   speed?: number;
   /** Vertical speed in feet per minute */
   verticalSpeed?: number;
+  /** Radio frequencies */
+  radios?: {
+    vor1?: string;
+    vor2?: string;
+    adf1?: string;
+  };
 }
 
 export interface IAircraftAdapter {
