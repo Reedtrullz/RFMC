@@ -14,6 +14,7 @@ import { TrainingOverlay } from './components/Training/TrainingOverlay';
 import { CockpitLayout } from './components/CockpitMode/CockpitLayout';
 import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
+import { InstrumentSlot } from './components/layout/InstrumentSlot';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -109,8 +110,8 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black">
-      <div className="flex w-full justify-center items-center py-4 px-6 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-black">
+      <div className="flex w-full shrink-0 justify-center items-center py-3 px-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
         <AutopilotTrainer />
         <button 
           onClick={() => setCockpitMode(true)}
@@ -120,23 +121,26 @@ export default function App() {
         </button>
       </div>
 
-      <main className="flex flex-1 flex-col items-center gap-8 p-4">
-        <div className="flex w-full max-w-[1200px] flex-wrap justify-center gap-8">
+      <main className="grid min-h-0 flex-1 w-full grid-cols-[minmax(220px,1fr)_minmax(260px,1fr)_minmax(320px,420px)] place-items-center gap-4 overflow-hidden p-3 max-lg:grid-cols-2">
+        <div className="contents">
           {/* PFD Section */}
-          <div className="h-[min(72vh,460px)] w-full max-w-[360px] lg:h-[min(88vh,560px)]">
+          <InstrumentSlot className="h-full w-full max-w-[320px]">
             <PrimaryFlightDisplay />
-          </div>
+          </InstrumentSlot>
 
           {/* ND Section */}
-          <div className={`${showNd ? 'flex' : 'hidden'} h-[min(72vh,460px)] w-full max-w-[430px] lg:flex lg:h-[min(88vh,560px)]`}>
+          <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`}>
             <NavigationDisplay />
-          </div>
+          </InstrumentSlot>
         </div>
 
         {/* CDU Section */}
-        <div className="flex min-h-0 min-w-0 items-center justify-center lg:w-[560px] lg:shrink-0 max-lg:flex-1">
+        <InstrumentSlot
+          className="h-full w-full max-lg:col-span-2"
+          contentClassName="normal-cdu-scale origin-top"
+        >
           <CDU />
-        </div>
+        </InstrumentSlot>
       </main>
       {showWelcome && <DemoWelcome />}
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}

@@ -8,6 +8,7 @@ import { DisplaySelector, CockpitLayoutMode } from './DisplaySelector';
 import { BrightnessPanel } from './BrightnessPanel';
 import { useOrientation } from '../../hooks/useOrientation';
 import { useWakeLock } from '../../hooks/useWakeLock';
+import { InstrumentSlot } from '../layout/InstrumentSlot';
 
 export function CockpitLayout() {
   const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('pfd-nd-cdu');
@@ -72,22 +73,30 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
   // Landscape Layouts
   switch (mode) {
     case 'cdu-only':
-      return <div className="max-w-[480px] w-full"><CDU /></div>;
+      return <InstrumentSlot className="h-full w-full" contentClassName="origin-center"><CDU /></InstrumentSlot>;
     
     case 'cdu-nd':
       return (
         <div className="layout-cdu-nd">
-          <div className="h-[min(88vh,560px)]"><NavigationDisplay /></div>
-          <div className="flex items-center justify-center"><CDU /></div>
+          <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
+          <div className="cockpit-cdu-slot">
+            <div className="cockpit-cdu-scale">
+              <CDU />
+            </div>
+          </div>
         </div>
       );
 
     case 'pfd-nd-cdu':
       return (
         <div className="layout-pfd-nd-cdu">
-          <div className="h-[min(88vh,560px)]"><PrimaryFlightDisplay /></div>
-          <div className="h-[min(88vh,560px)]"><NavigationDisplay /></div>
-          <div className="flex items-center justify-center scale-90 origin-center"><CDU /></div>
+          <InstrumentSlot className="h-full w-full"><PrimaryFlightDisplay /></InstrumentSlot>
+          <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
+          <div className="cockpit-cdu-slot">
+            <div className="cockpit-cdu-scale">
+              <CDU />
+            </div>
+          </div>
         </div>
       );
 
@@ -96,8 +105,8 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         <div className="flex flex-col items-center justify-center gap-8 w-full">
           <AutopilotTrainer />
           <div className="grid grid-cols-2 gap-8 w-full max-w-[1000px]">
-             <div className="h-[400px]"><PrimaryFlightDisplay /></div>
-             <div className="h-[400px]"><NavigationDisplay /></div>
+             <InstrumentSlot className="h-[400px]"><PrimaryFlightDisplay /></InstrumentSlot>
+             <InstrumentSlot className="h-[400px]"><NavigationDisplay /></InstrumentSlot>
           </div>
         </div>
       );
@@ -106,10 +115,10 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
       return (
         <div className="grid grid-cols-2 gap-4 w-full h-full">
           <div className="border border-white/5 bg-panel-dark p-4 rounded-xl flex items-center justify-center">
-            <PrimaryFlightDisplay />
+            <InstrumentSlot className="h-full w-full"><PrimaryFlightDisplay /></InstrumentSlot>
           </div>
           <div className="border border-white/5 bg-panel-dark p-4 rounded-xl flex items-center justify-center">
-            <NavigationDisplay />
+            <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
           </div>
         </div>
       );
