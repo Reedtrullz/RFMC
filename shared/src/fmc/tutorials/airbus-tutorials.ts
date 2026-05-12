@@ -1,5 +1,69 @@
 import type { TutorialScenario } from '../../types/fmc';
 
+export const airbusBasicsScenario: TutorialScenario = {
+  name: 'Airbus A320 Basics',
+  description: 'Learn the fundamentals of the Airbus MCDU — INIT page setup, flight plan review, and radio navigation tuning.',
+  steps: [
+    {
+      id: 'airbus_init_nav',
+      instruction: 'Welcome to the A320 MCDU. Press INIT to start initialization. Airbus uses the INIT pages to define route endpoints, performance data, weight, and fuel information.',
+      expectedAction: 'INIT_A',
+      validate: () => true,
+      page: 'INIT_A',
+      highlightField: 'INIT_A',
+    },
+    {
+      id: 'airbus_from_to',
+      instruction: 'Enter the origin and destination airports. Type KJFK/KORD and press LSK L1.',
+      expectedAction: 'KJFK/KORD',
+      validate: (input: string) => input.toUpperCase().includes('/'),
+      page: 'INIT_A',
+      highlightField: 'L1',
+    },
+    {
+      id: 'airbus_flt_nr',
+      instruction: 'Enter your flight number, for example AAL456, and press the flight number LSK.',
+      expectedAction: 'AAL456',
+      validate: (input: string) => input.length >= 3,
+      page: 'INIT_A',
+      highlightField: 'R3',
+    },
+    {
+      id: 'airbus_ci',
+      instruction: 'Enter the Cost Index. Type 30 and press the COST INDEX LSK.',
+      expectedAction: '30',
+      validate: (input: string) => parseInt(input) > 0,
+      page: 'INIT_A',
+      highlightField: 'L3',
+    },
+    {
+      id: 'airbus_crz_fl',
+      instruction: 'Enter your cruise flight level. Type 320 for FL320.',
+      expectedAction: '320',
+      validate: (input: string) => parseInt(input) >= 100,
+      page: 'INIT_A',
+      highlightField: 'L5',
+    },
+    {
+      id: 'airbus_fpln_nav',
+      instruction: 'Press F-PLN to review your route. The Flight Plan page shows waypoints and constraints.',
+      expectedAction: 'F_PLN',
+      validate: () => true,
+      page: 'F_PLN',
+      highlightField: 'F_PLN',
+    },
+    {
+      id: 'airbus_radnav_nav',
+      instruction: 'Press RAD NAV. The Radio Navigation page is used to review or manually tune radio navigation aids.',
+      expectedAction: 'RAD_NAV',
+      validate: () => true,
+      page: 'RAD_NAV',
+      highlightField: 'RAD_NAV',
+    },
+  ],
+  setup: () => [],
+};
+
 export const airbusPreflight: TutorialScenario = {
   name: 'A320 Preflight (ENGM → ENBR)',
   description: 'Complete Airbus A320 MCDU setup — INIT A/B, F-PLN, PERF TO, and FUEL PRED.',
@@ -313,6 +377,7 @@ export const airbusInFlightScenario: TutorialScenario = {
 };
 
 export const airbusTutorialScenarios: TutorialScenario[] = [
+  airbusBasicsScenario,
   airbusPreflight,
   airbusTakeoffScenario,
   airbusInFlightScenario,

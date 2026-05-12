@@ -40,6 +40,7 @@ describe('tutorialEngine', () => {
 
   it('provides the correct scenarios for Boeing and Airbus', () => {
     expect(preflightScenario.name).toContain('Full Preflight');
-    expect(airbusTutorialScenarios[0].name).toContain('A320 Preflight');
+    expect(airbusTutorialScenarios[0].name).toContain('Basics');
+    expect(airbusTutorialScenarios[1].name).toContain('Preflight');
   });
 });
