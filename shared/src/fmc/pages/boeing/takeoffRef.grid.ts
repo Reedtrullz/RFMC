@@ -45,13 +45,13 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     seg(8, 1, takeoff.windDir ? `${takeoff.windDir}°/${takeoff.windSpeed}KT` : '---', 'green'),
 
     seg(1, 20, 'V1', 'white', { size: 'small' }),
-    seg(2, 19, takeoff.v1 ? `${takeoff.v1}KT` : '[   ]', 'white'),
+    seg(2, 18, takeoff.v1 ? `${takeoff.v1} KT` : '[   ]', 'white'),
 
     seg(3, 20, 'VR', 'white', { size: 'small' }),
-    seg(4, 19, takeoff.vr ? `${takeoff.vr}KT` : '[   ]', 'white'),
+    seg(4, 18, takeoff.vr ? `${takeoff.vr} KT` : '[   ]', 'white'),
 
     seg(5, 20, 'V2', 'white', { size: 'small' }),
-    seg(6, 19, takeoff.v2 ? `${takeoff.v2}KT` : '[   ]', 'white'),
+    seg(6, 18, takeoff.v2 ? `${takeoff.v2} KT` : '[   ]', 'white'),
 
     seg(13, 16, 'INDEX>', 'white'),
   ], {

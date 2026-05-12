@@ -13,6 +13,7 @@ interface AvionicsKeyProps {
   className?: string;
   disabled?: boolean;
   hintLevel?: number;
+  ariaLabel?: string;
 }
 
 export function AvionicsKey({ 
@@ -27,12 +28,15 @@ export function AvionicsKey({
   className = '',
   disabled,
   hintLevel,
+  ariaLabel,
 }: AvionicsKeyProps) {
   return (
     <button
       type="button"
+      aria-label={ariaLabel}
       disabled={disabled}
       className={[
+        'cdu-button',
         'avionics-key',
         `avionics-key--${variant}`,
         active ? 'avionics-key--active' : '',

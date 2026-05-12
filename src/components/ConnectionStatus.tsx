@@ -20,8 +20,6 @@ export function ConnectionStatus() {
   const { connect, disconnect } = useWebSocket({ autoConnect: false });
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('connection'));
   const cockpitMode = useFMCStore(s => s.cockpitMode);
-  
-  if (cockpitMode && isHidden) return null;
 
   const connectionStatus = useFMCStore(s => s.connectionStatus);
   const connectionMode = useFMCStore(s => s.connectionMode);
@@ -65,6 +63,8 @@ export function ConnectionStatus() {
 
     return () => clearInterval(interval);
   }, [sessionStartTime, connectionStatus]);
+
+  if (cockpitMode && isHidden) return null;
 
   const statusMap = {
     DISCONNECTED: { label: 'DISCONNECTED', color: 'bg-gray-500', text: 'text-gray-400' },

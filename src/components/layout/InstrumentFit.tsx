@@ -5,8 +5,10 @@ interface InstrumentFitProps {
   children: ReactNode;
   target: InstrumentTarget;
   preferredScale?: number;
+  allowOverflowZoom?: boolean;
   className?: string;
   overlay?: ReactNode;
+  dataTestId?: string;
 }
 
 interface Size {
@@ -20,8 +22,10 @@ export function InstrumentFit({
   children,
   target,
   preferredScale = 1,
+  allowOverflowZoom = false,
   className = '',
   overlay,
+  dataTestId,
 }: InstrumentFitProps) {
   const slotRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -74,12 +78,17 @@ export function InstrumentFit({
   const scale = useMemo(() => {
     const widthScale = slotSize.width / contentSize.width;
     const heightScale = slotSize.height / contentSize.height;
+    const fitScale = Math.min(widthScale, heightScale);
 
-    return Math.min(preferredScale, widthScale, heightScale);
-  }, [contentSize.height, contentSize.width, preferredScale, slotSize.height, slotSize.width]);
+    return allowOverflowZoom ? preferredScale : Math.min(preferredScale, fitScale);
+  }, [allowOverflowZoom, contentSize.height, contentSize.width, preferredScale, slotSize.height, slotSize.width]);
 
   return (
-    <div ref={slotRef} className={`cockpit-instrument ${className}`}>
+    <div
+      ref={slotRef}
+      className={`cockpit-instrument ${allowOverflowZoom ? 'cockpit-instrument--scrollable' : ''} ${className}`}
+      data-testid={dataTestId}
+    >
       <div
         className="instrument-fit-viewport"
         style={{

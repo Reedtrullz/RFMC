@@ -35,11 +35,11 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
       </g>
 
       {/* Active Waypoint Info (Top Right) */}
-      {model.activeRoutePoints.length > 0 && model.activeRoutePoints[0].active && (
+      {model.anchorZones.waypointBlock && (
         <g transform="translate(96 15)" textAnchor="end" fontSize="3.2" fontWeight="bold">
-          <text fill={colors.magenta}>{model.activeRoutePoints[0].label}</text>
-          <text y="4" fill={colors.text}>123 NM</text>
-          <text y="8" fill={colors.text}>12:34</text>
+          <text fill={colors.magenta}>{model.anchorZones.waypointBlock.ident}</text>
+          <text y="4" fill={colors.text}>{model.anchorZones.waypointBlock.dist} NM</text>
+          <text y="8" fill={colors.text}>{model.anchorZones.waypointBlock.ete}</text>
         </g>
       )}
 

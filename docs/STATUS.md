@@ -9,16 +9,16 @@ This is the current source of truth for automated status. Other docs should link
 | Gate | Command | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing |
-| Unit/regression tests | `npm test -- --run` | 174/174 passing |
-| Playwright E2E | `npm run test:e2e` | 15 passed, 2 skipped |
-| Production build | `npm run build` | Passing (306.78KB JS, 32.42KB CSS in latest local run) |
+| Unit/regression tests | `npm test -- --run` | 180/180 passing |
+| Playwright E2E | `npm run test:e2e` | 35 passed, 2 skipped |
+| Production build | `npm run build` | Passing (399.44KB JS, 66.74KB CSS in latest local run) |
 | Coverage | `npm run test:coverage` | 51.75% all files in last recorded run |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; moderate Vite/esbuild dev-dependency exception documented |
 | Visual baseline | `npm run capture:baseline` | Baseline capture script present; reference comparison remains a Phase 1 gate |
 
 ## Current Commit
 
-Latest reviewed upstream commit: `138651f` (`feat: harden ND model with geometric clipping tests, PLAN review store tests, and EFIS state integration`).
+Latest reviewed local commit: `feat(cockpit): implement task-mode instrument workspace`.
 
 ## Validation Caveats
 

@@ -1,12 +1,13 @@
-import React from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 import { panelLabels, type PanelId } from '../workspace/panelTypes';
 
 export function CockpitToolbar() {
   const hiddenPanels = useFMCStore(s => s.hiddenPanels);
   const togglePanelHidden = useFMCStore(s => s.togglePanelHidden);
-  const cockpitMode = useFMCStore(s => s.cockpitMode);
   const setCockpitMode = useFMCStore(s => s.setCockpitMode);
+  const restoreRecommendedLayout = useFMCStore(s => s.restoreRecommendedLayout);
+  const highContrast = useFMCStore(s => s.highContrast);
+  const toggleHighContrast = useFMCStore(s => s.toggleHighContrast);
 
   const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'mcp', 'instructor', 'checklist', 'connection', 'settings'];
 
@@ -37,6 +38,22 @@ export function CockpitToolbar() {
       })}
       
       <div className="ml-auto flex items-center px-2 border-l border-white/10">
+        <button
+          onClick={restoreRecommendedLayout}
+          className="px-3 py-1.5 text-white/45 hover:text-white text-[9px] font-cdu uppercase tracking-wider transition-colors"
+        >
+          Reset Panels
+        </button>
+        <button
+          onClick={toggleHighContrast}
+          aria-pressed={highContrast}
+          className={`
+            px-3 py-1.5 text-[9px] font-cdu uppercase tracking-wider transition-colors
+            ${highContrast ? 'text-cdu-cyan' : 'text-white/45 hover:text-white'}
+          `}
+        >
+          Contrast
+        </button>
         <button
           onClick={() => setCockpitMode(false)}
           className="px-3 py-1.5 text-cdu-error/60 hover:text-cdu-error text-[9px] font-cdu uppercase tracking-wider transition-colors"

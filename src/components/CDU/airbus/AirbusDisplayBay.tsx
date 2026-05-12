@@ -26,7 +26,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
       <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
       <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
-        <ScreenGlass brightness={brightness} className="rounded-b-none w-full border-cdu-bezel-light/30">
+        <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30">
           <div className="w-full" style={{ height: 'calc(14 * var(--airbus-row-height, 21px))' }}>
             <Display variant="airbus" />
           </div>

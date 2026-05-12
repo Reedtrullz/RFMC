@@ -49,7 +49,7 @@ Recent commits in order:
 - `c2bcd04 Reflect direct-to targets on ND`
 - `51ef671 Add Boeing approach reference page`
 - `672415a Add agent handoff instructions`
-- Current continuation slice after `672415a`: two-entry FIX page and multiple ND FIX overlays.
+- Current continuation slice after `672415a`: cockpit task-mode workspace, auto-fit instrument stages, focus/zoom/pin controls, aircraft-specific checklist panels, Airbus FCU highlighting, ND clipping hardening, and refreshed visual baselines.
 
 The current implementation includes:
 
@@ -77,6 +77,12 @@ The current implementation includes:
   - HOLD racetrack preview.
   - SID/STAR/approach/runway context.
   - MAP/PLAN mode, range, overlay toggles, and iPad layout handling.
+- Cockpit workspace improvements:
+  - Learner task modes for FMC Focus, Navigation, Automation, Approach, Full Deck, and Free Practice.
+  - Mode-specific recommended panels and restore behavior.
+  - Focus, hide, pin, zoom, and reset controls for instrument panels.
+  - Aircraft-specific checklist sections with related-control highlighting.
+  - Full Deck rendering restored and guarded by Playwright layout size assertions.
 
 ## Architectural Pointers
 

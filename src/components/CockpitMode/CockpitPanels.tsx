@@ -1,5 +1,6 @@
-import React from 'react';
+import { useState } from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
+import { getCockpitChecklists, type CockpitChecklistItem } from '../../checklists';
 
 export function SettingsPanel() {
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('settings'));
@@ -38,41 +39,61 @@ export function SettingsPanel() {
 export function ChecklistPanel() {
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('checklist'));
   const cockpitMode = useFMCStore(s => s.cockpitMode);
+  const aircraft = useFMCStore(s => s.aircraft);
+  const highlightControl = useFMCStore(s => s.highlightControl);
+  const [sectionIndex, setSectionIndex] = useState(0);
 
   if (cockpitMode && isHidden) return null;
+
+  const checklists = getCockpitChecklists(aircraft);
+  const section = checklists[sectionIndex % checklists.length] ?? checklists[0];
+  const nextSection = () => setSectionIndex(index => (index + 1) % checklists.length);
 
   return (
     <div className="fixed top-24 left-6 w-80 bg-white/95 backdrop-blur-xl rounded-lg border border-black/10 p-6 shadow-2xl z-30 pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-300">
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-black/5">
-        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-tight">Normal Checklist</h3>
-        <span className="text-[9px] font-bold bg-cdu-bezel text-white px-2 py-0.5 rounded">B738</span>
+        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-tight">{section.title}</h3>
+        <span className="text-[9px] font-bold bg-cdu-bezel text-white px-2 py-0.5 rounded">{section.badge}</span>
       </div>
       
       <div className="space-y-3">
-        <ChecklistItem label="Parking Brake" value="SET" checked />
-        <ChecklistItem label="Fuel Pumps" value="ON" checked />
-        <ChecklistItem label="Passenger Signs" value="ON" />
-        <ChecklistItem label="Windows" value="LOCKED" />
-        <ChecklistItem label="MCP" value="V2, HDG, ALT SET" />
+        {section.items.map(item => (
+          <ChecklistItem
+            key={item.id}
+            item={item}
+            onHighlight={item.relatedControl ? () => highlightControl(item.relatedControl!) : undefined}
+          />
+        ))}
       </div>
       
       <div className="mt-6 pt-4 border-t border-black/5 flex justify-between items-center">
-        <span className="text-[9px] font-bold text-gray-400 uppercase">Preflight Checklist</span>
-        <button className="text-[9px] font-bold text-cdu-cyan uppercase hover:underline">Next Section</button>
+        <span className="text-[9px] font-bold text-gray-400 uppercase">{(sectionIndex % checklists.length) + 1} / {checklists.length}</span>
+        <button
+          type="button"
+          className="text-[9px] font-bold text-cdu-cyan uppercase hover:underline"
+          onClick={nextSection}
+        >
+          Next Section
+        </button>
       </div>
     </div>
   );
 }
 
-function ChecklistItem({ label, value, checked = false }: { label: string; value: string; checked?: boolean }) {
+function ChecklistItem({ item, onHighlight }: { item: CockpitChecklistItem; onHighlight?: () => void }) {
   return (
-    <div className={`flex items-center justify-between group cursor-pointer ${checked ? 'opacity-40' : ''}`}>
+    <button
+      type="button"
+      onClick={onHighlight}
+      className={`flex w-full items-center justify-between group text-left ${item.completed ? 'opacity-40' : ''} ${onHighlight ? 'cursor-pointer' : 'cursor-default'}`}
+      disabled={!onHighlight}
+    >
       <div className="flex items-center gap-3">
-        <div className={`w-3 h-3 rounded border ${checked ? 'bg-cdu-exec border-cdu-exec' : 'border-black/20'}`} />
-        <span className="text-[11px] font-medium text-gray-700">{label}</span>
+        <div className={`w-3 h-3 rounded border ${item.completed ? 'bg-cdu-exec border-cdu-exec' : 'border-black/20'}`} />
+        <span className="text-[11px] font-medium text-gray-700">{item.label}</span>
       </div>
       <div className="flex-1 border-b border-dotted border-black/10 mx-2 mb-1" />
-      <span className="text-[10px] font-bold text-gray-900 font-mono">{value}</span>
-    </div>
+      <span className="text-[10px] font-bold text-gray-900 font-mono">{item.expected}</span>
+    </button>
   );
 }

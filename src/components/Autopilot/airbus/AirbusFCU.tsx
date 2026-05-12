@@ -1,9 +1,9 @@
-import React from 'react';
-import { AirbusFCUState } from '@shared';
+import type { AirbusFCUState } from '@shared';
 import { CockpitPanel } from '../../visual/CockpitPanel';
 import { FCUDisplay } from './FCUDisplay';
 import { RotaryKnob } from '../../visual/RotaryKnob';
 import { FCUButton } from './FCUButton';
+import { useFMCStore } from '../../../store/useFMCStore';
 
 interface AirbusFCUProps {
   state: AirbusFCUState;
@@ -12,6 +12,9 @@ interface AirbusFCUProps {
 }
 
 export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
+  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const highlighted = (controlId: string) => tutorialHighlight === controlId;
+
   return (
     <CockpitPanel variant="airbus" className="w-full">
       <div className="flex w-full items-center justify-between gap-6 overflow-x-auto pb-2 px-2">
@@ -24,6 +27,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
               value={state.speed || 0} 
               managed={state.speedManaged} 
               label={state.speed === null ? "---" : state.speed.toString()}
+              highlighted={highlighted('A320_SPEED')}
             />
             <div className="absolute -right-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => updateState({ speedManaged: true })} className="p-1 bg-white/5 rounded text-[8px] text-white/50 hover:text-white">PUSH</button>
@@ -44,6 +48,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
               value={state.heading || 0} 
               managed={state.headingManaged} 
               label={state.headingManaged ? "---" : (state.heading || 0).toString().padStart(3, '0')}
+              highlighted={highlighted('A320_HDG')}
             />
             <div className="absolute -right-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => updateState({ headingManaged: true })} className="p-1 bg-white/5 rounded text-[8px] text-white/50 hover:text-white">PUSH</button>
@@ -52,19 +57,20 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <RotaryKnob 
             value={state.heading || 0} 
-            onRotate={(d) => updateState({ heading: (state.heading || 0 + d + 360) % 360 })} 
+            highlighted={highlighted('A320_HDG')}
+            onRotate={(d) => updateState({ heading: ((state.heading || 0) + d + 360) % 360 })}
           />
         </div>
 
         {/* AP ENGAGE / Central Buttons */}
         <div className="flex flex-col gap-2 pt-4">
           <div className="flex gap-2">
-            <FCUButton label="AP1" active={state.ap1} onPress={() => pressButton('AP1')} />
-            <FCUButton label="AP2" active={state.ap2} onPress={() => pressButton('AP2')} />
+            <FCUButton label="AP1" active={state.ap1} highlighted={highlighted('A320_AP1')} onPress={() => pressButton('AP1')} />
+            <FCUButton label="AP2" active={state.ap2} highlighted={highlighted('A320_AP2')} onPress={() => pressButton('AP2')} />
           </div>
           <div className="flex gap-2">
-            <FCUButton label="A/THR" active={state.athr} onPress={() => pressButton('ATHR')} />
-            <FCUButton label="LOC" active={state.loc} onPress={() => pressButton('LOC')} />
+            <FCUButton label="A/THR" active={state.athr} highlighted={highlighted('A320_ATHR')} onPress={() => pressButton('ATHR')} />
+            <FCUButton label="LOC" active={state.loc} highlighted={highlighted('A320_LOC')} onPress={() => pressButton('LOC')} />
           </div>
         </div>
 
@@ -76,6 +82,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
               value={state.altitude} 
               managed={state.altitudeManaged} 
               label={state.altitude.toString()}
+              highlighted={highlighted('A320_ALT')}
             />
             <div className="absolute -right-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => updateState({ altitudeManaged: true })} className="p-1 bg-white/5 rounded text-[8px] text-white/50 hover:text-white">PUSH</button>
@@ -84,6 +91,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <RotaryKnob 
             value={state.altitude / 100} 
+            highlighted={highlighted('A320_ALT')}
             onRotate={(d) => updateState({ altitude: Math.max(0, Math.min(49000, state.altitude + d * 100)) })} 
           />
         </div>
@@ -106,7 +114,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
-          <FCUButton label="APPR" active={state.appr} onPress={() => pressButton('APPR')} />
+          <FCUButton label="APPR" active={state.appr} highlighted={highlighted('A320_APPR')} onPress={() => pressButton('APPR')} />
         </div>
 
       </div>

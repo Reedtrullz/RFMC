@@ -1,4 +1,5 @@
 export * from './types/fmc';
+export * from './types/cockpit';
 export * from './types/webSocket';
 
 // FMC logic — shared between frontend and backend

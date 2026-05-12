@@ -36,6 +36,14 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
 
   // Page 2
   const routeLines = route.routeString || '----';
+  const routeTokens = routeLines.split(/\s+/).filter(Boolean);
+  const firstRouteFix = routeTokens.find(token =>
+    token !== 'DCT' &&
+    token !== route.origin &&
+    token !== route.destination
+  );
+  const routeToField = firstRouteFix ?? (routeLines.length > 11 ? routeLines.slice(0, 11) : routeLines);
+
   return boeingPage([
     ...boeingTitle(title, '2/2'),
 
@@ -43,7 +51,7 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
     seg(1, 13, 'TO', 'white', { size: 'small' }),
 
     seg(2, 1, 'DIRECT', 'green'),
-    seg(2, 13, routeLines.length > 11 ? routeLines.slice(0, 11) : routeLines, color),
+    seg(2, 13, routeToField, color),
 
     ...(state.isModified ? [seg(13, 0, '<ERASE', 'amber')] : []),
     seg(13, 18, 'LEGS>', 'white'),

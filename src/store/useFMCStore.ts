@@ -1,8 +1,41 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
+import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
+
+type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'mcp'>;
+
+const defaultInstrumentZoom: Record<InstrumentPanelId, number> = {
+  cdu: 1.35,
+  nd: 1,
+  pfd: 1,
+  mcp: 1,
+};
+
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'mcp'];
+
+function isInstrumentPanelId(panelId: PanelId): panelId is InstrumentPanelId {
+  return instrumentPanelIds.includes(panelId as InstrumentPanelId);
+}
+
+function clampInstrumentZoom(zoom: number): number {
+  if (!Number.isFinite(zoom)) return 1;
+  return Math.min(1.8, Math.max(0.72, Number(zoom.toFixed(2))));
+}
+
+function modeZoomDefaults(mode: CockpitLayoutMode): Record<InstrumentPanelId, number> {
+  const config = getTrainingModeConfig(mode);
+  return {
+    ...defaultInstrumentZoom,
+    ...Object.fromEntries(
+      Object.entries(config.defaultZoom)
+        .filter(([panelId]) => isInstrumentPanelId(panelId as PanelId))
+        .map(([panelId, zoom]) => [panelId, clampInstrumentZoom(Number(zoom))]),
+    ),
+  } as Record<InstrumentPanelId, number>;
+}
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
   return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
@@ -51,7 +84,7 @@ const defaultState = {
   demoMode: false,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '' },
+  position: { refAirport: '', gate: '', irsAligned: false, irsAlignmentProgress: 0 },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
@@ -89,6 +122,8 @@ const defaultState = {
   tutorialStartTime: null as number | null,
   tutorialHint: null as string | null,
   tutorialSkipAvailable: false,
+  tutorialHintLevel: 0,
+  tutorialHintTimer: null as any,
   tutorialConfidence: null as number | null,
 
   // New Training state
@@ -177,9 +212,11 @@ const defaultState = {
 
   // Cockpit Layout
   cockpitLayoutMode: 'fmc-focus' as CockpitLayoutMode,
-  hiddenPanels: [] as PanelId[],
+  hiddenPanels: getRecommendedHiddenPanels('fmc-focus') as PanelId[],
   pinnedPanels: [] as PanelId[],
   focusedPanel: null as PanelId | null,
+  instrumentZoom: { ...defaultInstrumentZoom },
+  highContrast: false,
 };
 
 interface FMCActions {
@@ -268,6 +305,13 @@ interface FMCActions {
   setFocusedPanel: (panel: PanelId | null) => void;
   togglePanelHidden: (panelId: PanelId) => void;
   togglePanelPinned: (panelId: PanelId) => void;
+  restoreRecommendedLayout: () => void;
+  setInstrumentZoom: (panelId: InstrumentPanelId, zoom: number) => void;
+  adjustInstrumentZoom: (panelId: InstrumentPanelId, delta: number) => void;
+  resetInstrumentZoom: (panelId: InstrumentPanelId) => void;
+  setHighContrast: (enabled: boolean) => void;
+  toggleHighContrast: () => void;
+  highlightControl: (controlId: string) => void;
 }
 
 interface ConnectionDiagnostics {
@@ -305,7 +349,15 @@ interface TrainingState {
   trainingCompleted: boolean;
 }
 
-export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & TrainingState & FMCActions & { brightness: number };
+export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & TrainingState & FMCActions & {
+  brightness: number;
+  cockpitLayoutMode: CockpitLayoutMode;
+  hiddenPanels: PanelId[];
+  pinnedPanels: PanelId[];
+  focusedPanel: PanelId | null;
+  instrumentZoom: Record<InstrumentPanelId, number>;
+  highContrast: boolean;
+};
 
 type StoreAPI = import('zustand').StoreApi<FMCStore>;
 
@@ -1423,12 +1475,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   setAircraft: (type: AircraftType) => {
+    const state = get();
     const startPage = type === 'BOEING_737' ? 'IDENT' as PageType : 'INIT_A' as PageType;
     set({
       ...defaultState,
       aircraft: type,
       currentPage: startPage,
       pageHistory: [],
+      cockpitMode: state.cockpitMode,
+      cockpitLayoutMode: state.cockpitLayoutMode,
+      hiddenPanels: getRecommendedHiddenPanels(state.cockpitLayoutMode, state.pinnedPanels),
+      pinnedPanels: state.pinnedPanels,
+      instrumentZoom: { ...state.instrumentZoom },
+      highContrast: state.highContrast,
+      efisL: createDefaultEFIS(type, 'L'),
+      efisR: createDefaultEFIS(type, 'R'),
     });
   },
 
@@ -1581,7 +1642,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Lesson-aware layout automation
     if (nextStep.preferredLayout) {
-      set({ cockpitLayoutMode: nextStep.preferredLayout });
+      get().setCockpitLayoutMode(nextStep.preferredLayout);
     }
     if (nextStep.focusPanel) {
       set({ focusedPanel: nextStep.focusPanel });
@@ -1833,14 +1894,49 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.aircraft === 'BOEING_737') {
       const update = processBoeingMCPAction(state.autopilot.boeing, action as any);
       state.updateBoeingMCP(update);
+      return;
+    }
+
+    const airbus = state.autopilot.airbus;
+    const airbusActions: Record<string, Partial<AirbusFCUState>> = {
+      AP1: { ap1: !airbus.ap1 },
+      AP2: { ap2: !airbus.ap2 },
+      ATHR: { athr: !airbus.athr },
+      LOC: { loc: !airbus.loc },
+      APPR: { appr: !airbus.appr },
+      EXPED: { exped: !airbus.exped },
+      FD1: { fd1: !airbus.fd1 },
+      FD2: { fd2: !airbus.fd2 },
+    };
+
+    const update = airbusActions[action];
+    if (update) {
+      state.updateAirbusFCU(update);
     }
   },
 
   setRteSubPage: (page: number) => set({ rteSubPage: page }),
   setTakeoffRefPageIndex: (page: number) => set({ takeoffRefPageIndex: page }),
   setCockpitMode: (enabled: boolean) => set({ cockpitMode: enabled }),
-  setCockpitLayoutMode: (mode) => set({ cockpitLayoutMode: mode }),
-  setHiddenPanels: (panels) => set({ hiddenPanels: panels }),
+  setCockpitLayoutMode: (mode) => {
+    const state = get();
+    set({
+      cockpitLayoutMode: mode,
+      focusedPanel: null,
+      hiddenPanels: getRecommendedHiddenPanels(mode, state.pinnedPanels),
+      instrumentZoom: {
+        ...state.instrumentZoom,
+        ...modeZoomDefaults(mode),
+      },
+    });
+  },
+  setHiddenPanels: (panels) => {
+    const visibleInstruments = instrumentPanelIds.filter(panelId => !panels.includes(panelId));
+    if (visibleInstruments.length === 0) {
+      return;
+    }
+    set({ hiddenPanels: panels });
+  },
   setPinnedPanels: (panels) => set({ pinnedPanels: panels }),
   setFocusedPanel: (panel) => set({ focusedPanel: panel }),
   togglePanelHidden: (panelId) => {
@@ -1848,7 +1944,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (hiddenPanels.includes(panelId)) {
       set({ hiddenPanels: hiddenPanels.filter(p => p !== panelId) });
     } else {
-      set({ hiddenPanels: [...hiddenPanels, panelId] });
+      const nextHidden = [...hiddenPanels, panelId];
+      const visibleInstruments = instrumentPanelIds.filter(id => !nextHidden.includes(id));
+      if (visibleInstruments.length === 0) {
+        return;
+      }
+      set({ hiddenPanels: nextHidden });
     }
   },
   togglePanelPinned: (panelId) => {
@@ -1861,5 +1962,67 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         hiddenPanels: hiddenPanels.filter(p => p !== panelId)
       });
     }
+  },
+  restoreRecommendedLayout: () => {
+    const state = get();
+    const zoomDefaults = modeZoomDefaults(state.cockpitLayoutMode);
+    set({
+      hiddenPanels: getRecommendedHiddenPanels(state.cockpitLayoutMode, state.pinnedPanels),
+      focusedPanel: null,
+      instrumentZoom: {
+        ...state.instrumentZoom,
+        ...zoomDefaults,
+      },
+    });
+  },
+  setInstrumentZoom: (panelId, zoom) => {
+    set((state) => ({
+      instrumentZoom: {
+        ...state.instrumentZoom,
+        [panelId]: clampInstrumentZoom(zoom),
+      },
+    }));
+  },
+  adjustInstrumentZoom: (panelId, delta) => {
+    set((state) => ({
+      instrumentZoom: {
+        ...state.instrumentZoom,
+        [panelId]: clampInstrumentZoom((state.instrumentZoom[panelId] ?? 1) + delta),
+      },
+    }));
+  },
+  resetInstrumentZoom: (panelId) => {
+    const state = get();
+    const defaultZoom = modeZoomDefaults(state.cockpitLayoutMode)[panelId] ?? defaultInstrumentZoom[panelId];
+    set({
+      instrumentZoom: {
+        ...state.instrumentZoom,
+        [panelId]: defaultZoom,
+      },
+    });
+  },
+  setHighContrast: (enabled) => set({ highContrast: enabled }),
+  toggleHighContrast: () => set((state) => ({ highContrast: !state.highContrast })),
+  highlightControl: (controlId) => {
+    set({
+      tutorialHighlight: controlId,
+      tutorialHintLevel: 2,
+    });
+
+    const clearHighlight = () => {
+      if (get().tutorialHighlight === controlId) {
+        set({
+          tutorialHighlight: null,
+          tutorialHintLevel: 0,
+        });
+      }
+    };
+
+    if (typeof window === 'undefined') {
+      setTimeout(clearHighlight, 2500);
+      return;
+    }
+
+    window.setTimeout(clearHighlight, 2500);
   },
 }));

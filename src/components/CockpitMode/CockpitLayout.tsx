@@ -1,29 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, type CSSProperties } from 'react';
+import type { AircraftType, CockpitLayoutMode } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
 import { NavigationDisplay } from '../ND/NavigationDisplay';
 import { PrimaryFlightDisplay } from '../PFD/PrimaryFlightDisplay';
 import { AutopilotTrainer } from '../Autopilot/AutopilotTrainer';
-import { DisplaySelector, CockpitLayoutMode } from './DisplaySelector';
+import { DisplaySelector } from './DisplaySelector';
 import { BrightnessPanel } from './BrightnessPanel';
 import { useOrientation } from '../../hooks/useOrientation';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { InstrumentFit } from '../layout/InstrumentFit';
+import type { InstrumentTarget } from '../layout/instrumentDimensions';
 import { InstrumentHeader } from '../workspace/InstrumentHeader';
 import { FocusOverlay } from '../workspace/FocusOverlay';
 import { CockpitToolbar } from './CockpitToolbar';
 import { PanelTray } from '../workspace/PanelTray';
 import type { PanelId } from '../workspace/panelTypes';
+import { getTrainingModeConfig, validateVisiblePanels } from '../../config/trainingModes';
+import { CockpitEmptyState } from './CockpitEmptyState';
+import { ModeHelpCard } from './ModeHelpCard';
+import { FirstRunGuidance } from './FirstRunGuidance';
+import { CockpitLayoutGrid } from './CockpitLayoutGrid';
+
+type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'mcp'>;
 
 interface LayoutControls {
+  aircraft: AircraftType;
   hiddenPanels: Set<PanelId>;
   pinnedPanels: Set<PanelId>;
+  instrumentZoom: Record<InstrumentPanelId, number>;
   onFocus: (panelId: PanelId) => void;
   onHide: (panelId: PanelId) => void;
   onTogglePin: (panelId: PanelId) => void;
+  onZoomIn: (panelId: InstrumentPanelId) => void;
+  onZoomOut: (panelId: InstrumentPanelId) => void;
+  onZoomReset: (panelId: InstrumentPanelId) => void;
+}
+
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'mcp'];
+
+function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPanelId {
+  return !!panelId && instrumentPanelIds.includes(panelId as InstrumentPanelId);
 }
 
 export function CockpitLayout() {
+  const aircraft = useFMCStore(s => s.aircraft);
   const layoutMode = useFMCStore(s => s.cockpitLayoutMode);
   const setLayoutMode = useFMCStore(s => s.setCockpitLayoutMode);
   const focusedPanel = useFMCStore(s => s.focusedPanel);
@@ -32,19 +53,29 @@ export function CockpitLayout() {
   const pinnedPanels = useFMCStore(s => s.pinnedPanels);
   const togglePanelHidden = useFMCStore(s => s.togglePanelHidden);
   const togglePanelPinned = useFMCStore(s => s.togglePanelPinned);
+  const restoreRecommendedLayout = useFMCStore(s => s.restoreRecommendedLayout);
+  const instrumentZoom = useFMCStore(s => s.instrumentZoom);
+  const adjustInstrumentZoom = useFMCStore(s => s.adjustInstrumentZoom);
+  const resetInstrumentZoom = useFMCStore(s => s.resetInstrumentZoom);
+  const highContrast = useFMCStore(s => s.highContrast);
   const brightness = useFMCStore(s => s.brightness);
   const orientation = useOrientation();
   
-  // Keep screen awake in cockpit mode
   useWakeLock(true);
 
   const isNight = brightness < 40;
+  const validation = validateVisiblePanels(layoutMode, hiddenPanels);
   const controls: LayoutControls = {
+    aircraft,
     hiddenPanels: new Set(hiddenPanels),
     pinnedPanels: new Set(pinnedPanels),
+    instrumentZoom,
     onFocus: setFocusedPanel,
     onHide: togglePanelHidden,
     onTogglePin: togglePanelPinned,
+    onZoomIn: (panelId) => adjustInstrumentZoom(panelId, 0.08),
+    onZoomOut: (panelId) => adjustInstrumentZoom(panelId, -0.08),
+    onZoomReset: resetInstrumentZoom,
   };
 
   useEffect(() => {
@@ -54,20 +85,22 @@ export function CockpitLayout() {
 
     window.addEventListener('keydown', closeFocus);
     return () => window.removeEventListener('keydown', closeFocus);
-  }, []);
+  }, [setFocusedPanel]);
+
+  const cockpitStyle = {
+    '--cockpit-brightness': brightness / 100,
+    '--cockpit-contrast': isNight ? 1.2 : 1.0,
+  } as CSSProperties;
 
   return (
     <div 
       className={`
         cockpit-grid cockpit-lock no-scrollbar bg-black text-white
         ${isNight ? 'cockpit-night' : ''}
+        ${highContrast ? 'cockpit-high-contrast' : ''}
       `}
-      style={{
-        '--cockpit-brightness': brightness / 100,
-        '--cockpit-contrast': isNight ? 1.2 : 1.0,
-      } as React.CSSProperties}
+      style={cockpitStyle}
     >
-      {/* Top Controller Bar */}
       <div className="px-4 py-2 flex flex-col gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
@@ -75,7 +108,7 @@ export function CockpitLayout() {
              <BrightnessPanel />
              <div className="hidden lg:flex flex-col items-end">
                <span className="text-[10px] font-cdu text-cdu-cyan uppercase font-bold tracking-tighter">Cockpit Mode</span>
-               <span className="text-[8px] font-cdu text-white/30 uppercase">v1.2.0-STABLE</span>
+               <span className="text-[8px] font-cdu text-white/30 uppercase">v1.3.0-WORKSPACE</span>
              </div>
           </div>
         </div>
@@ -83,13 +116,27 @@ export function CockpitLayout() {
       </div>
 
       <main className="cockpit-main">
-        {focusedPanel ? (
-          <FocusOverlay onClose={() => setFocusedPanel(null)}>
-            {renderFocusedPanel(focusedPanel)}
-          </FocusOverlay>
-        ) : (
-          renderLayout(layoutMode, orientation, controls)
-        )}
+        <FirstRunGuidance />
+        <ModeHelpCard mode={layoutMode} onResetLayout={restoreRecommendedLayout} />
+        <div className="cockpit-main__stage">
+          {focusedPanel && isInstrumentPanelId(focusedPanel) ? (
+            <FocusOverlay panelId={focusedPanel} onClose={() => setFocusedPanel(null)}>
+              {renderFocusedPanel(focusedPanel, controls)}
+            </FocusOverlay>
+          ) : (
+            <>
+              {!validation.valid && (
+                <CockpitEmptyState
+                  mode={layoutMode}
+                  missingPanels={validation.missingRequired}
+                  onRestore={restoreRecommendedLayout}
+                />
+              )}
+              {renderLayout(layoutMode, orientation, controls)}
+            </>
+          )}
+        </div>
+        <PanelTray hiddenPanels={hiddenPanels} onShow={togglePanelHidden} />
       </main>
     </div>
   );
@@ -100,85 +147,107 @@ function renderLayout(
   orientation: 'portrait' | 'landscape',
   controls: LayoutControls,
 ) {
+  const config = getTrainingModeConfig(mode);
+
   if (orientation === 'portrait') {
     return (
-      <div className="cockpit-stage cockpit-stage--portrait">
-        {renderInstrumentPanel('nd', controls)}
-        {renderInstrumentPanel('cdu', controls)}
-      </div>
+      <CockpitLayoutGrid preset="mobileSwipeDeck" modeClass="cockpit-stage--portrait">
+        {config.visiblePanels
+          .filter(isInstrumentPanelId)
+          .map(panelId => renderInstrumentPanel(panelId, controls))}
+      </CockpitLayoutGrid>
     );
   }
 
   switch (mode) {
     case 'fmc-focus':
       return (
-        <div className="cockpit-stage cockpit-stage--fmc-focus">
+        <CockpitLayoutGrid preset="singleInstrumentFocus" modeClass="cockpit-stage--fmc-focus">
           {renderInstrumentPanel('cdu', controls)}
-        </div>
+        </CockpitLayoutGrid>
       );
     
     case 'navigation':
       return (
-        <div className="cockpit-stage cockpit-stage--navigation">
+        <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--navigation">
           {renderInstrumentPanel('nd', controls)}
           {renderInstrumentPanel('cdu', controls)}
-        </div>
+        </CockpitLayoutGrid>
       );
 
     case 'automation':
       return (
-        <div className="cockpit-stage cockpit-stage--automation">
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot' })}
-          <div className="cockpit-pfd-nd-displays">
+        <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--automation">
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-automation__mcp' })}
+          <div className="cockpit-pfd-nd-displays cockpit-automation__displays">
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
           </div>
-        </div>
+        </CockpitLayoutGrid>
       );
 
     case 'approach':
       return (
-        <div className="cockpit-stage cockpit-stage--approach">
-          <div className="cockpit-pfd-nd-displays">
+        <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--approach">
+          <div className="cockpit-pfd-nd-displays cockpit-approach__displays">
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
           </div>
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot' })}
-        </div>
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-approach__mcp' })}
+        </CockpitLayoutGrid>
+      );
+
+    case 'full-deck':
+      return (
+        <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-full-deck__mcp' })}
+          <div className="cockpit-full-deck__instruments">
+            {renderInstrumentPanel('pfd', controls)}
+            {renderInstrumentPanel('nd', controls)}
+            {renderInstrumentPanel('cdu', controls)}
+          </div>
+        </CockpitLayoutGrid>
       );
 
     case 'free-practice':
       return (
-        <div className="cockpit-stage cockpit-stage--free-practice">
+        <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--free-practice">
           {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
-        </div>
+          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-free-practice__optional' })}
+        </CockpitLayoutGrid>
       );
-
-    default:
-      return <CDU />;
   }
 }
 
 function renderInstrumentPanel(
-  panelId: PanelId,
+  panelId: InstrumentPanelId,
   controls: LayoutControls,
   options: { className?: string; preferredScale?: number } = {},
 ) {
   if (controls.hiddenPanels.has(panelId)) return null;
 
+  const zoom = options.preferredScale ?? controls.instrumentZoom[panelId] ?? 1;
+
   return (
     <InstrumentFit
-      target={targetForPanel(panelId)}
+      key={panelId}
+      target={targetForPanel(panelId, controls.aircraft)}
       className={options.className}
-      preferredScale={options.preferredScale}
+      preferredScale={zoom}
+      dataTestId={`cockpit-panel-${panelId}`}
       overlay={
         <InstrumentHeader
           panelId={panelId}
           pinned={controls.pinnedPanels.has(panelId)}
+          zoom={zoom}
           onFocus={controls.onFocus}
           onHide={controls.onHide}
           onTogglePin={controls.onTogglePin}
+          onZoomIn={(id) => isInstrumentPanelId(id) && controls.onZoomIn(id)}
+          onZoomOut={(id) => isInstrumentPanelId(id) && controls.onZoomOut(id)}
+          onZoomReset={(id) => isInstrumentPanelId(id) && controls.onZoomReset(id)}
         />
       }
     >
@@ -187,15 +256,20 @@ function renderInstrumentPanel(
   );
 }
 
-function renderFocusedPanel(panelId: PanelId) {
+function renderFocusedPanel(panelId: InstrumentPanelId, controls: LayoutControls) {
   return (
-    <InstrumentFit target={targetForPanel(panelId)}>
+    <InstrumentFit
+      target={targetForPanel(panelId, controls.aircraft)}
+      preferredScale={Math.max(controls.instrumentZoom[panelId] ?? 1, 1)}
+      allowOverflowZoom
+      dataTestId={`cockpit-focused-${panelId}`}
+    >
       {renderPanel(panelId)}
     </InstrumentFit>
   );
 }
 
-function renderPanel(panelId: PanelId) {
+function renderPanel(panelId: InstrumentPanelId) {
   switch (panelId) {
     case 'cdu':
       return <CDU />;
@@ -208,10 +282,10 @@ function renderPanel(panelId: PanelId) {
   }
 }
 
-function targetForPanel(panelId: PanelId) {
+function targetForPanel(panelId: InstrumentPanelId, aircraft: AircraftType): InstrumentTarget {
   switch (panelId) {
     case 'cdu':
-      return 'boeingCdu';
+      return aircraft === 'AIRBUS_A320' ? 'airbusMcdu' : 'boeingCdu';
     case 'nd':
       return 'boeingNd';
     case 'pfd':

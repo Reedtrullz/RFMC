@@ -23,7 +23,7 @@ export function renderBoeingPosInitGrid(state: FMCState): DisplayData {
     state.position.irsAligned 
       ? seg(9, 10, lastPos, 'green')
       : state.position.irsAlignmentProgress > 0
-        ? seg(9, 10, 'ALIGNING...', 'white', { blinking: true })
+        ? seg(9, 10, 'ALIGNING...', 'white', { blink: true })
         : seg(9, 10, '□□□□.□ □□□□□.□', 'green'),
 
     seg(13, 0, '<INDEX', 'white'),
