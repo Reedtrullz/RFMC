@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
 import { NavigationDisplay } from '../ND/NavigationDisplay';
@@ -9,9 +9,24 @@ import { BrightnessPanel } from './BrightnessPanel';
 import { useOrientation } from '../../hooks/useOrientation';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { InstrumentFit } from '../layout/InstrumentFit';
+import { InstrumentHeader } from '../workspace/InstrumentHeader';
+import { FocusOverlay } from '../workspace/FocusOverlay';
+import { PanelTray } from '../workspace/PanelTray';
+import type { PanelId } from '../workspace/panelTypes';
+
+interface LayoutControls {
+  hiddenPanels: Set<PanelId>;
+  pinnedPanels: Set<PanelId>;
+  onFocus: (panelId: PanelId) => void;
+  onHide: (panelId: PanelId) => void;
+  onTogglePin: (panelId: PanelId) => void;
+}
 
 export function CockpitLayout() {
   const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('fmc-focus');
+  const [focusedPanel, setFocusedPanel] = useState<PanelId | null>(null);
+  const [hiddenPanels, setHiddenPanels] = useState<Set<PanelId>>(() => new Set());
+  const [pinnedPanels, setPinnedPanels] = useState<Set<PanelId>>(() => new Set());
   const brightness = useFMCStore(s => s.brightness);
   const orientation = useOrientation();
   
@@ -19,6 +34,40 @@ export function CockpitLayout() {
   useWakeLock(true);
 
   const isNight = brightness < 40;
+  const controls: LayoutControls = {
+    hiddenPanels,
+    pinnedPanels,
+    onFocus: setFocusedPanel,
+    onHide: panelId => {
+      setFocusedPanel(current => (current === panelId ? null : current));
+      setHiddenPanels(current => new Set(current).add(panelId));
+    },
+    onTogglePin: panelId => {
+      setPinnedPanels(current => {
+        const next = new Set(current);
+        if (next.has(panelId)) {
+          next.delete(panelId);
+        } else {
+          next.add(panelId);
+          setHiddenPanels(hidden => {
+            const visible = new Set(hidden);
+            visible.delete(panelId);
+            return visible;
+          });
+        }
+        return next;
+      });
+    },
+  };
+
+  useEffect(() => {
+    const closeFocus = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFocusedPanel(null);
+    };
+
+    window.addEventListener('keydown', closeFocus);
+    return () => window.removeEventListener('keydown', closeFocus);
+  }, []);
 
   return (
     <div 
@@ -47,13 +96,33 @@ export function CockpitLayout() {
 
       {/* Main Content Area */}
       <main className="cockpit-main relative">
-        {renderLayout(layoutMode, orientation)}
+        {renderLayout(layoutMode, orientation, controls)}
+        <PanelTray
+          hiddenPanels={Array.from(hiddenPanels)}
+          onShow={panelId => {
+            setHiddenPanels(current => {
+              const next = new Set(current);
+              next.delete(panelId);
+              return next;
+            });
+          }}
+        />
       </main>
+
+      {focusedPanel && (
+        <FocusOverlay panelId={focusedPanel} onClose={() => setFocusedPanel(null)}>
+          {renderFocusedPanel(focusedPanel)}
+        </FocusOverlay>
+      )}
     </div>
   );
 }
 
-function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landscape') {
+function renderLayout(
+  mode: CockpitLayoutMode,
+  orientation: 'portrait' | 'landscape',
+  controls: LayoutControls,
+) {
   if (orientation === 'portrait') {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-4 gap-8">
@@ -77,37 +146,25 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     case 'fmc-focus':
       return (
         <div className="cockpit-stage cockpit-stage--fmc-focus">
-          <InstrumentFit target="boeingCdu">
-            <CDU />
-          </InstrumentFit>
+          {renderInstrumentPanel('cdu', controls)}
         </div>
       );
     
     case 'navigation':
       return (
         <div className="cockpit-stage cockpit-stage--navigation">
-          <InstrumentFit target="boeingNd">
-            <NavigationDisplay />
-          </InstrumentFit>
-          <InstrumentFit target="boeingCdu" preferredScale={0.9}>
-            <CDU />
-          </InstrumentFit>
+          {renderInstrumentPanel('nd', controls)}
+          {renderInstrumentPanel('cdu', controls, { preferredScale: 0.9 })}
         </div>
       );
 
     case 'automation':
       return (
         <div className="cockpit-stage cockpit-stage--automation">
-          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.9}>
-            <AutopilotTrainer />
-          </InstrumentFit>
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.9 })}
           <div className="cockpit-pfd-nd-displays">
-            <InstrumentFit target="boeingPfd">
-              <PrimaryFlightDisplay />
-            </InstrumentFit>
-            <InstrumentFit target="boeingNd">
-              <NavigationDisplay />
-            </InstrumentFit>
+            {renderInstrumentPanel('pfd', controls)}
+            {renderInstrumentPanel('nd', controls)}
           </div>
         </div>
       );
@@ -116,32 +173,20 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
       return (
         <div className="cockpit-stage cockpit-stage--approach">
           <div className="cockpit-pfd-nd-displays">
-            <InstrumentFit target="boeingPfd">
-              <PrimaryFlightDisplay />
-            </InstrumentFit>
-            <InstrumentFit target="boeingNd">
-              <NavigationDisplay />
-            </InstrumentFit>
+            {renderInstrumentPanel('pfd', controls)}
+            {renderInstrumentPanel('nd', controls)}
           </div>
-          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.9}>
-            <AutopilotTrainer />
-          </InstrumentFit>
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.9 })}
         </div>
       );
 
     case 'full-deck':
       return (
         <div className="cockpit-stage cockpit-stage--full-deck">
-          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.82}>
-            <AutopilotTrainer />
-          </InstrumentFit>
+          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot', preferredScale: 0.82 })}
           <div className="cockpit-pfd-nd-displays">
-            <InstrumentFit target="boeingPfd">
-              <PrimaryFlightDisplay />
-            </InstrumentFit>
-            <InstrumentFit target="boeingNd">
-              <NavigationDisplay />
-            </InstrumentFit>
+            {renderInstrumentPanel('pfd', controls)}
+            {renderInstrumentPanel('nd', controls)}
           </div>
         </div>
       );
@@ -149,16 +194,73 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     case 'free-practice':
       return (
         <div className="cockpit-stage cockpit-stage--free-practice">
-          <InstrumentFit target="boeingPfd" className="cockpit-split-panel">
-            <PrimaryFlightDisplay />
-          </InstrumentFit>
-          <InstrumentFit target="boeingNd" className="cockpit-split-panel">
-            <NavigationDisplay />
-          </InstrumentFit>
+          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
+          {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
         </div>
       );
 
     default:
       return <CDU />;
+  }
+}
+
+function renderInstrumentPanel(
+  panelId: PanelId,
+  controls: LayoutControls,
+  options: { className?: string; preferredScale?: number } = {},
+) {
+  if (controls.hiddenPanels.has(panelId)) return null;
+
+  return (
+    <InstrumentFit
+      target={targetForPanel(panelId)}
+      className={options.className}
+      preferredScale={options.preferredScale}
+      overlay={
+        <InstrumentHeader
+          panelId={panelId}
+          pinned={controls.pinnedPanels.has(panelId)}
+          onFocus={controls.onFocus}
+          onHide={controls.onHide}
+          onTogglePin={controls.onTogglePin}
+        />
+      }
+    >
+      {renderPanel(panelId)}
+    </InstrumentFit>
+  );
+}
+
+function renderFocusedPanel(panelId: PanelId) {
+  return (
+    <InstrumentFit target={targetForPanel(panelId)} preferredScale={panelId === 'mcp' ? 0.9 : 1}>
+      {renderPanel(panelId)}
+    </InstrumentFit>
+  );
+}
+
+function renderPanel(panelId: PanelId) {
+  switch (panelId) {
+    case 'cdu':
+      return <CDU />;
+    case 'nd':
+      return <NavigationDisplay />;
+    case 'pfd':
+      return <PrimaryFlightDisplay />;
+    case 'mcp':
+      return <AutopilotTrainer />;
+  }
+}
+
+function targetForPanel(panelId: PanelId) {
+  switch (panelId) {
+    case 'cdu':
+      return 'boeingCdu';
+    case 'nd':
+      return 'boeingNd';
+    case 'pfd':
+      return 'boeingPfd';
+    case 'mcp':
+      return 'boeingMcp';
   }
 }

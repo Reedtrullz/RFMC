@@ -6,6 +6,7 @@ interface InstrumentFitProps {
   target: InstrumentTarget;
   preferredScale?: number;
   className?: string;
+  overlay?: ReactNode;
 }
 
 interface Size {
@@ -20,6 +21,7 @@ export function InstrumentFit({
   target,
   preferredScale = 1,
   className = '',
+  overlay,
 }: InstrumentFitProps) {
   const slotRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -98,6 +100,7 @@ export function InstrumentFit({
           {children}
         </div>
       </div>
+      {overlay}
     </div>
   );
 }
