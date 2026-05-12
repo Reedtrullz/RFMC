@@ -7,8 +7,8 @@ This file records measured baselines and phase gates. Do not present estimated s
 | Metric | Command or method | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing |
-| Unit tests | `npm test -- --run` | 101/101 passing |
-| E2E tests | `npm run test:e2e` | 11/11 passing |
+| Unit tests | `npm test -- --run` | 112/112 passing |
+| E2E tests | `npm run test:e2e` | 15/15 passing |
 | Build | `npm run build` | Passing |
 | Audit | `npm audit` | 2 deferred moderate dev-dependency issues |
 | Baseline screenshots | `npm run capture:baseline` | Script added; run output is under Playwright test-results |
