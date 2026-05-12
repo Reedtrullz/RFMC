@@ -234,7 +234,16 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
   if (mapped === step.expectedAction || step.expectedAction === key) {
     state.advanceTutorial();
   } else {
-    state.recordTutorialError();
+    // Check if the key is an alphanumeric/editing key
+    const isAlphaNumeric = /^[A-Z0-9]$/.test(key) || 
+      ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
+
+    // Only record an error if it's NOT an alphanumeric key.
+    // Alphanumeric keys are usually intermediate scratchpad input.
+    // Legitimate errors for these are caught in pressLSK when the user tries to submit.
+    if (!isAlphaNumeric) {
+      state.recordTutorialError();
+    }
   }
 }
 
