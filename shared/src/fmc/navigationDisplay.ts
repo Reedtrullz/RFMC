@@ -1,6 +1,10 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
+import { projectGeoPointToND } from './ndProjection';
 
-export type NDMapMode = 'MAP' | 'PLAN' | 'APP' | 'VOR' | 'ROSE' | 'ARC';
+export type NDMapMode = 
+  | 'MAP' | 'PLN' | 'APP' | 'VOR' // Boeing
+  | 'ROSE_NAV' | 'ARC' | 'PLAN' | 'ROSE_ILS' | 'ROSE_VOR'; // Airbus
+
 export type NDRange = 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
 
 export interface NDAnchorZones {
@@ -103,10 +107,27 @@ export function buildNavigationDisplayModel(
   const activeIndex = findActiveRouteIndex(routeItems, state.route.directTo);
   
   // Projection based on mode
-  const isPlanMode = resolvedEfis.mode === 'PLAN';
-  const routePoints = routeItems.map((item, index) => 
-    projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, resolvedEfis.centered)
-  );
+  const isPlanMode = resolvedEfis.mode === 'PLAN' || resolvedEfis.mode === 'PLN';
+  
+  const aircraftPos = state.aircraftState?.position || { lat: 52.3, lon: 4.7 }; // Default EHAM
+  const heading = state.aircraftState?.heading || 0;
+
+  const routePoints = routeItems.map((item, index) => {
+    let projected = null;
+    if (item.lat !== undefined && item.lon !== undefined) {
+      projected = projectGeoPointToND(
+        { lat: item.lat, lon: item.lon },
+        aircraftPos,
+        heading,
+        resolvedEfis.range,
+        isPlanMode,
+        resolvedEfis.centered
+      );
+    }
+    
+    // Fallback to synthetic projection if no lat/lon or projection failed
+    return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, resolvedEfis.centered, projected);
+  });
 
   const routeSegments = routePoints.slice(1).map((point, index) => ({
     from: routePoints[index],
@@ -125,7 +146,7 @@ export function buildNavigationDisplayModel(
     if (resolvedEfis.range > 40) visibleOverlays.sta = false; // Simplified: only high-alt VORs at >40nm
   }
 
-  const fixOverlays = visibleOverlays.fix ? buildFixOverlays(state, routePoints, activePoint) : [];
+  const fixOverlays = buildFixOverlays(state, routePoints, activePoint);
   const anchorZones = buildAnchorZones(state, resolvedEfis);
 
   return {
@@ -139,9 +160,9 @@ export function buildNavigationDisplayModel(
     routePoints: routePoints.filter(p => isPointVisible(p, resolvedEfis, visibleOverlays)),
     routeSegments,
     fixOverlays,
-    holdOverlay: visibleOverlays.hold ? buildHoldOverlay(state, routePoints, activePoint) : null,
-    tcasTargets: visibleOverlays.tfc ? buildTCASTargets(state, resolvedEfis) : [],
-    wxrData: visibleOverlays.wxr ? buildWXRData(state, resolvedEfis) : null,
+    holdOverlay: buildHoldOverlay(state, routePoints, activePoint),
+    tcasTargets: buildTCASTargets(state, resolvedEfis),
+    wxrData: buildWXRData(state, resolvedEfis),
     verticalProfilePoints: buildVerticalProfilePoints(state, routePoints, activeIndex),
     anchorZones,
     overlays: visibleOverlays,
@@ -151,6 +172,8 @@ export function buildNavigationDisplayModel(
 }
 
 function buildTCASTargets(state: FMCState, efis: EFISState): TCASTarget[] {
+  if (!state.demoMode && !state.tutorialActive) return [];
+  if (!efis.overlays.tfc) return [];
   const cy = efis.centered ? 50 : 84;
   return [
     { id: 'T1', x: 45, y: cy - 25, relativeAltitude: 12, trend: 'climb', threatLevel: 'proximate' },
@@ -159,7 +182,9 @@ function buildTCASTargets(state: FMCState, efis: EFISState): TCASTarget[] {
   ];
 }
 
-function buildWXRData(state: FMCState, efis: EFISState): WXRData {
+function buildWXRData(state: FMCState, efis: EFISState): WXRData | null {
+  if (!state.demoMode && !state.tutorialActive) return null;
+  if (!efis.overlays.wxr) return null;
   const cy = efis.centered ? 50 : 84;
   return {
     intensity: 'medium',
@@ -172,6 +197,7 @@ function buildWXRData(state: FMCState, efis: EFISState): WXRData {
 }
 
 function buildVerticalProfilePoints(state: FMCState, routePoints: NDRoutePoint[], activeIndex: number): VerticalProfilePoint[] {
+  if (!state.demoMode && !state.tutorialActive) return [];
   if (routePoints.length < 2 || activeIndex < 0) return [];
   const activePoint = routePoints[activeIndex];
   const nextPoint = routePoints[activeIndex + 1];
@@ -194,7 +220,7 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
     range: 40,
     overlays: {
       fix: true, hold: true, wpt: true, arpt: true, sta: true, 
-      data: false, pos: false, terr: false, wxr: false, tfc: true
+      data: true, pos: false, terr: false, wxr: false, tfc: true
     },
     centered: false,
     side,
@@ -203,6 +229,8 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
 
 interface RouteItem {
   ident: string;
+  lat?: number;
+  lon?: number;
   discontinuity: boolean;
   airport: boolean;
   navaid?: boolean;
@@ -221,6 +249,8 @@ function buildRouteItems(state: FMCState): RouteItem[] {
   for (const waypoint of flightPlan.waypoints) {
     points.push({
       ident: waypoint.ident,
+      lat: waypoint.lat,
+      lon: waypoint.lon,
       discontinuity: waypoint.discontinuity,
       airport: isAirportWaypoint(waypoint, destination),
       altitudeLabel: formatAltitudeConstraint(waypoint),
@@ -246,7 +276,30 @@ function findActiveRouteIndex(routeItems: RouteItem[], directTo?: string): numbe
   return routeItems.findIndex(item => !item.discontinuity && !item.airport);
 }
 
-function projectRoutePoint(item: RouteItem, index: number, total: number, isPlan: boolean, active: boolean, centered: boolean): NDRoutePoint {
+function projectRoutePoint(
+  item: RouteItem, 
+  index: number, 
+  total: number, 
+  isPlan: boolean, 
+  active: boolean, 
+  centered: boolean,
+  projected: { x: number, y: number } | null
+): NDRoutePoint {
+  if (projected) {
+    return {
+      id: `${item.ident}-${index}`,
+      label: item.discontinuity ? 'DISCO' : item.ident,
+      altitudeLabel: item.discontinuity ? null : item.altitudeLabel,
+      speedLabel: item.discontinuity ? null : item.speedLabel,
+      x: projected.x,
+      y: projected.y,
+      active,
+      discontinuity: item.discontinuity,
+      airport: item.airport,
+      navaid: item.navaid,
+    };
+  }
+
   const progress = total <= 1 ? 0.5 : index / (total - 1);
   
   let x: number, y: number;

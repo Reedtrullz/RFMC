@@ -266,6 +266,7 @@ export interface FMCState {
   pageHistory: PageType[];
   scratchpad: string;
   scratchpadError: string | null;
+  demoMode: boolean;
   
   ident: IdentData;
   position: PositionData;

@@ -2,8 +2,20 @@ import { NavigationDisplayModel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 
 const RANGES = [5, 10, 20, 40, 80, 160, 320, 640];
-const BOEING_MODES = ['APP', 'VOR', 'MAP', 'PLAN'];
-const AIRBUS_MODES = ['ROSE', 'ARC', 'PLAN'];
+const BOEING_MODES = [
+  { label: 'APP', value: 'APP' },
+  { label: 'VOR', value: 'VOR' },
+  { label: 'MAP', value: 'MAP' },
+  { label: 'PLN', value: 'PLN' },
+];
+
+const AIRBUS_MODES = [
+  { label: 'ROSE NAV', value: 'ROSE_NAV' },
+  { label: 'ARC', value: 'ARC' },
+  { label: 'PLAN', value: 'PLAN' },
+  { label: 'ROSE ILS', value: 'ROSE_ILS' },
+  { label: 'ROSE VOR', value: 'ROSE_VOR' },
+];
 
 interface NDControlsProps {
   model: NavigationDisplayModel;
@@ -21,11 +33,11 @@ export function NDControls({ model, side }: NDControlsProps) {
         <div className="flex gap-0.5" aria-label="Mode Selector">
           {modes.map(m => (
             <button
-              key={m}
-              onClick={() => state.setNDMode(side, m)}
-              className={`px-2 py-1 text-[9px] font-bold tracking-tighter transition-all ${efis.mode === m ? 'bg-cdu-cyan text-black' : 'bg-black/40 text-cdu-cyan/60 hover:text-cdu-cyan'}`}
+              key={m.value}
+              onClick={() => state.setNDMode(side, m.value as any)}
+              className={`px-2 py-1 text-[8px] font-bold tracking-tighter transition-all ${efis.mode === m.value ? 'bg-cdu-cyan text-black' : 'bg-black/40 text-cdu-cyan/60 hover:text-cdu-cyan'}`}
             >
-              {m}
+              {m.label}
             </button>
           ))}
         </div>

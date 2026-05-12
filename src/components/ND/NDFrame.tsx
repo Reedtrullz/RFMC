@@ -7,13 +7,6 @@ interface NDFrameProps {
 }
 
 export function NDFrame({ model, children }: NDFrameProps) {
-  const colors = {
-    background: '#070909',
-    text: model.style === 'airbus' ? '#00ff00' : '#00d0ff',
-    warning: '#ffcc00',
-    active: model.style === 'airbus' ? '#ffffff' : '#39ff14',
-  };
-
   return (
     <div className={`relative aspect-square flex-1 overflow-hidden rounded-[2px] bg-black ring-1 ring-white/5 ${model.style === 'airbus' ? 'shadow-[inset_0_0_40px_rgba(34,197,94,0.05)]' : ''}`}>
       <svg viewBox="0 0 100 100" className="h-full w-full font-cdu select-none">
@@ -30,32 +23,10 @@ export function NDFrame({ model, children }: NDFrameProps) {
           </filter>
         </defs>
 
-        <rect width="100" height="100" fill={colors.background} />
+        <rect width="100" height="100" fill="#070909" />
         
-        {/* Shared Background Layers */}
-        <g opacity="0.4">
-          <RangeRings range={model.range} centered={model.centered} color={model.style === 'airbus' ? '#004400' : '#003344'} />
-          <HeadingRose centered={model.centered} />
-        </g>
-
-        {/* Dynamic Content (Aircraft Specific Renderers) */}
+        {/* Children slot (A320ND or B737ND) */}
         {children}
-
-        {/* Advanced Overlays */}
-        <WXROverlay data={model.wxrData} />
-        <VerticalProfileOverlay points={model.verticalProfilePoints} />
-        <TCASOverlay targets={model.tcasTargets} />
-
-        {/* Shared Foreground Overlays (Anchor Zones) */}
-        <NDAnchorZones model={model} colors={colors} />
-
-        {/* Aircraft Symbol */}
-        <AircraftSymbol centered={model.centered} color={colors.active} style={model.style} />
-
-        {/* MOD Annunciation */}
-        {model.isModified && (
-          <text x="50" y="92" textAnchor="middle" fill="#00ffff" fontSize="4" fontWeight="bold" filter="url(#glow)">MOD</text>
-        )}
       </svg>
       
       {/* CRT Scanline Overlay for Airbus */}
@@ -65,6 +36,9 @@ export function NDFrame({ model, children }: NDFrameProps) {
     </div>
   );
 }
+
+// Re-export shared primitives for use in specific renderers
+export { TCASOverlay, WXROverlay, VerticalProfileOverlay, RangeRings, HeadingRose, AircraftSymbol, NDAnchorZones };
 
 function TCASOverlay({ targets }: { targets: any[] }) {
   return (

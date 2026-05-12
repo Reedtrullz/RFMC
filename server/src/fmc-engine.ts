@@ -38,6 +38,7 @@ export class FMCEngine {
       pageHistory: [],
       scratchpad: '',
       scratchpadError: null,
+      demoMode: true,
       ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
       position: { refAirport: '', gate: '' },
       performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },

@@ -7,6 +7,7 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
     pageHistory: [],
     scratchpad: '',
     scratchpadError: null,
+    demoMode: false,
     ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
     position: { refAirport: '', gate: '' },
     performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },

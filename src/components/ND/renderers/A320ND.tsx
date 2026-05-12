@@ -1,4 +1,8 @@
 import { NavigationDisplayModel } from '@shared';
+import { 
+  RangeRings, HeadingRose, AircraftSymbol, NDAnchorZones, 
+  TCASOverlay, WXROverlay, VerticalProfileOverlay 
+} from '../NDFrame';
 
 interface A320NDProps {
   model: NavigationDisplayModel;
@@ -10,14 +14,44 @@ export function A320ND({ model }: A320NDProps) {
     text: '#ffffff', // Airbus White labels
     warning: '#ffcc00',
     magenta: '#ff00ff', // Constraint / Deviation
+    temporary: '#ffff00', // Yellow dashed
   };
+
+  const isArc = model.mode === 'ARC';
+  const isPlan = model.mode === 'PLAN';
+  const isRose = model.mode.startsWith('ROSE');
 
   return (
     <g data-testid="a320-nd-renderer" filter="url(#glow)">
+      {/* Background Layers */}
+      <g opacity="0.4">
+        <RangeRings range={model.range} centered={!isArc} color="#004400" />
+        <HeadingRose centered={!isArc} />
+      </g>
+
       {/* Procedure Label */}
-      <text x="4" y="15" fill={colors.active} fontSize="3.5" fontWeight="bold" opacity="0.8">
+      <text x="50" y="15" fill={colors.active} fontSize="3.8" fontWeight="bold" textAnchor="middle" opacity="0.8">
         {model.procedureLabel}
       </text>
+
+      {/* Legend Left */}
+      <g transform="translate(4 25)" fontSize="2.8" fill={colors.active} fontWeight="bold">
+        <text>ARPT</text>
+        <text y="4">STA</text>
+        <text y="8">WPT</text>
+        <text y="12" fill={colors.magenta}>CSTR</text>
+      </g>
+
+      {/* Source Bottom */}
+      <g transform="translate(4 94)" fontSize="3.2" fill={colors.active} fontWeight="bold">
+        <text>FMC L</text>
+      </g>
+
+      {/* ANP/RNP Bottom Right */}
+      <g transform="translate(96 94)" textAnchor="end" fontSize="2.8" fill={colors.text}>
+        <text>ANP 0.05</text>
+        <text x="-12" fill={colors.active}>RNP 0.10</text>
+      </g>
 
       {/* Route Segments */}
       {model.routeSegments.map((segment, i) => (
@@ -25,7 +59,7 @@ export function A320ND({ model }: A320NDProps) {
           key={`seg-${i}`}
           x1={segment.from.x} y1={segment.from.y}
           x2={segment.to.x} y2={segment.to.y}
-          stroke={colors.active}
+          stroke={segment.modified ? colors.temporary : colors.active}
           strokeWidth={segment.active ? '1.8' : '1.2'}
           strokeDasharray={segment.dashed ? '2 2' : (segment.modified ? '4 2' : undefined)}
           opacity={segment.active ? 1.0 : 0.7}
@@ -48,14 +82,6 @@ export function A320ND({ model }: A320NDProps) {
           <text x="3" y="1" fill={colors.text} fontSize="3.2" fontWeight="normal">
             {point.label}
           </text>
-          <g fontSize="2.4">
-            {point.speedLabel && (
-              <text x="3" y="4.5" fill={colors.magenta}>{point.speedLabel}</text>
-            )}
-            {point.altitudeLabel && (
-              <text x="3" y={point.speedLabel ? 7.5 : 4.5} fill={colors.magenta}>{point.altitudeLabel}</text>
-            )}
-          </g>
         </g>
       ))}
 
@@ -72,6 +98,17 @@ export function A320ND({ model }: A320NDProps) {
           <path d="M-8 0 A8 4 0 1 1 8 0 A8 4 0 1 1 -8 0" fill="none" stroke={colors.active} strokeWidth="0.8" transform={`rotate(${model.holdOverlay.inboundCourse})`} />
         </g>
       )}
+
+      {/* Overlays */}
+      <WXROverlay data={model.wxrData} />
+      <VerticalProfileOverlay points={model.verticalProfilePoints} />
+      <TCASOverlay targets={model.tcasTargets} />
+      
+      {/* Anchor Zones */}
+      <NDAnchorZones model={model} colors={{ ...colors, background: '#070909' }} />
+
+      {/* Aircraft Symbol */}
+      <AircraftSymbol centered={!isArc} color={colors.active} style="airbus" />
     </g>
   );
 }

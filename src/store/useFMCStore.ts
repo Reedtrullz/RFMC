@@ -33,7 +33,7 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
     range: 40,
     overlays: {
       fix: true, hold: true, wpt: true, arpt: true, sta: true,
-      data: false, pos: false, terr: false, wxr: false, tfc: true
+      data: true, pos: false, terr: false, wxr: false, tfc: true
     },
     centered: false,
     side,
@@ -46,6 +46,7 @@ const defaultState = {
   pageHistory: [] as PageType[],
   scratchpad: '',
   scratchpadError: null as string | null,
+  demoMode: true,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: { refAirport: '', gate: '' },
