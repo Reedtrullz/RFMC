@@ -1,13 +1,19 @@
 import { MockSimConnectAdapter } from './mock-simconnect';
-import { PMDG737Adapter } from './pmdg-737';
 import type { IAircraftAdapter } from './IAircraftAdapter';
 
 export type AircraftAdapterKind = 'pmdg' | 'mock';
 
-export function createAircraftAdapter(kind = process.env.AIRCRAFT_ADAPTER || 'pmdg'): IAircraftAdapter {
+export function createAircraftAdapter(kind = process.env.AIRCRAFT_ADAPTER || 'mock'): IAircraftAdapter {
   const normalized = kind.trim().toLowerCase();
   if (normalized === 'mock' || normalized === 'mock-simconnect') {
     return new MockSimConnectAdapter();
   }
-  return new PMDG737Adapter();
+
+  if (normalized === 'pmdg' || normalized === 'pmdg-737') {
+    throw new Error(
+      'PMDG adapter is only supported in a Windows/MSFS bridge environment. Use AIRCRAFT_ADAPTER=mock on CI and VPS deployments.',
+    );
+  }
+
+  throw new Error(`Unsupported AIRCRAFT_ADAPTER: ${kind}`);
 }

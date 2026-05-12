@@ -7,15 +7,26 @@ export class LessonProgressManager {
     this.load();
   }
 
+  private getStorage(): Storage | null {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  }
+
   private load() {
-    const saved = localStorage.getItem('rfms_training_progress');
-    if (saved) {
+    const storage = this.getStorage();
+    const saved = storage?.getItem('rfms_training_progress');
+    if (!saved) {
+      return;
+    }
+
+    try {
       this.progress = JSON.parse(saved);
+    } catch {
+      this.progress = {};
     }
   }
 
   private save() {
-    localStorage.setItem('rfms_training_progress', JSON.stringify(this.progress));
+    this.getStorage()?.setItem('rfms_training_progress', JSON.stringify(this.progress));
   }
 
   getProgress(scenarioId: string): LessonProgress {
