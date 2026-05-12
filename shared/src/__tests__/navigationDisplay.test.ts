@@ -44,9 +44,9 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.routePoints.map(point => point.label)).toEqual(['KJFK', 'RBV', 'DIXIE', 'KDCA']);
-    expect(model.routeSegments).toHaveLength(3);
-    expect(model.routePoints[1].active).toBe(true);
+    expect(model.activeRoutePoints.map(point => point.label)).toEqual(['KJFK', 'RBV', 'DIXIE', 'KDCA']);
+    expect(model.activeRouteSegments).toHaveLength(3);
+    expect(model.activeRoutePoints[1].active).toBe(true);
   });
 
   it('preserves route discontinuities as dashed ND segments', () => {
@@ -65,8 +65,8 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.routePoints.some(point => point.discontinuity)).toBe(true);
-    expect(model.routeSegments.some(segment => segment.dashed)).toBe(true);
+    expect(model.activeRoutePoints.some(point => point.discontinuity)).toBe(true);
+    expect(model.activeRouteSegments.some(segment => segment.dashed)).toBe(true);
   });
 
   it('creates hold and fix overlays from FMC state', () => {
@@ -134,11 +134,11 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.routePoints.find(point => point.label === 'RBV')).toMatchObject({
+    expect(model.activeRoutePoints.find(point => point.label === 'RBV')).toMatchObject({
       speedLabel: '250',
       altitudeLabel: '10000A',
     });
-    expect(model.routePoints.find(point => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
+    expect(model.activeRoutePoints.find(point => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
   });
 
   it('uses direct-to route state as the active ND target', () => {
@@ -159,9 +159,9 @@ describe('Navigation Display model', () => {
     });
 
     expect(model.procedureLabel).toContain('DIR DIXIE');
-    expect(model.routePoints.find(point => point.label === 'RBV')?.active).toBe(false);
-    expect(model.routePoints.find(point => point.label === 'DIXIE')?.active).toBe(true);
-    expect(model.routeSegments.find(segment => segment.to.label === 'DIXIE')?.active).toBe(true);
+    expect(model.activeRoutePoints.find(point => point.label === 'RBV')?.active).toBe(false);
+    expect(model.activeRoutePoints.find(point => point.label === 'DIXIE')?.active).toBe(true);
+    expect(model.activeRouteSegments.find(segment => segment.to.label === 'DIXIE')?.active).toBe(true);
   });
 
   it('does not show constraints for discontinuity markers', () => {
@@ -183,7 +183,7 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.routePoints.find(point => point.discontinuity)).toMatchObject({
+    expect(model.activeRoutePoints.find(point => point.discontinuity)).toMatchObject({
       speedLabel: null,
       altitudeLabel: null,
     });
@@ -192,8 +192,8 @@ describe('Navigation Display model', () => {
   it('returns a valid empty ND model without route data', () => {
     const model = buildNavigationDisplayModel(baseState);
 
-    expect(model.routePoints).toEqual([]);
-    expect(model.routeSegments).toEqual([]);
+    expect(model.activeRoutePoints).toEqual([]);
+    expect(model.activeRouteSegments).toEqual([]);
     expect(model.procedureLabel).toBe('NO PROC');
     expect(model.range).toBe(40);
   });
@@ -211,9 +211,9 @@ describe('Navigation Display model', () => {
       },
     };
     const model = buildNavigationDisplayModel(stateWithGeo);
-    expect(model.routePoints.some(p => p.label === 'WPT1')).toBe(true);
-    expect(model.routePoints.some(p => p.label === 'WPT2')).toBe(false);
-    expect(model.routeSegments.length).toBe(0); // The segment connects visible to clipped, so it's omitted
+    expect(model.activeRoutePoints.some(p => p.label === 'WPT1')).toBe(true);
+    expect(model.activeRoutePoints.some(p => p.label === 'WPT2')).toBe(false);
+    expect(model.activeRouteSegments.length).toBe(0); // The segment connects visible to clipped, so it's omitted
   });
 
   it('includes relativeBearingDeg on geo-projected points', () => {
@@ -226,7 +226,7 @@ describe('Navigation Display model', () => {
       },
     };
     const model = buildNavigationDisplayModel(stateWithGeo);
-    const p1 = model.routePoints[0];
+    const p1 = model.activeRoutePoints[0];
     expect(p1.bearingDeg).toBeCloseTo(0, 0);
     expect(p1.relativeBearingDeg).toBe(-90); // North (0) relative to heading 90
   });
@@ -252,9 +252,9 @@ describe('Navigation Display model', () => {
       ...baseState,
       flightPlan: { ...baseState.flightPlan, origin: 'KJFK', destination: 'KDCA', waypoints: [] },
     });
-    expect(model.routePoints[0].label).toBe('KJFK');
-    expect(model.routePoints[1].label).toBe('KDCA');
-    expect(model.routePoints[1].active).toBe(true);
+    expect(model.activeRoutePoints[0].label).toBe('KJFK');
+    expect(model.activeRoutePoints[1].label).toBe('KDCA');
+    expect(model.activeRoutePoints[1].active).toBe(true);
   });
 
   it('sets centered correctly for Boeing modes', () => {
@@ -281,5 +281,35 @@ describe('Navigation Display model', () => {
     const modelRoseNav = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'ROSE_NAV', centered: false });
     expect(modelRoseNav.centered).toBe(true);
   });
+
+  it('provides both active and pending routes when modified', () => {
+    const model = buildNavigationDisplayModel({
+      ...baseState,
+      isModified: true,
+      flightPlan: {
+        origin: 'KJFK', destination: 'KDCA', flightNumber: '', route: '',
+        waypoints: [{ ident: 'WPT1', discontinuity: false }]
+      },
+      route: { ...baseState.route },
+      pendingFlightPlan: {
+        origin: 'KJFK', destination: 'KDCA', flightNumber: '', route: '',
+        waypoints: [
+          { ident: 'WPT1', discontinuity: false },
+          { ident: 'WPT2', discontinuity: false } // Added in pending
+        ]
+      },
+      pendingRoute: { ...baseState.route }
+    });
+
+    expect(model.activeRoutePoints.length).toBeGreaterThan(0);
+    expect(model.pendingRoutePoints.length).toBeGreaterThan(0);
+    
+    expect(model.activeRoutePoints.some(p => p.label === 'WPT2')).toBe(false);
+    expect(model.pendingRoutePoints.some(p => p.label === 'WPT2')).toBe(true);
+    
+    // Pending segments should have the modified flag
+    expect(model.pendingRouteSegments.every(s => s.modified)).toBe(true);
+  });
 });
+
 

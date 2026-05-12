@@ -40,22 +40,35 @@ export function B737ND({ model }: B737NDProps) {
         {model.procedureLabel}
       </text>
 
-      {/* Route Segments */}
-      {model.routeSegments.map((segment, i) => (
+      {/* Active Route Segments */}
+      {model.activeRouteSegments.map((segment, i) => (
         <line
-          key={`seg-${i}`}
+          key={`active-seg-${i}`}
           x1={segment.from.x} y1={segment.from.y}
           x2={segment.to.x} y2={segment.to.y}
-          stroke={segment.modified ? colors.modified : (isMap ? colors.magenta : colors.active)}
+          stroke={isMap ? colors.magenta : colors.active}
           strokeWidth={segment.active ? '1.8' : '1.2'}
-          strokeDasharray={segment.dashed ? '2 2' : segment.modified ? '4 2' : undefined}
+          strokeDasharray={segment.dashed ? '2 2' : undefined}
           opacity={0.9}
         />
       ))}
 
-      {/* Waypoints & Labels */}
-      {model.routePoints.map(point => (
-        <g key={point.id} transform={`translate(${point.x} ${point.y})`}>
+      {/* Pending Route Segments */}
+      {model.pendingRouteSegments.map((segment, i) => (
+        <line
+          key={`pending-seg-${i}`}
+          x1={segment.from.x} y1={segment.from.y}
+          x2={segment.to.x} y2={segment.to.y}
+          stroke={colors.modified}
+          strokeWidth="1.2"
+          strokeDasharray={segment.dashed ? '2 2' : '4 2'}
+          opacity={0.9}
+        />
+      ))}
+
+      {/* Active Waypoints & Labels */}
+      {model.activeRoutePoints.map(point => (
+        <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
           {point.discontinuity ? (
             <path d="M-2-2L2 2M2-2L-2 2" stroke="#ffaa00" strokeWidth="1" />
           ) : (
@@ -77,6 +90,23 @@ export function B737ND({ model }: B737NDProps) {
               {point.altitudeLabel && <text y={point.speedLabel ? 3 : 0}>{point.altitudeLabel}</text>}
             </g>
           )}
+        </g>
+      ))}
+
+      {/* Pending Waypoints & Labels */}
+      {model.pendingRoutePoints.map(point => (
+        <g key={`pending-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
+          {!point.discontinuity && (
+            <path
+              d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
+              fill="none"
+              stroke={colors.modified}
+              strokeWidth="0.8"
+            />
+          )}
+          <text x="3" y="1" fill={colors.modified} fontSize="3.2" fontWeight="bold">
+            {point.label}
+          </text>
         </g>
       ))}
 

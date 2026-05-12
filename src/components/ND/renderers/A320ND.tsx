@@ -54,22 +54,35 @@ export function A320ND({ model }: A320NDProps) {
         <text x="-12" fill={colors.active}>RNP 0.10</text>
       </g>
 
-      {/* Route Segments */}
-      {model.routeSegments.map((segment, i) => (
+      {/* Active Route Segments */}
+      {model.activeRouteSegments.map((segment, i) => (
         <line
-          key={`seg-${i}`}
+          key={`active-seg-${i}`}
           x1={segment.from.x} y1={segment.from.y}
           x2={segment.to.x} y2={segment.to.y}
-          stroke={segment.modified ? colors.temporary : colors.active}
+          stroke={colors.active}
           strokeWidth={segment.active ? '1.8' : '1.2'}
-          strokeDasharray={segment.dashed ? '2 2' : (segment.modified ? '4 2' : undefined)}
+          strokeDasharray={segment.dashed ? '2 2' : undefined}
           opacity={segment.active ? 1.0 : 0.7}
         />
       ))}
 
-      {/* Waypoints & Labels */}
-      {model.routePoints.map(point => (
-        <g key={point.id} transform={`translate(${point.x} ${point.y})`}>
+      {/* Pending Route Segments */}
+      {model.pendingRouteSegments.map((segment, i) => (
+        <line
+          key={`pending-seg-${i}`}
+          x1={segment.from.x} y1={segment.from.y}
+          x2={segment.to.x} y2={segment.to.y}
+          stroke={colors.temporary}
+          strokeWidth="1.5"
+          strokeDasharray={segment.dashed ? '2 2' : '4 2'}
+          opacity="0.9"
+        />
+      ))}
+
+      {/* Active Waypoints & Labels */}
+      {model.activeRoutePoints.map(point => (
+        <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
           {point.discontinuity ? (
             <path d="M-2-2L2 2M2-2L-2 2" stroke="#ffaa00" strokeWidth="1" />
           ) : (
@@ -95,6 +108,23 @@ export function A320ND({ model }: A320NDProps) {
               )}
             </g>
           )}
+        </g>
+      ))}
+
+      {/* Pending Waypoints & Labels */}
+      {model.pendingRoutePoints.map(point => (
+        <g key={`pending-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
+          {!point.discontinuity && (
+            <path
+              d={point.airport ? 'M-2.5 0 L0 -2.5 L2.5 0 L0 2.5 Z' : 'M-2 0 L0 -2 L2 0 L0 2 Z'}
+              fill="none"
+              stroke={colors.temporary}
+              strokeWidth="0.8"
+            />
+          )}
+          <text x="3" y="1" fill={colors.text} fontSize="3.2" fontWeight="normal">
+            {point.label}
+          </text>
         </g>
       ))}
 

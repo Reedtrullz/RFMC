@@ -90,8 +90,10 @@ export interface NavigationDisplayModel {
   origin: string;
   destination: string;
   procedureLabel: string;
-  routePoints: NDRoutePoint[];
-  routeSegments: NDRouteSegment[];
+  activeRoutePoints: NDRoutePoint[];
+  activeRouteSegments: NDRouteSegment[];
+  pendingRoutePoints: NDRoutePoint[];
+  pendingRouteSegments: NDRouteSegment[];
   fixOverlays: NDFixOverlay[];
   holdOverlay: NDHoldOverlay | null;
   tcasTargets: TCASTarget[];
@@ -111,9 +113,15 @@ export function buildNavigationDisplayModel(
   const resolvedEfis = efis || createDefaultEFIS(state.aircraft, 'L');
   const isCentered = isDisplayCentered(aircraftStyle, resolvedEfis.mode, resolvedEfis.centered);
 
-  const routeItems = buildRouteItems(state);
-  const activeIndex = findActiveRouteIndex(routeItems, state.route.directTo);
-  
+  const activeRouteItems = buildRouteItems(state.flightPlan, state.route);
+  const hasPending = state.isModified && !!state.pendingFlightPlan && !!state.pendingRoute;
+  const pendingRouteItems = hasPending ? buildRouteItems(state.pendingFlightPlan!, state.pendingRoute!) : [];
+
+  // Determine what drives the display logic (center, active waypoint, etc.)
+  const primaryRouteItems = hasPending ? pendingRouteItems : activeRouteItems;
+  const primaryRoute = hasPending ? state.pendingRoute! : state.route;
+  const primaryActiveIndex = findActiveRouteIndex(primaryRouteItems, primaryRoute.directTo);
+
   // Projection based on mode
   const isPlanMode = resolvedEfis.mode === 'PLAN' || resolvedEfis.mode === 'PLN';
   
@@ -121,7 +129,7 @@ export function buildNavigationDisplayModel(
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
-  const activeItem = routeItems[activeIndex];
+  const activeItem = primaryRouteItems[primaryActiveIndex];
   const planCenter = (isPlanMode && activeItem?.lat !== undefined && activeItem?.lon !== undefined)
     ? { lat: activeItem.lat, lon: activeItem.lon }
     : aircraftPos;
@@ -136,34 +144,6 @@ export function buildNavigationDisplayModel(
     planCenter
   };
 
-  const routePoints = routeItems.map((item, index) => {
-    let projected: ProjectedNDPoint | null = null;
-    if (item.lat !== undefined && item.lon !== undefined) {
-      projected = projectGeoPointToND(
-        { lat: item.lat, lon: item.lon },
-        projectionContext
-      );
-    }
-    
-    // Fallback to synthetic projection if no lat/lon or projection failed
-    return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex, isCentered, projected);
-  });
-
-  const routeSegments = routePoints.slice(1).map((point, index) => {
-    const from = routePoints[index];
-    const to = point;
-    return {
-      from,
-      to,
-      dashed: from.discontinuity || to.discontinuity,
-      active: to.active && !state.isModified,
-      modified: state.isModified && (to.active || index >= activeIndex),
-      visible: from.visible && to.visible, // Only show segments with both ends visible
-    };
-  }).filter(s => s.visible);
-
-  const activePoint = routePoints[activeIndex] || routePoints.find(p => !p.discontinuity);
-  
   // Range gating logic
   const visibleOverlays = { ...resolvedEfis.overlays };
   if (aircraftStyle === 'boeing') {
@@ -171,8 +151,16 @@ export function buildNavigationDisplayModel(
     if (resolvedEfis.range > 40) visibleOverlays.sta = false; // Simplified: only high-alt VORs at >40nm
   }
 
-  const fixOverlays = buildFixOverlays(state, routePoints, activePoint);
-  const anchorZones = buildAnchorZones(state, resolvedEfis, activeIndex, routeItems);
+  const activeRouteData = processRoute(activeRouteItems, state.route.directTo, false, projectionContext, isPlanMode, isCentered, resolvedEfis, visibleOverlays);
+  const pendingRouteData = hasPending 
+    ? processRoute(pendingRouteItems, state.pendingRoute!.directTo, true, projectionContext, isPlanMode, isCentered, resolvedEfis, visibleOverlays)
+    : { points: [], segments: [] };
+
+  const primaryPointsForOverlays = hasPending ? pendingRouteData.points : activeRouteData.points;
+  const activePointForOverlays = primaryPointsForOverlays[primaryActiveIndex] || primaryPointsForOverlays.find(p => !p.discontinuity);
+
+  const fixOverlays = buildFixOverlays(state, primaryPointsForOverlays, activePointForOverlays);
+  const anchorZones = buildAnchorZones(state, resolvedEfis, primaryActiveIndex, primaryRouteItems);
 
   return {
     aircraft: state.aircraft,
@@ -182,13 +170,15 @@ export function buildNavigationDisplayModel(
     origin: state.flightPlan.origin || state.route.origin || '',
     destination: state.flightPlan.destination || state.route.destination || '',
     procedureLabel: formatProcedureLabel(state),
-    routePoints: routePoints.filter(p => isPointVisible(p, resolvedEfis, visibleOverlays)),
-    routeSegments,
+    activeRoutePoints: activeRouteData.points,
+    activeRouteSegments: activeRouteData.segments,
+    pendingRoutePoints: pendingRouteData.points,
+    pendingRouteSegments: pendingRouteData.segments,
     fixOverlays,
-    holdOverlay: buildHoldOverlay(state, routePoints, activePoint),
+    holdOverlay: buildHoldOverlay(state, primaryPointsForOverlays, activePointForOverlays),
     tcasTargets: buildTCASTargets(state, resolvedEfis, isCentered),
     wxrData: buildWXRData(state, resolvedEfis, isCentered),
-    verticalProfilePoints: buildVerticalProfilePoints(state, routePoints, activeIndex),
+    verticalProfilePoints: buildVerticalProfilePoints(state, primaryPointsForOverlays, primaryActiveIndex),
     anchorZones,
     overlays: visibleOverlays,
     isModified: state.isModified,
@@ -271,9 +261,8 @@ interface RouteItem {
   speedLabel: string | null;
 }
 
-function buildRouteItems(state: FMCState): RouteItem[] {
-  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
+function buildRouteItems(flightPlan: FMCState['flightPlan'], route: FMCState['route']): RouteItem[] {
+
   const origin = flightPlan.origin || route.origin;
   const destination = flightPlan.destination || route.destination;
   const points: RouteItem[] = [];
@@ -471,4 +460,47 @@ function formatProcedureLabel(state: FMCState): string {
     route.runway ? `RW${route.runway}` : '',
   ].filter(Boolean);
   return parts.length ? parts.join(' / ') : 'NO PROC';
+}
+
+function processRoute(
+  routeItems: RouteItem[],
+  directTo: string | undefined,
+  isModified: boolean,
+  projectionContext: NDProjectionContext,
+  isPlanMode: boolean,
+  isCentered: boolean,
+  efis: EFISState,
+  visibleOverlays: EFISState['overlays']
+): { points: NDRoutePoint[]; segments: NDRouteSegment[] } {
+  const activeIndex = findActiveRouteIndex(routeItems, directTo);
+
+  const routePoints = routeItems.map((item, index) => {
+    let projected: ProjectedNDPoint | null = null;
+    if (item.lat !== undefined && item.lon !== undefined) {
+      projected = projectGeoPointToND(
+        { lat: item.lat, lon: item.lon },
+        projectionContext
+      );
+    }
+    
+    return projectRoutePoint(item, index, routeItems.length, isPlanMode, index === activeIndex && !isModified, isCentered, projected);
+  });
+
+  const routeSegments = routePoints.slice(1).map((point, index) => {
+    const from = routePoints[index];
+    const to = point;
+    return {
+      from,
+      to,
+      dashed: from.discontinuity || to.discontinuity,
+      active: to.active,
+      modified: isModified,
+      visible: from.visible && to.visible,
+    };
+  }).filter(s => s.visible);
+
+  return {
+    points: routePoints.filter(p => isPointVisible(p, efis, visibleOverlays)),
+    segments: routeSegments
+  };
 }
