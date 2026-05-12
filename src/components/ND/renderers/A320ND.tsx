@@ -38,13 +38,17 @@ export function A320ND({ model }: A320NDProps) {
       {/* Background Layers */}
       <g opacity="0.4">
         <RangeRings range={model.range} centered={!isArc} color="#004400" />
-        <HeadingRose centered={!isArc} />
+        <HeadingRose 
+          centered={!isArc} 
+          heading={model.heading} 
+          selectedHeading={model.selectedHeading}
+          track={model.track}
+          isPlan={model.mode === 'PLAN'}
+        />
       </g>
 
       {/* Header Info */}
-      <text x="50" y="12" fill={colors.active} fontSize="3.8" fontWeight="bold" textAnchor="middle" opacity="0.8">
-        {model.procedureLabel}
-      </text>
+      <text x="50" y="12" fill={colors.active} fontSize="3.8" fontWeight="bold" textAnchor="middle" opacity="0.8">{model.procedureLabel}</text>
 
       {/* Dynamic Overlay Legend (Left) */}
       <g transform="translate(4 25)" fontSize="2.8" fill={colors.active} fontWeight="bold">

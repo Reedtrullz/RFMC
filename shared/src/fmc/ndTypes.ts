@@ -103,4 +103,7 @@ export interface NavigationDisplayModel {
   overlays: EFISState['overlays'];
   isModified: boolean;
   centered: boolean;
+  heading: number;
+  track: number;
+  selectedHeading: number | null;
 }

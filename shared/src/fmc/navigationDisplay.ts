@@ -89,7 +89,25 @@ export function buildNavigationDisplayModel(
     overlays: visibleOverlays,
     isModified: state.isModified,
     centered: isCentered,
+    procedureLabel: buildProcedureLabel(state),
+    heading: state.aircraftState?.heading || 0,
+    track: state.aircraftState?.track || state.aircraftState?.heading || 0,
+    selectedHeading: state.aircraftState?.selectedHeading || null,
   };
+}
+
+function buildProcedureLabel(state: FMCState): string {
+  const directTo = state.directTo || state.route?.directTo;
+  if (directTo) return `DIR ${directTo}`;
+  
+  const approach = state.approach?.active ? state.approach : null;
+  if (approach) return `${approach.type}${approach.runway} / RW${approach.runway}`;
+  
+  if (state.route?.approach && state.route?.runway) {
+    return `${state.route.approach} / RW${state.route.runway}`;
+  }
+  
+  return 'NO PROC';
 }
 
 function isDisplayCentered(style: 'airbus' | 'boeing', mode: string, efisCentered: boolean): boolean {

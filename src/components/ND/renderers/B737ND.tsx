@@ -13,11 +13,11 @@ interface B737NDProps {
 
 export function B737ND({ model }: B737NDProps) {
   const colors = {
-    active: '#39ff14', // Boeing Green
-    magenta: '#d946ef', // Boeing Magenta
-    modified: '#00ffff', // Boeing Cyan
-    text: '#00d0ff', // Boeing Light Blue
+    active: '#00ccff', // Boeing Cyan
+    text: '#ffffff',
     warning: '#ffcc00',
+    magenta: '#ff00ff', // Active Route
+    modified: '#ffffff', // White dashed for pending
   };
 
   const isMap = model.mode === 'MAP';
@@ -38,16 +38,19 @@ export function B737ND({ model }: B737NDProps) {
       {/* Background Layers */}
       <g opacity="0.4">
         <RangeRings range={model.range} centered={model.centered} color="#003344" />
-        <HeadingRose centered={model.centered} />
+        <HeadingRose 
+          centered={model.centered} 
+          heading={model.heading} 
+          selectedHeading={model.selectedHeading}
+          isPlan={model.mode === 'PLN'}
+        />
       </g>
 
       {/* Header Info */}
       <g transform="translate(4 6)" fontSize="3.2" fill={colors.active} fontWeight="bold">
         <text>{model.mode} {model.centered ? 'CTR' : ''}</text>
       </g>
-      <text x="4" y="15" fill={colors.text} fontSize="3.5" fontWeight="bold" opacity="0.8">
-        {model.procedureLabel}
-      </text>
+      <text x="4" y="15" fill={colors.text} fontSize="3.5" fontWeight="bold" opacity="0.8">{model.procedureLabel}</text>
 
       {/* Dynamic Overlay Legend (Left) */}
       <g transform="translate(4 25)" fontSize="2.8" fill={colors.active} fontWeight="bold">
@@ -170,6 +173,13 @@ export function B737ND({ model }: B737NDProps) {
 
       {/* Aircraft Symbol */}
       <AircraftSymbol centered={model.centered} color={colors.active} style="boeing" />
+
+      {/* Track Line (Boeing style) */}
+      {!model.centered && model.mode !== 'PLN' && (
+        <g transform={`rotate(${model.track - model.heading} 50 ${cy})`}>
+          <line x1="50" y1={cy} x2="50" y2={cy - 45} stroke="#ffffff" strokeWidth="0.5" strokeDasharray="2 2" opacity="0.6" />
+        </g>
+      )}
 
       {/* MOD Annunciation */}
       {model.isModified && (
