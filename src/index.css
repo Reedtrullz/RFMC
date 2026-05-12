@@ -346,7 +346,7 @@ html, body {
 
 .cockpit-stage--autopilot {
   width: min(100%, 1300px);
-  grid-template-rows: minmax(0, 210px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 230px) minmax(0, 1fr);
 }
 
 .cockpit-stage--split {
@@ -370,6 +370,19 @@ html, body {
   transform: scale(var(--scale, 1));
 }
 
+.instrument-fit-viewport {
+  position: relative;
+  overflow: visible;
+  flex: 0 0 auto;
+}
+
+.instrument-fit-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: top left;
+}
+
 .cockpit-autopilot-displays {
   width: min(100%, 850px);
   height: 100%;
@@ -383,7 +396,7 @@ html, body {
 }
 
 .cockpit-mcp-slot {
-  height: 210px;
+  height: 230px;
 }
 
 .cockpit-split-panel {

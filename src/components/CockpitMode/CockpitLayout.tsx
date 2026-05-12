@@ -8,7 +8,7 @@ import { DisplaySelector, CockpitLayoutMode } from './DisplaySelector';
 import { BrightnessPanel } from './BrightnessPanel';
 import { useOrientation } from '../../hooks/useOrientation';
 import { useWakeLock } from '../../hooks/useWakeLock';
-import { InstrumentFrameSlot } from '../layout/InstrumentSlot';
+import { InstrumentFit } from '../layout/InstrumentFit';
 
 export function CockpitLayout() {
   const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('pfd-nd-cdu');
@@ -34,7 +34,7 @@ export function CockpitLayout() {
       } as React.CSSProperties}
     >
       {/* Top Controller Bar */}
-      <div className="p-4 flex flex-wrap items-center justify-between gap-4 border-b border-white/5 bg-black/40 backdrop-blur-md">
+      <div className="px-4 py-2 flex flex-wrap items-center justify-between gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
         <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
         <div className="flex items-center gap-4">
            <BrightnessPanel />
@@ -75,52 +75,52 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     case 'cdu-only':
       return (
         <div className="cockpit-stage cockpit-stage--cdu-only">
-          <InstrumentFrameSlot scale={0.64}>
+          <InstrumentFit target="boeingCdu">
             <CDU />
-          </InstrumentFrameSlot>
+          </InstrumentFit>
         </div>
       );
     
     case 'cdu-nd':
       return (
         <div className="cockpit-stage cockpit-stage--cdu-nd">
-          <InstrumentFrameSlot>
+          <InstrumentFit target="boeingNd">
             <NavigationDisplay />
-          </InstrumentFrameSlot>
-          <InstrumentFrameSlot scale={0.64}>
+          </InstrumentFit>
+          <InstrumentFit target="boeingCdu" preferredScale={0.9}>
             <CDU />
-          </InstrumentFrameSlot>
+          </InstrumentFit>
         </div>
       );
 
     case 'pfd-nd-cdu':
       return (
         <div className="cockpit-stage cockpit-stage--full-deck">
-          <InstrumentFrameSlot scale={0.95}>
+          <InstrumentFit target="boeingPfd">
             <PrimaryFlightDisplay />
-          </InstrumentFrameSlot>
-          <InstrumentFrameSlot scale={0.95}>
+          </InstrumentFit>
+          <InstrumentFit target="boeingNd">
             <NavigationDisplay />
-          </InstrumentFrameSlot>
-          <InstrumentFrameSlot scale={0.62}>
+          </InstrumentFit>
+          <InstrumentFit target="boeingCdu" preferredScale={0.82}>
             <CDU />
-          </InstrumentFrameSlot>
+          </InstrumentFit>
         </div>
       );
 
     case 'autopilot-trainer':
       return (
         <div className="cockpit-stage cockpit-stage--autopilot">
-          <InstrumentFrameSlot className="cockpit-mcp-slot" scale={0.56}>
+          <InstrumentFit target="boeingMcp" className="cockpit-mcp-slot" preferredScale={0.9}>
             <AutopilotTrainer />
-          </InstrumentFrameSlot>
+          </InstrumentFit>
           <div className="cockpit-autopilot-displays">
-            <InstrumentFrameSlot scale={0.78}>
+            <InstrumentFit target="boeingPfd">
               <PrimaryFlightDisplay />
-            </InstrumentFrameSlot>
-            <InstrumentFrameSlot scale={0.78}>
+            </InstrumentFit>
+            <InstrumentFit target="boeingNd">
               <NavigationDisplay />
-            </InstrumentFrameSlot>
+            </InstrumentFit>
           </div>
         </div>
       );
@@ -128,12 +128,12 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     case 'split-instruments':
       return (
         <div className="cockpit-stage cockpit-stage--split">
-          <InstrumentFrameSlot className="cockpit-split-panel">
+          <InstrumentFit target="boeingPfd" className="cockpit-split-panel">
             <PrimaryFlightDisplay />
-          </InstrumentFrameSlot>
-          <InstrumentFrameSlot className="cockpit-split-panel">
+          </InstrumentFit>
+          <InstrumentFit target="boeingNd" className="cockpit-split-panel">
             <NavigationDisplay />
-          </InstrumentFrameSlot>
+          </InstrumentFit>
         </div>
       );
 

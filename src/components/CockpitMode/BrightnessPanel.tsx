@@ -15,19 +15,19 @@ export function BrightnessPanel() {
   const setBrightness = useFMCStore(s => s.setBrightness);
 
   return (
-    <div className="bg-cdu-bezel/40 backdrop-blur-md p-4 rounded-xl border border-white/5 space-y-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-cdu text-cdu-text/40 uppercase tracking-widest">Display Intensity</span>
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-cdu-bezel/40 px-3 py-2 backdrop-blur-md">
+      <div className="flex min-w-[132px] items-center gap-2">
+        <span className="text-[9px] font-cdu text-cdu-text/40 uppercase tracking-widest">Intensity</span>
         <span className="text-xs font-cdu text-cdu-cyan">{brightness}%</span>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1">
         {(Object.entries(PRESETS) as [BrightnessPreset, typeof PRESETS['DAY']][]).map(([id, data]) => (
           <button
             key={id}
             onClick={() => setBrightness(data.value)}
             className={`
-              py-2 rounded border transition-all text-[10px] font-cdu uppercase
+              min-h-8 px-2 rounded border transition-all text-[9px] font-cdu uppercase
               ${brightness === data.value 
                 ? 'bg-cdu-cyan/20 border-cdu-cyan text-cdu-cyan shadow-lg shadow-cdu-cyan/20' 
                 : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'}
@@ -44,7 +44,7 @@ export function BrightnessPanel() {
         max="100"
         value={brightness}
         onChange={(e) => setBrightness(parseInt(e.target.value))}
-        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-cdu-cyan"
+        className="h-1 w-32 cursor-pointer appearance-none rounded-full bg-white/10 accent-cdu-cyan"
       />
     </div>
   );
