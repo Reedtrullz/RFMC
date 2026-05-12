@@ -74,20 +74,19 @@ html, body {
 .cdu-display-matrix {
   --cdu-cols: 24;
   --cdu-rows: 14;
-  --cdu-cell-w: 0.62em; /* Adjusted for B612 Mono */
   --cdu-row-h: var(--cdu-row-height, 1.22em);
 
   display: grid;
-  grid-template-columns: repeat(var(--cdu-cols), var(--cdu-cell-w));
+  grid-template-columns: repeat(var(--cdu-cols), minmax(0, 1fr));
   grid-template-rows: repeat(var(--cdu-rows), var(--cdu-row-h));
   align-content: start;
   justify-content: start;
 
-  width: calc(var(--cdu-cols) * var(--cdu-cell-w));
+  width: 100%;
   height: calc(var(--cdu-rows) * var(--cdu-row-h));
 
   font-family: 'B612 Mono', monospace;
-  font-size: 15px;
+  font-size: clamp(16px, 2.05vw, 22px);
   line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -102,6 +101,7 @@ html, body {
   line-height: 1;
   width: 100%;
   height: 100%;
+  min-width: 0;
 }
 
 .cdu-display-cell--small {

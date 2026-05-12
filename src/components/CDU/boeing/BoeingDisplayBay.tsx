@@ -28,9 +28,9 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
       <BoeingLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
       <BoeingLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
-      <div style={{ gridRow: '1 / 15', gridColumn: 2 }}>
-        <ScreenGlass brightness={brightness} className="rounded-b-none">
-          <div style={{ height: 'calc(14 * var(--cdu-row-h, 21px))' }}>
+      <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
+        <ScreenGlass brightness={brightness} className="rounded-b-none w-full">
+          <div className="w-full" style={{ height: 'calc(14 * var(--cdu-row-h, 21px))' }}>
             <Display />
           </div>
         </ScreenGlass>
