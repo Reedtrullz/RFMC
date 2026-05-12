@@ -1,26 +1,27 @@
 interface AnnunciatorLightProps {
-  label: string;
-  active?: boolean;
-  tone?: 'green' | 'amber';
+  active: boolean;
+  color?: 'green' | 'amber' | 'red' | 'white';
+  label?: string;
   className?: string;
 }
 
-export function AnnunciatorLight({ label, active, tone = 'green', className = '' }: AnnunciatorLightProps) {
-  const activeClass = tone === 'amber'
-    ? 'bg-cdu-amber/25 text-cdu-amber border-cdu-amber/60 shadow-[0_0_10px_rgba(255,176,0,0.35)]'
-    : 'bg-cdu-exec/20 text-cdu-exec border-cdu-exec/60 shadow-[0_0_10px_rgba(0,255,0,0.35)]';
+export function AnnunciatorLight({ 
+  active, 
+  color = 'green', 
+  label,
+  className = ''
+}: AnnunciatorLightProps) {
+  const colorMap = {
+    green: 'bg-[#3cff5f] shadow-[0_0_10px_rgba(60,255,95,0.8)]',
+    amber: 'bg-[#ffb000] shadow-[0_0_10px_rgba(255,176,0,0.8)]',
+    red: 'bg-[#ff3030] shadow-[0_0_10px_rgba(255,48,48,0.8)]',
+    white: 'bg-[#ffffff] shadow-[0_0_10px_rgba(255,255,255,0.8)]',
+  };
 
   return (
-    <div
-      className={[
-        'flex h-5 min-w-[42px] items-center justify-center rounded-[3px] border px-1',
-        'font-cdu text-[8px] font-bold tracking-[0.12em]',
-        active ? activeClass : 'border-black/60 bg-black/40 text-cdu-white/25',
-        className,
-      ].join(' ')}
-      aria-label={`${label} annunciator ${active ? 'lit' : 'unlit'}`}
-    >
-      {label}
+    <div className={`flex flex-col items-center gap-1 ${className}`}>
+      <div className={`h-2 w-6 rounded-full transition-all duration-200 ${active ? colorMap[color] : 'bg-[#1a1a1a] shadow-inner'}`} />
+      {label && <span className="text-[8px] font-bold text-white/60 uppercase">{label}</span>}
     </div>
   );
 }

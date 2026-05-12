@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Panel Materials */
+  --panel-black: #0b0d0e;
+  --panel-dark: #171a1c;
+  --panel-mid: #25292c;
+  --panel-edge: #3a3f43;
+
+  /* Screen and Glass */
+  --screen-black: #020505;
+  --screen-glass: rgba(160, 220, 220, 0.08);
+
+  /* Avionics Colors - Boeing */
+  --boeing-green: #39ff14;
+  --boeing-cyan: #00d7ff;
+  --boeing-magenta: #ff00ff;
+  --boeing-amber: #ffc400;
+
+  /* Avionics Colors - Airbus */
+  --airbus-amber: #ffb000;
+  --airbus-green: #00ff66;
+  --airbus-blue: #00aaff;
+  --airbus-white: #f8f8f8;
+
+  /* Status Annunciators */
+  --annun-green: #3cff5f;
+  --annun-amber: #ffb000;
+  --annun-red: #ff3030;
+  
+  /* Font Sizing */
+  --font-avionics: 'B612 Mono', monospace;
+}
+
 @font-face {
   font-family: 'B612 Mono';
   src: url('/fonts/B612Mono-Regular.ttf') format('truetype');

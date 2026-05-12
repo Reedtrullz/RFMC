@@ -1,7 +1,7 @@
 import { BoeingMCPState } from '@shared';
-import { BoeingMCPFrame } from './BoeingMCPFrame';
-import { MCPDisplayWindow } from './MCPDisplayWindow';
-import { MCPKnob } from './MCPKnob';
+import { CockpitPanel } from '../../visual/CockpitPanel';
+import { SevenSegmentDisplay } from '../../visual/SevenSegmentDisplay';
+import { RotaryKnob } from '../../visual/RotaryKnob';
 import { MCPSwitch } from './MCPSwitch';
 
 interface BoeingMCPProps {
@@ -12,8 +12,8 @@ interface BoeingMCPProps {
 
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   return (
-    <BoeingMCPFrame>
-      <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-4">
+    <CockpitPanel variant="boeing" className="w-full">
+      <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-2">
         
         {/* FD LEFT */}
         <div className="flex flex-col gap-4 pr-4 border-r border-black/20">
@@ -22,10 +22,10 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* COURSE L */}
-        <div className="flex flex-col gap-4">
-          <MCPDisplayWindow label="COURSE" value={state.courseL.toString().padStart(3, '0')} />
-          <MCPKnob 
-            label="" 
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-[10px] font-bold text-[#c8c8c8] uppercase tracking-wider">COURSE</span>
+          <SevenSegmentDisplay digits={3} value={state.courseL.toString().padStart(3, '0')} color="orange" />
+          <RotaryKnob 
             value={state.courseL} 
             onRotate={(d) => updateState({ courseL: (state.courseL + d + 360) % 360 })} 
           />
@@ -37,9 +37,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             <MCPSwitch label="N1" active={state.n1} onPress={() => updateState({ n1: !state.n1 })} small />
             <MCPSwitch label="SPEED" active={state.speedMode} onPress={() => pressButton('speedMode')} small />
           </div>
-          <MCPDisplayWindow label="IAS / MACH" value={state.speed} />
-          <MCPKnob 
-            label="" 
+          <SevenSegmentDisplay digits={3} value={state.speed} color="orange" />
+          <RotaryKnob 
             value={state.speed || 100} 
             onRotate={(d) => updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) })} 
           />
@@ -52,9 +51,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             <MCPSwitch label="LNAV" active={state.lnav} onPress={() => pressButton('lnav')} />
             <MCPSwitch label="VNAV" active={state.vnav} onPress={() => pressButton('vnav')} />
           </div>
-          <MCPDisplayWindow label="HEADING" value={state.heading.toString().padStart(3, '0')} />
-          <MCPKnob 
-            label="" 
+          <SevenSegmentDisplay digits={3} value={state.heading.toString().padStart(3, '0')} color="orange" />
+          <RotaryKnob 
             value={state.heading} 
             onRotate={(d) => updateState({ heading: (state.heading + d + 360) % 360 })} 
           />
@@ -63,9 +61,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
 
         {/* ALTITUDE Section */}
         <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
-          <MCPDisplayWindow label="ALTITUDE" value={state.altitude} />
-          <MCPKnob 
-            label="" 
+          <SevenSegmentDisplay digits={5} value={state.altitude} color="orange" />
+          <RotaryKnob 
             value={state.altitude / 100} 
             onRotate={(d) => updateState({ altitude: Math.max(0, Math.min(50000, state.altitude + d * 100)) })} 
           />
@@ -74,14 +71,14 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
 
         {/* V/S Section */}
         <div className="flex flex-col items-center gap-4 px-4">
-          <MCPDisplayWindow label="VERT SPEED" value={state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed) : '0'} />
-          <div className="flex flex-col gap-2">
+          <SevenSegmentDisplay digits={5} value={state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed) : '0'} color="orange" />
+          <div className="flex flex-col gap-1">
             <button 
-              className="h-8 w-10 bg-[#2a2a2a] text-white text-[10px] rounded-t-lg border-b border-white/10"
+              className="h-6 w-8 bg-[#1a1a1a] text-white text-[9px] rounded-t-sm border-b border-white/10 hover:bg-[#2a2a2a]"
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) + 100 })}
             >UP</button>
             <button 
-              className="h-8 w-10 bg-[#2a2a2a] text-white text-[10px] rounded-b-lg"
+              className="h-6 w-8 bg-[#1a1a1a] text-white text-[9px] rounded-b-sm hover:bg-[#2a2a2a]"
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
@@ -104,16 +101,16 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* COURSE R */}
-        <div className="flex flex-col gap-4 border-l border-black/20 pl-4">
-          <MCPDisplayWindow label="COURSE" value={state.courseR.toString().padStart(3, '0')} />
-          <MCPKnob 
-            label="" 
+        <div className="flex flex-col items-center gap-2 border-l border-black/20 pl-4">
+          <span className="text-[10px] font-bold text-[#c8c8c8] uppercase tracking-wider">COURSE</span>
+          <SevenSegmentDisplay digits={3} value={state.courseR.toString().padStart(3, '0')} color="orange" />
+          <RotaryKnob 
             value={state.courseR} 
             onRotate={(d) => updateState({ courseR: (state.courseR + d + 360) % 360 })} 
           />
         </div>
 
       </div>
-    </BoeingMCPFrame>
+    </CockpitPanel>
   );
 }
