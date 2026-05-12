@@ -8,7 +8,7 @@ import { DisplaySelector, CockpitLayoutMode } from './DisplaySelector';
 import { BrightnessPanel } from './BrightnessPanel';
 import { useOrientation } from '../../hooks/useOrientation';
 import { useWakeLock } from '../../hooks/useWakeLock';
-import { InstrumentSlot } from '../layout/InstrumentSlot';
+import { InstrumentFrameSlot } from '../layout/InstrumentSlot';
 
 export function CockpitLayout() {
   const [layoutMode, setLayoutMode] = useState<CockpitLayoutMode>('pfd-nd-cdu');
@@ -73,53 +73,67 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
   // Landscape Layouts
   switch (mode) {
     case 'cdu-only':
-      return <InstrumentSlot className="h-full w-full" contentClassName="origin-center"><CDU /></InstrumentSlot>;
+      return (
+        <div className="cockpit-stage cockpit-stage--cdu-only">
+          <InstrumentFrameSlot scale={0.64}>
+            <CDU />
+          </InstrumentFrameSlot>
+        </div>
+      );
     
     case 'cdu-nd':
       return (
-        <div className="layout-cdu-nd">
-          <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
-          <div className="cockpit-cdu-slot">
-            <div className="cockpit-cdu-scale">
-              <CDU />
-            </div>
-          </div>
+        <div className="cockpit-stage cockpit-stage--cdu-nd">
+          <InstrumentFrameSlot>
+            <NavigationDisplay />
+          </InstrumentFrameSlot>
+          <InstrumentFrameSlot scale={0.64}>
+            <CDU />
+          </InstrumentFrameSlot>
         </div>
       );
 
     case 'pfd-nd-cdu':
       return (
-        <div className="layout-pfd-nd-cdu">
-          <InstrumentSlot className="h-full w-full"><PrimaryFlightDisplay /></InstrumentSlot>
-          <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
-          <div className="cockpit-cdu-slot">
-            <div className="cockpit-cdu-scale">
-              <CDU />
-            </div>
-          </div>
+        <div className="cockpit-stage cockpit-stage--full-deck">
+          <InstrumentFrameSlot scale={0.95}>
+            <PrimaryFlightDisplay />
+          </InstrumentFrameSlot>
+          <InstrumentFrameSlot scale={0.95}>
+            <NavigationDisplay />
+          </InstrumentFrameSlot>
+          <InstrumentFrameSlot scale={0.62}>
+            <CDU />
+          </InstrumentFrameSlot>
         </div>
       );
 
     case 'autopilot-trainer':
       return (
-        <div className="flex flex-col items-center justify-center gap-8 w-full">
-          <AutopilotTrainer />
-          <div className="grid grid-cols-2 gap-8 w-full max-w-[1000px]">
-             <InstrumentSlot className="h-[400px]"><PrimaryFlightDisplay /></InstrumentSlot>
-             <InstrumentSlot className="h-[400px]"><NavigationDisplay /></InstrumentSlot>
+        <div className="cockpit-stage cockpit-stage--autopilot">
+          <InstrumentFrameSlot className="cockpit-mcp-slot" scale={0.56}>
+            <AutopilotTrainer />
+          </InstrumentFrameSlot>
+          <div className="cockpit-autopilot-displays">
+            <InstrumentFrameSlot scale={0.78}>
+              <PrimaryFlightDisplay />
+            </InstrumentFrameSlot>
+            <InstrumentFrameSlot scale={0.78}>
+              <NavigationDisplay />
+            </InstrumentFrameSlot>
           </div>
         </div>
       );
 
     case 'split-instruments':
       return (
-        <div className="grid grid-cols-2 gap-4 w-full h-full">
-          <div className="border border-white/5 bg-panel-dark p-4 rounded-xl flex items-center justify-center">
-            <InstrumentSlot className="h-full w-full"><PrimaryFlightDisplay /></InstrumentSlot>
-          </div>
-          <div className="border border-white/5 bg-panel-dark p-4 rounded-xl flex items-center justify-center">
-            <InstrumentSlot className="h-full w-full"><NavigationDisplay /></InstrumentSlot>
-          </div>
+        <div className="cockpit-stage cockpit-stage--split">
+          <InstrumentFrameSlot className="cockpit-split-panel">
+            <PrimaryFlightDisplay />
+          </InstrumentFrameSlot>
+          <InstrumentFrameSlot className="cockpit-split-panel">
+            <NavigationDisplay />
+          </InstrumentFrameSlot>
         </div>
       );
 

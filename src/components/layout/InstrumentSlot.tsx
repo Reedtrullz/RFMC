@@ -8,6 +8,12 @@ interface InstrumentSlotProps {
   maxHeight?: string;
 }
 
+interface InstrumentFrameSlotProps {
+  children: ReactNode;
+  scale?: number;
+  className?: string;
+}
+
 export function InstrumentSlot({
   children,
   className = '',
@@ -23,6 +29,23 @@ export function InstrumentSlot({
       <div
         className={`instrument-slot__content ${contentClassName}`}
         style={(scale === undefined ? undefined : { '--instrument-slot-scale': scale } as CSSProperties)}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function InstrumentFrameSlot({
+  children,
+  scale = 1,
+  className = '',
+}: InstrumentFrameSlotProps) {
+  return (
+    <div className={`cockpit-instrument ${className}`}>
+      <div
+        className="cockpit-scale"
+        style={{ '--scale': scale } as CSSProperties}
       >
         {children}
       </div>

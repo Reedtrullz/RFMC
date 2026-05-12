@@ -316,50 +316,93 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: clamp(12px, 1.5vw, 28px);
 }
 
-/* Responsive Cockpit Layouts */
-@media (orientation: landscape) {
-  .layout-pfd-nd-cdu {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) minmax(300px, 1fr) minmax(420px, 520px);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 1rem;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    align-items: center;
-    justify-items: center;
-    overflow: hidden;
-  }
-  
-  .layout-cdu-nd {
-    display: grid;
-    grid-template-columns: minmax(300px, 1fr) minmax(420px, 520px);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 1rem;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    align-items: center;
-    justify-items: center;
-    overflow: hidden;
-  }
+.cockpit-stage {
+  width: min(100%, 1500px);
+  height: min(100%, 820px);
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  gap: clamp(16px, 2vw, 36px);
+}
 
-  .cockpit-cdu-slot {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    overflow: hidden;
-  }
+.cockpit-stage--cdu-only {
+  grid-template-columns: 1fr;
+}
 
-  .cockpit-cdu-scale {
-    transform-origin: top center;
-    transform: scale(var(--cdu-cockpit-scale, 0.62));
+.cockpit-stage--cdu-nd {
+  width: min(100%, 1250px);
+  grid-template-columns: minmax(420px, 560px) minmax(360px, 480px);
+}
+
+.cockpit-stage--full-deck {
+  width: min(100%, 1450px);
+  grid-template-columns: minmax(260px, 360px) minmax(360px, 480px) minmax(360px, 460px);
+}
+
+.cockpit-stage--autopilot {
+  width: min(100%, 1300px);
+  grid-template-rows: minmax(0, 210px) minmax(0, 1fr);
+}
+
+.cockpit-stage--split {
+  width: min(100%, 1150px);
+  grid-template-columns: 1fr 1fr;
+}
+
+.cockpit-instrument {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cockpit-scale {
+  transform-origin: center center;
+  transform: scale(var(--scale, 1));
+}
+
+.cockpit-autopilot-displays {
+  width: min(100%, 850px);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 380px));
+  align-items: center;
+  justify-items: center;
+  gap: clamp(16px, 2vw, 36px);
+}
+
+.cockpit-mcp-slot {
+  height: 210px;
+}
+
+.cockpit-split-panel {
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: radial-gradient(circle at 50% 30%, rgba(0,160,200,0.04), transparent 60%), #020303;
+  border-radius: 12px;
+}
+
+@media (orientation: portrait), (max-width: 900px) {
+  .cockpit-stage,
+  .cockpit-stage--cdu-nd,
+  .cockpit-stage--full-deck,
+  .cockpit-stage--autopilot,
+  .cockpit-stage--split,
+  .cockpit-autopilot-displays {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -484,6 +527,10 @@ html, body {
 .screen-glass__content {
   position: relative;
   z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: inherit;
 }
 
 .screen-glass__scanlines {
