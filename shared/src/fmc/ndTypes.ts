@@ -35,10 +35,15 @@ export interface NDRoutePoint {
 export interface NDRouteSegment {
   from: NDRoutePoint;
   to: NDRoutePoint;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
   dashed: boolean;
   active: boolean;
   modified: boolean;
   visible: boolean;
+  clipped: boolean;
 }
 
 export interface NDFixOverlay {
@@ -47,6 +52,9 @@ export interface NDFixOverlay {
   distance: number;
   x: number;
   y: number;
+  radialX: number;
+  radialY: number;
+  radius: number;
 }
 
 export interface NDHoldOverlay {
@@ -57,6 +65,7 @@ export interface NDHoldOverlay {
   direction: 'L' | 'R';
   x: number;
   y: number;
+  visible: boolean;
 }
 
 export interface TCASTarget {

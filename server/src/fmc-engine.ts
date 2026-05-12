@@ -96,6 +96,7 @@ export class FMCEngine {
       tutorialSkipAvailable: false,
       tutorialHighlight: null,
       tutorialConfidence: null,
+      selectedPlanWaypointIndex: null,
     };
   }
 

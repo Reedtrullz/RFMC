@@ -18,6 +18,8 @@ const AIRPORT_DB: Record<string, GeoPoint> = {
   'EGLL': { lat: 51.4700, lon: -0.4543 },
   'LFPG': { lat: 49.0097, lon: 2.5479 },
   'EDDF': { lat: 50.0333, lon: 8.5705 },
+  'LEBL': { lat: 41.2974, lon: 2.0833 }, // Barcelona
+  'LEMD': { lat: 40.4719, lon: -3.5626 }, // Madrid
 };
 
 const WAYPOINT_DB: Record<string, GeoPoint> = {
@@ -30,6 +32,7 @@ const WAYPOINT_DB: Record<string, GeoPoint> = {
   'SFO': { lat: 37.6189, lon: -122.3750 }, // San Francisco VOR
   'EHRD': { lat: 51.9569, lon: 4.4372 }, // Rotterdam (used as wpt sometimes)
   'SPL': { lat: 52.3015, lon: 4.7642 }, // Schiphol VOR
+  'DJL': { lat: 47.2683, lon: 5.0906 }, // Dijon VOR
 };
 
 /**

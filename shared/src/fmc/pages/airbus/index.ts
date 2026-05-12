@@ -115,11 +115,11 @@ export function renderFpln(state: FMCState): DisplayData {
     }
   }
 
-  // Update planCenterIndex for Airbus PLAN mode
+  // Update selectedPlanWaypointIndex for Airbus PLAN mode
   if (state.efisL?.mode === 'PLAN') {
     // Traditionally, the 2nd line of the F-PLN page is the center point in PLAN mode
     const centerIndex = start; 
-    if (state.planCenterIndex !== centerIndex) {
+    if (state.selectedPlanWaypointIndex !== centerIndex) {
       // Note: We can't call set() here because this is a renderer.
       // We'll rely on the STEP/Scroll actions to update the state.
     }

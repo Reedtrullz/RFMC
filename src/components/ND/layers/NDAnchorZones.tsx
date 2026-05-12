@@ -20,8 +20,14 @@ export function NDAnchorZones({ model, colors }: { model: NavigationDisplayModel
 
       {/* Bottom Left: Wind Block */}
       <g transform="translate(4 96)">
-        <path d="M0 0 L-2 -1 L2 -1 Z" fill={colors.active} transform={`rotate(${model.anchorZones.windBlock.dir})`} />
-        <text x="4" y="0" fill={colors.active} fontWeight="bold">{model.anchorZones.windBlock.dir}/{model.anchorZones.windBlock.speed}</text>
+        <path 
+          d="M0 -2 L-1.5 2 L1.5 2 Z" 
+          fill={colors.active} 
+          transform={`rotate(${model.anchorZones.windBlock.dir + 180 - (model.mode === 'PLAN' || model.mode === 'PLN' ? 0 : model.heading)})`} 
+        />
+        <text x="4" y="0" fill={colors.active} fontWeight="bold">
+          {model.anchorZones.windBlock.dir.toString().padStart(3, '0')}/{model.anchorZones.windBlock.speed}
+        </text>
       </g>
 
       {/* Bottom Right: Mode & Source */}
@@ -32,8 +38,12 @@ export function NDAnchorZones({ model, colors }: { model: NavigationDisplayModel
       {/* Center Top: TRK/HDG */}
       <g transform="translate(50 6)">
         <rect x="-9" y="-4.5" width="18" height="7" fill="black" stroke={colors.warning} strokeWidth="0.6" rx="0.5" />
-        <text textAnchor="middle" y="0.5" fill={colors.warning} fontWeight="bold" fontSize="4">000</text>
-        <text textAnchor="middle" y="5.5" fill={colors.warning} fontSize="2.2">TRK MAG</text>
+        <text textAnchor="middle" y="0.5" fill={colors.warning} fontWeight="bold" fontSize="4">
+          {Math.round(model.track).toString().padStart(3, '0')}
+        </text>
+        <text textAnchor="middle" y="5.5" fill={colors.warning} fontSize="2.2">
+          {model.style === 'airbus' ? 'TRK' : 'TRK MAG'}
+        </text>
       </g>
     </g>
   );

@@ -41,6 +41,12 @@ describe('NavigationDisplay', () => {
         { refFix: 'DIXIE', radial: 180, distance: 20 },
         { refFix: 'RBV', radial: 270, distance: 35 },
       ],
+      aircraftState: {
+        position: { lat: 40.0, lon: -74.0 }, // Near DIXIE/RBV
+        heading: 0,
+        track: 0,
+        selectedHeading: 0,
+      }
     });
 
     render(<NavigationDisplay />);
@@ -66,10 +72,16 @@ describe('NavigationDisplay', () => {
         flightNumber: '',
         route: '',
         waypoints: [
-          { ident: 'DJL', discontinuity: false },
-          { ident: 'LEBL', discontinuity: false },
+          { ident: 'DJL', lat: 48.6, lon: 2.6, discontinuity: false },
+          { ident: 'LEBL', lat: 48.7, lon: 2.7, discontinuity: false },
         ],
       },
+      aircraftState: {
+        position: { lat: 48.5, lon: 2.5 },
+        heading: 0,
+        track: 0,
+        selectedHeading: 0,
+      }
     });
 
     render(<NavigationDisplay />);

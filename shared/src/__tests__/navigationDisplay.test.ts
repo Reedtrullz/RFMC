@@ -7,7 +7,7 @@ import { createBaseState } from './testUtils';
 const baseState = createBaseState({
   efisL: {
     mode: 'MAP',
-    range: 40,
+    range: 160,
     centered: false,
     side: 'L',
     overlays: {
@@ -17,13 +17,19 @@ const baseState = createBaseState({
   },
   efisR: {
     mode: 'MAP',
-    range: 40,
+    range: 160,
     centered: false,
     side: 'R',
     overlays: {
       wpt: true, arpt: true, sta: true, data: false, 
       pos: false, terr: false, wxr: false, tfc: true, cstr: false
     },
+  },
+  aircraftState: {
+    position: { lat: 39.5, lon: -75.5 }, // Central between JFK and DCA
+    heading: 0,
+    track: 0,
+    selectedHeading: 0,
   },
 });
 
@@ -197,12 +203,13 @@ describe('Navigation Display model', () => {
     expect(model.activeRoutePoints).toEqual([]);
     expect(model.activeRouteSegments).toEqual([]);
     expect(model.procedureLabel).toBe('NO PROC');
-    expect(model.range).toBe(40);
+    expect(model.range).toBe(160); // Matches baseState.efisL.range
   });
 
   it('omits route segments with clipped endpoints', () => {
     const stateWithGeo = {
       ...baseState,
+      efisL: { ...baseState.efisL, range: 40 }, // 40nm range so WPT2 at 60nm is clipped
       aircraftState: { position: { lat: 0, lon: 0 }, speed: 0, heading: 0, altitude: 0 },
       flightPlan: {
         origin: '', destination: '', flightNumber: '', route: '',
@@ -252,6 +259,8 @@ describe('Navigation Display model', () => {
   it('selects destination as active target for origin/destination-only route', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
+      // Aircraft positioned near KJFK so both airports are within 160nm range
+      aircraftState: { position: { lat: 39.5, lon: -75.5 }, heading: 0, track: 0, selectedHeading: 0 },
       flightPlan: { ...baseState.flightPlan, origin: 'KJFK', destination: 'KDCA', waypoints: [] },
     });
     expect(model.activeRoutePoints[0].label).toBe('KJFK');

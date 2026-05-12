@@ -1,5 +1,6 @@
 import type { DisplayColor } from '../fmc/displayColors';
 import type { DisplaySemantic } from '../fmc/displaySemantics';
+import type { NDMapMode } from '../fmc/ndTypes';
 
 // ============================================================
 // Core FMC types shared between frontend and backend
@@ -9,7 +10,7 @@ import type { DisplaySemantic } from '../fmc/displaySemantics';
 export type AircraftType = 'BOEING_737' | 'AIRBUS_A320';
 
 export interface EFISState {
-  mode: string;           // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
+  mode: NDMapMode;           // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
   range: number;          // 10, 20, 40, 80, 160, 320, 640
   overlays: {
     wpt: boolean;
@@ -333,6 +334,8 @@ export interface FMCState {
   aircraftState: {
     position?: { lat: number; lon: number };
     heading?: number;
+    track?: number;
+    selectedHeading?: number;
     altitude?: number;
     speed?: number;
     verticalSpeed?: number;
@@ -347,7 +350,7 @@ export interface FMCState {
   tutorialActive: boolean;
   tutorialCompleted: boolean;
   tutorialStepIndex: number;
-  planCenterIndex?: number;
+  selectedPlanWaypointIndex: number | null;
   tutorialScenario: string | null;
   tutorialStartTime: number | null;
   tutorialErrors: number;

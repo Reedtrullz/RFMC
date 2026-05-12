@@ -144,6 +144,10 @@ function getLegsLskActions(state: FMCState): Record<string, string | null> {
     }
   }
 
+  if (state.efisL.mode === 'PLN') {
+    actions['R6'] = 'step_plan';
+  }
+
   if (state.isModified) {
     actions['L6'] = 'erase';
   }

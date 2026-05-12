@@ -6,6 +6,8 @@ import { NDAnchorZones } from '../layers/NDAnchorZones';
 import { TCASOverlay } from '../layers/TCASOverlay';
 import { WXROverlay } from '../layers/WXROverlay';
 import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
+import { HoldOverlay } from '../layers/HoldOverlay';
+import { FixOverlay } from '../layers/FixOverlay';
 
 interface B737NDProps {
   model: NavigationDisplayModel;
@@ -52,12 +54,17 @@ export function B737ND({ model }: B737NDProps) {
       </g>
       <text x="4" y="15" fill={colors.text} fontSize="3.5" fontWeight="bold" opacity="0.8">{model.procedureLabel}</text>
 
-      {/* Dynamic Overlay Legend (Left) */}
+      {/* Dynamic Overlay Legend (Left) - Dimmed when inactive */}
       <g transform="translate(4 25)" fontSize="2.8" fill={colors.active} fontWeight="bold">
-        {model.overlays.arpt && <text>ARPT</text>}
-        {model.overlays.sta && <text y="4">STA</text>}
-        {model.overlays.wpt && <text y="8">WPT</text>}
-        {model.overlays.data && <text y="12" fill={colors.text}>DATA</text>}
+        <text opacity={model.overlays.arpt ? 1 : 0.25}>ARPT</text>
+        <text y="4" opacity={model.overlays.sta ? 1 : 0.25}>STA</text>
+        <text y="8" opacity={model.overlays.wpt ? 1 : 0.25}>WPT</text>
+        <text y="12" opacity={model.overlays.data ? 1 : 0.25} fill={colors.text}>DATA</text>
+      </g>
+
+      {/* Source Info (Bottom) */}
+      <g transform="translate(4 94)" fontSize="3.2" fill={colors.active} fontWeight="bold">
+        <text>FMC L</text>
       </g>
 
       <g clipPath="url(#b737-nd-clip)">
@@ -81,8 +88,8 @@ export function B737ND({ model }: B737NDProps) {
         {model.activeRouteSegments.map((segment, i) => (
           <line
             key={`active-seg-${i}`}
-            x1={segment.from.x} y1={segment.from.y}
-            x2={segment.to.x} y2={segment.to.y}
+            x1={segment.x1} y1={segment.y1}
+            x2={segment.x2} y2={segment.y2}
             stroke={isMap ? colors.magenta : colors.active}
             strokeWidth={segment.active ? '1.8' : '1.2'}
             strokeDasharray={segment.dashed ? '2 2' : undefined}
@@ -94,8 +101,8 @@ export function B737ND({ model }: B737NDProps) {
         {model.pendingRouteSegments.map((segment, i) => (
           <line
             key={`pending-seg-${i}`}
-            x1={segment.from.x} y1={segment.from.y}
-            x2={segment.to.x} y2={segment.to.y}
+            x1={segment.x1} y1={segment.y1}
+            x2={segment.x2} y2={segment.y2}
             stroke={colors.modified}
             strokeWidth="1.2"
             strokeDasharray={segment.dashed ? '2 2' : '4 2'}
@@ -147,25 +154,12 @@ export function B737ND({ model }: B737NDProps) {
           </g>
         ))}
 
-        {/* Overlays (Fix/Hold) */}
-        {model.fixOverlays.map((f, i) => (
-          <g key={`fix-${i}`} transform={`translate(${f.x} ${f.y})`} opacity="0.8" data-testid="nd-fix-overlay">
-            <circle r="0.8" fill={colors.active} />
-            <circle r="8" fill="none" stroke={colors.active} strokeWidth="0.5" strokeDasharray="1 1" />
-            <text x="2" y="-5" fill={colors.active} fontSize="2.8">{f.refFix}</text>
-          </g>
-        ))}
-        
-        {model.holdOverlay && (
-          <g transform={`translate(${model.holdOverlay.x} ${model.holdOverlay.y})`} data-testid="nd-hold-overlay">
-            <ellipse rx="10" ry="4" fill="none" stroke={colors.magenta} strokeWidth="0.8" transform={`rotate(${model.holdOverlay.inboundCourse})`} />
-          </g>
-        )}
-
         {/* Overlays */}
         <WXROverlay data={model.wxrData} />
         <VerticalProfileOverlay points={model.verticalProfilePoints} />
         <TCASOverlay targets={model.tcasTargets} />
+        <HoldOverlay hold={model.holdOverlay} />
+        <FixOverlay fixes={model.fixOverlays} />
       </g>
       
       {/* Anchor Zones */}

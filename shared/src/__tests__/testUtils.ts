@@ -97,6 +97,7 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
     tutorialSkipAvailable: false,
     tutorialHighlight: null,
     tutorialConfidence: null,
+    selectedPlanWaypointIndex: null,
     ...overrides,
   };
 }

@@ -79,6 +79,7 @@ const defaultState = {
   tutorialActive: false,
   tutorialScenario: null as string | null,
   tutorialStepIndex: 0,
+  selectedPlanWaypointIndex: null,
   tutorialCompleted: false,
   tutorialHighlight: null as string | null,
   tutorialErrors: 0,
@@ -148,6 +149,12 @@ interface FMCActions {
   insertWaypoint: (index: number, ident: string) => void;
   deleteWaypoint: (index: number) => void;
   updateWaypointConstraint: (index: number, altitude?: AltitudeConstraint, speed?: SpeedConstraint) => void;
+
+  // Plan review actions
+  setSelectedPlanWaypoint: (index: number | null) => void;
+  stepPlanForward: () => void;
+  stepPlanBackward: () => void;
+  resetPlanWaypoint: () => void;
 
   // Fix page actions
   setFixRef: (ident: string) => void;
@@ -366,10 +373,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         const totalPages = Math.max(1, Math.ceil(flightPlan.waypoints.length / 5));
         if (s.legsPageIndex < totalPages - 1) {
           const nextIndex = s.legsPageIndex + 1;
-          const perPage = 5;
-          const nextUpdates: Partial<FMCState> = { legsPageIndex: nextIndex };
-          if (s.efisL?.mode === 'PLAN') nextUpdates.planCenterIndex = nextIndex * perPage;
-          set(nextUpdates);
+          const updates: Partial<FMCState> = { legsPageIndex: nextIndex };
+          if (s.efisL?.mode === 'PLAN') updates.selectedPlanWaypointIndex = nextIndex * 5;
+          set(updates);
         }
       }
       handled = true;
@@ -394,7 +400,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const nextIndex = s.legsPageIndex - 1;
           const perPage = 5;
           const nextUpdates: Partial<FMCState> = { legsPageIndex: nextIndex };
-          if (s.efisL?.mode === 'PLAN') nextUpdates.planCenterIndex = nextIndex * perPage;
+          if (s.efisL?.mode === 'PLAN') nextUpdates.selectedPlanWaypointIndex = nextIndex * 5;
           set(nextUpdates);
         }
       }
@@ -466,17 +472,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'sec_fpln': state.setPage('SEC_FPLN'); handled = true; break;
       case 'rad_nav': state.setPage('RAD_NAV'); handled = true; break;
       case 'data_index': state.setPage('DATA_INDEX'); handled = true; break;
-      case 'step_plan':
-        const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-        const totalWaypoints = flightPlan.waypoints.length + 1; // +1 for origin
-        const currentStep = state.planCenterIndex ?? 0;
-        set({ planCenterIndex: (currentStep + 1) % totalWaypoints });
-        handled = true;
-        break;
       case 'mcdu_menu': state.setPage('MCDU_MENU'); handled = true; break;
       case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); handled = true; break;
       case 'fpln_next': state.pressKey('NEXT_PAGE'); handled = true; break;
       case 'fpln_prev': state.pressKey('PREV_PAGE'); handled = true; break;
+      case 'step_plan':
+        get().stepPlanForward();
+        return;
+
       case 'erase':
         set({
           pendingRoute: null,
@@ -1153,6 +1156,33 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   resetState: () => set(defaultState),
+
+  setSelectedPlanWaypoint: (index) => set({ selectedPlanWaypointIndex: index }),
+
+  stepPlanForward: () => set((state) => {
+    const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+    if (flightPlan.waypoints.length === 0) return state;
+    
+    // Total points including origin and destination
+    const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
+    const currentIndex = state.selectedPlanWaypointIndex ?? 0;
+    const nextIndex = (currentIndex + 1) % totalPoints;
+    
+    return { selectedPlanWaypointIndex: nextIndex };
+  }),
+
+  stepPlanBackward: () => set((state) => {
+    const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+    if (flightPlan.waypoints.length === 0) return state;
+    
+    const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
+    const currentIndex = state.selectedPlanWaypointIndex ?? 0;
+    const nextIndex = (currentIndex - 1 + totalPoints) % totalPoints;
+    
+    return { selectedPlanWaypointIndex: nextIndex };
+  }),
+
+  resetPlanWaypoint: () => set({ selectedPlanWaypointIndex: null }),
 
   insertWaypoint: (index: number, ident: string) => {
     const state = get();

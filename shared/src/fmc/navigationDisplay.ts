@@ -1,7 +1,8 @@
 import type { AircraftType, FMCState, FlightPlanWaypoint, EFISState } from '../types/fmc';
 import { projectGeoPointToND, ProjectedNDPoint, NDProjectionContext } from './ndProjection';
+import { clipRouteSegment } from './ndClipping';
 import { distanceNm, bearingDeg } from './ndGeometry';
-import { getAllAirports, getAllWaypoints } from './navDatabase';
+import { getAllAirports, getAllWaypoints, getAirportCoordinates, getWaypointCoordinates } from './navDatabase';
 import type { 
   NDMapMode, NDRange, NDAnchorZones, NDRoutePoint, NDRouteSegment, 
   NDFixOverlay, NDHoldOverlay, TCASTarget, WXRData, VerticalProfilePoint, 
@@ -13,7 +14,7 @@ export function buildNavigationDisplayModel(
   efis?: EFISState
 ): NavigationDisplayModel {
   const aircraftStyle = state.aircraft === 'AIRBUS_A320' ? 'airbus' : 'boeing';
-  const resolvedEfis = efis || createDefaultEFIS(state.aircraft, 'L');
+  const resolvedEfis = efis || state.efisL || createDefaultEFIS(state.aircraft, 'L');
   const isCentered = isDisplayCentered(aircraftStyle, resolvedEfis.mode, resolvedEfis.centered);
 
   const activeRouteItems = buildRouteItems(state.flightPlan, state.route);
@@ -32,7 +33,7 @@ export function buildNavigationDisplayModel(
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
-  const planIndex = state.planCenterIndex ?? primaryActiveIndex;
+  const planIndex = state.selectedPlanWaypointIndex ?? primaryActiveIndex;
   const activeItem = primaryRouteItems[planIndex] || primaryRouteItems[primaryActiveIndex];
   const planCenter = (isPlanMode && activeItem?.lat !== undefined && activeItem?.lon !== undefined)
     ? { lat: activeItem.lat, lon: activeItem.lon }
@@ -73,7 +74,7 @@ export function buildNavigationDisplayModel(
     range: resolvedEfis.range,
     origin: state.flightPlan.origin || state.route.origin || '',
     destination: state.flightPlan.destination || state.route.destination || '',
-    procedureLabel: formatProcedureLabel(state),
+    procedureLabel: buildProcedureLabel(state),
     activeRoutePoints: activeRouteData.points,
     activeRouteSegments: activeRouteData.segments,
     pendingRoutePoints: pendingRouteData.points,
@@ -89,7 +90,6 @@ export function buildNavigationDisplayModel(
     overlays: visibleOverlays,
     isModified: state.isModified,
     centered: isCentered,
-    procedureLabel: buildProcedureLabel(state),
     heading: state.aircraftState?.heading || 0,
     track: state.aircraftState?.track || state.aircraftState?.heading || 0,
     selectedHeading: state.aircraftState?.selectedHeading || null,
@@ -97,17 +97,18 @@ export function buildNavigationDisplayModel(
 }
 
 function buildProcedureLabel(state: FMCState): string {
-  const directTo = state.directTo || state.route?.directTo;
-  if (directTo) return `DIR ${directTo}`;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
   
-  const approach = state.approach?.active ? state.approach : null;
-  if (approach) return `${approach.type}${approach.runway} / RW${approach.runway}`;
+  if (route.directTo) return `DIR ${route.directTo}`;
   
-  if (state.route?.approach && state.route?.runway) {
-    return `${state.route.approach} / RW${state.route.runway}`;
-  }
+  const parts = [
+    route.sid,
+    route.star,
+    route.approach,
+    route.runway ? `RW${route.runway}` : ''
+  ].filter(Boolean);
   
-  return 'NO PROC';
+  return parts.length ? parts.join(' / ') : 'NO PROC';
 }
 
 function isDisplayCentered(style: 'airbus' | 'boeing', mode: string, efisCentered: boolean): boolean {
@@ -178,6 +179,7 @@ interface RouteItem {
   ident: string;
   lat?: number;
   lon?: number;
+  coordinateSource: 'navdb' | 'simbrief' | 'manual' | 'synthetic' | 'unknown';
   discontinuity: boolean;
   airport: boolean;
   navaid?: boolean;
@@ -185,26 +187,88 @@ interface RouteItem {
   speedLabel: string | null;
 }
 
-function buildRouteItems(flightPlan: FMCState['flightPlan'], route: FMCState['route']): RouteItem[] {
+function enrichRouteItemCoordinates(
+  ident: string,
+  kind: 'airport' | 'waypoint',
+  existingLat?: number,
+  existingLon?: number,
+  existingSource?: RouteItem['coordinateSource']
+): {
+  lat?: number;
+  lon?: number;
+  coordinateSource: RouteItem['coordinateSource'];
+} {
+  if (existingLat !== undefined && existingLon !== undefined) {
+    return { 
+      lat: existingLat, 
+      lon: existingLon, 
+      coordinateSource: existingSource || 'simbrief' 
+    };
+  }
 
+  const dbPoint = getAirportCoordinates(ident) || getWaypointCoordinates(ident);
+
+  if (dbPoint) {
+    return { 
+      lat: dbPoint.lat, 
+      lon: dbPoint.lon, 
+      coordinateSource: 'navdb' 
+    };
+  }
+
+  return { 
+    lat: undefined, 
+    lon: undefined, 
+    coordinateSource: 'unknown' 
+  };
+}
+
+function buildRouteItems(flightPlan: FMCState['flightPlan'], route: FMCState['route']): RouteItem[] {
   const origin = flightPlan.origin || route.origin;
   const destination = flightPlan.destination || route.destination;
   const points: RouteItem[] = [];
 
-  if (origin) points.push({ ident: origin, discontinuity: false, airport: true, altitudeLabel: null, speedLabel: null });
+  if (origin) {
+    const enriched = enrichRouteItemCoordinates(origin, 'airport');
+    points.push({ 
+      ident: origin, 
+      ...enriched,
+      discontinuity: false, 
+      airport: true, 
+      altitudeLabel: null, 
+      speedLabel: null 
+    });
+  }
+
   for (const waypoint of flightPlan.waypoints) {
+    const enriched = enrichRouteItemCoordinates(
+      waypoint.ident, 
+      isAirportWaypoint(waypoint, destination) ? 'airport' : 'waypoint',
+      waypoint.lat,
+      waypoint.lon,
+      waypoint.coordinateSource
+    );
+
     points.push({
       ident: waypoint.ident,
-      lat: waypoint.lat,
-      lon: waypoint.lon,
+      ...enriched,
       discontinuity: waypoint.discontinuity,
       airport: isAirportWaypoint(waypoint, destination),
       altitudeLabel: formatAltitudeConstraint(waypoint),
       speedLabel: formatSpeedConstraint(waypoint),
     });
   }
+
   if (destination && !points.some(point => point.ident === destination)) {
-    points.push({ ident: destination, discontinuity: false, airport: true, altitudeLabel: null, speedLabel: null });
+    const enriched = enrichRouteItemCoordinates(destination, 'airport');
+    points.push({ 
+      ident: destination, 
+      ...enriched,
+      discontinuity: false, 
+      airport: true, 
+      altitudeLabel: null, 
+      speedLabel: null 
+    });
   }
 
   return points;
@@ -325,10 +389,17 @@ function buildFixOverlays(state: FMCState, routePoints: NDRoutePoint[], activePo
     .slice(0, 2)
     .map((entry, index) => {
       const point = routePoints.find(p => p.label === entry.refFix) ?? activePoint;
+      const x = point?.x ?? 58 + index * 8;
+      const y = point?.y ?? 46 + index * 6;
+      const radius = entry.distance * (40 / state.efisL.range); // Scale nm to screen units
+      const angleRad = ((entry.radial - 180) * Math.PI) / 180;
+      
       return {
         refFix: entry.refFix, radial: entry.radial, distance: entry.distance,
-        x: point?.x ?? 58 + index * 8,
-        y: point?.y ?? 46 + index * 6,
+        x, y,
+        radialX: x + Math.sin(angleRad) * radius * 2, // Arbitrary line length
+        radialY: y - Math.cos(angleRad) * radius * 2,
+        radius
       };
     });
 }
@@ -337,7 +408,7 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
   const hold = state.holdPending ?? state.hold;
   if (!hold.fix) return null;
   const point = routePoints.find(p => p.label === hold.fix) ?? activePoint;
-  return { ...hold, x: point?.x ?? 50, y: point?.y ?? 48 };
+  return { ...hold, x: point?.x ?? 50, y: point?.y ?? 48, visible: true };
 }
 
 function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number, routeItems: RouteItem[]): NDAnchorZones {
@@ -377,15 +448,6 @@ function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number,
   };
 }
 
-function formatProcedureLabel(state: FMCState): string {
-  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
-  const parts = [
-    route.directTo ? `DIR ${route.directTo}` : '',
-    route.sid, route.star, route.approach,
-    route.runway ? `RW${route.runway}` : '',
-  ].filter(Boolean);
-  return parts.length ? parts.join(' / ') : 'NO PROC';
-}
 
 function processRoute(
   routeItems: RouteItem[],
@@ -415,13 +477,21 @@ function processRoute(
     const from = routePoints[index];
     const to = point;
     const hasDiscontinuity = from.discontinuity || to.discontinuity;
+    
+    const clipped = clipRouteSegment(from, to, isCentered);
+
     return {
       from,
       to,
-      dashed: hasDiscontinuity, // Dashed usually isn't drawn at all if invisible, but we keep it
+      x1: clipped.x1,
+      y1: clipped.y1,
+      x2: clipped.x2,
+      y2: clipped.y2,
+      dashed: hasDiscontinuity,
       active: to.active,
       modified: isModified,
-      visible: from.visible && to.visible && !hasDiscontinuity, // Do not draw segments connected to a discontinuity
+      visible: clipped.visible && !hasDiscontinuity && from.visible && to.visible,
+      clipped: clipped.clipped,
     };
   }).filter(s => s.visible);
 
