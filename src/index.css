@@ -221,3 +221,100 @@ html, body {
 .ripple-effect:active::after {
   animation: ripple 0.3s ease-out;
 }
+/* ============================================================
+   Cockpit Usability & Performance Hardening
+   ============================================================ */
+
+:root {
+  --cockpit-brightness: 1;
+  --cockpit-text-glow: 1;
+  --cockpit-annun-intensity: 1;
+  --cockpit-backlight: 1;
+}
+
+/* Brightness Theme Overlays */
+.cockpit-mode {
+  filter: brightness(var(--cockpit-brightness));
+}
+
+.cockpit-night {
+  --cockpit-brightness: 0.65;
+  --cockpit-text-glow: 0.18;
+  --cockpit-annun-intensity: 0.75;
+  --cockpit-backlight: 0.35;
+}
+
+/* Touch Target Enforcement */
+.btn-cockpit {
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.cdu-key {
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.lsk-target {
+  min-height: 44px;
+}
+
+.fcu-knob-target {
+  min-width: 52px;
+  min-height: 52px;
+}
+
+/* Cockpit Layout Utilities */
+.cockpit-grid {
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-areas: 
+    "selector"
+    "main";
+  grid-template-rows: auto 1fr;
+}
+
+.cockpit-main {
+  grid-area: main;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Responsive Cockpit Layouts */
+@media (orientation: landscape) {
+  .layout-pfd-nd-cdu {
+    display: grid;
+    grid-template-columns: 1fr 1fr 400px;
+    gap: 1rem;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .layout-cdu-nd {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+  }
+}
+
+/* Prevent accidental zooming/scrolling */
+.cockpit-lock {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -4,7 +4,7 @@
   "description": "Boeing 737 NG FMC Training Tool with MSFS 2020 Integration",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "icons": [

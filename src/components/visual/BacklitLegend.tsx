@@ -13,7 +13,10 @@ const toneClass = {
 
 export function BacklitLegend({ children, tone = 'white', className = '' }: BacklitLegendProps) {
   return (
-    <span className={`font-cdu font-bold leading-none ${toneClass[tone]} ${className}`}>
+    <span 
+      className={`font-cdu font-bold leading-none ${toneClass[tone]} ${className}`}
+      style={{ opacity: 'var(--cockpit-backlight, 0.9)' }}
+    >
       {children}
     </span>
   );

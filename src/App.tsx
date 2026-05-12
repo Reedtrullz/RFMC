@@ -11,6 +11,9 @@ import { useEffect } from 'react';
 import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
 import { PrimaryFlightDisplay } from './components/PFD/PrimaryFlightDisplay';
 import { TrainingOverlay } from './components/Training/TrainingOverlay';
+import { CockpitLayout } from './components/CockpitMode/CockpitLayout';
+import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
+import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -24,6 +27,8 @@ export default function App() {
   const setRteSubPage = useFMCStore(s => s.setRteSubPage);
   const setTakeoffRefPageIndex = useFMCStore(s => s.setTakeoffRefPageIndex);
   const setNDMode = useFMCStore(s => s.setNDMode);
+  const cockpitMode = useFMCStore(s => s.cockpitMode);
+  const setCockpitMode = useFMCStore(s => s.setCockpitMode);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -93,10 +98,26 @@ export default function App() {
     setNeedRefresh(false);
   };
 
+  if (cockpitMode) {
+    return (
+      <>
+        <CockpitLayout />
+        <PerformanceOverlay enabled={import.meta.env.DEV} />
+        <OrientationPrompt />
+      </>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-black">
-      <div className="flex w-full justify-center py-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
+      <div className="flex w-full justify-center items-center py-4 px-6 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
         <AutopilotTrainer />
+        <button 
+          onClick={() => setCockpitMode(true)}
+          className="ml-auto px-4 py-2 bg-cdu-cyan text-cdu-bezel rounded font-cdu text-xs font-bold uppercase hover:bg-cdu-cyan/80 transition-colors"
+        >
+          Enter Cockpit
+        </button>
       </div>
 
       <main className="flex flex-1 flex-col items-center gap-8 p-4">
@@ -121,6 +142,7 @@ export default function App() {
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
       <TrainingOverlay />
       {!isKiosk && <ConnectionStatus />}
+      <PerformanceOverlay enabled={import.meta.env.DEV} />
 
       {/* PWA Update Prompt */}
       {(offlineReady || needRefresh) && (

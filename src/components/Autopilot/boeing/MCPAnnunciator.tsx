@@ -11,6 +11,9 @@ export function MCPAnnunciator({ active, color = 'green' }: MCPAnnunciatorProps)
   };
 
   return (
-    <div className={`h-1.5 w-6 rounded-full transition-all duration-200 ${active ? colorMap[color] : 'bg-[#1a1a1a]'}`} />
+    <div 
+      className={`h-1.5 w-6 rounded-full transition-all duration-200 ${active ? colorMap[color] : 'bg-[#1a1a1a]'}`} 
+      style={{ opacity: active ? 'var(--cockpit-annun-intensity, 1)' : 1 }}
+    />
   );
 }

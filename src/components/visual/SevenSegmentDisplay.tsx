@@ -29,7 +29,10 @@ export function SevenSegmentDisplay({
       </span>
       
       {/* Active segments */}
-      <span className={`relative z-10 font-mono text-2xl font-bold tracking-widest ${active ? colorMap[color] : 'text-[#201010]'}`}>
+      <span 
+        className={`relative z-10 font-mono text-2xl font-bold tracking-widest ${active ? colorMap[color] : 'text-[#201010]'}`}
+        style={{ opacity: active ? 'var(--cockpit-brightness, 1)' : 1 }}
+      >
         {displayValue}
       </span>
       

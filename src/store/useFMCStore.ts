@@ -115,6 +115,7 @@ const defaultState = {
 
   aircraftState: null as any,
   brightness: 100,
+  cockpitMode: false,
   latency: 0,
   sessionStartTime: null as number | null,
   radios: {
@@ -251,6 +252,7 @@ interface FMCActions {
 
   setRteSubPage: (page: number) => void;
   setTakeoffRefPageIndex: (page: number) => void;
+  setCockpitMode: (enabled: boolean) => void;
 }
 
 interface ConnectionDiagnostics {
@@ -362,6 +364,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressKey: (key: CDUKey) => {
+    const startTime = performance.now();
     devLog('pressKey called with:', key);
     const { scratchpad, currentPage } = get();
     let handled = false;
@@ -497,9 +500,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (handled) {
       tryAdvanceIfMatch(get, key);
     }
+
+    set({ latency: Math.round(performance.now() - startTime) });
   },
 
   pressLSK: (side: 'L' | 'R', index: number) => {
+    const startTime = performance.now();
     const state = get();
     const lskId = `${side}${index}` as LSKId;
     let displayData: DisplayData;
@@ -1121,6 +1127,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
       }
     }
+    set({ latency: Math.round(performance.now() - startTime) });
   },
 
   clearScratchpad: () => {
@@ -1128,6 +1135,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   pressEXEC: () => {
+    const startTime = performance.now();
     const state = get();
     if (state.editWaypointIndex !== null && state.scratchpad.trim()) {
       const scratchpad = state.scratchpad.trim();
@@ -1739,4 +1747,5 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   setRteSubPage: (page: number) => set({ rteSubPage: page }),
   setTakeoffRefPageIndex: (page: number) => set({ takeoffRefPageIndex: page }),
+  setCockpitMode: (enabled: boolean) => set({ cockpitMode: enabled }),
 }));

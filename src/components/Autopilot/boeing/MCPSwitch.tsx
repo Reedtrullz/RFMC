@@ -14,7 +14,7 @@ export function MCPSwitch({ label, active, onPress, showAnnunciator = true, smal
       <button
         onClick={onPress}
         className={`relative flex items-center justify-center rounded-sm border-b-4 border-[#1a1a1a] bg-[#3a3d3d] text-center font-bold text-white shadow-lg transition-all hover:bg-[#4a4d4d] active:translate-y-1 active:border-b-0 ${
-          small ? 'h-10 w-16 text-[10px]' : 'h-12 w-20 text-[11px]'
+          small ? 'h-11 w-16 text-[10px]' : 'h-14 w-20 text-[11px]'
         }`}
       >
         <span className="uppercase tracking-tighter leading-tight px-1">{label}</span>

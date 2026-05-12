@@ -355,6 +355,7 @@ export interface FMCState {
   } | null;
 
   brightness: number;
+  cockpitMode: boolean;
   latency: number;
   sessionStartTime: number | null;
   radios: RadioData;

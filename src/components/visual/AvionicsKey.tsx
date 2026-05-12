@@ -19,12 +19,12 @@ interface AvionicsKeyProps {
 }
 
 const shapeClass: Record<AvionicsKeyShape, string> = {
-  alpha: 'min-w-[44px] min-h-[34px] px-2 text-sm',
-  numeric: 'min-w-[44px] min-h-[34px] px-2 text-sm',
-  function: 'min-w-[44px] min-h-[34px] px-1 text-[10px]',
-  lsk: 'min-w-[34px] min-h-[40px] px-1 text-[10px]',
-  exec: 'min-w-[54px] min-h-[34px] px-2 text-xs',
-  wide: 'min-w-[58px] min-h-[34px] px-2 text-xs',
+  alpha: 'min-w-[44px] min-h-[44px] px-2 text-sm',
+  numeric: 'min-w-[44px] min-h-[44px] px-2 text-sm',
+  function: 'min-w-[44px] min-h-[42px] px-1 text-[10px]',
+  lsk: 'min-w-[44px] min-h-[44px] px-1 text-[10px]',
+  exec: 'min-w-[64px] min-h-[44px] px-2 text-xs',
+  wide: 'min-w-[72px] min-h-[44px] px-2 text-xs',
 };
 
 export function AvionicsKey({
