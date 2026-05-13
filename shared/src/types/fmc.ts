@@ -101,7 +101,50 @@ export type AirbusPageType =
 /** All possible FMC pages (Boeing + Airbus) */
 export type PageType = BoeingPageType | AirbusPageType;
 
-/** A single line on the CDU display */
+export type FlightPhase =
+  | 'PREFLIGHT'
+  | 'TAXI'
+  | 'TAKEOFF'
+  | 'CLIMB'
+  | 'CRUISE'
+  | 'DESCENT'
+  | 'APPROACH'
+  | 'GO_AROUND'
+  | 'DONE';
+
+export type MessageSeverity = 'ADVISORY' | 'IMPORTANT' | 'ALERT';
+
+export interface FmcMessage {
+  id: string;
+  text: string;
+  severity: MessageSeverity;
+  color: 'white' | 'amber';
+  timestamp: number;
+  type?: 1 | 2; // Airbus Type I or II
+}
+
+export type McduColor = 'white' | 'blue' | 'green' | 'amber' | 'magenta' | 'yellow';
+export type McduFont = 'small' | 'large';
+
+export interface McduToken {
+  text: string;
+  color: McduColor;
+  font: McduFont;
+  align?: 'left' | 'right' | 'center';
+}
+
+export interface McduLine {
+  left?: McduToken[];
+  right?: McduToken[];
+  center?: McduToken[];
+}
+
+export interface McduPage {
+  title: string;
+  lines: McduLine[]; // Strictly 14 lines in the renderer
+}
+
+/** A single line on the CDU display (Legacy - to be migrated) */
 export interface DisplayLine {
   text: string;
   leftLabel?: string;
@@ -424,6 +467,10 @@ export interface FMCState {
   tutorialHighlight: string | null;
   tutorialConfidence: number | null;
 
+  // New logic systems
+  flightPhase: FlightPhase;
+  scratchpadMessages: FmcMessage[];
+  
   // Cockpit Layout State
   cockpitLayoutMode: CockpitLayoutMode;
   hiddenPanels: PanelId[];

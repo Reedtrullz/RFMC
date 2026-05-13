@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, PhaseManager } from '@shared';
 import { 
   selectFmcPositionSource, 
   calculateANP, 
@@ -241,6 +241,10 @@ const defaultState = {
   focusedPanel: null as PanelId | null,
   instrumentZoom: { ...defaultInstrumentZoom },
   highContrast: false,
+  
+  // New logic systems
+  flightPhase: 'PREFLIGHT' as FlightPhase,
+  scratchpadMessages: [] as FmcMessage[],
 };
 
 interface FMCActions {
@@ -261,12 +265,19 @@ interface FMCActions {
   setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => void;
   setSimVariables: (variables: Record<string, number>) => void;
   setAircraftState: (state: FMCState['aircraftState']) => void;
-  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => void;
   setConnectedLastError: (error: string | null) => void;
   setExternalDisplayData: (data: DisplayData | null) => void;
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
   clearFailureMode: () => void;
   setBrightness: (b: number) => void;
+
+  updateFlightPhase: () => {
+    const state = get();
+    const newPhase = PhaseManager.inferFlightPhase(state);
+    if (newPhase !== state.flightPhase) {
+      set({ flightPhase: newPhase });
+    }
+  },
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string; waypoints?: FlightPlanWaypoint[] }) => void;
   resetState: () => void;
@@ -345,6 +356,11 @@ interface FMCActions {
   clearAlert: (id: string) => void;
   
   highlightControl: (controlId: string) => void;
+  
+  // Message actions
+  addMessage: (text: string, severity: MessageSeverity, type?: 1 | 2) => void;
+  clearActiveMessage: () => void;
+  updateFlightPhase: () => void;
 }
 
 interface ConnectionDiagnostics {
@@ -610,6 +626,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Training engine hook
     if (get().trainingActive) {
       get().processTrainingAction({ type: 'press_key', key });
+    }
+
+    // Clear message if CLR is pressed and scratchpad is empty
+    if (key === 'CLR' && scratchpad.length === 0) {
+      get().clearActiveMessage();
+    }
+
+    // Alphanumeric keys clear advisory messages
+    if (key.length === 1 || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE'].includes(key)) {
+      const activeMsg = get().scratchpadMessages[0];
+      if (activeMsg && activeMsg.severity === 'ADVISORY') {
+        get().clearActiveMessage();
+      }
     }
 
     // Tutorial: advance if action matches expected (runs after all key handling)
@@ -1434,7 +1463,46 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setSimVariables: (variables: Record<string, number>) => set((state) => ({
     simVariables: { ...state.simVariables, ...variables },
   })),
-  setAircraftState: (state: FMCState['aircraftState']) => set({ aircraftState: state }),
+  setAircraftState: (state: FMCState['aircraftState']) => {
+    set({ aircraftState: state });
+    get().updateFlightPhase();
+  },
+
+  addMessage: (text: string, severity: MessageSeverity, type?: 1 | 2) => {
+    const { scratchpadMessages, aircraft } = get();
+    const id = Math.random().toString(36).substring(7);
+    const color = severity === 'ADVISORY' ? 'white' : 'amber';
+    const message: FmcMessage = { id, text, severity, color, timestamp: Date.now(), type };
+
+    let newMessages = [...scratchpadMessages];
+    if (aircraft === 'AIRBUS_A320') {
+      if (type === 1) {
+        newMessages = [message, ...newMessages.filter(m => m.type !== 1)];
+      } else {
+        if (newMessages.length < 5) newMessages.push(message);
+      }
+    } else {
+      const priority = { ALERT: 3, IMPORTANT: 2, ADVISORY: 1 };
+      newMessages.push(message);
+      newMessages.sort((a, b) => priority[b.severity] - priority[a.severity] || b.timestamp - a.timestamp);
+    }
+    set({ scratchpadMessages: newMessages, msgLight: true });
+  },
+
+  clearActiveMessage: () => {
+    const { scratchpadMessages } = get();
+    if (scratchpadMessages.length > 0) {
+      set({ scratchpadMessages: scratchpadMessages.slice(1) });
+    }
+  },
+
+  updateFlightPhase: () => {
+    const state = get();
+    const newPhase = PhaseManager.inferFlightPhase(state);
+    if (newPhase !== state.flightPhase) {
+      set({ flightPhase: newPhase });
+    }
+  },
   setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => set({
     connectedAircraft: aircraft,
     connectedCapabilities: capabilities ?? [],

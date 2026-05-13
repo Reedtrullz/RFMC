@@ -53,16 +53,43 @@ export type Procedure = {
   legs: ProcedureLeg[];
 };
 
-export type Airport = NavFix & {
-  type: 'AIRPORT';
+export interface Airport {
   icao: string;
-  runways: Runway[];
-};
-
-export type Runway = {
-  ident: string;
+  name: string;
   lat: number;
   lon: number;
-  heading: number;
-  length: number;
-};
+  elevationFt: number;
+  runways: Runway[];
+}
+
+export interface Runway {
+  ident: string;
+  magneticCourse: number;
+  thresholdLat: number;
+  thresholdLon: number;
+  elevationFt: number;
+}
+
+export interface Navaid {
+  ident: string;
+  type: 'VOR' | 'DME' | 'VORDME' | 'NDB' | 'ILS' | 'LOC';
+  frequency?: string;
+  lat: number;
+  lon: number;
+}
+
+export type ProcedureType = 'SID' | 'STAR' | 'APPROACH';
+
+export interface ProcedureTransition {
+  ident: string;
+  legs: ProcedureLeg[];
+}
+
+export interface Procedure {
+  airportIcao: string;
+  type: ProcedureType;
+  ident: string;
+  runway?: string;
+  transitions: ProcedureTransition[];
+  commonLegs: ProcedureLeg[]; // Added to handle common legs before/after transitions
+}

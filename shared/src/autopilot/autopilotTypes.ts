@@ -57,9 +57,15 @@ export type AutopilotState = {
   airbus: AirbusFCUState;
 };
 
+export type LateralMode = "HDG" | "NAV" | "LOC" | "ROLL OUT" | "LNAV" | "VOR_LOC" | "OFF";
+export type VerticalMode = "CLB" | "DES" | "ALT" | "ALT*" | "OP CLB" | "OP DES" | "VNAV PTH" | "G/S" | "OFF";
+export type ThrustMode = "MAN TOGA" | "MAN FLEX" | "THR CLB" | "SPEED" | "IDLE" | "RETARD" | "OFF";
+
 export type FMAState = {
-  atMode: string;
-  rollMode: string;
-  pitchMode: string;
-  status: string;
+  thrust: ThrustMode;
+  lateral: LateralMode;
+  vertical: VerticalMode;
+  approachCapability?: "CAT1" | "CAT2" | "CAT3 SINGLE" | "CAT3 DUAL";
+  armedLateral?: LateralMode;
+  armedVertical?: VerticalMode;
 };
