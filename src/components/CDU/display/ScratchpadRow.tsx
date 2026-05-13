@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { scratchpadToGridSegment } from '@shared';
+import { scratchpadToGridSegment, AlertLevel } from '@shared';
 import { CDUDisplayGrid } from './CDUDisplayGrid';
 
 interface ScratchpadRowProps {
   text: string;
-  error?: boolean;
+  level?: AlertLevel;
   variant?: 'boeing' | 'airbus';
 }
 
-export function ScratchpadRow({ text, error, variant = 'boeing' }: ScratchpadRowProps) {
+export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRowProps) {
   const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
@@ -16,11 +16,17 @@ export function ScratchpadRow({ text, error, variant = 'boeing' }: ScratchpadRow
     return () => clearInterval(interval);
   }, []);
 
-  const color = error ? 'red' : variant === 'airbus' ? 'amber' : 'green';
+  const getLevelColor = () => {
+    if (level === 'WARNING') return 'red';
+    if (level === 'CAUTION') return 'amber';
+    return variant === 'airbus' ? 'amber' : 'green';
+  };
+
+  const color = getLevelColor();
   const segment = scratchpadToGridSegment(text || ' ', {
     color,
-    blink: error,
-    semantic: error ? 'warning' : undefined,
+    blink: level === 'WARNING' || level === 'CAUTION',
+    semantic: level === 'WARNING' ? 'warning' : level === 'CAUTION' ? 'caution' : undefined,
   });
 
   return (

@@ -154,6 +154,14 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Set reference airport.',
         expectedAction: { type: 'enter_scratchpad', value: 'KJFK' },
         validation: 'position.refAirport === "KJFK"'
+      },
+      {
+        id: 'set-irs-pos',
+        instruction: 'The IRS needs a starting position to begin alignment. Press LSK R4 to copy the airport coordinates into the scratchpad, then press LSK R4 again to SET IRS POS.',
+        objective: 'Initialize inertial alignment.',
+        expectedAction: { type: 'press_lsk', side: 'R', index: 4 },
+        hint: 'Click the R4 key twice: once to copy, once to set.',
+        validation: 'position.irsState === "ALIGNING" || position.irsState === "NAV"'
       }
     ],
     passCriteria: {

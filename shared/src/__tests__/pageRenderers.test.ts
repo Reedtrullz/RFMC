@@ -7,6 +7,7 @@ import { renderCrzPage } from '../fmc/pages/cruise';
 import { renderDesPage } from '../fmc/pages/descent';
 import { renderDirIntcPage } from '../fmc/pages/direct';
 import { renderN1LimitPage } from '../fmc/pages/n1limit';
+import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
 import { createBaseState } from './testUtils';
 
 const baseState = createBaseState({
@@ -216,5 +217,28 @@ describe('Page Renderers', () => {
     };
     const data = renderLegsPage(state);
     expect(data.lines[0].text.includes('DEL')).toBe(true);
+  });
+});
+
+describe('Airbus Page Renderers', () => {
+  const airbusState = createBaseState({
+    aircraft: 'AIRBUS_A320',
+    currentPage: 'INIT_A',
+    position: { irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0, refAirport: '', gate: '' },
+    navPerformance: { anpNm: 0.05, rnpNm: 1.0, phase: 'ENROUTE' }
+  });
+
+  it('renders INIT A page with alignment prompt when IRS is off', () => {
+    const renderer = getAirbusPageRenderer('INIT_A');
+    const data = renderer!(airbusState);
+    expect(data.lines.some(l => l.leftLabel === '<ALIGN IRS')).toBe(true);
+    expect(data.lskActions.L1).toBe('align_irs');
+  });
+
+  it('renders PROG page with Nav Accuracy', () => {
+    const renderer = getAirbusPageRenderer('PROG_A');
+    const data = renderer!(airbusState);
+    expect(data.lines.some(l => l.text.includes('NAV ACCUR'))).toBe(true);
+    expect(data.lines.some(l => l.text.includes('HIGH'))).toBe(true);
   });
 });

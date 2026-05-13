@@ -13,6 +13,14 @@ export const airbusBasicsScenario: TutorialScenario = {
       highlightField: 'INIT_A',
     },
     {
+      id: 'airbus_align_irs',
+      instruction: 'The ND currently shows MAP NOT AVAIL because the IRS is off. Press LSK L1 to ALIGN IRS and start the 7-minute alignment process.',
+      expectedAction: 'align_irs',
+      validate: () => true,
+      page: 'INIT_A',
+      highlightField: 'L1',
+    },
+    {
       id: 'airbus_from_to',
       instruction: 'Enter the origin and destination airports. Type KJFK/KORD and press LSK L1.',
       expectedAction: 'KJFK/KORD',

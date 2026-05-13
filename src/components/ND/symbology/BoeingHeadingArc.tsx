@@ -73,6 +73,16 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
       {model.mode !== 'PLN' && (
         <path d="M48.5 35 L51.5 35 L50 39 Z" fill="white" transform={`translate(0 ${cy - 84})`} />
       )}
+
+      {/* Heading Readout */}
+      {!model.centered && model.mode !== 'PLN' && (
+        <g transform={`translate(50 ${cy - 48})`}>
+          <rect x="-6" y="-3.5" width="12" height="7" fill="black" stroke="white" strokeWidth="0.5" />
+          <text textAnchor="middle" y="1.5" fill="white" fontSize="4.5" fontWeight="bold">
+            {Math.round(model.heading).toString().padStart(3, '0')}
+          </text>
+        </g>
+      )}
       
       {/* Selected Heading Bug (Magenta) */}
       {model.selectedHeading !== null && (

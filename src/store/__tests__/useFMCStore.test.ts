@@ -131,7 +131,7 @@ describe('FMC Store', () => {
     store.pressLSK('L', 2);
 
     const state = useFMCStore.getState();
-    expect(state.pendingFlightPlan?.waypoints).toEqual([
+    expect(state.pendingFlightPlan?.waypoints).toMatchObject([
       { ident: 'RBV', discontinuity: false },
       { ident: 'LENDY', discontinuity: false },
       { ident: 'DIXIE', discontinuity: false },
@@ -462,6 +462,43 @@ describe('FMC Store', () => {
       useFMCStore.getState().stepPlanForward();
       // Should not change — returns early
       expect(useFMCStore.getState().selectedPlanWaypointIndex).toBe(0);
+    });
+  });
+
+  describe('FMS Ecosystem', () => {
+    it('simulates IRS alignment over time', () => {
+      const store = useFMCStore.getState();
+      useFMCStore.setState({
+        position: { ...store.position, irsState: 'ALIGNING', irsTimeRemaining: 10 }
+      });
+
+      // One tick
+      useFMCStore.getState().updateFmsEcosystem();
+      expect(useFMCStore.getState().position.irsTimeRemaining).toBe(9);
+      expect(useFMCStore.getState().position.irsState).toBe('ALIGNING');
+
+      // Fast forward
+      for (let i = 0; i < 9; i++) useFMCStore.getState().updateFmsEcosystem();
+      expect(useFMCStore.getState().position.irsTimeRemaining).toBe(0);
+      expect(useFMCStore.getState().position.irsState).toBe('NAV');
+    });
+
+    it('manages alerts via Alert Bus', () => {
+      // Directly check updateFmsEcosystem logic for RNP alerts
+      useFMCStore.setState({
+        sensors: [{ source: 'GPS', available: true, positionErrorNm: 2.1 }],
+        navPerformance: { anpNm: 0, rnpNm: 1.0, phase: 'ENROUTE' }
+      });
+      
+      useFMCStore.getState().updateFmsEcosystem();
+      expect(useFMCStore.getState().alerts.some(a => a.id === 'unable-rnp')).toBe(true);
+
+      useFMCStore.setState({
+        sensors: [{ source: 'GPS', available: true, positionErrorNm: 0.1 }],
+        navPerformance: { anpNm: 0, rnpNm: 1.0, phase: 'ENROUTE' }
+      });
+      useFMCStore.getState().updateFmsEcosystem();
+      expect(useFMCStore.getState().alerts.some(a => a.id === 'unable-rnp')).toBe(false);
     });
   });
 });

@@ -141,3 +141,5 @@ export * from './training/mistakes';
 export * from './training/lessonProgress';
 export * from './training/boeingLessons';
 export * from './training/airbusLessons';
+export * from './fmc/waypointParser';
+export * from './fmc/fmsNavigation';
