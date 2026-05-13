@@ -33,35 +33,36 @@ export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => Dis
 
 export function renderInitA(state: FMCState): DisplayData {
   const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
-  const { performance } = state;
+  const { performance, position } = state;
   const title = state.isModified ? 'TMPY INIT' : 'INIT';
+  const fromTo = route.origin && route.destination ? `${route.origin}/${route.destination}` : ' [  ]/[  ] ';
+
+  const isAligning = position.irsState === 'ALIGNING';
+  const isNav = position.irsState === 'NAV';
+
   return {
     title,
     pageIndicator: 'A',
     lines: [
       inv(`  ${title}              A`, '', '', 'cyan'),
-      fmt(' FROM/TO', state.position.irsState === 'NAV' ? 'IRS' : 'ALN', '', 'white'),
-      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, 
-        state.position.irsState === 'NAV' ? ' ALIGNED' : 
-        state.position.irsState === 'ALIGNING' ? ` IN ALIGN >${Math.ceil(state.position.irsTimeRemaining/60)} MIN` :
-        '<ALIGN IRS', 
-        '', state.position.irsState === 'NAV' ? 'green' : 'magenta'),
-      fmt(' COST INDEX', 'FLT NBR', '', 'white'),
-      fmt(` ${performance.costIndex || '---'}`, ` ${route.flightNumber || '--------'}`, '', 'magenta'),
-      fmt(' CRZ FL', '', '', 'white'),
-      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}`, '', '', 'magenta'),
+      fmt(' FROM/TO', 'CO RTE', '', 'white'),
+      fmt(` ${fromTo}`, ' --------', '', route.origin ? 'green' : 'magenta'),
+      fmt(' ALTN/CO RTE', 'FLT NBR', '', 'white'),
+      fmt(` ${route.alternate || '----'}/--------`, ` ${route.flightNumber || '--------'}`, '', 'magenta'),
+      fmt(' COST INDEX', 'LAT', '', 'white'),
+      fmt(` ${performance.costIndex || '---'}`, `  ${Math.abs(position.lat).toFixed(1)}${position.lat >= 0 ? 'N' : 'S'}`, '', 'magenta'),
+      fmt(' CRZ FL/TEMP', 'LONG', '', 'white'),
+      fmt(` ${performance.crzAlt ? `FL${String(performance.crzAlt).slice(0,3)}` : '-----'}/--°`, ` ${Math.abs(position.lon).toFixed(1)}${position.lon >= 0 ? 'E' : 'W'}`, '', 'magenta'),
       blank(),
+      fmt(' TROPO', '', '', 'white'),
+      fmt(' 36090', '', '', 'green'),
       blank(),
-      blank(),
-      blank(),
-      fmt('', '→', '', 'magenta'),
-      blank(),
+      fmt('', isAligning ? `IN ALIGN ${Math.ceil(position.irsTimeRemaining/60)} MIN` : isNav ? 'IRS RELAY >' : '<IRS INIT', 'INIT B >', 'magenta'),
     ],
     lskActions: {
-      L1: state.position.irsState === 'OFF' ? 'align_irs' : 'data_index', 
-      L2: 'set_cost_index', L3: 'set_crz_fl',
-      L4: null, L5: null, L6: null,
-      R1: 'set_altn', R2: 'set_flt_nbr', R3: null,
+      L1: 'data_index', L2: 'set_flt_nbr', L3: 'set_cost_index', L4: 'set_crz_fl',
+      L5: null, L6: isNav ? 'irs_relay' : 'align_irs',
+      R1: 'set_from_to', R2: 'set_altn', R3: null,
       R4: null, R5: null, R6: 'init_b',
     },
   };
@@ -103,7 +104,7 @@ export function renderFpln(state: FMCState): DisplayData {
   const wpts = flightPlan.waypoints;
   const title = state.isModified ? 'TMPY F-PLN' : 'F-PLN';
   const { legsPageIndex } = state;
-  const perPage = 5;
+  const perPage = 4; // Airbus usually shows 4-5 items with sub-headers
   const start = legsPageIndex * perPage;
   const pageWaypoints = wpts.slice(start, start + perPage);
 
@@ -112,21 +113,14 @@ export function renderFpln(state: FMCState): DisplayData {
   for (let i = 0; i < pageWaypoints.length; i++) {
     const wp = pageWaypoints[i];
     if (wp.discontinuity) {
-      lines.push(fmt(' ----- DISCONTINUITY', '', '', 'amber'));
+      lines.push(fmt(' ----- F-PLN DISCONTINUITY -----', '', '', 'amber'));
       lines.push(blank());
     } else {
-      lines.push(fmt(` ${wp.ident}`, '', '', 'green'));
-      lines.push(blank());
-    }
-  }
-
-  // Update selectedPlanWaypointIndex for Airbus PLAN mode
-  if (state.efisL?.mode === 'PLAN') {
-    // Traditionally, the 2nd line of the F-PLN page is the center point in PLAN mode
-    const centerIndex = start; 
-    if (state.selectedPlanWaypointIndex !== centerIndex) {
-      // Note: We can't call set() here because this is a renderer.
-      // We'll rely on the STEP/Scroll actions to update the state.
+      const alt = wp.altitudeConstraint ? formatAltitude(wp.altitudeConstraint) : ' --- ';
+      const spd = wp.speedConstraint ? String(wp.speedConstraint.speed) : ' --- ';
+      
+      lines.push(fmt(` ${wp.ident}`, '  SPD/ALT', '', 'white'));
+      lines.push(fmt('', `  ${spd}/${alt}`, '', 'green'));
     }
   }
 
@@ -137,6 +131,11 @@ export function renderFpln(state: FMCState): DisplayData {
     lines: lines.slice(0, 14),
     lskActions: buildFplnActions(state),
   };
+}
+
+import { formatAltitudeConstraint } from '@shared';
+function formatAltitude(constraint: any): string {
+  return formatAltitudeConstraint(constraint);
 }
 
 function buildFplnActions(state: FMCState): Record<string, string | null> {
@@ -204,24 +203,24 @@ export function renderPerfTakeoff(state: FMCState): DisplayData {
     pageIndicator: 'TO',
     lines: [
       inv('  PERF              TO', '', '', 'cyan'),
-      fmt(' V1', '', `${takeoff.v1 ? `${takeoff.v1} KT` : '---'}`, 'white'),
-      fmt(' VR', '', `${takeoff.vr ? `${takeoff.vr} KT` : '---'}`, 'white'),
-      fmt(' V2', '', `${takeoff.v2 ? `${takeoff.v2} KT` : '---'}`, 'white'),
-      fmt(' FLAPS', '<', '', 'white'),
-      fmt(` ${takeoff.flaps || 'CONF 2'}`, '', '', 'magenta'),
-      fmt(' FLEX TO TEMP', '<', '', 'white'),
-      fmt(` ${takeoff.flexTemp ? `${takeoff.flexTemp}°C` : '---'}`, '', '', 'magenta'),
+      fmt(' V1', '', `${takeoff.v1 ? `${takeoff.v1}` : '[  ]'}`, 'white'),
+      fmt(' VR', '', `${takeoff.vr ? `${takeoff.vr}` : '[  ]'}`, 'white'),
+      fmt(' V2', '', `${takeoff.v2 ? `${takeoff.v2}` : '[  ]'}`, 'white'),
       fmt(' TRANS ALT', '', '', 'white'),
       fmt(' 5000', '', '', 'green'),
-      blank(),
-      blank(),
-      blank(),
-      blank(),
+      fmt(' THR RED/ACC', '', '', 'white'),
+      fmt(' 1500/3000', '', '', 'green'),
+      fmt(' FLAPS/THS', '', '', 'white'),
+      fmt(` ${takeoff.flaps || '1'}/UP0.0`, '', '', 'magenta'),
+      fmt(' FLEX TO TEMP', '', '', 'white'),
+      fmt(`  ${takeoff.flexTemp ? `${takeoff.flexTemp}°` : '---'}`, '', '', 'magenta'),
+      fmt(' ENG OUT ACC', '', '', 'white'),
+      fmt(' 1500', '', 'NEXT PHASE>', 'magenta'),
    ],
     lskActions: {
-      L1: 'set_v1', L2: null, L3: 'set_vr', L4: null,
-      L5: 'set_v2', L6: null,
-      R1: 'set_flaps', R2: null, R3: 'set_flex', R4: null,
+      L1: 'set_v1', L2: 'set_vr', L3: 'set_v2', L4: null,
+      L5: 'set_flaps', L6: 'set_flex',
+      R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: 'perf_appr',
     },
   };
