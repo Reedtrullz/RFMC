@@ -51,3 +51,46 @@ export const DEFAULT_RNP: Record<NavigationPerformance['phase'], number> = {
   TERMINAL: 1.0,
   APPROACH: 0.3,
 };
+
+/**
+ * Calculates Ground Speed and Track based on wind triangle
+ */
+export function calculateGroundSpeedAndTrack(
+  heading: number,
+  tas: number,
+  windDir: number,
+  windSpeed: number
+): { gs: number; track: number } {
+  // Convert to radians
+  const hdgRad = (heading * Math.PI) / 180;
+  const wDirRad = (windDir * Math.PI) / 180;
+
+  // Wind components
+  const w_u = windSpeed * Math.sin(wDirRad);
+  const w_v = windSpeed * Math.cos(wDirRad);
+
+  // Airspeed components
+  const a_u = tas * Math.sin(hdgRad);
+  const a_v = tas * Math.cos(hdgRad);
+
+  // Ground speed components
+  // In a simple model, we just add the wind to the airspeed vector
+  // (Assuming the aircraft maintains heading, not track)
+  const g_u = a_u - w_u;
+  const g_v = a_v - w_v;
+
+  const gs = Math.sqrt(g_u * g_u + g_v * g_v);
+  let track = (Math.atan2(g_u, g_v) * 180) / Math.PI;
+  if (track < 0) track += 360;
+
+  return { gs, track };
+}
+
+/**
+ * Adds realistic position drift for IRS-only navigation
+ */
+export function calculateIrsDrift(currentError: number, dtSeconds: number): number {
+  // IRS typically drifts 1-2 NM per hour
+  const driftRateNmPerSecond = 1.5 / 3600;
+  return currentError + driftRateNmPerSecond * dtSeconds;
+}

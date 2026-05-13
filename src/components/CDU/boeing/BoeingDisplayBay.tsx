@@ -14,7 +14,7 @@ interface BoeingDisplayBayProps {
 export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintLevel, onPressLSK }: BoeingDisplayBayProps) {
   return (
     <div
-      className="w-full rounded-[5px] border border-black/70 bg-[#101010] p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)]"
+      className="w-full rounded-[5px] border border-black/70 bg-[#141616] p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-normal"
       style={{
         display: 'grid',
         gridTemplateColumns: '44px minmax(0, 1fr) 44px',

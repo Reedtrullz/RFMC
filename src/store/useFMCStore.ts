@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, selectFmcPositionSource, calculateANP, DEFAULT_RNP } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
+import { 
+  selectFmcPositionSource, 
+  calculateANP, 
+  DEFAULT_RNP,
+  calculateGroundSpeedAndTrack,
+  calculateIrsDrift
+} from '../fmc/fmsNavigation';
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
@@ -2187,10 +2194,38 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const anp = calculateANP(sensors, activeSource);
     const rnp = DEFAULT_RNP[navPerformance.phase] || 2.0;
 
+    // Simulate sensor drift if IRS is active
+    const newSensors = sensors.map(s => {
+      if (s.source === 'IRS' && s.available) {
+        return { ...s, positionErrorNm: calculateIrsDrift(s.positionErrorNm, 1) };
+      }
+      return s;
+    });
+
+    updates.sensors = newSensors;
     updates.activeNavSource = activeSource;
     updates.navPerformance = { ...navPerformance, anpNm: anp, rnpNm: rnp };
 
-    // 3. Alerts
+    // 3. Dynamic Aircraft State (GS/Track)
+    if (state.aircraftState) {
+      const { heading, speed: tas } = state.aircraftState;
+      const { windDir, windSpeed } = state.takeoff; // Using takeoff wind as ambient for now
+      
+      const { gs, track } = calculateGroundSpeedAndTrack(
+        heading || 0,
+        tas || 0,
+        windDir || 0,
+        windSpeed || 0
+      );
+
+      updates.aircraftState = {
+        ...state.aircraftState,
+        speed: gs, // We display GS on ND as "speed"
+        track: track
+      };
+    }
+
+    // 4. Alerts
     if (anp > rnp) {
       alertBus.addAlert({ id: 'unable-rnp', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', clearable: false });
     } else {
