@@ -1,5 +1,5 @@
 import { useFMCStore } from '../../store/useFMCStore';
-import { buildBoeingFMAState } from '@shared';
+import { buildBoeingFMAState, buildAirbusFMAState } from '@shared';
 
 export function FMA() {
   const state = useFMCStore(s => s);
@@ -10,24 +10,17 @@ export function FMA() {
     
     return (
       <div className="flex w-full justify-between border-b border-[#2a2d2d] bg-black p-1 font-mono text-xs font-bold uppercase">
-        {/* Autothrottle Mode */}
         <div className="flex flex-1 flex-col items-center border-r border-[#2a2d2d]">
           <span className="text-[#00ff44]">{fma.autothrottleMode}</span>
         </div>
-        
-        {/* Roll Mode */}
         <div className="flex flex-1 flex-col items-center border-r border-[#2a2d2d]">
           <span className="text-[#00ff44]">{fma.rollMode}</span>
           <span className="text-white opacity-60 text-[9px]">{fma.armedRollMode}</span>
         </div>
-        
-        {/* Pitch Mode */}
         <div className="flex flex-1 flex-col items-center border-r border-[#2a2d2d]">
           <span className="text-[#00ff44]">{fma.pitchMode}</span>
           <span className="text-white opacity-60 text-[9px]">{fma.armedPitchMode}</span>
         </div>
-        
-        {/* AFDS Status */}
         <div className="flex flex-1 flex-col items-center">
           <span className="text-[#00ff44]">{fma.apStatus}</span>
         </div>
@@ -35,12 +28,31 @@ export function FMA() {
     );
   }
 
-  return (
-    <div className="flex w-full justify-between border-b border-[#2a2d2d] bg-black p-1 font-mono text-[10px] font-bold uppercase text-[#00ff44]">
-      <div className="flex-1 text-center">SPEED</div>
-      <div className="flex-1 text-center">ALT</div>
-      <div className="flex-1 text-center">HDG</div>
-      <div className="flex-1 text-center">1 FD 2</div>
-    </div>
-  );
+  if (aircraft === 'AIRBUS_A320') {
+    const fma = buildAirbusFMAState(state.autopilot.airbus, state);
+    return (
+      <div className="grid grid-cols-5 w-full border-b border-[#2a2d2d] bg-black p-0.5 font-mono text-[9px] font-bold uppercase text-[#00ff44]">
+        <div className="border-r border-[#2a2d2d] text-center">{fma.autothrustMode}</div>
+        <div className="border-r border-[#2a2d2d] text-center">
+          <div>{fma.verticalMode}</div>
+          <div className="text-white opacity-50 text-[7px]">{fma.armedModes.find(m => ['G/S', 'ALT'].includes(m))}</div>
+        </div>
+        <div className="border-r border-[#2a2d2d] text-center">
+          <div>{fma.lateralMode}</div>
+          <div className="text-white opacity-50 text-[7px]">{fma.armedModes.find(m => ['LOC', 'NAV'].includes(m))}</div>
+        </div>
+        <div className="border-r border-[#2a2d2d] text-center">
+          <div className="text-white">CAT 3</div>
+          <div className="text-white opacity-50 text-[7px]">DUAL</div>
+        </div>
+        <div className="text-center">
+          <div>{fma.status.ap1 ? 'AP1' : ''} {fma.status.ap2 ? 'AP2' : ''}</div>
+          <div>{fma.status.fd1 ? '1' : ''} FD {fma.status.fd2 ? '2' : ''}</div>
+          <div className={fma.status.athr ? 'text-[#00ff44]' : 'text-white opacity-30'}>A/THR</div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

@@ -150,20 +150,45 @@ function buildWXRData(state: FMCState, efis: EFISState, isCentered: boolean): WX
   };
 }
 
-function buildVerticalProfilePoints(state: FMCState, routePoints: NDRoutePoint[], activeIndex: number): VerticalProfilePoint[] {
-  if (!state.demoMode && !state.tutorialActive) return [];
-  if (routePoints.length < 2 || activeIndex < 0) return [];
-  const activePoint = routePoints[activeIndex];
-  const nextPoint = routePoints[activeIndex + 1];
-  
-  if (!nextPoint) return [];
+import { VerticalProfileEngine } from './VerticalProfileEngine';
 
-  // Mock a T/D halfway between active and next point
+function buildVerticalProfilePoints(state: FMCState, routePoints: NDRoutePoint[], activeIndex: number): VerticalProfilePoint[] {
+  const acState = state.aircraftState;
+  if (!acState || routePoints.length < 2 || activeIndex < 0) return [];
+  
+  const currentAlt = acState.altitude || 0;
+  const targetAlt = state.performance.crzAlt || 30000; // Placeholder for real constraint
+  
+  // Only show T/D if we are above the next constraint or destination
+  if (currentAlt < 5000) return [];
+
+  // Find a target altitude (simplified: use 3000ft for destination)
+  const destAlt = 3000;
+  const distToTd = VerticalProfileEngine.computeTopOfDescent(currentAlt, destAlt);
+
+  if (distToTd <= 0 || distToTd > 200) return [];
+
+  // Find where on the route the T/D is
+  // We'll place it 'distToTd' NM before the destination
+  const destPoint = routePoints[routePoints.length - 1];
+  if (!destPoint || destPoint.distanceNm === undefined) return [];
+
+  const tdDistance = destPoint.distanceNm - distToTd;
+  if (tdDistance < 0) return [];
+
+  // Interpolate position (very simplified)
+  // Real implementation would walk the segments
+  const activePoint = routePoints[activeIndex];
+  const totalDist = destPoint.distanceNm - (activePoint.distanceNm || 0);
+  const ratio = (tdDistance - (activePoint.distanceNm || 0)) / totalDist;
+
+  if (ratio < 0 || ratio > 1) return [];
+
   return [
     {
       label: 'T/D',
-      x: (activePoint.x + nextPoint.x) / 2,
-      y: (activePoint.y + nextPoint.y) / 2
+      x: activePoint.x + (destPoint.x - activePoint.x) * ratio,
+      y: activePoint.y + (destPoint.y - activePoint.y) * ratio
     }
   ];
 }

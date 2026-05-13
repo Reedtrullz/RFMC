@@ -403,30 +403,55 @@ export function renderDataIndex(state: FMCState): DisplayData {
   };
 }
 
+export function renderAtsu(state: FMCState): DisplayData {
+  return {
+    title: 'ATSU',
+    pageIndicator: '',
+    lines: [
+      inv('  ATSU', '', '', 'cyan'),
+      fmt(' DATALINK', '<', '', 'white'),
+      fmt(' AOC MENU', '', '', 'white'),
+      fmt(' ATC MENU', '', '', 'white'),
+      blank(),
+      fmt(' COMM STATUS', '', '', 'white'),
+      fmt('  VHF3: READY', '', '', 'green'),
+      fmt('  SATCOM: READY', '', '', 'green'),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+      fmt('', ' <MCDU MENU', '', 'white'),
+      blank(),
+    ],
+    lskActions: {
+      L6: 'mcdu_menu',
+    },
+  };
+}
+
 export function renderMcduMenu(state: FMCState): DisplayData {
   return {
     title: 'MCDU MENU',
     pageIndicator: '',
     lines: [
       inv('  MCDU MENU', '', '', 'cyan'),
-      fmt(' INIT', '<', '', 'magenta'),
-      fmt(' INITIALIZE', '', '', 'green'),
-      fmt(' F-PLN', '<', '', 'magenta'),
-      fmt(' FLIGHT PLAN', '', '', 'green'),
-      fmt(' PERF', '<', '', 'magenta'),
-      fmt(' PERFORMANCE', '', '', 'green'),
-      fmt(' FUEL PRED', '<', '', 'magenta'),
-      fmt(' FUEL PREDICTION', '', '', 'green'),
-      fmt(' SEC F-PLN', '<', '', 'magenta'),
-      fmt(' SECONDARY FLT PLN', '', '', 'green'),
-      fmt(' RAD NAV', '<', '', 'magenta'),
-      fmt(' RADIO NAVIGATION', '', '', 'green'),
+      fmt(' FMGC', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' ATSU', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' AIDS', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' CFDS', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
     ],
     lskActions: {
-      L1: 'init_a', L2: null, L3: 'f_pln', L4: null,
-      L5: 'perf_to', L6: null,
-      R1: 'fuel_pred', R2: null, R3: 'sec_fpln', R4: null,
-      R5: 'rad_nav', R6: null,
+      L1: 'f_pln',
+      L2: 'atsu',
     },
   };
 }

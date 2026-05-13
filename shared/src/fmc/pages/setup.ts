@@ -32,7 +32,7 @@ export function renderIdentPage(state: FMCState): DisplayData {
       fmt(' MODEL', '', '', 'white'),
       fmt(` ${ident.aircraftType || '737-800'}`, '', '', 'green'),
       fmt(' NAV DATA', '', '', 'white'),
-      fmt(` ${ident.navDataVersion || 'OCT05NOV01'}`, '', '', 'green'),
+      fmt(` ${ident.navDataVersion || 'OCT05NOV01'}`, '', 'NAV DATA >', 'green'),
       fmt(' OP PROGRAM', '', '', 'white'),
       fmt(` ${ident.opProgram || 'BP0101'}`, '', '', 'green'),
       fmt(' ENGINES', '', '', 'white'),
@@ -43,8 +43,39 @@ export function renderIdentPage(state: FMCState): DisplayData {
       blank(),
     ],
     lskActions: {
+      R2: 'nav_data',
       L6: 'menu',
       R6: 'pos_init',
+    },
+  };
+}
+
+export function renderNavDataPage(state: FMCState): DisplayData {
+  const cycle = "FMC21A1";
+  const effective = "OCT05/26";
+  const expires = "NOV01/26";
+  
+  return {
+    title: 'NAV DATA',
+    pageIndicator: '1/1',
+    lines: [
+      inverse('  NAV DATA         1/1', '', '', 'cyan'),
+      fmt(' ACTIVE CYCLE', '', '', 'white'),
+      fmt(` ${cycle}`, '', '', 'green'),
+      fmt(' EFFECTIVE DATE', '', '', 'white'),
+      fmt(` ${effective}`, '', '', 'green'),
+      fmt(' EXPIRY DATE', '', '', 'white'),
+      fmt(` ${expires}`, '', '', 'green'),
+      blank(),
+      fmt(' DATABASE', '', '', 'white'),
+      fmt(' WORLDWIDE HIGH-RES', '', '', 'green'),
+      blank(),
+      blank(),
+      fmt('', ' <IDENT', '', 'white'),
+      blank(),
+    ],
+    lskActions: {
+      L6: 'ident',
     },
   };
 }

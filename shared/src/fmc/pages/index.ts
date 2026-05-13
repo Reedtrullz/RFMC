@@ -1,5 +1,5 @@
 import type { FMCState, DisplayData, PageType } from '../../types/fmc';
-import { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
+import { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage, renderNavDataPage } from './setup';
 import { renderRtePage, renderDepArrPage } from './route';
 import { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } from './navigation';
 import { renderClbPage } from './climb';
@@ -44,6 +44,8 @@ export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayDa
     CRZ: renderCrzPage,
     DES: renderDesPage,
     DIR_INTC: renderDirIntcPage,
+    NAV_DATA: renderNavDataPage,
+    AC_STATUS: renderIdentPage,
     N1_LIMIT: renderN1LimitPage,
   };
   return renderers[page] || getAirbusPageRenderer(page);

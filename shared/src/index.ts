@@ -118,6 +118,7 @@ export * from './autopilot/autopilotTypes';
 export * from './autopilot/boeingMcpLogic';
 export * from './pfd/pfdTypes';
 export * from './pfd/boeingPfdModel';
+export * from './pfd/airbusPfdModel';
 export type {
   Airport,
   ArincLegType,

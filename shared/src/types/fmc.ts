@@ -81,6 +81,7 @@ export type BoeingPageType =
   | 'CRZ'
   | 'DES'
   | 'DIR_INTC'
+  | 'NAV_DATA'
   | 'N1_LIMIT';
 
 /** All possible Airbus A320 MCDU pages */
@@ -96,7 +97,9 @@ export type AirbusPageType =
   | 'RAD_NAV'
   | 'PROG_A'
   | 'DATA_INDEX'
-  | 'MCDU_MENU';
+  | 'MCDU_MENU'
+  | 'AC_STATUS'
+  | 'ATSU';
 
 /** All possible FMC pages (Boeing + Airbus) */
 export type PageType = BoeingPageType | AirbusPageType;
@@ -228,6 +231,7 @@ export interface FlightPlanWaypoint {
   speedConstraint?: SpeedConstraint;
   discontinuity: boolean;
   airway?: string;
+  legType?: string; // ARINC 424 Leg Type (e.g., TF, DF, IF)
 }
 
 export interface FlightPlan {

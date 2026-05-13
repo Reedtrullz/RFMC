@@ -685,6 +685,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'takeoff_ref': state.setPage('TAKEOFF_REF'); handled = true; break;
       case 'menu': state.setPage('MENU'); handled = true; break;
       case 'ident': state.setPage('IDENT'); handled = true; break;
+      case 'nav_data': state.setPage('NAV_DATA'); handled = true; break;
       case 'next_page': state.pressKey('NEXT_PAGE'); handled = true; break;
       case 'prev_page': state.pressKey('PREV_PAGE'); handled = true; break;
       case 'dep_page': set({ depArrSubPage: 'DEP' }); handled = true; break;
@@ -705,6 +706,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'rad_nav': state.setPage('RAD_NAV'); handled = true; break;
       case 'data_index': state.setPage('DATA_INDEX'); handled = true; break;
       case 'mcdu_menu': state.setPage('MCDU_MENU'); handled = true; break;
+      case 'atsu': state.setPage('ATSU'); handled = true; break;
       case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); handled = true; break;
       case 'fpln_next': state.pressKey('NEXT_PAGE'); handled = true; break;
       case 'fpln_prev': state.pressKey('PREV_PAGE'); handled = true; break;
@@ -1453,7 +1455,33 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (renderer) return renderer(state);
     }
     const renderer = getPageRenderer(state.currentPage);
-    return renderer ? renderer(state) : getPageRenderer('MENU')!(state);
+    const data = renderer ? renderer(state) : getPageRenderer('MENU')!(state);
+
+    // Inject scratchpad or active message
+    const activeMsg = state.scratchpadMessages[0];
+    const scratchpadText = activeMsg ? activeMsg.text : state.scratchpad;
+    const scratchpadColor = activeMsg ? activeMsg.color : 'white';
+
+    if (data.segments) {
+      // For segment-based rendering, add/replace the last line (row 13)
+      data.segments = data.segments.filter(s => s.row !== 13);
+      data.segments.push({
+        row: 13,
+        col: 0,
+        text: scratchpadText.padEnd(24, ' '),
+        color: scratchpadColor as any,
+        size: 'normal',
+      });
+    } else {
+      // Legacy line-based rendering
+      data.lines[13] = {
+        text: scratchpadText,
+        color: scratchpadColor as any,
+        inverse: false,
+      };
+    }
+
+    return data;
   },
 
   setMode: (mode: FMCMode) => set({ mode }),

@@ -17,6 +17,7 @@ import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay'
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
+import { FmsInspector } from './components/Training/FmsInspector';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -189,6 +190,7 @@ export default function App() {
       <TrainingOverlay />
       {!isKiosk && <ConnectionStatus />}
       <PerformanceOverlay enabled={import.meta.env.DEV} />
+      <FmsInspector />
 
       {/* PWA Update Prompt */}
       {(offlineReady || needRefresh) && (
