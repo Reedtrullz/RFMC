@@ -157,4 +157,7 @@ export * from './fmc/LegSequencer';
 export * from './fmc/NavDatabaseService';
 export * from './fmc/RealismManager';
 export * from './fmc/PerformanceEngine';
+export * from './fmc/GpwsEngine';
+export * from './fmc/TcasEngine';
+export * from './autopilot/AutoflightModeManager';
 export * from './training/DebriefSystem';

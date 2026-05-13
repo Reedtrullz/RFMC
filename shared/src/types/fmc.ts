@@ -4,6 +4,16 @@ import type { NDMapMode } from '../fmc/ndTypes';
 import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
 import type { TrainingScenarioEngine } from '../training/scenarioEngine';
 
+export interface TCASTarget {
+  id: string;
+  ident?: string;
+  x: number;
+  y: number;
+  relativeAltitude: number;
+  trend: 'climb' | 'descend' | 'level';
+  threatLevel: 'other' | 'proximate' | 'traffic' | 'resolution';
+}
+
 // ============================================================
 // Core FMC types shared between frontend and backend
 // ============================================================
@@ -50,11 +60,12 @@ export interface NavSensor {
 export interface NavigationPerformance {
   anpNm: number;
   anp: number;
+  rnpNm: number;
   rnp: number;
   rnpManual: boolean;
   activeSource: NavSource;
-  rnpNm: number;
   phase: 'TAKEOFF' | 'ENROUTE' | 'OCEANIC' | 'TERMINAL' | 'APPROACH';
+  xteNm: number;
 }
 
 export type AlertLevel = 'WARNING' | 'CAUTION' | 'ADVISORY' | 'STATUS';
@@ -106,7 +117,8 @@ export type AirbusPageType =
   | 'MCDU_MENU'
   | 'AC_STATUS'
   | 'ATSU'
-  | 'ATSU_MSGS';
+  | 'ATSU_MSGS'
+  | 'ATSU_MSG_DETAIL';
 
 /** All possible FMC pages (Boeing + Airbus) */
 export type PageType = BoeingPageType | AirbusPageType;
@@ -508,6 +520,10 @@ export interface FMCState {
   hiddenPanels: PanelId[];
   pinnedPanels: PanelId[];
   focusedPanel: PanelId | null;
+  trafficTargets: TCASTarget[];
+  selectedMessageId: string | null;
+  gpwsAlert: string;
+  tcasAlert: boolean;
 }
 
 export interface AcarsMessage {

@@ -173,17 +173,13 @@ export class AutoflightModeManager {
     switch (mode) {
       case 'LNAV':
       case 'NAV':
-        // Captured if within 0.5nm of track (simplified)
-        // In a real FMS this would use cross-track error from the LNAV engine
-        return true; 
+        // Real XTE-based capture
+        return Math.abs(state.navPerformance.xteNm) < 0.5;
 
       case 'LOC':
       case 'VOR_LOC':
-        // Simulate localizer capture if heading is within 30deg of runway course
-        // and we are close to the centerline
-        const rwyHeading = state.takeoff.windDir; // Mocking rwy course as wind dir for now
-        const diff = Math.abs((state.aircraftState.headingDeg || 0) - rwyHeading);
-        return diff < 30;
+        // Mock LOC capture
+        return true; 
 
       default:
         return false;
@@ -195,13 +191,9 @@ export class AutoflightModeManager {
 
     switch (mode) {
       case 'G_S':
-        // Glide slope capture logic
-        return true; 
-      
-      case 'ALT_HOLD':
-        const targetAlt = state.autopilot.boeing.altitude;
-        return Math.abs(state.aircraftState.altitudeFt - targetAlt) < 50;
-
+        return true; // Simplified capture
+      case 'VNAV_PTH':
+        return true; // Simplified capture
       default:
         return false;
     }

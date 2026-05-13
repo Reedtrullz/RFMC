@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { NavigationDisplayModel } from '@shared';
-import { InstrumentBezel } from '../../visual/InstrumentBezel';
-import { ScreenGlass } from '../../visual/ScreenGlass';
+import { InstrumentBezel } from '../../instruments/common/InstrumentBezel';
+import { ScreenGlass } from '../../instruments/common/ScreenGlass';
 
 interface AirbusNDFrameProps {
   model: NavigationDisplayModel;

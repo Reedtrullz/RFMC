@@ -2,6 +2,7 @@ import type { FMCState, NavigationPerformance, FlightPhase } from '../types/fmc'
 import { selectFmcPositionSource, calculateANP, DEFAULT_RNP } from './fmsNavigation';
 import { PhaseManager } from './PhaseManager';
 import { LegSequencer } from './LegSequencer';
+import { crossTrackErrorNm } from './ndGeometry';
 
 /**
  * FmsRuntimeEngine centralizes periodic FMS calculations.
@@ -61,11 +62,30 @@ export class FmsRuntimeEngine {
       rnp = DEFAULT_RNP[phase] || 2.0;
     }
 
+    // XTE Calculation
+    let xteNm = 0;
+    if (state.aircraftState && state.flightPlan.waypoints.length > 0) {
+      const ac = { lat: state.aircraftState.lat, lon: state.aircraftState.lon };
+      const wp1 = state.flightPlan.waypoints[0];
+      const wp2 = state.flightPlan.waypoints[1];
+      
+      if (wp1.lat !== undefined && wp1.lon !== undefined) {
+        if (wp2 && wp2.lat !== undefined && wp2.lon !== undefined) {
+           xteNm = crossTrackErrorNm(ac, { lat: wp1.lat, lon: wp1.lon }, { lat: wp2.lat, lon: wp2.lon });
+        } else {
+           // Direct to WP1: No path yet, so XTE is 0 or distance-based error?
+           // Typically XTE is only valid relative to a track.
+           xteNm = 0;
+        }
+      }
+    }
+
     // Only return if changed (basic optimization)
     if (
       anp === state.navPerformance?.anp && 
       rnp === state.navPerformance?.rnp && 
-      activeSource === state.navPerformance?.activeSource
+      activeSource === state.navPerformance?.activeSource &&
+      Math.abs(xteNm - (state.navPerformance?.xteNm ?? 0)) < 0.01
     ) {
       return null;
     }
@@ -74,6 +94,7 @@ export class FmsRuntimeEngine {
       anp,
       rnp,
       activeSource,
+      xteNm
     };
   }
 }

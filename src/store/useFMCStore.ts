@@ -56,8 +56,10 @@ function modeZoomDefaults(mode: CockpitLayoutMode): Record<InstrumentPanelId, nu
   } as Record<InstrumentPanelId, number>;
 }
 
-import { ScenarioEngine } from '@shared';
+import { ScenarioEngine, GpwsEngine, TcasEngine } from '@shared';
 export const scenarioEngine = new ScenarioEngine();
+export const gpwsEngine = new GpwsEngine();
+export const tcasEngine = new TcasEngine();
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
   return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
@@ -248,15 +250,15 @@ const defaultState = {
       loc: false,
       appr: false,
       exped: false,
-      hdgTrkMode: 'HDG_VS',
+      hdgTrkMode: 'HDG_VS' as const,
       metricAltitude: false,
-      speedMachMode: 'SPD',
+      speedMachMode: 'SPD' as const,
     },
     truth: {
-      lateralActive: 'OFF',
-      verticalActive: 'OFF',
-      thrustActive: 'OFF',
-      autopilotStatus: 'OFF',
+      lateralActive: 'OFF' as const,
+      verticalActive: 'OFF' as const,
+      thrustActive: 'OFF' as const,
+      autopilotStatus: 'OFF' as const,
       lastModeChangeTimestamps: {
         thrust: 0,
         lateral: 0,
@@ -280,6 +282,10 @@ const defaultState = {
   flightPhase: 'PREFLIGHT' as FlightPhase,
   scratchpadMessages: [] as FmcMessage[],
   posPageIndex: 0,
+  trafficTargets: [],
+  selectedMessageId: null,
+  gpwsAlert: 'NONE',
+  tcasAlert: false,
 };
 
 interface FMCActions {
@@ -1436,19 +1442,23 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
+      case 'atsu':
+        set({ page: 'ATSU' });
+        handled = true;
+        break;
+      case 'atsu_msgs':
+        set({ page: 'ATSU_MSGS', selectedMessageId: null });
+        handled = true;
+        break;
       case 'atsu_load_route': {
-        if (state.atsu.pendingUplink) {
-          const uplink = state.atsu.pendingUplink;
+        const uplink = state.atsu.pendingUplink;
+        if (uplink) {
           set({
-            pendingFlightPlan: uplink,
-            pendingRoute: {
-              origin: uplink.origin,
-              destination: uplink.destination,
-              flightNumber: uplink.flightNumber,
-              routeString: uplink.route
-            },
+            pendingFlightPlan: { ...uplink },
+            pendingRoute: { ...state.route, origin: uplink.origin, destination: uplink.destination },
             isModified: true,
             execLit: true,
+            scratchpad: '',
             atsu: { ...state.atsu, pendingUplink: null }
           });
           get().expandActiveRoute();
@@ -1485,6 +1495,18 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const dir = scratchpad.toUpperCase();
           if (dir !== 'L' && dir !== 'R') { set({ scratchpadError: 'INVALID ENTRY' }); return; }
           state.setHoldDirection(dir as 'L' | 'R');
+          handled = true;
+        }
+        break;
+      default:
+        if (action.startsWith('view_msg_')) {
+          const msgId = action.replace('view_msg_', '');
+          const msgs = state.atsu.messages.map(m => m.id === msgId ? { ...m, read: true } : m);
+          set({ 
+            page: 'ATSU_MSG_DETAIL' as PageType, 
+            selectedMessageId: msgId,
+            atsu: { ...state.atsu, messages: msgs }
+          });
           handled = true;
         }
         break;
@@ -2415,6 +2437,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({
       hiddenPanels: getRecommendedHiddenPanels(state.cockpitLayoutMode, state.pinnedPanels),
       focusedPanel: null,
+      trafficTargets: [],
       instrumentZoom: {
         ...state.instrumentZoom,
         ...zoomDefaults,
@@ -2553,7 +2576,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       );
 
       const currentIas = updates.aircraftState?.indicatedAirspeedKt ?? prevIas;
-      const accel = dtSeconds > 0 ? (currentIas - prevIas) / dtSeconds : 0;
+      const accel = (currentIas - prevIas) / 1; // 1 second tick
 
       updates.aircraftState = {
         ...state.aircraftState,
@@ -2634,6 +2657,30 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (apUpdates) {
       updates.autopilot = { ...state.autopilot, truth: { ...state.autopilot.truth, ...apUpdates } };
     }
+
+    // 6. GPWS Logic
+    const gpwsResult = gpwsEngine.update(state, 1); // 1s tick
+    updates.gpwsAlert = gpwsResult.alert;
+    if (gpwsResult.alert !== 'NONE') {
+      switch (gpwsResult.alert) {
+        case 'SINK_RATE': AuralAlertService.playSinkRate(); break;
+        case 'PULL_UP': AuralAlertService.playPullUp(); break;
+        case 'TERRAIN': AuralAlertService.playTerrain(); break;
+        case 'DONT_SINK': AuralAlertService.playDontSink(); break;
+        case 'GLIDESLOPE': AuralAlertService.playGlideslope(); break;
+      }
+    }
+    if (gpwsResult.callout) {
+      AuralAlertService.playVoice(gpwsResult.callout.toString());
+    }
+
+    // 7. TCAS Logic
+    const tcasResult = tcasEngine.update(state, 1);
+    updates.tcasAlert = tcasResult.alert;
+    if (tcasResult.alert) {
+      AuralAlertService.playTraffic();
+    }
+    updates.trafficTargets = tcasResult.targets;
 
     if (Object.keys(updates).length > 0) {
       set(updates);

@@ -53,6 +53,11 @@ describe('NavigationDisplay', () => {
         fuelTotal: 10000,
         gw: 120000,
         gs: 250,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 10000,
+        indicatedAirspeedKt: 250,
+        verticalSpeedFpm: 0,
       }
     });
 
@@ -95,6 +100,11 @@ describe('NavigationDisplay', () => {
         fuelTotal: 10000,
         gw: 120000,
         gs: 250,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 10000,
+        indicatedAirspeedKt: 250,
+        verticalSpeedFpm: 0,
       }
     });
 

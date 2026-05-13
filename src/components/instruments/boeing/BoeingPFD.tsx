@@ -4,6 +4,7 @@ import { FMA } from '../common/FMA';
 import { SpeedTape } from '../common/SpeedTape';
 import { AltitudeTape } from '../common/AltitudeTape';
 import { AttitudeSphere } from '../common/AttitudeSphere';
+import { PfdAlerts } from '../common/PfdAlerts';
 import { buildBoeingPFDState } from '@shared';
 
 export function BoeingPFD() {
@@ -30,6 +31,7 @@ export function BoeingPFD() {
             bank={pfd.bank} 
             fd={pfd.flightDirector}
           />
+          <PfdAlerts text={pfd.alertText} level={pfd.alertLevel} />
         </div>
         
         {/* Altitude Tape */}

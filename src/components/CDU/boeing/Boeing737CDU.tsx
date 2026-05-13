@@ -7,7 +7,7 @@ import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
 import { BoeingCDUShell } from './BoeingCDUShell';
 import { BoeingDisplayBay } from './BoeingDisplayBay';
 import { BoeingFunctionKeyPanel } from './BoeingFunctionKeyPanel';
-import { AnnunciatorLight } from '../../visual/AnnunciatorLight';
+import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 
 export function Boeing737CDU() {
   const isKiosk = useKioskMode();

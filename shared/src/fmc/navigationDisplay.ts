@@ -129,14 +129,13 @@ function isDisplayCentered(style: 'airbus' | 'boeing', mode: string, efisCentere
 }
 
 function buildTCASTargets(state: FMCState, efis: EFISState, isCentered: boolean): TCASTarget[] {
-  if (!state.demoMode && !state.tutorialActive) return [];
   if (!efis.overlays.tfc) return [];
   const cy = isCentered ? 50 : 84;
-  return [
-    { id: 'T1', x: 45, y: cy - 25, relativeAltitude: 12, trend: 'climb', threatLevel: 'proximate' },
-    { id: 'T2', x: 65, y: cy - 15, relativeAltitude: -5, trend: 'descend', threatLevel: 'traffic' },
-    { id: 'T3', x: 50, y: cy - 45, relativeAltitude: 0, trend: 'level', threatLevel: 'other' },
-  ];
+  
+  return (state.trafficTargets || []).map(t => ({
+    ...t,
+    y: cy + (t.y - 50)
+  }));
 }
 
 function buildWXRData(state: FMCState, efis: EFISState, isCentered: boolean): WXRData | null {

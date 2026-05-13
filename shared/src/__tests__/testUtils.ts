@@ -1,4 +1,5 @@
 import type { FMCState } from '../types/fmc';
+import { AirbusFCUState, AutoflightTruthState } from '../autopilot/autopilotTypes';
 
 export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
   return {
@@ -51,7 +52,18 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
         hdgTrkMode: 'HDG_VS',
         metricAltitude: false,
         speedMachMode: 'SPD',
-      },
+      } as AirbusFCUState,
+      truth: {
+        lateralActive: 'OFF',
+        verticalActive: 'OFF',
+        thrustActive: 'OFF',
+        autopilotStatus: 'OFF',
+        lastModeChangeTimestamps: {
+          thrust: 0,
+          lateral: 0,
+          vertical: 0,
+        },
+      } as AutoflightTruthState,
     },
     currentPage: 'IDENT',
     pageHistory: [],
@@ -64,7 +76,7 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
       { source: 'GPS', available: true, positionErrorNm: 0.05 },
       { source: 'IRS', available: true, positionErrorNm: 2.0 },
     ],
-    navPerformance: { anpNm: 0.05, rnpNm: 2.0, anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'GPS', phase: 'ENROUTE' },
+    navPerformance: { anpNm: 0.05, rnpNm: 2.0, anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'GPS', phase: 'ENROUTE', xteNm: 0 },
     activeNavSource: 'GPS',
     alerts: [],
     signsOn: false,
@@ -186,6 +198,10 @@ export function createBaseState(overrides: Partial<FMCState> = {}): FMCState {
     tutorialHighlight: null,
     tutorialConfidence: null,
     selectedPlanWaypointIndex: null,
+    trafficTargets: [],
+    selectedMessageId: null,
+    gpwsAlert: 'NONE',
+    tcasAlert: false,
     ...overrides,
   };
 }

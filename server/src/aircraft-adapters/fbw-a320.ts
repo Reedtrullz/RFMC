@@ -25,7 +25,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
   lastError: string | null = null;
   isConnected = false;
 
-  private simState: { lat: number; lon: number; altitude: number; heading: number; ias: number; tas: number; gs: number; vs: number } | null = null;
+  private simState: any | null = null;
 
   private cduLines: string[] = [];
   private handle: SimConnectConnection | null = null;
@@ -181,6 +181,11 @@ export class FBWA320Adapter implements IAircraftAdapter {
         track: 45,
         altitude: 0,
         ias: 0, tas: 0, gs: 0, vs: 0, fuelTotal: 0, gw: 0,
+        headingDeg: 45,
+        trackDeg: 45,
+        altitudeFt: 0,
+        indicatedAirspeedKt: 0,
+        verticalSpeedFpm: 0,
       };
     }
     return {
@@ -196,6 +201,11 @@ export class FBWA320Adapter implements IAircraftAdapter {
       fuelTotal: 0,
       gw: 0,
       radios: (this.simState as any).radios,
+      headingDeg: this.simState.headingDeg,
+      trackDeg: this.simState.trackDeg,
+      altitudeFt: this.simState.altitudeFt,
+      indicatedAirspeedKt: this.simState.indicatedAirspeedKt,
+      verticalSpeedFpm: this.simState.verticalSpeedFpm,
     };
   }
 

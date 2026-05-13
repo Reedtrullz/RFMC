@@ -1,6 +1,6 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
-import { CockpitPanel } from '../../../../visual/CockpitPanel';
+import { CockpitPanel } from '../../../visual/CockpitPanel';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
 import { MCPDisplayWindow } from './MCPDisplayWindow';
@@ -54,7 +54,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             >SPD/MACH</button>
             <MCPDisplayWindow 
               label="IAS/MACH" 
-              value={state.speed === null && state.mach === null ? '' : (state.mach !== null ? `.${Math.round(state.mach * 100)}` : state.speed?.toString().padStart(3, ' '))} 
+              value={state.speed === null && state.mach === null ? '' : (state.mach !== null ? `.${Math.round(state.mach * 100)}` : (state.speed?.toString() ?? '').padStart(3, ' '))} 
               active={state.speed !== null || state.mach !== null}
               highlighted={tutorialHighlight === 'IAS_SEL'}
               unit={state.mach !== null ? 'MACH' : 'SPD'}

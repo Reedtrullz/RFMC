@@ -64,6 +64,8 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
       visible: state.autopilot.boeing.fdLeft || state.autopilot.boeing.fdRight,
       pitch: 0,
       roll: 0
-    }
+    },
+    alertText: state.gpwsAlert !== 'NONE' ? state.gpwsAlert.replace('_', ' ') : (state.tcasAlert ? 'TRAFFIC' : undefined),
+    alertLevel: (state.gpwsAlert === 'PULL_UP' || state.gpwsAlert === 'TERRAIN') ? 'WARNING' : 'CAUTION'
   };
 }

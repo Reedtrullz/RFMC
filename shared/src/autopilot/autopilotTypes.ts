@@ -62,7 +62,7 @@ export type AutopilotState = {
   truth: AutoflightTruthState;
 };
 
-export type LateralMode = 'HDG_SEL' | 'LNAV' | 'VOR_LOC' | 'LOC' | 'APP' | 'NAV' | 'ROLL' | 'OFF';
+export type LateralMode = 'HDG_SEL' | 'LNAV' | 'VOR_LOC' | 'LOC' | 'APP' | 'NAV' | 'ROLL' | 'HDG' | 'OFF';
 export type VerticalMode = 'ALT_HOLD' | 'VNAV_PTH' | 'LVL_CHG' | 'VS' | 'G_S' | 'CLB' | 'DES' | 'OP_CLB' | 'OP_DES' | 'OFF';
 export type ThrustMode = 'N1' | 'SPEED' | 'THR_CLB' | 'IDLE' | 'MAN_TOGA' | 'MAN_FLEX' | 'RETARD' | 'OFF';
 
@@ -72,7 +72,7 @@ export interface AutoflightTruthState {
   verticalActive: VerticalMode;
   verticalArmed?: VerticalMode;
   thrustActive: ThrustMode;
-  autopilotStatus: 'OFF' | 'CMD_A' | 'CMD_B' | 'CMD_AB' | 'AP1' | 'AP2' | 'AP1_AP2';
+  autopilotStatus: 'OFF' | 'CMD_A' | 'CMD_B' | 'CMD_AB' | 'CWS_A' | 'CWS_B' | 'AP1' | 'AP2' | 'AP1_AP2';
   lastModeChangeTimestamps: {
     thrust: number;
     lateral: number;

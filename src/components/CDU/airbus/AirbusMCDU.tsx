@@ -7,7 +7,7 @@ import { AirbusMCDUShell } from './AirbusMCDUShell';
 import { AirbusDisplayBay } from './AirbusDisplayBay';
 import { AirbusFunctionKeyPanel } from './AirbusFunctionKeyPanel';
 import { AirbusKeypad } from './AirbusKeypad';
-import { AnnunciatorLight } from '../../visual/AnnunciatorLight';
+import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 
 export function AirbusMCDU() {
   const isKiosk = useKioskMode();

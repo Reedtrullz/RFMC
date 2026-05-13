@@ -42,7 +42,7 @@ export class FMCEngine {
       demoMode: false,
       ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
       position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 600 },
-      navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE', anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'IRS' },
+      navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE', anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'IRS', xteNm: 0 },
       activeNavSource: 'IRS',
       sensors: [
         { source: 'GPS', available: true, positionErrorNm: 0.05 },
@@ -131,7 +131,21 @@ export class FMCEngine {
           loc: false,
           appr: false,
           exped: false,
+          hdgTrkMode: 'HDG_VS' as const,
+          metricAltitude: false,
+          speedMachMode: 'SPD' as const,
         },
+        truth: {
+          lateralActive: 'OFF',
+          verticalActive: 'OFF',
+          thrustActive: 'OFF',
+          autopilotStatus: 'OFF',
+          lastModeChangeTimestamps: {
+            thrust: 0,
+            lateral: 0,
+            vertical: 0,
+          },
+        } as any,
       },
       efisL: this.createDefaultEFIS('BOEING_737', 'L'),
       efisR: this.createDefaultEFIS('BOEING_737', 'R'),
@@ -178,6 +192,10 @@ export class FMCEngine {
       },
       flightPhase: 'PREFLIGHT' as any,
       scratchpadMessages: [],
+      trafficTargets: [],
+      selectedMessageId: null,
+      gpwsAlert: 'NONE',
+      tcasAlert: false,
     };
   }
 

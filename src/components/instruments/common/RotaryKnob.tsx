@@ -8,7 +8,7 @@ interface RotaryKnobProps {
   highlighted?: boolean;
 }
 
-import { tactile } from '../../utils/tactile';
+import { tactile } from '../../../utils/tactile';
 
 export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }: RotaryKnobProps) {
   const [isDragging, setIsDragging] = useState(false);

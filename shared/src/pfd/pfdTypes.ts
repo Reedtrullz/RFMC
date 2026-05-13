@@ -43,6 +43,8 @@ export type PFDState = {
     lateral?: boolean;
     vertical?: boolean;
   };
+  alertText?: string;
+  alertLevel?: 'WARNING' | 'CAUTION';
 };
 
 export type PFDModel = {

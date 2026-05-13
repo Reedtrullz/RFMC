@@ -1,5 +1,5 @@
 import type { AirbusFCUState } from '@shared';
-import { CockpitPanel } from '../../../../visual/CockpitPanel';
+import { CockpitPanel } from '../../../visual/CockpitPanel';
 import { FCUDisplay } from './FCUDisplay';
 import { FCUButton } from './FCUButton';
 import { useFMCStore } from '../../../../store/useFMCStore';
@@ -27,7 +27,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
   const isManaged = (field: 'speed' | 'heading' | 'altitude') => {
     if (field === 'speed') return truth.thrustActive === 'SPEED' || truth.thrustActive === 'THR_CLB';
     if (field === 'heading') return truth.lateralActive === 'NAV' || truth.lateralArmed === 'NAV';
-    if (field === 'altitude') return truth.verticalActive === 'CLB' || truth.verticalActive === 'DES' || truth.verticalArmed === 'VNAV';
+    if (field === 'altitude') return truth.verticalActive === 'CLB' || truth.verticalActive === 'DES' || truth.verticalArmed === 'VNAV_PTH';
     return false;
   };
 

@@ -1,6 +1,6 @@
 import { Display } from '../Display';
 import { Scratchpad } from '../Scratchpad';
-import { ScreenGlass } from '../../visual/ScreenGlass';
+import { ScreenGlass } from '../../instruments/common/ScreenGlass';
 import { AirbusLSKColumn } from './AirbusLSKColumn';
 
 interface AirbusDisplayBayProps {

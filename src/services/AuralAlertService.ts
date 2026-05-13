@@ -47,6 +47,49 @@ export class AuralAlertService {
     }
   }
 
+  public static playVoice(text: string, rate: number = 1.0) {
+    if (!window.speechSynthesis) return;
+    
+    // Cancel any ongoing speech to prioritize new alerts
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = rate;
+    utterance.pitch = 0.8; // Deeper, more "cockpit" voice
+    utterance.volume = 1.0;
+    
+    // Select a male voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.name.toLowerCase().includes('male')) || voices[0];
+    if (voice) utterance.voice = voice;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  public static playTerrain() {
+    this.playVoice("TERRAIN, TERRAIN", 1.2);
+  }
+
+  public static playPullUp() {
+    this.playVoice("PULL UP, PULL UP", 1.3);
+  }
+
+  public static playSinkRate() {
+    this.playVoice("SINK RATE", 1.1);
+  }
+
+  public static playDontSink() {
+    this.playVoice("DON'T SINK", 1.1);
+  }
+
+  public static playGlideslope() {
+    this.playVoice("GLIDESLOPE", 0.9);
+  }
+
+  public static playTraffic() {
+    this.playVoice("TRAFFIC, TRAFFIC", 1.2);
+  }
+
   private static playPulse(freq: number, duration: number, time: number) {
     if (!this.context) return;
     const osc = this.context.createOscillator();
