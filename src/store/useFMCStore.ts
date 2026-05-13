@@ -5,7 +5,8 @@ import {
   parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
   expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, 
   TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, 
-  PhaseManager, LegSequencer, PerformanceEngine 
+  PhaseManager, LegSequencer, PerformanceEngine,
+  AutoflightModeManager, AutoflightTruthState, LateralMode, VerticalMode, ThrustMode
 } from '@shared';
 import { 
   selectFmcPositionSource, 
@@ -247,7 +248,16 @@ const defaultState = {
       loc: false,
       appr: false,
       exped: false,
-    }
+      hdgTrkMode: 'HDG_VS',
+      metricAltitude: false,
+      speedMachMode: 'SPD',
+    },
+    truth: {
+      lateralActive: 'OFF',
+      verticalActive: 'OFF',
+      thrustActive: 'OFF',
+      autopilotStatus: 'OFF',
+    },
   },
 
   efisL: createDefaultEFIS('BOEING_737', 'L'),
@@ -2138,7 +2148,38 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   pressMCPButton: (action) => {
     const state = get();
-    if (state.aircraft === 'BOEING_737') {
+    const { truth } = state.autopilot;
+    
+    // 1. Authoritative Mode Request Processing
+    let request: Partial<AutoflightTruthState> = {};
+    const isBoeing = state.aircraft === 'BOEING_737';
+
+    if (isBoeing) {
+      if (action === 'LNAV') request = { lateralActive: 'LNAV' };
+      if (action === 'VNAV') request = { verticalActive: 'VNAV_PTH' };
+      if (action === 'HDG_SEL') request = { lateralActive: 'HDG_SEL' };
+      if (action === 'ALT_HLD') request = { verticalActive: 'ALT_HOLD' };
+      if (action === 'VOR_LOC') request = { lateralActive: 'VOR_LOC' };
+      if (action === 'APP') request = { lateralActive: 'APP', verticalActive: 'G_S' };
+    } else {
+      if (action === 'LOC') request = { lateralActive: 'LOC' };
+      if (action === 'APPR') request = { lateralActive: 'APP', verticalActive: 'G_S' };
+      if (action === 'EXPED') request = { verticalActive: 'OP_CLB' }; // Simplified
+    }
+
+    if (Object.keys(request).length > 0) {
+      const { nextState, alert } = AutoflightModeManager.processModeRequest(request, truth, state);
+      if (alert) {
+        set({ scratchpad: alert, msgLight: true });
+        // Still toggle the button light for feedback if in legacy mode? 
+        // No, user said button light != truth.
+      } else {
+        set((s) => ({ autopilot: { ...s.autopilot, truth: nextState } }));
+      }
+    }
+
+    // 2. Legacy UI Logic (Button Lights and Window state)
+    if (isBoeing) {
       const update = processBoeingMCPAction(state.autopilot.boeing, action as any);
       state.updateBoeingMCP(update);
       return;

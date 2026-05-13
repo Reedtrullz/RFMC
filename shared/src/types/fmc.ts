@@ -536,17 +536,32 @@ export interface AirbusFmgcState {
   secondaryFlightPlan?: FlightPlan;
 }
 
-export interface AircraftState {
+export interface AircraftTelemetry {
+  lat: number;
+  lon: number;
+  headingDeg: number;
+  trackDeg: number;
+  altitudeFt: number;
+  indicatedAirspeedKt: number;
+  trueAirspeedKt?: number;
+  groundSpeedKt?: number;
+  verticalSpeedFpm: number;
+  pitchDeg?: number;
+  bankDeg?: number;
+  radioAltitudeFt?: number;
+}
+
+export interface AircraftState extends AircraftTelemetry {
+  // Compatibility fields
   altitude: number;
   heading: number;
   ias: number;
   tas: number;
   vs: number;
-  fuelTotal: number;
-  gw: number;
-  lat: number;
-  lon: number;
   gs: number;
   track: number;
+  
+  fuelTotal: number;
+  gw: number;
   selectedHeading?: number;
 }

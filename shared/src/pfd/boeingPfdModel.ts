@@ -1,45 +1,38 @@
-import { BoeingMCPState } from '../autopilot/autopilotTypes';
-import { BoeingFMAState, PFDState } from './pfdTypes';
-import { FMCState } from '../types/fmc';
+import { AutopilotState } from '../autopilot/autopilotTypes';
 
-export function buildBoeingFMAState(mcp: BoeingMCPState, fmc: FMCState): BoeingFMAState {
+export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): BoeingFMAState {
+  const { truth, boeing: mcp } = autopilot;
+
   let autothrottleMode: BoeingFMAState['autothrottleMode'] = '';
-  if (mcp.autothrottleArm) {
-    if (mcp.mach !== null) autothrottleMode = 'MCP SPD'; // Simplified
-    else if (mcp.speedMode) autothrottleMode = 'MCP SPD';
-    else if (mcp.n1) autothrottleMode = 'N1';
-    else autothrottleMode = 'ARM';
+  if (truth.thrustActive !== 'OFF') {
+    autothrottleMode = truth.thrustActive === 'SPEED' ? 'MCP SPD' : truth.thrustActive;
+  } else if (mcp.autothrottleArm) {
+    autothrottleMode = 'ARM';
   }
 
   let rollMode: BoeingFMAState['rollMode'] = '';
-  if (mcp.lnav) rollMode = 'LNAV';
-  else if (mcp.hdgSel) rollMode = 'HDG SEL';
-  else if (mcp.vorLoc) rollMode = 'VOR/LOC';
+  if (truth.lateralActive !== 'OFF') {
+    rollMode = truth.lateralActive;
+  }
 
   let pitchMode: BoeingFMAState['pitchMode'] = '';
-  if (mcp.vnav) {
-    pitchMode = mcp.altHold ? 'VNAV PTH' : 'VNAV SPD';
-  } else if (mcp.altHold) {
-    pitchMode = 'ALT HOLD';
-  } else if (mcp.vs) {
-    pitchMode = 'V/S';
-  } else if (mcp.lvlChg) {
-    pitchMode = 'LVL CHG';
+  if (truth.verticalActive !== 'OFF') {
+    pitchMode = truth.verticalActive;
   }
 
   let apStatus: BoeingFMAState['apStatus'] = '';
-  if (mcp.cmdA) apStatus = 'CMD A';
-  else if (mcp.cmdB) apStatus = 'CMD B';
-  else if (mcp.cwsA) apStatus = 'CWS A';
-  else if (mcp.cwsB) apStatus = 'CWS B';
-  else if (mcp.fdLeft || mcp.fdRight) apStatus = 'FD';
+  if (truth.autopilotStatus !== 'OFF') {
+    apStatus = truth.autopilotStatus.replace('_', ' ');
+  } else if (mcp.fdLeft || mcp.fdRight) {
+    apStatus = 'FD';
+  }
 
   return {
     autothrottleMode,
     rollMode,
     pitchMode,
-    armedRollMode: mcp.app && !mcp.vorLoc ? 'VOR/LOC' : '',
-    armedPitchMode: mcp.app && !pitchMode.includes('G/S') ? 'G/S' : '',
+    armedRollMode: truth.lateralArmed || '',
+    armedPitchMode: truth.verticalArmed || '',
     apStatus
   };
 }
@@ -47,10 +40,10 @@ export function buildBoeingFMAState(mcp: BoeingMCPState, fmc: FMCState): BoeingF
 export function buildBoeingPFDState(state: FMCState): PFDState {
   const aircraft = state.aircraftState;
   return {
-    heading: aircraft?.heading || 0,
-    altitude: aircraft?.altitude || 0,
-    speed: aircraft?.ias || 0,
-    verticalSpeed: aircraft?.vs || 0,
+    heading: aircraft?.headingDeg || 0,
+    altitude: aircraft?.altitudeFt || 0,
+    speed: aircraft?.indicatedAirspeedKt || 0,
+    verticalSpeed: aircraft?.verticalSpeedFpm || 0,
     pitch: 0, // Mock for now
     bank: 0, // Mock for now
     radioAltitude: (aircraft?.altitude || 0) < 2500 ? (aircraft?.altitude || 0) : null,

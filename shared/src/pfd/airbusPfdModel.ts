@@ -1,35 +1,30 @@
-import { AirbusFCUState } from '../autopilot/autopilotTypes';
-import { AirbusFMAState, PFDState } from './pfdTypes';
-import { FMCState } from '../types/fmc';
+import { AutopilotState } from '../autopilot/autopilotTypes';
 
-export function buildAirbusFMAState(fcu: AirbusFCUState, fmc: FMCState): AirbusFMAState {
+export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): AirbusFMAState {
+  const { truth, airbus: fcu } = autopilot;
+  
   let autothrustMode: AirbusFMAState['autothrustMode'] = '';
-  if (fcu.athr) {
-    if (fcu.speedManaged) autothrustMode = 'SPEED'; // Simplified
-    else autothrustMode = 'SPEED';
+  if (truth.thrustActive !== 'OFF') {
+    autothrustMode = truth.thrustActive;
   }
 
   let verticalMode: AirbusFMAState['verticalMode'] = '';
-  if (fcu.altitudeManaged) {
-    verticalMode = fmc.aircraftState?.vs! > 0 ? 'CLB' : 'DES';
-  } else if (fcu.verticalSpeed !== null) {
-    verticalMode = 'V/S';
-  } else if (fcu.fpa !== null) {
-    verticalMode = 'FPA';
+  if (truth.verticalActive !== 'OFF') {
+    verticalMode = truth.verticalActive === 'VNAV_PTH' ? (fmc.aircraftState?.verticalSpeedFpm! >= 0 ? 'CLB' : 'DES') : truth.verticalActive;
   } else {
     verticalMode = 'ALT';
   }
 
   let lateralMode: AirbusFMAState['lateralMode'] = '';
-  if (fcu.headingManaged) {
-    lateralMode = 'NAV';
+  if (truth.lateralActive !== 'OFF') {
+    lateralMode = truth.lateralActive;
   } else {
     lateralMode = 'HDG';
   }
 
   const armedModes: string[] = [];
-  if (fcu.loc && !fcu.headingManaged) armedModes.push('LOC');
-  if (fcu.appr && !fcu.altitudeManaged) armedModes.push('G/S');
+  if (truth.lateralArmed) armedModes.push(truth.lateralArmed);
+  if (truth.verticalArmed) armedModes.push(truth.verticalArmed);
 
   return {
     autothrustMode,
@@ -42,17 +37,18 @@ export function buildAirbusFMAState(fcu: AirbusFCUState, fmc: FMCState): AirbusF
       fd1: fcu.fd1,
       fd2: fcu.fd2,
       athr: fcu.athr,
-    }
+    },
+    approachCapability: "NONE" // Placeholder for now
   };
 }
 
 export function buildAirbusPFDState(state: FMCState): PFDState {
   const aircraft = state.aircraftState;
   return {
-    heading: aircraft?.heading || 0,
-    altitude: aircraft?.altitude || 0,
-    speed: aircraft?.ias || 0,
-    verticalSpeed: aircraft?.vs || 0,
+    heading: aircraft?.headingDeg || 0,
+    altitude: aircraft?.altitudeFt || 0,
+    speed: aircraft?.indicatedAirspeedKt || 0,
+    verticalSpeed: aircraft?.verticalSpeedFpm || 0,
     pitch: 0,
     bank: 0,
     radioAltitude: (aircraft?.altitude || 0) < 2500 ? (aircraft?.altitude || 0) : null,

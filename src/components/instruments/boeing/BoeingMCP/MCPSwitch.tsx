@@ -9,7 +9,7 @@ interface MCPSwitchProps {
   highlighted?: boolean;
 }
 
-import { tactile } from '../../../utils/tactile';
+import { tactile } from '../../../../utils/tactile';
 
 export function MCPSwitch({ label, active, onPress, showAnnunciator = true, small = false, highlighted }: MCPSwitchProps) {
   return (

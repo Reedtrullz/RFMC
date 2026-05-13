@@ -257,14 +257,34 @@ export class FBWA320Adapter implements IAircraftAdapter {
       handle.on('simObjectData', (recvSimObjectData) => {
         if (recvSimObjectData.requestID === REQUEST_ID) {
           try {
+            const lat = recvSimObjectData.data.readFloat64();
+            const lon = recvSimObjectData.data.readFloat64();
+            const altitude = recvSimObjectData.data.readFloat64();
+            const heading = recvSimObjectData.data.readFloat64();
+            const ias = recvSimObjectData.data.readFloat64();
+            const vs = recvSimObjectData.data.readFloat64();
+
             this.simState = {
-              lat: recvSimObjectData.data.readFloat64(),
-              lon: recvSimObjectData.data.readFloat64(),
-              altitude: recvSimObjectData.data.readFloat64(),
-              heading: recvSimObjectData.data.readFloat64(),
-              ias: recvSimObjectData.data.readFloat64(),
-              tas: 0, gs: 0,
-              vs: recvSimObjectData.data.readFloat64(),
+              lat,
+              lon,
+              headingDeg: heading,
+              trackDeg: heading, // Simplified
+              altitudeFt: altitude,
+              indicatedAirspeedKt: ias,
+              verticalSpeedFpm: vs,
+              pitchDeg: 0,
+              bankDeg: 0,
+
+              // Legacy
+              altitude,
+              heading,
+              ias,
+              tas: ias,
+              gs: ias,
+              vs,
+              track: heading,
+              fuelTotal: 0,
+              gw: 0,
             };
             // Read radios
             const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);

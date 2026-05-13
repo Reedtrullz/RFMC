@@ -19,6 +19,7 @@ export type AirbusFMAState = {
     fd2: boolean;
     athr: boolean;
   };
+  approachCapability: 'CAT1' | 'CAT2' | 'CAT3 SINGLE' | 'CAT3 DUAL' | '';
 };
 
 export type PFDState = {

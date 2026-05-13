@@ -3,7 +3,7 @@ import type { AircraftType, CockpitLayoutMode } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
 import { NavigationDisplay } from '../ND/NavigationDisplay';
-import { PrimaryFlightDisplay } from '../PFD/PrimaryFlightDisplay';
+import { PrimaryFlightDisplay } from '../instruments/common/PFD';
 import { AutopilotTrainer } from '../Autopilot/AutopilotTrainer';
 import { DisplaySelector } from './DisplaySelector';
 import { BrightnessPanel } from './BrightnessPanel';

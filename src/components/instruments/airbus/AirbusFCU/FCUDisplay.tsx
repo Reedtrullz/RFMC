@@ -13,7 +13,7 @@ export function FCUDisplay({ value, label, managed, highlighted = false }: FCUDi
         {label || value}
       </span>
       {managed && (
-        <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#00f0ff] shadow-[0_0_5px_rgba(0,240,255,1)]" />
+        <div className="absolute top-1/2 -translate-y-1/2 right-2 w-2 h-2 rounded-full bg-[#ffb84d] shadow-[0_0_8px_rgba(255,184,77,0.8)]" />
       )}
     </div>
   );

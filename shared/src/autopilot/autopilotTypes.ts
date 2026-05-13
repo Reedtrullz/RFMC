@@ -50,22 +50,36 @@ export type AirbusFCUState = {
   loc: boolean;
   appr: boolean;
   exped: boolean;
+
+  hdgTrkMode: 'HDG_VS' | 'TRK_FPA';
+  metricAltitude: boolean;
+  speedMachMode: 'SPD' | 'MACH';
 };
 
 export type AutopilotState = {
   boeing: BoeingMCPState;
   airbus: AirbusFCUState;
+  truth: AutoflightTruthState;
 };
 
-export type LateralMode = "HDG" | "NAV" | "LOC" | "ROLL OUT" | "LNAV" | "VOR_LOC" | "OFF";
-export type VerticalMode = "CLB" | "DES" | "ALT" | "ALT*" | "OP CLB" | "OP DES" | "VNAV PTH" | "G/S" | "OFF";
-export type ThrustMode = "MAN TOGA" | "MAN FLEX" | "THR CLB" | "SPEED" | "IDLE" | "RETARD" | "OFF";
+export type LateralMode = 'HDG_SEL' | 'LNAV' | 'VOR_LOC' | 'LOC' | 'APP' | 'NAV' | 'ROLL' | 'OFF';
+export type VerticalMode = 'ALT_HOLD' | 'VNAV_PTH' | 'LVL_CHG' | 'VS' | 'G_S' | 'CLB' | 'DES' | 'OP_CLB' | 'OP_DES' | 'OFF';
+export type ThrustMode = 'N1' | 'SPEED' | 'THR_CLB' | 'IDLE' | 'MAN_TOGA' | 'MAN_FLEX' | 'RETARD' | 'OFF';
+
+export interface AutoflightTruthState {
+  lateralActive: LateralMode;
+  lateralArmed?: LateralMode;
+  verticalActive: VerticalMode;
+  verticalArmed?: VerticalMode;
+  thrustActive: ThrustMode;
+  autopilotStatus: 'OFF' | 'CMD_A' | 'CMD_B' | 'CMD_AB' | 'AP1' | 'AP2' | 'AP1_AP2';
+}
 
 export type FMAState = {
   thrust: ThrustMode;
   lateral: LateralMode;
   vertical: VerticalMode;
-  approachCapability?: "CAT1" | "CAT2" | "CAT3 SINGLE" | "CAT3 DUAL";
+  approachCapability: "CAT1" | "CAT2" | "CAT3 SINGLE" | "CAT3 DUAL" | "NONE";
   armedLateral?: LateralMode;
   armedVertical?: VerticalMode;
 };

@@ -1,6 +1,6 @@
 import { useFMCStore } from '../../store/useFMCStore';
-import { BoeingMCP } from './boeing/BoeingMCP';
-import { AirbusFCU } from './airbus/AirbusFCU';
+import { BoeingMCP } from '../instruments/boeing/BoeingMCP/BoeingMCP';
+import { AirbusFCU } from '../instruments/airbus/AirbusFCU/AirbusFCU';
 
 export function AutopilotTrainer() {
   const aircraft = useFMCStore(s => s.aircraft);

@@ -1,6 +1,6 @@
 import { BoeingMCPState } from '@shared';
-import { useFMCStore } from '../../../store/useFMCStore';
-import { CockpitPanel } from '../../visual/CockpitPanel';
+import { useFMCStore } from '../../../../store/useFMCStore';
+import { CockpitPanel } from '../../../../visual/CockpitPanel';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
 import { MCPDisplayWindow } from './MCPDisplayWindow';
@@ -52,8 +52,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             >SPD/MACH</button>
             <MCPDisplayWindow 
               label="IAS/MACH" 
-              value={state.mach !== null ? `.${Math.round(state.mach * 100)}` : state.speed} 
-              active={true}
+              value={state.speed === null && state.mach === null ? '' : (state.mach !== null ? `.${Math.round(state.mach * 100)}` : state.speed?.toString().padStart(3, ' '))} 
+              active={state.speed !== null || state.mach !== null}
               highlighted={tutorialHighlight === 'IAS_SEL'}
               unit={state.mach !== null ? 'MACH' : 'SPD'}
             />
@@ -115,7 +115,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         <div className="flex flex-col items-center gap-4 px-4">
           <MCPDisplayWindow 
             label="VERT SPEED" 
-            value={state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed) : '0'} 
+            value={!state.vs ? '' : (state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed.toString()) : '0000')} 
             active={state.vs}
             highlighted={tutorialHighlight === 'VS_MODE'}
           />

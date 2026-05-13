@@ -11,7 +11,7 @@ import { TrainingReport } from './components/Training/TrainingReport';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useEffect } from 'react';
 import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
-import { PrimaryFlightDisplay } from './components/PFD/PrimaryFlightDisplay';
+import { PrimaryFlightDisplay } from './components/instruments/common/PFD';
 import { TrainingOverlay } from './components/Training/TrainingOverlay';
 import { CockpitLayout } from './components/CockpitMode/CockpitLayout';
 import { SettingsPanel, ChecklistPanel } from './components/CockpitMode/CockpitPanels';

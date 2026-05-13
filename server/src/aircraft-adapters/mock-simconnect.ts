@@ -106,6 +106,18 @@ export class MockSimConnectAdapter implements IAircraftAdapter {
     return {
       lat: 40.6413,
       lon: -73.7781,
+      headingDeg: 270,
+      trackDeg: 270,
+      altitudeFt: 12000,
+      indicatedAirspeedKt: 280,
+      trueAirspeedKt: 280,
+      groundSpeedKt: 280,
+      verticalSpeedFpm: 0,
+      pitchDeg: 0,
+      bankDeg: 0,
+      radioAltitudeFt: 12000,
+      
+      // Legacy compatibility
       heading: 270,
       track: 270,
       altitude: 12000,
