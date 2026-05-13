@@ -1,4 +1,4 @@
-import { AvionicsKey } from '../../visual/AvionicsKey';
+import { AvionicsKey } from '../../instruments/common/AvionicsKey';
 import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 
 interface BoeingBrightnessExecPanelProps {

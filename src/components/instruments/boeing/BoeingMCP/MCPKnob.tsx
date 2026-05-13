@@ -28,7 +28,7 @@ export function MCPKnob({ label, value, onRotate, onPress, unit, highlighted }: 
         >
           {/* Physical Knurling (Texture) */}
           <div className="absolute inset-[1px] rounded-full border-[2px] border-dashed border-black/80 opacity-40 mix-blend-multiply" />
-          <div className="absolute inset-0 rounded-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay" />
+          <div className="absolute inset-0 rounded-full bg-black/20 opacity-10 mix-blend-overlay" />
           
           {/* Rotational Lighting & Depth */}
           <div 

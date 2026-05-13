@@ -667,12 +667,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     // Clear message if CLR is pressed and scratchpad is empty
-    if (key === 'CLR' && scratchpad.length === 0) {
+    if (key === 'CLR' && scratchpad.length === 0 && !get().scratchpadError) {
       get().clearActiveMessage();
     }
 
-    // Alphanumeric keys clear advisory messages
-    if (key.length === 1 || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE'].includes(key)) {
+    // Alphanumeric keys clear advisory messages if scratchpad was empty
+    if (scratchpad.length === 0 && (key.length === 1 || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE'].includes(key))) {
       const activeMsg = get().scratchpadMessages[0];
       if (activeMsg && activeMsg.severity === 'ADVISORY') {
         get().clearActiveMessage();
@@ -1660,9 +1660,28 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const data = renderer ? renderer(state) : getPageRenderer('MENU')!(state);
 
     // Inject scratchpad or active message
-    const activeMsg = state.scratchpadMessages[0];
-    const scratchpadText = activeMsg ? activeMsg.text : state.scratchpad;
-    const scratchpadColor = activeMsg ? activeMsg.color : 'white';
+    const { scratchpad, scratchpadError, scratchpadMessages } = state;
+    const activeMsg = scratchpadMessages[0];
+    
+    let scratchpadText = ' ';
+    let scratchpadColor = (state.aircraft === 'AIRBUS_A320' ? 'white' : 'green') as any;
+    let blink = false;
+    let semantic = undefined;
+
+    if (scratchpad) {
+      scratchpadText = scratchpad;
+      scratchpadColor = state.aircraft === 'AIRBUS_A320' ? 'amber' : 'white';
+    } else if (scratchpadError) {
+      scratchpadText = scratchpadError;
+      scratchpadColor = 'amber';
+      blink = true;
+      semantic = 'warning';
+    } else if (activeMsg) {
+      scratchpadText = activeMsg.text;
+      scratchpadColor = activeMsg.color;
+      blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'WARNING';
+      semantic = activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
+    }
 
     if (data.segments) {
       // For segment-based rendering, add/replace the last line (row 13)
@@ -1671,15 +1690,19 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         row: 13,
         col: 0,
         text: scratchpadText.padEnd(24, ' '),
-        color: scratchpadColor as any,
+        color: scratchpadColor,
         size: 'normal',
+        blink,
+        semantic: semantic as any,
       });
     } else {
       // Legacy line-based rendering
       data.lines[13] = {
         text: scratchpadText,
-        color: scratchpadColor as any,
+        color: scratchpadColor,
         inverse: false,
+        blinking: blink,
+        semantic: semantic as any,
       };
     }
 

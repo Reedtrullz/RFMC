@@ -40,22 +40,22 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
           scratchpad: [],
         }}
         className="overflow-hidden"
-      />
-      {!level && (
-        <span
-          className={[
-            'absolute top-1/2 -translate-y-1/2 w-[2px] h-[14px]',
-            cursorVisible ? 'opacity-100' : 'opacity-0',
-            variant === 'airbus' ? 'bg-cdu-amber' : 'bg-cdu-text',
-          ].join(' ')}
-          style={{
-            left: variant === 'boeing' 
-              ? `calc(${Math.min(text.length, 23)} * 1ch + (100% - 24ch) / 2)` 
-              : `${(Math.min(text.length, 23) / 24) * 100}%`,
-          }}
-          aria-hidden="true"
-        />
-      )}
+      >
+        {!level && (
+          <span
+            className={[
+              'scratchpad-cursor',
+              cursorVisible ? 'opacity-100' : 'opacity-0',
+              variant === 'airbus' ? 'bg-cdu-amber' : 'bg-cdu-text',
+            ].join(' ')}
+            style={{
+              gridRow: 1,
+              gridColumn: Math.min(text.length + 1, 24),
+            }}
+            aria-hidden="true"
+          />
+        )}
+      </CDUDisplayGrid>
     </div>
   );
 }

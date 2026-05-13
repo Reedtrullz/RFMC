@@ -28,7 +28,7 @@ export function MCPSwitch({ label, active, onPress, showAnnunciator = true, smal
           } ${highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]' : ''}`}
         >
           {/* Physical Texture */}
-          <div className="pointer-events-none absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+          <div className="pointer-events-none absolute inset-0 opacity-10 bg-black/20 mix-blend-overlay" />
           
           {/* Inner Shadow / Lighting */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />

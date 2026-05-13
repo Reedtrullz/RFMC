@@ -12,19 +12,25 @@ interface BoeingDisplayBayProps {
 }
 
 export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintLevel, onPressLSK }: BoeingDisplayBayProps) {
+  const displayBayStyle = {
+    display: 'grid',
+    gridTemplateColumns: '44px minmax(0, 1fr) 44px',
+    gridTemplateRows: 'repeat(14, var(--cdu-row-h, 21px)) auto',
+    columnGap: '0.35rem',
+    '--cdu-row-h': '21px',
+    '--cdu-row-height': '21px',
+    '--cdu-inverse-bg': '#39ff14',
+    backgroundImage: `
+      radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(145deg, #151818, #080909)
+    `,
+    backgroundSize: '6px 6px, auto',
+  } as React.CSSProperties & Record<'--cdu-row-h' | '--cdu-row-height' | '--cdu-inverse-bg', string>;
+
   return (
     <div
-      className="w-full rounded-[5px] border border-black/70 bg-[#141616] p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-normal"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '44px minmax(0, 1fr) 44px',
-        gridTemplateRows: 'repeat(14, var(--cdu-row-h, 21px)) auto',
-        columnGap: '0.35rem',
-        // @ts-ignore
-        '--cdu-row-h': '21px',
-        '--cdu-row-height': '21px',
-        '--cdu-inverse-bg': '#39ff14',
-      }}
+      className="w-full rounded-[5px] border border-black/70 p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] mix-blend-normal"
+      style={displayBayStyle}
     >
       <BoeingLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />
       <BoeingLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />

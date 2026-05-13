@@ -1,13 +1,14 @@
-import { buildCells, type GridDisplayData } from '@shared';
+import { buildCells, gridToPlainText, type GridDisplayData } from '@shared';
 import type { CSSProperties } from 'react';
 
 interface CDUDisplayGridProps {
   grid: GridDisplayData;
   variant?: 'boeing' | 'airbus';
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function CDUDisplayGrid({ grid, variant = 'boeing', className = '' }: CDUDisplayGridProps) {
+export function CDUDisplayGrid({ grid, variant = 'boeing', className = '', children }: CDUDisplayGridProps) {
   const cells = buildCells(grid);
 
   const style = {
@@ -16,32 +17,39 @@ export function CDUDisplayGrid({ grid, variant = 'boeing', className = '' }: CDU
   } as CSSProperties;
 
   return (
-    <div
-      className={`cdu-display-matrix cdu-display-matrix--${variant} ${className}`}
-      data-testid="cdu-display-grid"
-      style={style}
-    >
-      {cells.map((cell, idx) => (
-        <span
-          key={`${cell.row}-${cell.col}-${idx}`}
-          className={[
-            'cdu-display-cell',
-            `cdu-display-cell--${cell.color ?? (variant === 'airbus' ? 'amber' : 'text')}`,
-            cell.inverse ? 'cdu-display-cell--inverse' : '',
-            cell.size === 'small' ? 'cdu-display-cell--small' : '',
-            cell.blink ? 'animate-blink' : '',
-          ].join(' ')}
-          style={{
-            gridRow: cell.row + 1,
-            gridColumn: cell.col + 1,
-          }}
-          data-row={cell.row + 1}
-          data-col={cell.col + 1}
-          data-semantic={cell.semantic}
-        >
-          {cell.char || '\u00A0'}
-        </span>
-      ))}
+    <div className={`cdu-display-container ${className}`}>
+      <div
+        className={`cdu-display-matrix cdu-display-matrix--${variant}`}
+        data-testid="cdu-display-grid"
+        style={style}
+        aria-hidden="true"
+      >
+        {cells.map((cell, idx) => (
+          <span
+            key={`${cell.row}-${cell.col}-${idx}`}
+            className={[
+              'cdu-display-cell',
+              `cdu-display-cell--${cell.color ?? (variant === 'airbus' ? 'white' : 'green')}`,
+              cell.inverse ? 'cdu-display-cell--inverse' : '',
+              cell.size === 'small' ? 'cdu-display-cell--small' : '',
+              cell.blink ? 'animate-blink' : '',
+            ].join(' ')}
+            style={{
+              gridRow: cell.row + 1,
+              gridColumn: cell.col + 1,
+            }}
+            data-row={cell.row + 1}
+            data-col={cell.col + 1}
+            data-semantic={cell.semantic}
+          >
+            {cell.char || '\u00A0'}
+          </span>
+        ))}
+        {children}
+      </div>
+      <pre className="sr-only" aria-live="polite">
+        {gridToPlainText(grid)}
+      </pre>
     </div>
   );
 }

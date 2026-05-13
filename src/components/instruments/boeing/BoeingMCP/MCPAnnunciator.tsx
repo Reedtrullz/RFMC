@@ -21,7 +21,7 @@ export function MCPAnnunciator({ active, color = 'green' }: MCPAnnunciatorProps)
     >
       {/* Frosted Diffuser Texture */}
       {active && (
-        <div className="absolute inset-0 opacity-[0.15] bg-[url('https://www.transparenttextures.com/patterns/dust.png')] mix-blend-overlay" />
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 0)', backgroundSize: '20px 20px' }} />
       )}
 
       {/* Subsurface Scattering & Glow Layer */}

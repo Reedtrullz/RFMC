@@ -8,15 +8,17 @@ interface ScratchpadProps {
 export function Scratchpad({ variant = 'boeing' }: ScratchpadProps) {
   const scratchpad = useFMCStore(s => s.scratchpad);
   const scratchpadError = useFMCStore(s => s.scratchpadError);
-  const alerts = useFMCStore(s => s.alerts);
+  const messages = useFMCStore(s => s.scratchpadMessages);
+  const activeMessage = messages[0];
 
-  // Find highest priority alert to show in scratchpad
-  const activeAlert = alerts.find(a => a.level === 'WARNING') || 
-                      alerts.find(a => a.level === 'CAUTION') ||
-                      alerts.find(a => a.level === 'ADVISORY');
-
-  const displayText = scratchpadError || scratchpad || activeAlert?.text || ' ';
-  const level = scratchpadError ? 'WARNING' : activeAlert?.level;
+  const displayText = scratchpadError || scratchpad || activeMessage?.text || ' ';
+  
+  let level: AlertLevel | undefined = undefined;
+  if (scratchpadError) {
+    level = 'WARNING';
+  } else if (activeMessage) {
+    level = activeMessage.severity as AlertLevel;
+  }
 
   return <ScratchpadRow text={displayText} level={level} variant={variant} />;
 }

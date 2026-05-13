@@ -16,9 +16,14 @@ export function buildCells(grid: GridDisplayData): CellData[] {
   }
 
   for (const segment of grid.segments) {
+    if (process.env.NODE_ENV !== 'production') {
+      if (segment.row < 0 || segment.row >= grid.rows || segment.col < 0 || segment.col + segment.text.length > grid.columns) {
+        console.warn(`Display segment out of bounds: row ${segment.row}, col ${segment.col}, length ${segment.text.length} (Grid: ${grid.rows}x${grid.columns})`, segment);
+      }
+    }
     for (let i = 0; i < segment.text.length; i++) {
       const col = segment.col + i;
-      if (col < grid.columns && segment.row < grid.rows) {
+      if (col >= 0 && col < grid.columns && segment.row >= 0 && segment.row < grid.rows) {
         const index = segment.row * grid.columns + col;
         if (cells[index]) {
           cells[index] = {
@@ -133,4 +138,21 @@ export function scratchpadToGridSegment(
     size: 'normal',
     ...options,
   };
+}
+
+export function gridToPlainText(grid: GridDisplayData): string {
+  const charGrid: string[][] = Array.from({ length: grid.rows }, () => 
+    Array.from({ length: grid.columns }, () => ' ')
+  );
+
+  for (const segment of grid.segments) {
+    for (let i = 0; i < segment.text.length; i++) {
+      const col = segment.col + i;
+      if (segment.row >= 0 && segment.row < grid.rows && col >= 0 && col < grid.columns) {
+        charGrid[segment.row][col] = segment.text[i];
+      }
+    }
+  }
+
+  return charGrid.map(row => row.join('')).join('\n');
 }

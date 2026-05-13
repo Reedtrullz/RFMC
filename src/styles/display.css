@@ -1,0 +1,94 @@
+.cdu-display-matrix {
+  --cdu-cols: 24;
+  --cdu-rows: 14;
+  --cdu-row-h: var(--cdu-row-height, 1.22em);
+
+  display: grid;
+  grid-template-rows: repeat(var(--cdu-rows), var(--cdu-row-h));
+  align-content: start;
+  justify-content: start;
+
+  height: calc(var(--cdu-rows) * var(--cdu-row-h));
+
+  font-family: var(--font-avionics);
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  background-color: transparent;
+}
+
+.cdu-display-matrix--boeing {
+  grid-template-columns: repeat(var(--cdu-cols), 1ch);
+  width: fit-content;
+  margin: 0 auto;
+  font-size: clamp(16px, 1.8vw, 21px);
+  column-gap: 0;
+  text-shadow: 
+    0 0 1px rgba(57, 255, 20, 0.65),
+    0 0 3px rgba(57, 255, 20, 0.22);
+}
+
+.cdu-display-matrix--airbus {
+  grid-template-columns: repeat(var(--cdu-cols), 0.72em);
+  width: calc(var(--cdu-cols) * 0.72em);
+  font-size: clamp(14px, 1.45vw, 18px);
+  text-shadow: 
+    0 0 1px rgba(255, 176, 0, 0.65),
+    0 0 3px rgba(255, 176, 0, 0.22);
+}
+
+.cdu-display-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: pre;
+  line-height: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+
+.cdu-display-cell--small {
+  font-size: 0.78em;
+  align-items: flex-end;
+  padding-bottom: 0.1em;
+}
+
+.cdu-display-cell--inverse {
+  background: var(--cdu-inverse-bg, #39ff14);
+  color: #050505 !important;
+  text-shadow: none !important;
+}
+
+.cdu-display-matrix--airbus .cdu-display-cell--inverse {
+  background: var(--cdu-inverse-bg-amber, #ffb000);
+}
+
+/* Colors */
+.cdu-display-cell--white { color: #fff; }
+.cdu-display-cell--green { color: #39ff14; }
+.cdu-display-cell--magenta { color: #f0f; }
+.cdu-display-cell--cyan { color: #0ff; }
+.cdu-display-cell--amber { color: #ffb000; }
+.cdu-display-cell--red { color: #f33; }
+
+/* Scratchpad Cursor */
+.scratchpad-cursor {
+  width: 2px;
+  height: 80%;
+  align-self: center;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  50% { opacity: 0; }
+}
+
+@keyframes animate-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: animate-blink 1s step-end infinite;
+}
