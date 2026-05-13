@@ -11,6 +11,7 @@ import {
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
+import { AuralAlertService } from '../services/AuralAlertService';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -2340,6 +2341,20 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           
           if (sequence) {
             console.log(`Sequencing: ${reason}`);
+            
+            // Check restrictions for the leg we just finished
+            const result = LegSequencer.checkRestrictions(currentLeg, state.aircraftState);
+            if (!result.ok && state.activeScenario) {
+              const mistake = { id: Date.now().toString(), text: result.message!, timestamp: Date.now() };
+              AuralAlertService.playChime();
+              set(s => ({
+                activeScenario: s.activeScenario ? {
+                  ...s.activeScenario,
+                  mistakes: [...(s.activeScenario.mistakes || []), mistake]
+                } : null
+              }));
+            }
+
             const newWaypoints = waypoints.slice(1);
             updates.flightPlan = { ...state.flightPlan, waypoints: newWaypoints };
             

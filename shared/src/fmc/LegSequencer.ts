@@ -45,4 +45,36 @@ export class LegSequencer {
 
     return { sequence: false, reason: 'Conditions not met' };
   }
+
+  /**
+   * Checks if the aircraft complied with waypoint restrictions.
+   */
+  public static checkRestrictions(
+    waypoint: FlightPlanWaypoint,
+    acState: AircraftState
+  ): { ok: boolean; message?: string } {
+    const { altitudeConstraint, speedConstraint } = waypoint;
+    const { altitude, speed } = acState;
+
+    if (altitudeConstraint && altitude !== undefined) {
+      const target = altitudeConstraint.altitude;
+      if (altitudeConstraint.type === 'AT' && Math.abs(altitude - target) > 200) {
+        return { ok: false, message: `Altitude Deviation: ${Math.round(altitude)}ft (Req ${target}ft)` };
+      }
+      if (altitudeConstraint.type === 'ABOVE' && altitude < target - 100) {
+        return { ok: false, message: `Below Altitude: ${Math.round(altitude)}ft (Req ABOVE ${target}ft)` };
+      }
+      if (altitudeConstraint.type === 'BELOW' && altitude > target + 100) {
+        return { ok: false, message: `Above Altitude: ${Math.round(altitude)}ft (Req BELOW ${target}ft)` };
+      }
+    }
+
+    if (speedConstraint && speed !== undefined) {
+      if (speed > speedConstraint.speed + 10) {
+        return { ok: false, message: `Overspeed: ${Math.round(speed)}kt (Req ${speedConstraint.speed}kt)` };
+      }
+    }
+
+    return { ok: true };
+  }
 }

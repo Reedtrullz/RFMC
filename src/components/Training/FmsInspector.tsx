@@ -132,11 +132,25 @@ export function FmsInspector() {
                   </div>
                 ))}
               </div>
+
+              {state.activeScenario.mistakes && state.activeScenario.mistakes.length > 0 && (
+                <div className="mt-2 border-t border-red-900/30 pt-2">
+                  <div className="text-red-400 font-bold mb-1">MISTAKES:</div>
+                  <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                    {state.activeScenario.mistakes.map((m: any) => (
+                      <div key={m.id} className="text-[10px] text-red-200 bg-red-900/20 p-1 rounded">
+                        • {m.text}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button 
                 onClick={() => useFMCStore.setState({ activeScenario: null })}
                 className="w-full mt-2 bg-blue-900/40 hover:bg-blue-900/60 text-blue-200 p-1 rounded border border-blue-700/50 text-[10px]"
               >
-                ABORT SCENARIO
+                FINISH & DEBRIEF
               </button>
             </div>
           ) : (
