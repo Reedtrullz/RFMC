@@ -11,6 +11,8 @@ import { ModeAnnunciations } from '../symbology/ModeAnnunciations';
 import { TCASOverlay } from '../layers/TCASOverlay';
 import { WXROverlay } from '../layers/WXROverlay';
 import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
+import { RnpContainmentOverlay } from '../layers/RnpContainmentOverlay';
+import { DebriefOverlay } from '../layers/DebriefOverlay';
 import { AircraftSymbol } from '../symbols/AircraftSymbol';
 import { ConstraintsOverlay } from '../symbology/ConstraintsOverlay';
 
@@ -54,6 +56,8 @@ export function A320ND({ model }: A320NDProps) {
           {/* Advanced Overlays */}
           <WXROverlay data={model.wxrData} />
           <VerticalProfileOverlay points={model.verticalProfilePoints} />
+          <RnpContainmentOverlay model={model} />
+          <DebriefOverlay model={model} />
           <TCASOverlay targets={model.tcasTargets} />
         </g>
       ) : (

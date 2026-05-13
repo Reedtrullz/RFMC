@@ -167,8 +167,10 @@ const defaultState = {
   legsPageCount: 1,
   depArrSubPage: 'DEP' as const,
   rteSubPage: 0,
-  posPageIndex: 0,
   takeoffRefPageIndex: 0,
+  selectedPlanWaypointIndex: null,
+  flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
+  debriefMode: false,
   
   deleteMode: false,
   editWaypointIndex: null as number | null,
@@ -2319,6 +2321,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         speed: gs, // We display GS on ND as "speed"
         track: track
       };
+
+      // Record Flight Path for Debrief
+      if (state.aircraftState.position) {
+        const history = [...state.flightPathHistory, { ...state.aircraftState.position, timestamp: Date.now() }];
+        updates.flightPathHistory = history.slice(-1000); // Keep last 1000 seconds
+      }
     }
 
     // 4. Alerts

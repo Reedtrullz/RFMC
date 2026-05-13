@@ -75,3 +75,21 @@ export function projectLatLon(start: LatLon, bearing: number, distance: number):
     lon: (lon2 * 180 / Math.PI + 540) % 360 - 180
   };
 }
+
+/**
+ * Calculates the Cross Track Error (XTE) in NM
+ */
+export function crossTrackErrorNm(aircraft: LatLon, start: LatLon, end: LatLon): number {
+  const d = distanceNm(start, aircraft);
+  const b1 = bearingDeg(start, aircraft) * Math.PI / 180;
+  const b2 = bearingDeg(start, end) * Math.PI / 180;
+  return d * Math.sin(b1 - b2);
+}
+
+/**
+ * Returns the screen radius for an RNP containment circle
+ */
+export function getRnpRadiusScreen(rnpNm: number, rangeNm: number): number {
+  // ND range is usually from center to top (radius)
+  return (rnpNm / rangeNm) * 45; // 45 units is approx screen radius
+}

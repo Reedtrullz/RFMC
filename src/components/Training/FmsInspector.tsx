@@ -114,19 +114,35 @@ export function FmsInspector() {
         </section>
       </div>
 
-      <div className="mt-auto p-2 bg-[#141517] border-t border-gray-800 flex gap-2">
-        <button 
-          onClick={() => state.addMessage("GPS 1 FAILURE", "ALERT", 1)}
-          className="flex-1 bg-red-900/50 hover:bg-red-900/80 text-red-200 p-1 rounded border border-red-700/50"
-        >
-          FAIL GPS
-        </button>
-        <button 
-          onClick={() => state.addMessage("CHECK POSITION", "ADVISORY")}
-          className="flex-1 bg-amber-900/50 hover:bg-amber-900/80 text-amber-200 p-1 rounded border border-amber-700/50"
-        >
-          DRIFT IRS
-        </button>
+      <div className="mt-auto p-2 bg-[#141517] border-t border-gray-800 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <button 
+            onClick={() => useFMCStore.setState(s => ({ debriefMode: !s.debriefMode }))}
+            className={`flex-1 p-1 rounded border font-bold ${state.debriefMode ? 'bg-green-600 border-green-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
+          >
+            DEBRIEF MODE {state.debriefMode ? 'ON' : 'OFF'}
+          </button>
+          <button 
+            onClick={() => useFMCStore.setState({ flightPathHistory: [] })}
+            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white p-1 rounded border border-gray-700"
+          >
+            CLEAR PATH
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => state.addMessage("GPS 1 FAILURE", "ALERT", 1)}
+            className="flex-1 bg-red-900/50 hover:bg-red-900/80 text-red-200 p-1 rounded border border-red-700/50"
+          >
+            FAIL GPS
+          </button>
+          <button 
+            onClick={() => state.addMessage("CHECK POSITION", "ADVISORY")}
+            className="flex-1 bg-amber-900/50 hover:bg-amber-900/80 text-amber-200 p-1 rounded border border-amber-700/50"
+          >
+            DRIFT IRS
+          </button>
+        </div>
       </div>
     </div>
   );
