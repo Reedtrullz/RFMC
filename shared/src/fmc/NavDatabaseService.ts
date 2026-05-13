@@ -10,37 +10,54 @@ export class NavDatabaseService {
   }
 
   private loadDemoData() {
-    // KJFK
-    const jfkRunways: Runway[] = [
-      { ident: '31L', magneticCourse: 314, thresholdLat: 40.6413, thresholdLon: -73.7781, elevationFt: 13 },
-      { ident: '13R', magneticCourse: 134, thresholdLat: 40.6413, thresholdLon: -73.7781, elevationFt: 13 },
+    // KSEA
+    const kseaRunways: Runway[] = [
+      { ident: '16L', magneticCourse: 161, thresholdLat: 47.4438, thresholdLon: -122.3017, elevationFt: 432 },
+      { ident: '34R', magneticCourse: 341, thresholdLat: 47.4438, thresholdLon: -122.3017, elevationFt: 432 },
     ];
-    this.airports['KJFK'] = {
-      icao: 'KJFK',
-      name: 'John F Kennedy Intl',
-      lat: 40.6413,
-      lon: -73.7781,
-      elevationFt: 13,
-      runways: jfkRunways,
-    };
-
-    // EGLL
-    const egllRunways: Runway[] = [
-      { ident: '27L', magneticCourse: 272, thresholdLat: 51.4706, thresholdLon: -0.4619, elevationFt: 83 },
-      { ident: '09R', magneticCourse: 092, thresholdLat: 51.4706, thresholdLon: -0.4619, elevationFt: 83 },
-    ];
-    this.airports['EGLL'] = {
-      icao: 'EGLL',
-      name: 'London Heathrow',
-      lat: 51.4706,
-      lon: -0.4619,
-      elevationFt: 83,
-      runways: egllRunways,
+    this.airports['KSEA'] = {
+      icao: 'KSEA',
+      name: 'Seattle-Tacoma Intl',
+      lat: 47.4438,
+      lon: -122.3017,
+      elevationFt: 432,
+      runways: kseaRunways,
     };
 
     // Navaids
     this.navaids['JFK'] = { ident: 'JFK', type: 'VORDME', frequency: '115.9', lat: 40.6327, lon: -73.7709 };
     this.navaids['LON'] = { ident: 'LON', type: 'VORDME', frequency: '113.6', lat: 51.4875, lon: -0.4500 };
+    this.navaids['SEA'] = { ident: 'SEA', type: 'VORTAC', frequency: '116.8', lat: 47.4354, lon: -122.3113 };
+
+    // Procedures (KSEA ELMAA4 SID)
+    this.procedures.push({
+      airportIcao: 'KSEA',
+      type: 'SID',
+      ident: 'ELMAA4',
+      runway: '16L',
+      commonLegs: [
+        { type: 'VA', heading: 161, altitude: 1500 }, // Heading to Altitude
+        { type: 'DF', fixIdent: 'ELMAA', altitude: 5000 }, // Direct to Fix
+      ],
+      transitions: [
+        { ident: 'HQM', legs: [{ type: 'TF', fixIdent: 'HQM' }] }
+      ]
+    });
+
+    // Procedures (KSEA HAWKZ7 STAR)
+    this.procedures.push({
+      airportIcao: 'KSEA',
+      type: 'STAR',
+      ident: 'HAWKZ7',
+      commonLegs: [
+        { type: 'IF', fixIdent: 'HAWKZ', altitude: 12000, speed: 250 },
+        { type: 'TF', fixIdent: 'LIYTE', altitude: 8000, speed: 230 },
+        { type: 'TF', fixIdent: 'CHINS', altitude: 6000, speed: 210 },
+      ],
+      transitions: [
+        { ident: 'YKM', legs: [{ type: 'TF', fixIdent: 'TITUS' }, { type: 'TF', fixIdent: 'HAWKZ' }] }
+      ]
+    });
 
     // Procedures (Simplified demo)
     this.procedures.push({

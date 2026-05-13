@@ -61,7 +61,17 @@ export function FmsInspector() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">ACTIVE LEG:</span>
-              <span className="text-cyan-400">TF (TRACK TO FIX)</span>
+              <span className="text-cyan-400">
+                {state.flightPlan.waypoints[0]?.legType 
+                  ? `(${state.flightPlan.waypoints[0].legType}) ${state.flightPlan.waypoints[0].ident}`
+                  : state.flightPlan.waypoints[0]?.ident || 'NONE'}
+              </span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+              <span className="text-gray-400">SEQ CONDITION:</span>
+              <span className="text-amber-400 italic">
+                {state.flightPlan.waypoints[0]?.legType === 'VA' ? 'ALT > 1500FT' : 'DIST < 0.1NM'}
+              </span>
             </div>
           </div>
         </section>

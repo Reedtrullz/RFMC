@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, PhaseManager } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, PhaseManager, LegSequencer } from '@shared';
 import { 
   selectFmcPositionSource, 
   calculateANP, 
@@ -2326,6 +2326,25 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (state.aircraftState.position) {
         const history = [...state.flightPathHistory, { ...state.aircraftState.position, timestamp: Date.now() }];
         updates.flightPathHistory = history.slice(-1000); // Keep last 1000 seconds
+
+        // Leg Sequencing Logic
+        const waypoints = state.flightPlan.waypoints;
+        if (waypoints.length > 0 && state.flightPhase !== 'DONE') {
+          const currentLeg = waypoints[0];
+          const nextLeg = waypoints[1];
+          const { sequence, reason } = LegSequencer.shouldSequence(currentLeg, nextLeg, state.aircraftState);
+          
+          if (sequence) {
+            console.log(`Sequencing: ${reason}`);
+            const newWaypoints = waypoints.slice(1);
+            updates.flightPlan = { ...state.flightPlan, waypoints: newWaypoints };
+            
+            // Auto-advance phase if appropriate
+            if (newWaypoints.length === 0) {
+              updates.flightPhase = 'DONE';
+            }
+          }
+        }
       }
     }
 

@@ -149,6 +149,7 @@ export * from './fmc/MessageService';
 export * from './fmc/PhaseManager';
 export * from './fmc/VerticalProfileEngine';
 export * from './fmc/LegTypeEngine';
+export * from './fmc/LegSequencer';
 export * from './fmc/NavDatabaseService';
 export * from './fmc/RealismManager';
 export * from './training/DebriefSystem';
