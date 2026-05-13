@@ -188,8 +188,8 @@ const defaultState = {
   activeScenario: null as any | null,
   isReportVisible: false,
   atsu: {
-    messages: [],
-    pendingUplink: null,
+    messages: [] as AcarsMessage[],
+    pendingUplink: null as any,
   },
   
   deleteMode: false,
@@ -283,7 +283,7 @@ const defaultState = {
   scratchpadMessages: [] as FmcMessage[],
   posPageIndex: 0,
   trafficTargets: [],
-  selectedMessageId: null,
+  selectedMessageId: null as string | null,
   gpwsAlert: 'NONE',
   tcasAlert: false,
 };
@@ -314,6 +314,7 @@ interface FMCActions {
   setBrightness: (b: number) => void;
 
   updateFlightPhase: () => void;
+  receiveAtsuMessage: (from: string, text: string) => void;
   tick: (dtSeconds: number) => void;
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string; waypoints?: FlightPlanWaypoint[] }) => void;
@@ -829,6 +830,24 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
             if (!a1.valid) { set({ scratchpadError: a1.error }); return; }
             set({ radios: { ...state.radios, adf1: scratchpad }, scratchpad: '' });
           }
+          handled = true;
+        }
+        break;
+      case 'atsu_msgs': state.setPage('ATSU_MSGS'); handled = true; break;
+      case 'print_msg':
+        set({ scratchpad: 'PRINTING...', msgLight: true });
+        setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' }), 1500);
+        handled = true;
+        break;
+      default:
+        if (action.startsWith('view_msg_')) {
+          const msgId = action.replace('view_msg_', '');
+          const newMessages = state.atsu.messages.map(m => m.id === msgId ? { ...m, read: true } : m);
+          set({ 
+            selectedMessageId: msgId, 
+            currentPage: 'ATSU_MSG_DETAIL',
+            atsu: { ...state.atsu, messages: newMessages }
+          });
           handled = true;
         }
         break;
@@ -1713,6 +1732,25 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (updates.flightPhase) {
       set({ flightPhase: updates.flightPhase });
     }
+  },
+  receiveAtsuMessage: (from: string, text: string) => {
+    const id = Math.random().toString(36).substring(7);
+    const msg: AcarsMessage = {
+      id,
+      from,
+      text,
+      timestamp: Date.now(),
+      read: false,
+      type: 'AOC',
+    };
+    set((state) => ({
+      atsu: {
+        ...state.atsu,
+        messages: [...state.atsu.messages, msg],
+      },
+      msgLight: true,
+    }));
+    get().addMessage(`ACARS MSG FROM ${from}`, 'IMPORTANT', 2);
   },
   tick: (dtSeconds: number) => {
     const state = get();

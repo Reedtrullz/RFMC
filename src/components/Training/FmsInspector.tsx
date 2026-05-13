@@ -205,12 +205,7 @@ export function FmsInspector() {
                 if (e.key === 'Enter') {
                   const input = document.getElementById('acars-input') as HTMLInputElement;
                   if (input.value) {
-                    scenarioEngine.processAction({
-                      id: 'manual-acars',
-                      type: 'MESSAGE',
-                      trigger: { type: 'TIME', value: 0 },
-                      action: { type: 'SEND_ACARS', payload: { from: 'INST', text: input.value } }
-                    }, state, {});
+                    state.receiveAtsuMessage('INST', input.value);
                     input.value = '';
                   }
                 }
@@ -220,12 +215,7 @@ export function FmsInspector() {
               onClick={() => {
                 const input = document.getElementById('acars-input') as HTMLInputElement;
                 if (input.value) {
-                  scenarioEngine.processAction({
-                    id: 'manual-acars',
-                    type: 'MESSAGE',
-                    trigger: { type: 'TIME', value: 0 },
-                    action: { type: 'SEND_ACARS', payload: { from: 'INST', text: input.value } }
-                  }, state, {});
+                  state.receiveAtsuMessage('INST', input.value);
                   input.value = '';
                 }
               }}

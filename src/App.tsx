@@ -19,6 +19,7 @@ import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay'
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
+import { useAuralAlerts } from './hooks/useAuralAlerts';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -35,6 +36,8 @@ export default function App() {
   const cockpitMode = useFMCStore(s => s.cockpitMode);
   const setCockpitMode = useFMCStore(s => s.setCockpitMode);
   const tick = useFMCStore(s => s.tick);
+
+  useAuralAlerts();
 
   useEffect(() => {
     let lastTime = performance.now();

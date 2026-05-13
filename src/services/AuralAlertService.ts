@@ -39,11 +39,28 @@ export class AuralAlertService {
   public static playCavalryCharge() {
     this.init();
     if (!this.context) return;
-    // Classic Boeing AP disconnect wailer
+    // Classic AP disconnect wailer
     for (let i = 0; i < 10; i++) {
       const t = this.context.currentTime + i * 0.2;
       this.playPulse(880, 0.1, t);
       this.playPulse(1100, 0.1, t + 0.1);
+    }
+  }
+
+  public static playSingleChime() {
+    this.init();
+    if (!this.context) return;
+    // Airbus Master Caution (Ding!)
+    const t = this.context.currentTime;
+    this.playPulse(550, 0.8, t);
+  }
+
+  public static playContinuousChime(durationSec: number = 3) {
+    this.init();
+    if (!this.context) return;
+    // Airbus Master Warning (Ding-ding-ding...)
+    for (let i = 0; i < durationSec * 2; i++) {
+      this.playPulse(550, 0.4, this.context.currentTime + i * 0.5);
     }
   }
 
