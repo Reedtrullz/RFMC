@@ -9,8 +9,8 @@ export const b737PreflightChecklists: CockpitChecklistSection[] = [
     items: [
       { id: 'parking-brake', label: 'Parking Brake', expected: 'SET', completed: true },
       { id: 'fuel-pumps', label: 'Fuel Pumps', expected: 'ON', completed: true },
-      { id: 'passenger-signs', label: 'Passenger Signs', expected: 'ON' },
-      { id: 'windows', label: 'Windows', expected: 'LOCKED' },
+      { id: 'passenger-signs', label: 'Passenger Signs', expected: 'ON', relatedControl: 'SIGNS' },
+      { id: 'windows', label: 'Windows', expected: 'LOCKED', relatedControl: 'WINDOWS' },
       { id: 'mcp-speed', label: 'MCP Speed', expected: 'V2 SET', relatedControl: 'IAS_SEL' },
       { id: 'mcp-heading', label: 'MCP Heading', expected: 'RWY HDG', relatedControl: 'HDG_SEL' },
       { id: 'mcp-altitude', label: 'MCP Altitude', expected: 'CLEARED ALT', relatedControl: 'ALT_SEL' },

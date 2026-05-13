@@ -6,6 +6,7 @@ const SOUNDS = {
   exec: { freq: 1000, duration: 0.08, type: 'sine' as OscillatorType, volume: 0.04 },
   warning: { freq: 440, duration: 0.3, type: 'sawtooth' as OscillatorType, volume: 0.05 },
   lsk: { freq: 700, duration: 0.04, type: 'square' as OscillatorType, volume: 0.03 },
+  chime: { freq: 554.37, duration: 1.5, type: 'sine' as OscillatorType, volume: 0.08 }, // C#5
 };
 
 type SoundName = keyof typeof SOUNDS;
@@ -31,6 +32,23 @@ export function useSound() {
 
     // Resume context if suspended (browser autoplay policy)
     if (ctx.state === 'suspended') ctx.resume();
+
+    if (name === 'chime') {
+      // High-Low chime
+      [554.37, 440.00].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.5);
+        gain.gain.setValueAtTime(s.volume, ctx.currentTime + i * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + i * 0.5);
+        osc.stop(ctx.currentTime + i * 0.5 + 1.2);
+      });
+      return;
+    }
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();

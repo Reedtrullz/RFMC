@@ -2,15 +2,26 @@ import { useState } from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 import { getCockpitChecklists, type CockpitChecklistItem } from '../../checklists';
 import { useDraggable } from '../../hooks/useDraggable';
+import { useSound } from '../../hooks/useSound';
 
 export function SettingsPanel() {
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('settings'));
   const cockpitMode = useFMCStore(s => s.cockpitMode);
   const brightness = useFMCStore(s => s.brightness);
   const setBrightness = useFMCStore(s => s.setBrightness);
+  const signsOn = useFMCStore(s => s.signsOn);
+  const windowsLocked = useFMCStore(s => s.windowsLocked);
+  const toggleSigns = useFMCStore(s => s.toggleSigns);
+  const toggleWindows = useFMCStore(s => s.toggleWindows);
   const { position, dragHandlers, isDragging } = useDraggable();
+  const { play } = useSound();
 
   if (cockpitMode && isHidden) return null;
+
+  const handleToggleSigns = () => {
+    toggleSigns();
+    play('chime');
+  };
 
   return (
     <div 
@@ -38,10 +49,28 @@ export function SettingsPanel() {
             className="w-full accent-cdu-cyan"
           />
         </div>
+
+        <div className="pt-2 border-t border-white/10">
+          <label className="text-[9px] font-cdu text-white/40 uppercase mb-3 block">Overhead Controls</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleToggleSigns}
+              className={`py-2 px-1 rounded border text-[8px] font-cdu uppercase transition-all ${signsOn ? 'bg-cdu-exec/20 border-cdu-exec text-cdu-exec' : 'bg-black/40 border-white/10 text-white/40'}`}
+            >
+              Signs {signsOn ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={toggleWindows}
+              className={`py-2 px-1 rounded border text-[8px] font-cdu uppercase transition-all ${windowsLocked ? 'bg-cdu-cyan/20 border-cdu-cyan text-cdu-cyan' : 'bg-black/40 border-white/10 text-white/40'}`}
+            >
+              Windows {windowsLocked ? 'LOCKED' : 'OPEN'}
+            </button>
+          </div>
+        </div>
         
         <div className="pt-2 border-t border-white/5">
           <p className="text-[8px] font-cdu text-white/20 uppercase leading-tight">
-            Advanced settings and profile management are available in the main menu.
+            Use these controls to complete preflight checklist requirements.
           </p>
         </div>
       </div>
@@ -53,7 +82,9 @@ export function ChecklistPanel() {
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('checklist'));
   const cockpitMode = useFMCStore(s => s.cockpitMode);
   const aircraft = useFMCStore(s => s.aircraft);
-  const highlightControl = useFMCStore(s => s.highlightControl);
+  const signsOn = useFMCStore(s => s.signsOn);
+  const windowsLocked = useFMCStore(s => s.windowsLocked);
+  const mcp = useFMCStore(s => s.boeingMCPState);
   const [sectionIndex, setSectionIndex] = useState(0);
   const { position, dragHandlers, isDragging } = useDraggable();
 
@@ -61,6 +92,19 @@ export function ChecklistPanel() {
 
   const checklists = getCockpitChecklists(aircraft);
   const section = checklists[sectionIndex % checklists.length] ?? checklists[0];
+  
+  // Dynamic completion logic
+  const items = section.items.map(item => {
+    let completed = item.completed;
+    if (item.id === 'passenger-signs') completed = signsOn;
+    if (item.id === 'windows') completed = windowsLocked;
+    if (item.relatedControl === 'LNAV') completed = mcp.lnav;
+    if (item.relatedControl === 'VNAV') completed = mcp.vnav;
+    if (item.relatedControl === 'AT_ARM') completed = mcp.at;
+    
+    return { ...item, completed };
+  });
+
   const nextSection = () => setSectionIndex(index => (index + 1) % checklists.length);
 
   return (
@@ -80,7 +124,7 @@ export function ChecklistPanel() {
       </div>
       
       <div className="space-y-3">
-        {section.items.map(item => (
+        {items.map(item => (
           <ChecklistItem
             key={item.id}
             item={item}

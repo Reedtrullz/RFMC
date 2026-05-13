@@ -98,6 +98,9 @@ const defaultState = {
   execLit: false,
   msgLight: false,
   
+  signsOn: false,
+  windowsLocked: false,
+  
   mode: 'STANDBY' as FMCMode,
   connectionStatus: 'DISCONNECTED' as ConnectionStatus,
   connectionMode: 'STANDALONE' as ConnectionMode,
@@ -311,6 +314,11 @@ interface FMCActions {
   resetInstrumentZoom: (panelId: InstrumentPanelId) => void;
   setHighContrast: (enabled: boolean) => void;
   toggleHighContrast: () => void;
+  setDemoMode: (demo: boolean) => void;
+  
+  toggleSigns: (playChime?: boolean) => void;
+  toggleWindows: () => void;
+  
   highlightControl: (controlId: string) => void;
 }
 
@@ -2003,6 +2011,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
   setHighContrast: (enabled) => set({ highContrast: enabled }),
   toggleHighContrast: () => set((state) => ({ highContrast: !state.highContrast })),
+  toggleSigns: (playChime = true) => {
+    set(state => {
+      const next = !state.signsOn;
+      // We'll handle the sound in the component or via a side effect
+      return { signsOn: next };
+    });
+  },
+  
+  toggleWindows: () => set(state => ({ windowsLocked: !state.windowsLocked })),
+
   highlightControl: (controlId) => {
     set({
       tutorialHighlight: controlId,
