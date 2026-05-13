@@ -80,6 +80,14 @@ export function A320ND({ model }: A320NDProps) {
         </text>
       </g>
 
+      {/* Navigation Accuracy Alert */}
+      {model.irsState === 'NAV' && model.anpNm > model.rnpNm && (
+        <g transform="translate(50 78)" textAnchor="middle">
+          <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
+          <text y="2" fill="#ffcc00" fontSize="3.5" fontWeight="bold">NAV ACCUR DOWNGRAD</text>
+        </g>
+      )}
+
       {/* Aircraft Symbol */}
       <AircraftSymbol centered={model.centered} color={colors.active} style="airbus" />
     </g>

@@ -14,15 +14,16 @@ interface InstrumentBezelProps {
 
 export function InstrumentBezel({ children, variant, className = '' }: InstrumentBezelProps) {
   const isAirbus = variant.startsWith('airbus');
-  const bezelColor = isAirbus ? 'bg-[#3a3d3d]' : 'bg-[#1a1c1c]';
+  const bezelColor = isAirbus ? 'bg-[#4b4e52]' : 'bg-[#1c1f20]';
   
   return (
-    <div className={`relative rounded-sm border-b-4 border-r-2 border-black/40 ${bezelColor} p-1 shadow-2xl ${className}`}>
-      {/* Outer rim glow */}
-      <div className="absolute inset-0 rounded-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_4px_10px_rgba(0,0,0,0.5)]" />
+    <div className={`relative rounded-md border-b-[6px] border-r-[2px] border-black/60 ${bezelColor} p-1.5 shadow-2xl ${className}`}>
+      {/* Structural Highlight */}
+      <div className="absolute inset-0 rounded-md border border-white/5 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10 rounded-t-md" />
       
-      {/* Recessed inner area */}
-      <div className="relative h-full w-full rounded-[2px] bg-black p-[2px] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]">
+      {/* Recessed display area */}
+      <div className="relative h-full w-full rounded-[4px] bg-black p-[1px] shadow-[0_4px_12px_rgba(0,0,0,0.8),inset_0_8px_16px_rgba(0,0,0,0.95)] overflow-hidden">
         {children}
       </div>
     </div>

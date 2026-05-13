@@ -11,32 +11,71 @@ export function RangeRings({ model, color = '#003344' }: RangeRingsProps) {
   const maxR = 45;
 
   return (
-    <g stroke={color} fill="none" strokeWidth="0.4" pointerEvents="none">
+    <g pointerEvents="none">
       {rings.map((factor, i) => {
         const radius = factor * maxR;
-        return model.centered ? (
-          <circle key={i} cx="50" cy={cy} r={radius} strokeDasharray="1 2" />
-        ) : (
-          <path 
-            key={i} 
-            d={`M${50 - radius} ${cy} A${radius} ${radius} 0 0 1 ${50 + radius} ${cy}`} 
-            strokeDasharray="1 2"
-          />
+        const rangeLabel = Math.round(model.range * factor);
+        
+        // 45 degree position for Boeing-style labels
+        const labelRad = (Math.PI * -45) / 180;
+        const labelX = 50 + Math.cos(labelRad) * radius;
+        const labelY = cy + Math.sin(labelRad) * radius;
+
+        return (
+          <g key={i}>
+            {model.centered ? (
+              <circle 
+                cx="50" 
+                cy={cy} 
+                r={radius} 
+                stroke={color} 
+                fill="none" 
+                strokeWidth="0.3" 
+                strokeDasharray={model.style === 'airbus' ? '1 3' : '2 4'} 
+                opacity="0.5"
+              />
+            ) : (
+              <path 
+                d={`M${50 - radius} ${cy} A${radius} ${radius} 0 0 1 ${50 + radius} ${cy}`} 
+                stroke={color} 
+                fill="none" 
+                strokeWidth="0.3" 
+                strokeDasharray={model.style === 'airbus' ? '1 3' : '2 4'} 
+                opacity="0.5"
+              />
+            )}
+            
+            {/* Intermediate Range Labels */}
+            {i > 0 && i < 3 && (
+              <text
+                x={labelX}
+                y={labelY}
+                fill={color}
+                fontSize="2.4"
+                textAnchor="middle"
+                className="font-avionics"
+                opacity="0.7"
+              >
+                {rangeLabel}
+              </text>
+            )}
+          </g>
         );
       })}
       
-      {/* Range Label at the top of the outer ring */}
+      {/* Outer Range Label (Primary) */}
       {!model.centered && (
-        <text 
-          x="50" 
-          y={cy - maxR - 2} 
-          fill={color} 
-          fontSize="2.8" 
-          textAnchor="middle" 
-          fontWeight="bold"
-        >
-          {model.range}
-        </text>
+        <g transform={`translate(50 ${cy - maxR - 2})`}>
+          <text 
+            fill={color} 
+            fontSize="3.2" 
+            textAnchor="middle" 
+            fontWeight="bold"
+            className="font-avionics"
+          >
+            {model.range}
+          </text>
+        </g>
       )}
     </g>
   );

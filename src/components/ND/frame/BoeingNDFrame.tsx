@@ -23,7 +23,10 @@ export function BoeingNDFrame({ model, children }: BoeingNDFrameProps) {
             </filter>
           </defs>
           
-          {children}
+          <rect width="100" height="100" fill="#020505" />
+          <g filter="url(#boeing-glow)">
+            {children}
+          </g>
         </svg>
       </ScreenGlass>
     </InstrumentBezel>

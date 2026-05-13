@@ -19,7 +19,10 @@ export function AirbusNDFrame({ model, children }: AirbusNDFrameProps) {
             </filter>
           </defs>
           
-          {children}
+          <rect width="100" height="100" fill="#010303" />
+          <g filter="url(#airbus-bloom)">
+            {children}
+          </g>
         </svg>
       </ScreenGlass>
     </InstrumentBezel>

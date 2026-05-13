@@ -22,6 +22,7 @@ export function AirbusFunctionKeyPanel({ onPress, isHighlighted }: AirbusFunctio
         <AvionicsKey
           key={item.key}
           label={item.label}
+          variant="airbus"
           shape="function"
           tone="white"
           highlighted={isHighlighted(item.key)}
