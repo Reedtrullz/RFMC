@@ -47,6 +47,9 @@ function modeZoomDefaults(mode: CockpitLayoutMode): Record<InstrumentPanelId, nu
   } as Record<InstrumentPanelId, number>;
 }
 
+import { ScenarioEngine } from '../../shared/src/fmc/ScenarioEngine';
+export const scenarioEngine = new ScenarioEngine();
+
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
   return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
 }
@@ -171,6 +174,7 @@ const defaultState = {
   selectedPlanWaypointIndex: null,
   flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
   debriefMode: false,
+  activeScenario: null as any | null,
   
   deleteMode: false,
   editWaypointIndex: null as number | null,
@@ -2345,6 +2349,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
             }
           }
         }
+      }
+
+      // 5. Training Scenario Engine
+      const { updates: scenarioUpdates, completedEvents } = scenarioEngine.update(state);
+      if (Object.keys(scenarioUpdates).length > 0) {
+        Object.assign(updates, scenarioUpdates);
+      }
+      if (completedEvents.length > 0) {
+        set({ activeScenario: { ...scenarioEngine.getActiveScenario() } });
       }
     }
 

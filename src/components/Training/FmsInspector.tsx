@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useFMCStore } from '../../store/useFMCStore';
+import { useFMCStore, scenarioEngine } from '../../store/useFMCStore';
 import { VerticalProfileEngine } from '@shared';
+import { SCENARIOS } from '@shared/fmc/scenarios';
 
 export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,6 +114,51 @@ export function FmsInspector() {
               ))
             )}
           </div>
+        </section>
+
+        {/* Training Scenarios */}
+        <section className="bg-blue-900/20 p-2 rounded border border-blue-800/30">
+          <h4 className="text-blue-400 mb-1 font-bold">TRAINING SCENARIOS</h4>
+          {state.activeScenario ? (
+            <div className="space-y-2">
+              <div className="font-bold text-blue-300">{state.activeScenario.name}</div>
+              <div className="space-y-1">
+                {state.activeScenario.goals.map((goal: any) => (
+                  <div key={goal.id} className="flex items-center gap-2">
+                    <span className={goal.completed ? 'text-green-400' : 'text-gray-500'}>
+                      {goal.completed ? '✅' : '⭕'}
+                    </span>
+                    <span className={goal.completed ? 'text-green-200' : 'text-blue-100'}>{goal.text}</span>
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={() => useFMCStore.setState({ activeScenario: null })}
+                className="w-full mt-2 bg-blue-900/40 hover:bg-blue-900/60 text-blue-200 p-1 rounded border border-blue-700/50 text-[10px]"
+              >
+                ABORT SCENARIO
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <select 
+                className="w-full bg-[#0a0c0e] border border-blue-800/50 text-blue-200 p-1 rounded text-[10px]"
+                onChange={(e) => {
+                  const s = SCENARIOS[e.target.value];
+                  if (s) {
+                    scenarioEngine.startScenario(s);
+                    useFMCStore.setState({ activeScenario: { ...s } });
+                  }
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>SELECT A SCENARIO...</option>
+                {Object.values(SCENARIOS).map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </section>
 
         {/* Instructor Debug */}
