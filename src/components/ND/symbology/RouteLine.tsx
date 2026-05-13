@@ -22,7 +22,7 @@ export function RouteLine({ model }: RouteLineProps) {
           ? colors.pending 
           : (model.lnavActive && segment.active ? colors.active : colors.inactive);
           
-        const width = segment.active ? (isAirbus ? '2.0' : '2.2') : '1.2';
+        const width = segment.active ? (isAirbus ? '2.4' : '2.6') : (isAirbus ? '1.4' : '1.5');
         const dashes = segment.dashed ? '3 3' : undefined;
 
         return segment.arcPath ? (
@@ -34,7 +34,7 @@ export function RouteLine({ model }: RouteLineProps) {
             strokeWidth={width}
             strokeDasharray={dashes}
             style={{ filter: segment.active ? glowFilter(strokeColor) : undefined }}
-            opacity={segment.active ? 1.0 : 0.8}
+            opacity={segment.active ? 1.0 : 0.6}
           />
         ) : (
           <line
@@ -45,7 +45,7 @@ export function RouteLine({ model }: RouteLineProps) {
             strokeWidth={width}
             strokeDasharray={dashes}
             style={{ filter: segment.active ? glowFilter(strokeColor) : undefined }}
-            opacity={segment.active ? 1.0 : 0.8}
+            opacity={segment.active ? 1.0 : 0.6}
           />
         );
       })}

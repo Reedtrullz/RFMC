@@ -5,13 +5,13 @@ export function TCASOverlay({ targets }: { targets: any[] }) {
         <g key={t.id} transform={`translate(${t.x} ${t.y})`}>
           {/* Symbol based on threat level */}
           {t.threatLevel === 'resolution' ? (
-            <rect x="-2.5" y="-2.5" width="5" height="5" fill="#ff0000" />
+            <rect x="-2.2" y="-2.2" width="4.4" height="4.4" fill="#ff0000" stroke="#000" strokeWidth="0.5" />
           ) : t.threatLevel === 'traffic' ? (
-            <circle r="2.5" fill="#ffcc00" />
+            <circle r="2.2" fill="#ffcc00" stroke="#000" strokeWidth="0.5" />
           ) : t.threatLevel === 'proximate' ? (
-            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="#ffffff" />
+            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
           ) : (
-            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="none" stroke="#ffffff" strokeWidth="0.5" />
+            <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="none" stroke="#ffffff" strokeWidth="0.6" />
           )}
           
           {/* Altitude Tag */}

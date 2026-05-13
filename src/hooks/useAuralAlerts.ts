@@ -11,46 +11,52 @@ export function useAuralAlerts() {
   const tcasAlert = useFMCStore(s => s.tcasAlert);
   const aircraft = useFMCStore(s => s.aircraft);
   const apStatus = useFMCStore(s => s.autopilot.truth.autopilotStatus);
+  const fma = useFMCStore(s => s.autopilot.truth.fma);
   
   const alerts = useFMCStore(s => s.alerts);
   
   const lastGpws = useRef(gpwsAlert);
   const lastTcas = useRef(tcasAlert);
   const lastApStatus = useRef(apStatus);
-  const lastAlertCount = useRef(alerts.length);
+  const lastProcessedAlertId = useRef<string | null>(null);
+  const lastFma = useRef(JSON.stringify(fma));
 
   useEffect(() => {
+    const isAirbus = aircraft.includes('AIRBUS');
+
     // Handle new alerts (Master Caution/Warning)
-    if (alerts.length > lastAlertCount.current) {
-      const newAlert = alerts[alerts.length - 1];
-      if (newAlert.level === 'WARNING') {
-        if (aircraft.includes('AIRBUS')) AuralAlertService.playContinuousChime(2);
-        else AuralAlertService.playCavalryCharge(); // Boeing style warning
-      } else if (newAlert.level === 'CAUTION') {
-        if (aircraft.includes('AIRBUS')) AuralAlertService.playSingleChime();
-        else AuralAlertService.playChime(); // Boeing style caution chime
+    if (alerts.length > 0) {
+      const latestAlert = alerts[alerts.length - 1];
+      if (latestAlert.id !== lastProcessedAlertId.current) {
+        if (latestAlert.level === 'WARNING') {
+          if (isAirbus) AuralAlertService.playAirbusWarning(2);
+          else AuralAlertService.playBoeingWarning();
+        } else if (latestAlert.level === 'CAUTION') {
+          if (isAirbus) AuralAlertService.playAirbusCaution();
+          else AuralAlertService.playBoeingCaution();
+        }
+        lastProcessedAlertId.current = latestAlert.id;
       }
+    } else {
+      lastProcessedAlertId.current = null;
     }
-    lastAlertCount.current = alerts.length;
+
+    // Handle FMA Changes (Airbus Triple Click)
+    const currentFmaStr = JSON.stringify(fma);
+    if (isAirbus && currentFmaStr !== lastFma.current) {
+      // Only play if it's a significant mode change, not just values
+      AuralAlertService.playAirbusTripleClick();
+      lastFma.current = currentFmaStr;
+    }
 
     // Handle GPWS Alerts
     if (gpwsAlert !== lastGpws.current) {
       switch (gpwsAlert) {
-        case 'PULL_UP':
-          AuralAlertService.playPullUp();
-          break;
-        case 'TERRAIN':
-          AuralAlertService.playTerrain();
-          break;
-        case 'SINK_RATE':
-          AuralAlertService.playSinkRate();
-          break;
-        case 'DONT_SINK':
-          AuralAlertService.playDontSink();
-          break;
-        case 'GLIDESLOPE':
-          AuralAlertService.playGlideslope();
-          break;
+        case 'PULL_UP': AuralAlertService.playPullUp(); break;
+        case 'TERRAIN': AuralAlertService.playTerrain(); break;
+        case 'SINK_RATE': AuralAlertService.playSinkRate(); break;
+        case 'DONT_SINK': AuralAlertService.playDontSink(); break;
+        case 'GLIDESLOPE': AuralAlertService.playGlideslope(); break;
       }
       lastGpws.current = gpwsAlert;
     }
@@ -63,15 +69,11 @@ export function useAuralAlerts() {
 
     // Handle Autopilot Disconnect
     if (lastApStatus.current !== 'OFF' && apStatus === 'OFF') {
-      if (aircraft.includes('AIRBUS')) {
-        AuralAlertService.playCavalryCharge(); // In a real Airbus it's a rep-rep-rep, but we'll use Cavalry for Boeing-style or implement Airbus specific later
-      } else {
-        AuralAlertService.playCavalryCharge();
-      }
+      AuralAlertService.playBoeingWarning(); // Cavalry charge is used for both for now, or specifically Boeing
     }
     lastApStatus.current = apStatus;
 
-  }, [gpwsAlert, tcasAlert, apStatus, aircraft]);
+  }, [gpwsAlert, tcasAlert, apStatus, aircraft, alerts, fma]);
 
   // Global user interaction listener to resume audio context
   useEffect(() => {

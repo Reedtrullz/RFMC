@@ -20,16 +20,21 @@ export function WaypointSymbol({ model }: WaypointSymbolProps) {
         const wptColor = (point.active && model.lnavActive) ? colors.active : colors.inactive;
         const isDiscon = point.discontinuity;
 
+        // Boeing: 4-point star; Airbus: Triangle
+        const symbolPath = isAirbus 
+          ? 'M0 -3 L2.6 1.5 L-2.6 1.5 Z' // Triangle
+          : 'M0 -4 L1 -1 L4 0 L1 1 L0 4 L-1 1 L-4 0 L-1 -1 Z'; // 4-point star
+
         return (
           <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
             {isDiscon ? (
               <path d="M-3-3L3 3M3-3L-3 3" stroke="#ffaa00" strokeWidth="1.2" />
             ) : (
               <path
-                d={point.airport ? 'M-2.5 -2.5h5v5h-5z' : 'M0 -3.5 L3.5 0 L0 3.5 L-3.5 0 Z'}
-                fill={point.active && !isAirbus ? colors.active : 'none'}
+                d={point.airport ? 'M-2.5 -2.5h5v5h-5z' : symbolPath}
+                fill={(point.active && !isAirbus) ? colors.active : 'none'}
                 stroke={wptColor}
-                strokeWidth="0.7"
+                strokeWidth={point.active ? "0.9" : "0.6"}
               />
             )}
             

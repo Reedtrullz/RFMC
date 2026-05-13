@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import { BOEING_CDU_CRT, AIRBUS_MCDU_LCD, GENERIC_ND_LCD, type ScreenEffectProfile } from './EffectProfiles';
+import { EffectProfiles, type ScreenEffectProfile } from './EffectProfiles';
 
 interface ScreenGlassProps {
   children: ReactNode;
@@ -11,11 +10,11 @@ interface ScreenGlassProps {
 
 export function ScreenGlass({ children, variant = 'boeing', brightness = 100, className = '', effectProfile }: ScreenGlassProps) {
   const defaults: Record<string, ScreenEffectProfile> = {
-    boeing: BOEING_CDU_CRT,
-    airbus: AIRBUS_MCDU_LCD,
-    'airbus-crt': BOEING_CDU_CRT,
-    nd: GENERIC_ND_LCD,
-    pfd: GENERIC_ND_LCD,
+    boeing: EffectProfiles.CRT,
+    airbus: EffectProfiles.LCD,
+    'airbus-crt': EffectProfiles.CRT,
+    nd: EffectProfiles.BOEING_ND,
+    pfd: EffectProfiles.AIRBUS_ND,
   };
 
   const profile = { ...defaults[variant], ...effectProfile };

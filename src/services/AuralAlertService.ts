@@ -7,60 +7,61 @@ export class AuralAlertService {
     }
   }
 
-  public static playChime() {
+  /**
+   * Boeing Caution Chime (Single Bell/Chime)
+   */
+  public static playBoeingCaution() {
     this.init();
     if (!this.context) return;
-
-    const osc = this.context.createOscillator();
-    const gain = this.context.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, this.context.currentTime); // A5
-    osc.frequency.exponentialRampToValueAtTime(440, this.context.currentTime + 0.5); // A4
-
-    gain.gain.setValueAtTime(0.2, this.context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.5);
-
-    osc.connect(gain);
-    gain.connect(this.context.destination);
-
-    osc.start();
-    osc.stop(this.context.currentTime + 0.5);
-  }
-
-  public static playTripleClick() {
-    this.init();
-    if (!this.context) return;
-    for (let i = 0; i < 3; i++) {
-       this.playPulse(1200, 0.05, this.context.currentTime + i * 0.12);
-    }
-  }
-
-  public static playCavalryCharge() {
-    this.init();
-    if (!this.context) return;
-    // Classic AP disconnect wailer
-    for (let i = 0; i < 10; i++) {
-      const t = this.context.currentTime + i * 0.2;
-      this.playPulse(880, 0.1, t);
-      this.playPulse(1100, 0.1, t + 0.1);
-    }
-  }
-
-  public static playSingleChime() {
-    this.init();
-    if (!this.context) return;
-    // Airbus Master Caution (Ding!)
     const t = this.context.currentTime;
-    this.playPulse(550, 0.8, t);
+    // Boeing caution is a dual-tone chime or a single rich chime
+    this.playRichPulse(880, 0.8, t, 0.2);
+    this.playRichPulse(440, 0.8, t + 0.05, 0.1);
   }
 
-  public static playContinuousChime(durationSec: number = 3) {
+  /**
+   * Boeing Warning (Cavalry Charge / Wailer)
+   */
+  public static playBoeingWarning() {
     this.init();
     if (!this.context) return;
-    // Airbus Master Warning (Ding-ding-ding...)
+    // AP Disconnect or high priority warning
+    for (let i = 0; i < 6; i++) {
+      const t = this.context.currentTime + i * 0.3;
+      this.playRichPulse(880, 0.15, t, 0.2);
+      this.playRichPulse(1100, 0.15, t + 0.15, 0.2);
+    }
+  }
+
+  /**
+   * Airbus Single Chime (Caution)
+   */
+  public static playAirbusCaution() {
+    this.init();
+    if (!this.context) return;
+    this.playRichPulse(580, 0.8, this.context.currentTime, 0.25);
+  }
+
+  /**
+   * Airbus Continuous Chime (Warning)
+   */
+  public static playAirbusWarning(durationSec: number = 3) {
+    this.init();
+    if (!this.context) return;
     for (let i = 0; i < durationSec * 2; i++) {
-      this.playPulse(550, 0.4, this.context.currentTime + i * 0.5);
+      this.playRichPulse(580, 0.4, this.context.currentTime + i * 0.5, 0.25);
+    }
+  }
+
+  /**
+   * Airbus Triple Click (FMA Change)
+   */
+  public static playAirbusTripleClick() {
+    this.init();
+    if (!this.context) return;
+    const t = this.context.currentTime;
+    for (let i = 0; i < 3; i++) {
+      this.playPulse(1400, 0.04, t + i * 0.1, 0.15);
     }
   }
 
@@ -107,17 +108,50 @@ export class AuralAlertService {
     this.playVoice("TRAFFIC, TRAFFIC", 1.2);
   }
 
-  private static playPulse(freq: number, duration: number, time: number) {
+  private static playPulse(freq: number, duration: number, time: number, volume: number = 0.15) {
     if (!this.context) return;
     const osc = this.context.createOscillator();
     const gain = this.context.createGain();
+    osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, time);
-    gain.gain.setValueAtTime(0.15, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     osc.connect(gain);
     gain.connect(this.context.destination);
     osc.start(time);
     osc.stop(time + duration);
   }
+
+  private static playRichPulse(freq: number, duration: number, time: number, volume: number = 0.2) {
+    if (!this.context) return;
+    
+    // Create multiple oscillators for harmonic richness
+    const frequencies = [freq, freq * 1.5, freq * 2];
+    const gains = [1, 0.4, 0.2];
+
+    const masterGain = this.context.createGain();
+    masterGain.gain.setValueAtTime(volume, time);
+    masterGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    masterGain.connect(this.context.destination);
+
+    frequencies.forEach((f, i) => {
+      const osc = this.context!.createOscillator();
+      const gain = this.context!.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, time);
+      gain.gain.setValueAtTime(gains[i], time);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(time);
+      osc.stop(time + duration);
+    });
+  }
+
+  // Legacy compatibility
+  public static playChime() { this.playBoeingCaution(); }
+  public static playTripleClick() { this.playAirbusTripleClick(); }
+  public static playCavalryCharge() { this.playBoeingWarning(); }
+  public static playSingleChime() { this.playAirbusCaution(); }
+  public static playContinuousChime(durationSec: number = 3) { this.playAirbusWarning(durationSec); }
 }
 

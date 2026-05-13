@@ -22,7 +22,7 @@ export function NavigationDisplay() {
   return (
     <section
       data-testid="navigation-display"
-      className={`flex h-full min-h-[300px] w-full max-w-[500px] flex-col rounded-md border-4 border-cdu-bezel bg-[#0a0c0c] p-1 shadow-2xl ${model.style === 'airbus' ? 'border-[#3a3d3d]' : 'border-cdu-bezel'}`}
+      className={`cockpit-instrument h-full w-full max-w-[500px] flex-col rounded-md border-4 bg-[#0a0c0c] p-1 shadow-2xl ${model.style === 'airbus' ? 'border-[#3a3d3d]' : 'border-cdu-bezel'}`}
       aria-label="Navigation Display"
     >
       {model.style === 'airbus' ? (

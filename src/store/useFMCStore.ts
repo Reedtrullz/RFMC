@@ -2722,15 +2722,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // 6. GPWS Logic
     const gpwsResult = gpwsEngine.update(state, 1); // 1s tick
     updates.gpwsAlert = gpwsResult.alert;
-    if (gpwsResult.alert !== 'NONE') {
-      switch (gpwsResult.alert) {
-        case 'SINK_RATE': AuralAlertService.playSinkRate(); break;
-        case 'PULL_UP': AuralAlertService.playPullUp(); break;
-        case 'TERRAIN': AuralAlertService.playTerrain(); break;
-        case 'DONT_SINK': AuralAlertService.playDontSink(); break;
-        case 'GLIDESLOPE': AuralAlertService.playGlideslope(); break;
-      }
-    }
+    // (Aural alerts handled by useAuralAlerts hook)
     if (gpwsResult.callout) {
       AuralAlertService.playVoice(gpwsResult.callout.toString());
     }
@@ -2738,9 +2730,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // 7. TCAS Logic
     const tcasResult = tcasEngine.update(state, 1);
     updates.tcasAlert = tcasResult.alert;
-    if (tcasResult.alert) {
-      AuralAlertService.playTraffic();
-    }
+    // (Aural alerts handled by useAuralAlerts hook)
     updates.trafficTargets = tcasResult.targets;
 
     if (Object.keys(updates).length > 0) {

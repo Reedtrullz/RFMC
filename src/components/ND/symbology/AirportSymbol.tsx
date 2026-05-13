@@ -13,7 +13,17 @@ export function AirportSymbol({ model }: AirportSymbolProps) {
       {model.backgroundAirports.map(point => (
         <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.7">
           {/* Airport Icon */}
-          <rect x="-2" y="-2" width="4" height="4" fill="none" stroke={color} strokeWidth="0.7" />
+          {isAirbus ? (
+            <g stroke={color} strokeWidth="0.7" fill="none">
+              <circle r="2.2" />
+              <path d="M-2.2 0L2.2 0M0-2.2L0 2.2" />
+            </g>
+          ) : (
+            <g stroke={color} strokeWidth="0.7" fill="none">
+              <circle r="2.2" />
+              <path d="M-2.8 0L2.8 0M0-2.8L0 2.8" />
+            </g>
+          )}
           
           {/* Label with Shadow */}
           <g transform="translate(3 1)">

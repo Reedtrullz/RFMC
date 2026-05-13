@@ -1,21 +1,10 @@
 import { NavigationDisplayModel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
+import { AvionicsKey } from '../instruments/common/AvionicsKey';
 
 const RANGES = [5, 10, 20, 40, 80, 160, 320, 640];
-const BOEING_MODES = [
-  { label: 'APP', value: 'APP' },
-  { label: 'VOR', value: 'VOR' },
-  { label: 'MAP', value: 'MAP' },
-  { label: 'PLN', value: 'PLN' },
-];
-
-const AIRBUS_MODES = [
-  { label: 'ROSE NAV', value: 'ROSE_NAV' },
-  { label: 'ARC', value: 'ARC' },
-  { label: 'PLAN', value: 'PLAN' },
-  { label: 'ROSE ILS', value: 'ROSE_ILS' },
-  { label: 'ROSE VOR', value: 'ROSE_VOR' },
-];
+const BOEING_MODES = ['APP', 'VOR', 'MAP', 'PLN'];
+const AIRBUS_MODES = ['ROSE_NAV', 'ARC', 'PLAN', 'ROSE_ILS', 'ROSE_VOR'];
 
 interface NDControlsProps {
   model: NavigationDisplayModel;
@@ -28,50 +17,64 @@ export function NDControls({ model, side }: NDControlsProps) {
   const modes = model.style === 'airbus' ? AIRBUS_MODES : BOEING_MODES;
 
   return (
-    <div className="mt-1.5 flex flex-col gap-1.5 bg-cdu-bezel/40 p-2 rounded-sm border border-white/5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex gap-0.5" aria-label="Mode Selector">
-          {modes.map(m => (
-            <button
-              key={m.value}
-              onClick={() => state.setNDMode(side, m.value as any)}
-              className={`px-2 py-1 text-[8px] font-bold tracking-tighter transition-all ${efis.mode === m.value ? 'bg-cdu-cyan text-black' : 'bg-black/40 text-cdu-cyan/60 hover:text-cdu-cyan'}`}
-            >
-              {m.label}
-            </button>
-          ))}
+    <div className="mt-2 flex flex-col gap-2 bg-[#1a1c1c] p-3 rounded-md border-t-2 border-[#2a2d2d] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
+      {/* Upper Panel: Knobs */}
+      <div className="flex items-start justify-between">
+        {/* Mode Selector Knob Look */}
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Mode</span>
+          <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-full border border-white/5">
+            {modes.map(m => (
+              <button
+                key={m}
+                onClick={() => state.setNDMode(side, m as any)}
+                className={`h-5 px-1.5 rounded-full text-[8px] font-bold transition-all ${efis.mode === m ? 'bg-cdu-cyan text-black shadow-[0_0_8px_rgba(0,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
+              >
+                {m.replace('ROSE_', '').replace('NAV', 'NV')}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex gap-0.5 overflow-hidden" aria-label="Range Selector">
-          {RANGES.map(r => (
-            <button
-              key={r}
-              onClick={() => state.setNDRange(side, r)}
-              className={`flex-1 px-1 py-1 text-[9px] font-bold transition-all ${efis.range === r ? 'bg-cdu-white text-black' : 'bg-black/40 text-cdu-white/40 hover:text-cdu-white'}`}
-            >
-              {r}
-            </button>
-          ))}
+        {/* Range Selector Knob Look */}
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Range</span>
+          <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-full border border-white/5">
+            {RANGES.map(r => (
+              <button
+                key={r}
+                onClick={() => state.setNDRange(side, r)}
+                className={`h-5 w-5 rounded-full text-[8px] font-bold transition-all flex items-center justify-center ${efis.range === r ? 'bg-white text-black shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-1">
+      {/* Lower Panel: Overlays */}
+      <div className="grid grid-cols-4 gap-1">
         {['WPT', 'ARPT', 'STA', 'DATA', 'POS', 'TERR', 'WXR', 'TFC'].map(ov => (
-          <button
+          <AvionicsKey
             key={ov}
-            onClick={() => state.toggleNDOverlay(side, ov.toLowerCase() as any)}
-            className={`flex-1 py-0.5 text-[8px] font-bold border ${efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays] ? 'border-cdu-green text-cdu-green bg-cdu-green/10' : 'border-white/10 text-white/30'}`}
-          >
-            {ov}
-          </button>
+            label={ov}
+            active={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
+            lit={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
+            onPress={() => state.toggleNDOverlay(side, ov.toLowerCase() as any)}
+            variant={model.style === 'airbus' ? 'airbus' : 'boeing'}
+            className="!h-7 !text-[8px] !min-w-0"
+          />
         ))}
         {model.style === 'boeing' && (
-          <button
-            onClick={() => state.toggleNDCenter(side)}
-            className={`px-2 py-0.5 text-[8px] font-bold border ${efis.centered ? 'border-cdu-cyan text-cdu-cyan' : 'border-white/10 text-white/30'}`}
-          >
-            CTR
-          </button>
+           <AvionicsKey
+            label="CTR"
+            active={efis.centered}
+            lit={efis.centered}
+            onPress={() => state.toggleNDCenter(side)}
+            variant="boeing"
+            className="!h-7 !text-[8px] !min-w-0"
+          />
         )}
       </div>
     </div>
