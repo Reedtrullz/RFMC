@@ -2161,10 +2161,23 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (action === 'ALT_HLD') request = { verticalActive: 'ALT_HOLD' };
       if (action === 'VOR_LOC') request = { lateralActive: 'VOR_LOC' };
       if (action === 'APP') request = { lateralActive: 'APP', verticalActive: 'G_S' };
+      if (action === 'N1') request = { thrustActive: 'N1' };
+      if (action === 'SPEED') request = { thrustActive: 'SPEED' };
+      if (action === 'cmdA') request = { autopilotStatus: truth.autopilotStatus === 'CMD_A' ? 'OFF' : 'CMD_A' };
+      if (action === 'cmdB') request = { autopilotStatus: truth.autopilotStatus === 'CMD_B' ? 'OFF' : 'CMD_B' };
     } else {
       if (action === 'LOC') request = { lateralActive: 'LOC' };
       if (action === 'APPR') request = { lateralActive: 'APP', verticalActive: 'G_S' };
-      if (action === 'EXPED') request = { verticalActive: 'OP_CLB' }; // Simplified
+      if (action === 'EXPED') request = { verticalActive: 'OP_CLB' }; 
+      if (action === 'AP1') request = { autopilotStatus: truth.autopilotStatus === 'AP1' ? 'OFF' : 'AP1' };
+      if (action === 'AP2') request = { autopilotStatus: truth.autopilotStatus === 'AP2' ? 'OFF' : 'AP2' };
+      if (action === 'ATHR') request = { thrustActive: truth.thrustActive === 'SPEED' ? 'OFF' : 'SPEED' };
+      if (action === 'SPD_MANAGED') request = { thrustActive: 'SPEED' };
+      if (action === 'SPD_SELECTED') request = { thrustActive: 'OFF' };
+      if (action === 'HDG_MANAGED') request = { lateralActive: 'NAV' };
+      if (action === 'HDG_SELECTED') request = { lateralActive: 'HDG' };
+      if (action === 'ALT_MANAGED') request = { verticalActive: 'VNAV_PTH' }; // Airbus CLB/DES
+      if (action === 'ALT_SELECTED') request = { verticalActive: 'OP_CLB' }; 
     }
 
     if (Object.keys(request).length > 0) {

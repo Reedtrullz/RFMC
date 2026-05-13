@@ -44,9 +44,12 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
     altitude: aircraft?.altitudeFt || 0,
     speed: aircraft?.indicatedAirspeedKt || 0,
     verticalSpeed: aircraft?.verticalSpeedFpm || 0,
-    pitch: 0, // Mock for now
-    bank: 0, // Mock for now
-    radioAltitude: (aircraft?.altitude || 0) < 2500 ? (aircraft?.altitude || 0) : null,
+    pitch: aircraft?.pitchDeg || 0,
+    bank: aircraft?.bankDeg || 0,
+    speedTrend: 0, // Need acceleration data for this
+    targetSpeed: state.autopilot.boeing.speed,
+    targetAltitude: state.autopilot.boeing.altitude,
+    radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,
     flightDirector: {
       visible: state.autopilot.boeing.fdLeft || state.autopilot.boeing.fdRight,
       pitch: 0,

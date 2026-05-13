@@ -13,6 +13,7 @@ interface AirbusFCUProps {
 import { PushPullRotary } from '../../common/PushPullRotary';
 
 export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
+  const truth = useFMCStore(s => s.autopilot.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   const highlighted = (controlId: string) => tutorialHighlight === controlId;
 
@@ -21,6 +22,13 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
     if (field === 'altitude') return { text: val?.toString().padStart(5, '0') ?? '00000', dots: managed };
     if (field === 'vs') return { text: val === null ? '-----' : (val > 0 ? `+${val}` : val.toString()), dots: false };
     return { text: val?.toString() ?? '', dots: managed };
+  };
+
+  const isManaged = (field: 'speed' | 'heading' | 'altitude') => {
+    if (field === 'speed') return truth.thrustActive === 'SPEED' || truth.thrustActive === 'THR_CLB';
+    if (field === 'heading') return truth.lateralActive === 'NAV' || truth.lateralArmed === 'NAV';
+    if (field === 'altitude') return truth.verticalActive === 'CLB' || truth.verticalActive === 'DES' || truth.verticalArmed === 'VNAV';
+    return false;
   };
 
   return (
@@ -36,15 +44,15 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.speed || 0} 
-            {...formatWindow('speed', state.speed, state.speedManaged)}
-            label={formatWindow('speed', state.speed, state.speedManaged).text}
+            {...formatWindow('speed', state.speed, isManaged('speed'))}
+            label={formatWindow('speed', state.speed, isManaged('speed')).text}
             highlighted={highlighted('A320_SPEED')}
           />
           <PushPullRotary 
             value={state.speed || 100} 
             onRotate={(d) => updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) })}
-            onPush={() => updateState({ speedManaged: true })}
-            onPull={() => updateState({ speedManaged: false })}
+            onPush={() => pressButton('SPD_MANAGED')}
+            onPull={() => pressButton('SPD_SELECTED')}
           />
         </div>
 
@@ -62,15 +70,15 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.heading || 0} 
-            {...formatWindow('heading', state.heading, state.headingManaged)}
-            label={formatWindow('heading', state.heading, state.headingManaged).text}
+            {...formatWindow('heading', state.heading, isManaged('heading'))}
+            label={formatWindow('heading', state.heading, isManaged('heading')).text}
             highlighted={highlighted('A320_HDG')}
           />
           <PushPullRotary 
             value={state.heading || 0} 
             onRotate={(d) => updateState({ heading: ((state.heading || 0) + d + 360) % 360 })}
-            onPush={() => updateState({ headingManaged: true })}
-            onPull={() => updateState({ headingManaged: false })}
+            onPush={() => pressButton('HDG_MANAGED')}
+            onPull={() => pressButton('HDG_SELECTED')}
             highlighted={highlighted('A320_HDG')}
           />
         </div>
@@ -78,12 +86,12 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
         {/* AP ENGAGE / Central Buttons */}
         <div className="flex flex-col gap-2 pt-4">
           <div className="flex gap-2">
-            <FCUButton label="AP1" active={state.ap1} highlighted={highlighted('A320_AP1')} onPress={() => pressButton('AP1')} />
-            <FCUButton label="AP2" active={state.ap2} highlighted={highlighted('A320_AP2')} onPress={() => pressButton('AP2')} />
+            <FCUButton label="AP1" active={truth.autopilotStatus === 'AP1' || truth.autopilotStatus === 'AP1_AP2'} highlighted={highlighted('A320_AP1')} onPress={() => pressButton('AP1')} />
+            <FCUButton label="AP2" active={truth.autopilotStatus === 'AP2' || truth.autopilotStatus === 'AP1_AP2'} highlighted={highlighted('A320_AP2')} onPress={() => pressButton('AP2')} />
           </div>
           <div className="flex gap-2">
-            <FCUButton label="A/THR" active={state.athr} highlighted={highlighted('A320_ATHR')} onPress={() => pressButton('ATHR')} />
-            <FCUButton label="LOC" active={state.loc} highlighted={highlighted('A320_LOC')} onPress={() => pressButton('LOC')} />
+            <FCUButton label="A/THR" active={truth.thrustActive !== 'OFF'} highlighted={highlighted('A320_ATHR')} onPress={() => pressButton('ATHR')} />
+            <FCUButton label="LOC" active={truth.lateralActive === 'LOC' || truth.lateralArmed === 'LOC'} highlighted={highlighted('A320_LOC')} onPress={() => pressButton('LOC')} />
           </div>
         </div>
 
@@ -98,15 +106,15 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.altitude} 
-            {...formatWindow('altitude', state.altitude, state.altitudeManaged)}
-            label={formatWindow('altitude', state.altitude, state.altitudeManaged).text}
+            {...formatWindow('altitude', state.altitude, isManaged('altitude'))}
+            label={formatWindow('altitude', state.altitude, isManaged('altitude')).text}
             highlighted={highlighted('A320_ALT')}
           />
           <PushPullRotary 
             value={state.altitude / 100} 
             onRotate={(d) => updateState({ altitude: Math.max(0, Math.min(49000, state.altitude + d * 100)) })}
-            onPush={() => updateState({ altitudeManaged: true })}
-            onPull={() => updateState({ altitudeManaged: false })}
+            onPush={() => pressButton('ALT_MANAGED')}
+            onPull={() => pressButton('ALT_SELECTED')}
             highlighted={highlighted('A320_ALT')}
           />
         </div>
@@ -129,7 +137,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
-          <FCUButton label="APPR" active={state.appr} highlighted={highlighted('A320_APPR')} onPress={() => pressButton('APPR')} />
+          <FCUButton label="APPR" active={truth.verticalActive === 'G_S' || truth.verticalArmed === 'G_S'} highlighted={highlighted('A320_APPR')} onPress={() => pressButton('APPR')} />
         </div>
 
       </div>

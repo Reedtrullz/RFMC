@@ -30,6 +30,9 @@ export type PFDState = {
   pitch: number;
   bank: number;
   radioAltitude: number | null;
+  speedTrend: number;
+  targetSpeed: number | null;
+  targetAltitude: number | null;
   flightDirector: {
     visible: boolean;
     pitch: number;

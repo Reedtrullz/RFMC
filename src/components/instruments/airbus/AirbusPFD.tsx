@@ -19,7 +19,8 @@ export function AirbusPFD() {
         {/* Airbus Speed Tape */}
         <SpeedTape 
           speed={pfd.speed} 
-          targetSpeed={fcu.speed || 100} 
+          targetSpeed={pfd.targetSpeed} 
+          trend={pfd.speedTrend}
         />
         
         {/* Attitude Center */}
@@ -27,15 +28,14 @@ export function AirbusPFD() {
           <AttitudeSphere 
             pitch={pfd.pitch} 
             bank={pfd.bank} 
+            fd={pfd.flightDirector}
           />
-          
-          {/* Airbus Flight Path Vector / FD Cross could go here */}
         </div>
         
         {/* Altitude Tape */}
         <AltitudeTape 
           altitude={pfd.altitude} 
-          targetAltitude={fcu.altitude} 
+          targetAltitude={pfd.targetAltitude} 
         />
       </div>
       

@@ -71,26 +71,67 @@ export class AutoflightModeManager {
     const nextState = { ...currentState };
     let alert: string | undefined;
 
+    // Lateral Logic
     if (request.lateralActive && request.lateralActive !== currentState.lateralActive) {
       const guard = this.canEngageLateral(request.lateralActive, fmcState);
       if (guard.ok) {
-        nextState.lateralActive = request.lateralActive;
+        // Intercept logic for arming
+        if ((request.lateralActive === 'LOC' || request.lateralActive === 'VOR_LOC' || request.lateralActive === 'LNAV') && 
+            !this.isLateralCaptured(request.lateralActive, fmcState)) {
+          nextState.lateralArmed = request.lateralActive;
+        } else {
+          nextState.lateralActive = request.lateralActive;
+          nextState.lateralArmed = 'OFF';
+        }
       } else {
         alert = guard.message;
       }
     }
 
+    // Vertical Logic
     if (request.verticalActive && request.verticalActive !== currentState.verticalActive) {
       const guard = this.canEngageVertical(request.verticalActive, fmcState);
       if (guard.ok) {
-        nextState.verticalActive = request.verticalActive;
+        if (request.verticalActive === 'G_S' && !this.isVerticalCaptured('G_S', fmcState)) {
+          nextState.verticalArmed = 'G_S';
+        } else {
+          nextState.verticalActive = request.verticalActive;
+          nextState.verticalArmed = 'OFF';
+        }
       } else {
         alert = guard.message;
       }
     }
 
-    // Add more logic for armed modes, thrust modes, and AP status transitions
+    // Autopilot Status Logic
+    if (request.autopilotStatus && request.autopilotStatus !== currentState.autopilotStatus) {
+      const isAirbus = fmcState.aircraft === 'AIRBUS_A320';
+      if (isAirbus) {
+        // Dual AP allowed in approach
+        if (request.autopilotStatus === 'AP1' || request.autopilotStatus === 'AP2') {
+           nextState.autopilotStatus = request.autopilotStatus;
+        } else {
+           nextState.autopilotStatus = 'OFF';
+        }
+      } else {
+        // Boeing logic
+        nextState.autopilotStatus = request.autopilotStatus;
+      }
+    }
+
+    if (request.thrustActive) {
+      nextState.thrustActive = request.thrustActive;
+    }
 
     return { nextState, alert };
+  }
+
+  private static isLateralCaptured(mode: LateralMode, state: FMCState): boolean {
+    // Mock capture logic: captured if within 5nm of route or 1 dot of LOC
+    return false; // Default to arming for demonstration
+  }
+
+  private static isVerticalCaptured(mode: VerticalMode, state: FMCState): boolean {
+    return false;
   }
 }

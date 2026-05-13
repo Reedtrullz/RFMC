@@ -46,15 +46,17 @@ export function AltitudeTape({ altitude, targetAltitude }: AltitudeTapeProps) {
         />
       </div>
 
-      {/* Target altitude bug */}
+      {/* Target altitude bug (Magenta) */}
       {targetAltitude !== null && (
-        <div className="absolute left-0 w-4 h-4 bg-[#ff00ff] transform -translate-y-1/2" 
-             style={{ top: `${50 - (targetAltitude - altitude) * pixelsPerFoot}%` }} />
+        <div className="absolute left-0 w-full h-4 flex items-center" 
+             style={{ top: `${50 - (targetAltitude - altitude) * pixelsPerFoot}%`, transform: 'translateY(-50%)' }}>
+           <div className="w-1/3 h-0.5 bg-[#ff00ff] shadow-[0_0_8px_#ff00ff]" />
+        </div>
       )}
       
       {/* Center readout */}
       <div className="absolute top-1/2 left-0 right-0 z-10 flex h-8 -translate-y-1/2 items-center bg-black border-y border-white/40">
-        <span className="w-full text-center font-mono text-sm font-black text-white">{Math.round(altitude)}</span>
+        <span className="w-full text-center font-mono text-sm font-black text-[#00ff44]">{Math.round(altitude)}</span>
       </div>
     </div>
   );

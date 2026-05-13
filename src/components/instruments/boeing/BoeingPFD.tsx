@@ -19,7 +19,8 @@ export function BoeingPFD() {
         {/* Speed Tape */}
         <SpeedTape 
           speed={pfd.speed} 
-          targetSpeed={mcp.speed || 100} 
+          targetSpeed={pfd.targetSpeed} 
+          trend={pfd.speedTrend}
         />
         
         {/* Attitude Center */}
@@ -27,15 +28,14 @@ export function BoeingPFD() {
           <AttitudeSphere 
             pitch={pfd.pitch} 
             bank={pfd.bank} 
+            fd={pfd.flightDirector}
           />
-          
-          {/* Boeing FD Bars could go here */}
         </div>
         
         {/* Altitude Tape */}
         <AltitudeTape 
           altitude={pfd.altitude} 
-          targetAltitude={mcp.altitude} 
+          targetAltitude={pfd.targetAltitude} 
         />
       </div>
       

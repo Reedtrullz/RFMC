@@ -12,7 +12,9 @@ interface BoeingMCPProps {
 }
 
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
+  const truth = useFMCStore(s => s.autopilot.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  
   return (
     <CockpitPanel variant="boeing" className="w-full">
       <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-2">
@@ -42,8 +44,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         {/* SPEED Section */}
         <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
           <div className="flex gap-4">
-            <MCPSwitch label="N1" active={state.n1} onPress={() => updateState({ n1: !state.n1 })} small highlighted={tutorialHighlight === 'N1'} />
-            <MCPSwitch label="SPEED" active={state.speedMode} onPress={() => pressButton('speedMode')} small highlighted={tutorialHighlight === 'SPEED_MODE'} />
+            <MCPSwitch label="N1" active={truth.thrustActive === 'N1'} onPress={() => pressButton('N1')} small highlighted={tutorialHighlight === 'N1'} />
+            <MCPSwitch label="SPEED" active={truth.thrustActive === 'SPEED'} onPress={() => pressButton('SPEED')} small highlighted={tutorialHighlight === 'SPEED_MODE'} />
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -70,14 +72,14 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             label="SPD/MACH"
             highlighted={tutorialHighlight === 'IAS_SEL'}
           />
-          <MCPSwitch label="LVL CHG" active={state.lvlChg} onPress={() => pressButton('lvlChg')} highlighted={tutorialHighlight === 'LVL_CHG'} />
+          <MCPSwitch label="LVL CHG" active={truth.verticalActive === 'LVL_CHG'} onPress={() => pressButton('LVL_CHG')} highlighted={tutorialHighlight === 'LVL_CHG'} />
         </div>
 
         {/* HEADING Section */}
         <div className="flex flex-col items-center gap-4 px-4">
           <div className="flex gap-4">
-            <MCPSwitch label="LNAV" active={state.lnav} onPress={() => pressButton('lnav')} highlighted={tutorialHighlight === 'LNAV'} />
-            <MCPSwitch label="VNAV" active={state.vnav} onPress={() => pressButton('vnav')} highlighted={tutorialHighlight === 'VNAV'} />
+            <MCPSwitch label="LNAV" active={truth.lateralActive === 'LNAV' || truth.lateralArmed === 'LNAV'} onPress={() => pressButton('LNAV')} highlighted={tutorialHighlight === 'LNAV'} />
+            <MCPSwitch label="VNAV" active={truth.verticalActive === 'VNAV_PTH' || truth.verticalArmed === 'VNAV_PTH'} onPress={() => pressButton('VNAV')} highlighted={tutorialHighlight === 'VNAV'} />
           </div>
           <MCPDisplayWindow 
             label="HEADING" 
@@ -91,7 +93,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             label="HEADING"
             highlighted={tutorialHighlight === 'HDG_SEL'}
           />
-          <MCPSwitch label="HDG SEL" active={state.hdgSel} onPress={() => pressButton('hdgSel')} highlighted={tutorialHighlight === 'HDG_SEL_BTN'} />
+          <MCPSwitch label="HDG SEL" active={truth.lateralActive === 'HDG_SEL'} onPress={() => pressButton('HDG_SEL')} highlighted={tutorialHighlight === 'HDG_SEL_BTN'} />
         </div>
 
         {/* ALTITUDE Section */}
@@ -108,15 +110,15 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             label="ALTITUDE"
             highlighted={tutorialHighlight === 'ALT_SEL'}
           />
-          <MCPSwitch label="ALT HOLD" active={state.altHold} onPress={() => pressButton('altHold')} highlighted={tutorialHighlight === 'ALT_HOLD'} />
+          <MCPSwitch label="ALT HOLD" active={truth.verticalActive === 'ALT_HOLD'} onPress={() => pressButton('ALT_HLD')} highlighted={tutorialHighlight === 'ALT_HOLD'} />
         </div>
 
         {/* V/S Section */}
         <div className="flex flex-col items-center gap-4 px-4">
           <MCPDisplayWindow 
             label="VERT SPEED" 
-            value={!state.vs ? '' : (state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed.toString()) : '0000')} 
-            active={state.vs}
+            value={truth.verticalActive !== 'VS' ? '' : (state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed.toString()) : '0000')} 
+            active={truth.verticalActive === 'VS'}
             highlighted={tutorialHighlight === 'VS_MODE'}
           />
           <div className="flex flex-col gap-1">
@@ -129,7 +131,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
-          <MCPSwitch label="V/S" active={state.vs} onPress={() => pressButton('vs')} highlighted={tutorialHighlight === 'VS_MODE'} />
+          <MCPSwitch label="V/S" active={truth.verticalActive === 'VS'} onPress={() => pressButton('VS')} highlighted={tutorialHighlight === 'VS_MODE'} />
         </div>
 
         {/* AP ENGAGE Section */}
@@ -138,18 +140,18 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
              <MCPSwitch label="F/D" active={state.fdRight} onPress={() => updateState({ fdRight: !state.fdRight })} small showAnnunciator={false} />
              <div className="flex flex-col gap-2">
                 <div className="flex gap-2">
-                  <MCPSwitch label="CMD A" active={state.cmdA} onPress={() => pressButton('cmdA')} />
-                  <MCPSwitch label="CWS A" active={state.cwsA} onPress={() => pressButton('cwsA')} />
+                  <MCPSwitch label="CMD A" active={truth.autopilotStatus === 'CMD_A'} onPress={() => pressButton('cmdA')} />
+                  <MCPSwitch label="CWS A" active={truth.autopilotStatus === 'CWS_A'} onPress={() => pressButton('cwsA')} />
                 </div>
                 <div className="flex gap-2">
-                  <MCPSwitch label="CMD B" active={state.cmdB} onPress={() => pressButton('cmdB')} />
-                  <MCPSwitch label="CWS B" active={state.cwsB} onPress={() => pressButton('cwsB')} />
+                  <MCPSwitch label="CMD B" active={truth.autopilotStatus === 'CMD_B'} onPress={() => pressButton('cmdB')} />
+                  <MCPSwitch label="CWS B" active={truth.autopilotStatus === 'CWS_B'} onPress={() => pressButton('cwsB')} />
                 </div>
              </div>
           </div>
           <div className="flex gap-2">
-            <MCPSwitch label="APP" active={state.app} onPress={() => pressButton('app')} highlighted={tutorialHighlight === 'APP_MODE'} />
-            <MCPSwitch label="VOR LOC" active={state.vorLoc} onPress={() => pressButton('vorLoc')} highlighted={tutorialHighlight === 'VOR_LOC'} />
+            <MCPSwitch label="APP" active={truth.lateralActive === 'APP' || truth.lateralArmed === 'APP'} onPress={() => pressButton('APP')} highlighted={tutorialHighlight === 'APP_MODE'} />
+            <MCPSwitch label="VOR LOC" active={truth.lateralActive === 'VOR_LOC' || truth.lateralArmed === 'VOR_LOC'} onPress={() => pressButton('VOR_LOC')} highlighted={tutorialHighlight === 'VOR_LOC'} />
           </div>
         </div>
 
