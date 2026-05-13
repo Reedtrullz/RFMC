@@ -38,6 +38,11 @@ export type PFDState = {
     pitch: number;
     roll: number;
   };
+  fmaBoxes?: {
+    thrust?: boolean;
+    lateral?: boolean;
+    vertical?: boolean;
+  };
 };
 
 export type PFDModel = {

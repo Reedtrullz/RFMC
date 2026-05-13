@@ -120,6 +120,7 @@ export interface NavigationDisplayModel {
   heading: number;
   track: number;
   selectedHeading: number | null;
+  lnavActive: boolean;
   selectedCourse: number | null;
   irsState: string;
   navSource: string;

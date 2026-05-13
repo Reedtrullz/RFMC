@@ -82,6 +82,7 @@ export class AutoflightModeManager {
         } else {
           nextState.lateralActive = request.lateralActive;
           nextState.lateralArmed = 'OFF';
+          nextState.lastModeChangeTimestamps.lateral = Date.now();
         }
       } else {
         alert = guard.message;
@@ -97,6 +98,7 @@ export class AutoflightModeManager {
         } else {
           nextState.verticalActive = request.verticalActive;
           nextState.verticalArmed = 'OFF';
+          nextState.lastModeChangeTimestamps.vertical = Date.now();
         }
       } else {
         alert = guard.message;
@@ -119,8 +121,9 @@ export class AutoflightModeManager {
       }
     }
 
-    if (request.thrustActive) {
+    if (request.thrustActive && request.thrustActive !== currentState.thrustActive) {
       nextState.thrustActive = request.thrustActive;
+      nextState.lastModeChangeTimestamps.thrust = Date.now();
     }
 
     return { nextState, alert };

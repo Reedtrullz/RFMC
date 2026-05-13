@@ -84,9 +84,10 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
         </g>
       )}
       
-      {/* Selected Heading Bug (Magenta) */}
+      {/* Selected Heading Bug & Line (Magenta) */}
       {model.selectedHeading !== null && (
         <g transform={`rotate(${model.selectedHeading - model.heading} 50 ${cy})`}>
+          <line x1="50" y1={cy} x2="50" y2={cy - radius} stroke="#ff00ff" strokeWidth="0.4" strokeDasharray="4 4" opacity="0.6" />
           <path d="M48 35 L52 35 L52 38 L51 38 L51 36 L49 36 L49 38 L48 38 Z" fill="#ff00ff" />
         </g>
       )}

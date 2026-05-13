@@ -73,6 +73,11 @@ export interface AutoflightTruthState {
   verticalArmed?: VerticalMode;
   thrustActive: ThrustMode;
   autopilotStatus: 'OFF' | 'CMD_A' | 'CMD_B' | 'CMD_AB' | 'AP1' | 'AP2' | 'AP1_AP2';
+  lastModeChangeTimestamps: {
+    thrust: number;
+    lateral: number;
+    vertical: number;
+  };
 }
 
 export type FMAState = {

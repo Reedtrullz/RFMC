@@ -20,7 +20,7 @@ export function RouteLine({ model }: RouteLineProps) {
       {model.activeRouteSegments.map((segment, i) => {
         const strokeColor = segment.modified 
           ? colors.pending 
-          : (segment.active ? colors.active : colors.inactive);
+          : (model.lnavActive && segment.active ? colors.active : colors.inactive);
           
         const width = segment.active ? (isAirbus ? '2.0' : '2.2') : '1.2';
         const dashes = segment.dashed ? '3 3' : undefined;

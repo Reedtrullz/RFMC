@@ -97,6 +97,7 @@ export function buildNavigationDisplayModel(
     selectedHeading: aircraftStyle === 'boeing' 
       ? state.autopilot.boeing.heading 
       : state.autopilot.airbus.heading ?? null,
+    lnavActive: state.autopilot.truth.lateralActive === 'LNAV' || state.autopilot.truth.lateralActive === 'NAV',
     selectedCourse: aircraftStyle === 'boeing' ? state.autopilot.boeing.courseL : null,
     irsState: state.position.irsState,
     navSource: state.activeNavSource,

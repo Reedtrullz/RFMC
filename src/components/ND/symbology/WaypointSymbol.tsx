@@ -17,7 +17,7 @@ export function WaypointSymbol({ model }: WaypointSymbolProps) {
     <g>
       {/* Active Route Waypoints */}
       {model.activeRoutePoints.map(point => {
-        const wptColor = point.active ? colors.active : colors.inactive;
+        const wptColor = (point.active && model.lnavActive) ? colors.active : colors.inactive;
         const isDiscon = point.discontinuity;
 
         return (
@@ -47,7 +47,7 @@ export function WaypointSymbol({ model }: WaypointSymbolProps) {
                 {point.label}
               </text>
               <text 
-                fill={point.active ? colors.active : colors.text} 
+                fill={(point.active && model.lnavActive) ? colors.active : colors.text} 
                 fontSize="3.4" 
                 fontWeight="bold"
                 className="font-avionics"

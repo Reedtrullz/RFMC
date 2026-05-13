@@ -257,6 +257,11 @@ const defaultState = {
       verticalActive: 'OFF',
       thrustActive: 'OFF',
       autopilotStatus: 'OFF',
+      lastModeChangeTimestamps: {
+        thrust: 0,
+        lateral: 0,
+        vertical: 0,
+      }
     },
   },
 
@@ -2181,11 +2186,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     if (Object.keys(request).length > 0) {
+      if (request.autopilotStatus === 'OFF' && truth.autopilotStatus !== 'OFF') {
+        AuralAlertService.playCavalryCharge();
+      }
+      
       const { nextState, alert } = AutoflightModeManager.processModeRequest(request, truth, state);
       if (alert) {
         set({ scratchpad: alert, msgLight: true });
-        // Still toggle the button light for feedback if in legacy mode? 
-        // No, user said button light != truth.
+        AuralAlertService.playTripleClick();
+        alertBus.addAlert({
+          id: `afds-${Date.now()}`,
+          text: alert,
+          level: 'CAUTION',
+          source: 'AFDS',
+          clearable: true
+        });
       } else {
         set((s) => ({ autopilot: { ...s.autopilot, truth: nextState } }));
       }
