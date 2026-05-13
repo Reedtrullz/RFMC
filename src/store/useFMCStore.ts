@@ -1103,6 +1103,36 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
+      case 'set_v1': {
+        if (scratchpad) {
+          const v1 = parseInt(scratchpad, 10);
+          if (isNaN(v1)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, v1 };
+        } else if (state.takeoff.suggestedV1) {
+          updates.takeoff = { ...state.takeoff, v1: state.takeoff.suggestedV1 };
+        }
+        break;
+      }
+      case 'set_vr': {
+        if (scratchpad) {
+          const vr = parseInt(scratchpad, 10);
+          if (isNaN(vr)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, vr };
+        } else if (state.takeoff.suggestedVr) {
+          updates.takeoff = { ...state.takeoff, vr: state.takeoff.suggestedVr };
+        }
+        break;
+      }
+      case 'set_v2': {
+        if (scratchpad) {
+          const v2 = parseInt(scratchpad, 10);
+          if (isNaN(v2)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.takeoff = { ...state.takeoff, v2 };
+        } else if (state.takeoff.suggestedV2) {
+          updates.takeoff = { ...state.takeoff, v2: state.takeoff.suggestedV2 };
+        }
+        break;
+      }
       case 'set_landing_vref': {
         if (scratchpad) {
           const vref = parseInt(scratchpad, 10);
@@ -1124,6 +1154,57 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const course = parseInt(scratchpad, 10);
           if (isNaN(course) || course < 1 || course > 360) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
           updates.landing = { ...state.landing, course };
+        }
+        break;
+      }
+      case 'set_flaps': {
+        if (scratchpad) {
+          const flaps = scratchpad.toUpperCase();
+          const takeoff = { ...state.takeoff, flaps };
+          // Trigger speed recalc
+          const speeds = PerformanceEngine.calculateTakeoffSpeeds(state.performance.grossWeight || 140000, flaps);
+          takeoff.suggestedV1 = speeds.v1;
+          takeoff.suggestedVr = speeds.vr;
+          takeoff.suggestedV2 = speeds.v2;
+          updates.takeoff = takeoff;
+        }
+        break;
+      }
+      case 'set_zfw': {
+        if (scratchpad) {
+          const zfw = parseFloat(scratchpad) * 1000;
+          if (isNaN(zfw)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, zfw, grossWeight: zfw + state.performance.fuel };
+          // Trigger speed recalc if flaps exist
+          if (state.takeoff.flaps) {
+            const speeds = PerformanceEngine.calculateTakeoffSpeeds(zfw + state.performance.fuel, state.takeoff.flaps);
+            updates.takeoff = { ...state.takeoff, suggestedV1: speeds.v1, suggestedVr: speeds.vr, suggestedV2: speeds.v2 };
+          }
+        }
+        break;
+      }
+      case 'set_cost_index': {
+        if (scratchpad) {
+          const ci = parseInt(scratchpad, 10);
+          if (isNaN(ci) || ci < 0 || ci > 999) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
+          updates.performance = { ...state.performance, costIndex: ci };
+        }
+        break;
+      }
+      case 'set_crz_alt': {
+        if (scratchpad) {
+          const result = isValidAltitude(scratchpad);
+          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          const alt = scratchpad.startsWith('FL') ? parseInt(scratchpad.slice(2)) * 100 : parseInt(scratchpad);
+          updates.performance = { ...state.performance, crzAlt: alt };
+        }
+        break;
+      }
+      case 'set_reserve': {
+        if (scratchpad) {
+          const res = parseFloat(scratchpad) * 1000;
+          if (isNaN(res)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          updates.performance = { ...state.performance, reserve: res };
         }
         break;
       }
@@ -1326,6 +1407,55 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           handled = true;
         }
         break;
+      case 'atsu_uplink': {
+        const uplink: FlightPlan = {
+          origin: 'KJFK',
+          destination: 'KLAX',
+          flightNumber: 'AAL777',
+          route: 'PARCH3 ROBER J121 Sieg J121 Jfk',
+          waypoints: [
+            { ident: 'PARCH', lat: 39.43, lon: -74.56, discontinuity: false },
+            { ident: 'ROBER', lat: 39.87, lon: -74.12, discontinuity: false }
+          ]
+        };
+        set({ atsu: { ...state.atsu, pendingUplink: uplink } });
+        get().addMessage('RTE UPLINK', 'IMPORTANT');
+        AuralAlertService.playChime();
+        handled = true;
+        break;
+      }
+      case 'set_landing_runway': {
+        if (scratchpad) {
+          updates.landing = { ...state.landing, runway: scratchpad.toUpperCase() };
+        }
+        break;
+      }
+      case 'set_landing_flaps': {
+        if (scratchpad) {
+          updates.landing = { ...state.landing, flaps: scratchpad.toUpperCase() };
+        }
+        break;
+      }
+      case 'atsu_load_route': {
+        if (state.atsu.pendingUplink) {
+          const uplink = state.atsu.pendingUplink;
+          set({
+            pendingFlightPlan: uplink,
+            pendingRoute: {
+              origin: uplink.origin,
+              destination: uplink.destination,
+              flightNumber: uplink.flightNumber,
+              routeString: uplink.route
+            },
+            isModified: true,
+            execLit: true,
+            atsu: { ...state.atsu, pendingUplink: null }
+          });
+          get().expandActiveRoute();
+          handled = true;
+        }
+        break;
+      }
       case 'set_inbound_crs':
         if (scratchpad) {
           const crs = parseInt(scratchpad, 10);
@@ -2494,11 +2624,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.tutorialActive && state.tutorialScenario) {
       const scenario = findTutorial(state.tutorialScenario);
       const step = scenario?.steps[state.tutorialStepIndex];
-      // Only auto-advance if the step is on the current page and its validation passes
-      // We pass empty string as input for state-based background checks
       if (step && state.currentPage === step.page && step.validate('', { ...state, ...updates })) {
         state.advanceTutorial();
       }
+    }
+
+    // 5. Autoflight Mode Capture Logic
+    const apUpdates = AutoflightModeManager.tick(state.autopilot.truth, state);
+    if (apUpdates) {
+      updates.autopilot = { ...state.autopilot, truth: { ...state.autopilot.truth, ...apUpdates } };
     }
 
     if (Object.keys(updates).length > 0) {

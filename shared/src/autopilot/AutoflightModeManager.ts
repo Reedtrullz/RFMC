@@ -30,7 +30,6 @@ export class AutoflightModeManager {
         return { ok: true };
 
       case 'HDG_SEL':
-      case 'HDG':
         return { ok: true };
 
       default:
@@ -129,12 +128,82 @@ export class AutoflightModeManager {
     return { nextState, alert };
   }
 
+  /**
+   * Periodic tick to handle mode captures (Armed -> Active)
+   */
+  public static tick(
+    currentState: AutoflightTruthState,
+    fmcState: FMCState
+  ): Partial<AutoflightTruthState> | null {
+    const updates: Partial<AutoflightTruthState> = {};
+    let changed = false;
+
+    // 1. Lateral Capture
+    if (currentState.lateralArmed && currentState.lateralArmed !== 'OFF') {
+      if (this.isLateralCaptured(currentState.lateralArmed, fmcState)) {
+        updates.lateralActive = currentState.lateralArmed;
+        updates.lateralArmed = 'OFF';
+        updates.lastModeChangeTimestamps = { 
+          ...currentState.lastModeChangeTimestamps, 
+          lateral: Date.now() 
+        };
+        changed = true;
+      }
+    }
+
+    // 2. Vertical Capture
+    if (currentState.verticalArmed && currentState.verticalArmed !== 'OFF') {
+      if (this.isVerticalCaptured(currentState.verticalArmed, fmcState)) {
+        updates.verticalActive = currentState.verticalArmed;
+        updates.verticalArmed = 'OFF';
+        updates.lastModeChangeTimestamps = { 
+          ...currentState.lastModeChangeTimestamps, 
+          vertical: Date.now() 
+        };
+        changed = true;
+      }
+    }
+
+    return changed ? updates : null;
+  }
+
   private static isLateralCaptured(mode: LateralMode, state: FMCState): boolean {
-    // Mock capture logic: captured if within 5nm of route or 1 dot of LOC
-    return false; // Default to arming for demonstration
+    if (!state.aircraftState) return false;
+    
+    switch (mode) {
+      case 'LNAV':
+      case 'NAV':
+        // Captured if within 0.5nm of track (simplified)
+        // In a real FMS this would use cross-track error from the LNAV engine
+        return true; 
+
+      case 'LOC':
+      case 'VOR_LOC':
+        // Simulate localizer capture if heading is within 30deg of runway course
+        // and we are close to the centerline
+        const rwyHeading = state.takeoff.windDir; // Mocking rwy course as wind dir for now
+        const diff = Math.abs((state.aircraftState.headingDeg || 0) - rwyHeading);
+        return diff < 30;
+
+      default:
+        return false;
+    }
   }
 
   private static isVerticalCaptured(mode: VerticalMode, state: FMCState): boolean {
-    return false;
+    if (!state.aircraftState) return false;
+
+    switch (mode) {
+      case 'G_S':
+        // Glide slope capture logic
+        return true; 
+      
+      case 'ALT_HOLD':
+        const targetAlt = state.autopilot.boeing.altitude;
+        return Math.abs(state.aircraftState.altitudeFt - targetAlt) < 50;
+
+      default:
+        return false;
+    }
   }
 }

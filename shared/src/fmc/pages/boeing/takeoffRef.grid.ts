@@ -29,10 +29,15 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     });
   }
 
-  const v1 = takeoff.v1 ? `${takeoff.v1}` : '[   ]';
-  const vr = takeoff.vr ? `${takeoff.vr}` : '[   ]';
-  const v2 = takeoff.v2 ? `${takeoff.v2}` : '[   ]';
-  const vColor = (v: string) => v === '[   ]' ? 'white' : 'green';
+  const renderVSpeed = (val: number | undefined, suggested: number | undefined) => {
+    if (val) return { text: `${val}`, size: 'normal' as const, color: 'green' as const };
+    if (suggested) return { text: `${suggested}`, size: 'small' as const, color: 'white' as const };
+    return { text: '[   ]', size: 'normal' as const, color: 'white' as const };
+  };
+
+  const v1 = renderVSpeed(takeoff.v1, takeoff.suggestedV1);
+  const vr = renderVSpeed(takeoff.vr, takeoff.suggestedVr);
+  const v2 = renderVSpeed(takeoff.v2, takeoff.suggestedV2);
 
   return boeingPage([
     ...boeingTitle('TAKEOFF REF', '1/2'),
@@ -43,20 +48,20 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     seg(3, 1, 'TO MODE', 'white', { size: 'small' }),
     seg(4, 1, takeoff.toMode || 'TO', 'green'),
 
-    seg(5, 1, 'OAT', 'white', { size: 'small' }),
-    seg(6, 1, takeoff.oat ? `${takeoff.oat}°C` : '---', 'green'),
+    seg(5, 1, 'FLAPS', 'white', { size: 'small' }),
+    seg(6, 1, takeoff.flaps || '[  ]', takeoff.flaps ? 'green' : 'white'),
 
     seg(7, 1, 'WIND', 'white', { size: 'small' }),
     seg(8, 1, takeoff.windDir ? `${takeoff.windDir}°/${takeoff.windSpeed}` : '---', 'green'),
 
     seg(1, 20, 'V1', 'white', { size: 'small' }),
-    seg(2, 18, v1, vColor(v1)),
+    seg(2, 18, v1.text.padStart(3), v1.color, { size: v1.size }),
 
     seg(3, 20, 'VR', 'white', { size: 'small' }),
-    seg(4, 18, vr, vColor(vr)),
+    seg(4, 18, vr.text.padStart(3), vr.color, { size: vr.size }),
 
     seg(5, 20, 'V2', 'white', { size: 'small' }),
-    seg(6, 18, v2, vColor(v2)),
+    seg(6, 18, v2.text.padStart(3), v2.color, { size: v2.size }),
 
     seg(9, 13, 'THRUST LIMIT', 'white', { size: 'small' }),
     seg(10, 16, 'SEL/24K >', 'white'),
@@ -66,8 +71,9 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
   ], {
     L1: 'set_runway',
     L2: 'set_to_mode',
-    L3: 'set_oat',
-    L4: 'set_wind',
+    L3: 'set_flaps',
+    L4: 'set_oat',
+    L5: 'set_wind',
     L6: 'menu',
     R1: 'set_v1',
     R2: 'set_vr',

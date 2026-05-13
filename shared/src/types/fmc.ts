@@ -260,6 +260,9 @@ export interface TakeoffData {
   v1: number;
   vr: number;
   v2: number;
+  suggestedV1?: number;
+  suggestedVr?: number;
+  suggestedV2?: number;
   trim: number;
   oat: number;
   windDir: number;
@@ -470,16 +473,6 @@ export interface FMCState {
   editWaypointIndex: number | null;
 
   aircraftState: AircraftState | null;
-
-
-
-
-
-
-
-
-
-
 
   brightness: number;
   cockpitMode: boolean;

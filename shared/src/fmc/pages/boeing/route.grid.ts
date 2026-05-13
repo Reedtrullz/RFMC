@@ -27,12 +27,14 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
       seg(5, 1, 'CO ROUTE', 'white', { size: 'small' }),
       seg(6, 1, coRte, color),
 
+      ...(state.atsu?.pendingUplink ? [seg(11, 0, '<LOAD', 'white')] : []),
       ...(state.isModified ? [seg(13, 0, '<ERASE', 'amber')] : []),
       seg(13, 18, 'ROUTE>', 'white'),
     ], {
       L1: 'set_origin',
       L2: 'set_dest',
       L3: 'set_co_route',
+      L6: state.atsu?.pendingUplink ? 'atsu_load_route' : (state.isModified ? 'erase' : null),
       R1: 'set_flt_no',
       R6: 'next_page',
     });
