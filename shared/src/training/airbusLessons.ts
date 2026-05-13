@@ -27,14 +27,14 @@ export const airbusLessons: TrainingScenario[] = [
         objective: 'Let the FMGS control speed.',
         expectedAction: { type: 'set_mcp', field: 'speedManaged', value: true },
         hint: 'Click the top part of the speed knob (Push).',
-        validation: 'fcu.speedManaged === true'
+        stateValidation: [{ path: 'autopilot.truth.thrustActive', expected: 'SPEED' }]
       },
       {
         id: 'verify-fma-speed',
-        instruction: 'Verify "CLB" or "DES" appears in the first column of the FMA.',
+        instruction: 'Verify "SPEED" appears in the first column of the FMA.',
         objective: 'Confirm managed speed guidance.',
-        expectedAction: { type: 'verify_fma', mode: 'CLB' },
-        validation: 'fma.column1 === "CLB"'
+        expectedAction: { type: 'verify_fma', mode: 'SPEED' },
+        stateValidation: [{ path: 'autopilot.truth.thrustActive', expected: 'SPEED' }]
       },
       {
         id: 'selected-heading',
@@ -42,21 +42,21 @@ export const airbusLessons: TrainingScenario[] = [
         objective: 'Manually select a heading.',
         expectedAction: { type: 'set_mcp', field: 'headingManaged', value: false },
         hint: 'Click the bottom part of the heading knob (Pull).',
-        validation: 'fcu.headingManaged === false'
+        stateValidation: [{ path: 'autopilot.truth.lateralActive', expected: 'HDG' }]
       },
       {
         id: 'set-heading',
         instruction: 'Turn the Heading knob to 090.',
         objective: 'Set specific heading.',
         expectedAction: { type: 'set_mcp', field: 'heading', value: 90 },
-        validation: 'fcu.heading === 90'
+        stateValidation: [{ path: 'autopilot.airbus.heading', expected: 90 }]
       },
       {
         id: 'verify-fma-hdg',
         instruction: 'Verify "HDG" appears in the second column of the FMA.',
         objective: 'Confirm heading mode.',
         expectedAction: { type: 'verify_fma', mode: 'HDG' },
-        validation: 'fma.column2 === "HDG"'
+        stateValidation: [{ path: 'autopilot.truth.lateralActive', expected: 'HDG' }]
       }
     ],
     passCriteria: {
@@ -82,7 +82,7 @@ export const airbusLessons: TrainingScenario[] = [
         instruction: 'Set the FCU altitude to 5000 feet.',
         objective: 'Set clearance altitude.',
         expectedAction: { type: 'set_mcp', field: 'altitude', value: 5000 },
-        validation: 'fcu.altitude === 5000'
+        stateValidation: [{ path: 'autopilot.airbus.altitude', expected: 5000 }]
       },
       {
         id: 'push-alt',
@@ -90,14 +90,14 @@ export const airbusLessons: TrainingScenario[] = [
         objective: 'Engage managed vertical mode.',
         expectedAction: { type: 'set_mcp', field: 'altitudeManaged', value: true },
         hint: 'Click the top of the altitude knob.',
-        validation: 'fcu.altitudeManaged === true'
+        stateValidation: [{ path: 'autopilot.truth.verticalActive', expected: 'VNAV_PTH' }]
       },
       {
         id: 'verify-fma-clb',
         instruction: 'Verify "CLB" appears in green on the FMA.',
         objective: 'Confirm climb mode.',
         expectedAction: { type: 'verify_fma', mode: 'CLB' },
-        validation: 'fma.pitch === "CLB"'
+        stateValidation: [{ path: 'autopilot.truth.verticalActive', expected: 'VNAV_PTH' }]
       }
     ],
     passCriteria: {

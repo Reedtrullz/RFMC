@@ -51,7 +51,7 @@ export function buildAirbusPFDState(state: FMCState): PFDState {
     verticalSpeed: aircraft?.verticalSpeedFpm || 0,
     pitch: aircraft?.pitchDeg || 0,
     bank: aircraft?.bankDeg || 0,
-    speedTrend: 0,
+    speedTrend: (aircraft?.accelerationKtS || 0) * 10,
     targetSpeed: state.autopilot.airbus.speed,
     targetAltitude: state.autopilot.airbus.altitude,
     radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,

@@ -30,7 +30,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Enable flight guidance.',
         expectedAction: { type: 'set_mcp', field: 'fdLeft', value: true },
         hint: 'Flip the FD switch on the left side of the MCP.',
-        validation: 'mcp.fdLeft === true'
+        stateValidation: [{ path: 'autopilot.boeing.fdLeft', expected: true }]
       },
       {
         id: 'set-speed',
@@ -38,7 +38,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Configure climb speed.',
         expectedAction: { type: 'set_mcp', field: 'speed', value: 250 },
         hint: 'Rotate the IAS/MACH knob.',
-        validation: 'mcp.speed === 250'
+        stateValidation: [{ path: 'autopilot.boeing.speed', expected: 250 }]
       },
       {
         id: 'set-heading',
@@ -46,7 +46,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Configure initial turn.',
         expectedAction: { type: 'set_mcp', field: 'heading', value: 220 },
         hint: 'Rotate the HEADING knob.',
-        validation: 'mcp.heading === 220'
+        stateValidation: [{ path: 'autopilot.boeing.heading', expected: 220 }]
       },
       {
         id: 'set-altitude',
@@ -54,7 +54,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Set initial clearance.',
         expectedAction: { type: 'set_mcp', field: 'altitude', value: 10000 },
         hint: 'Rotate the ALTITUDE knob.',
-        validation: 'mcp.altitude === 10000'
+        stateValidation: [{ path: 'autopilot.boeing.altitude', expected: 10000 }]
       },
       {
         id: 'engage-cmd-a',
@@ -62,7 +62,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Hand over control to the autopilot.',
         expectedAction: { type: 'set_mcp', field: 'cmdA', value: true },
         hint: 'Press the CMD A button.',
-        validation: 'mcp.cmdA === true'
+        stateValidation: [{ path: 'autopilot.truth.autopilotStatus', expected: 'CMD_A' }]
       },
       {
         id: 'verify-fma',
@@ -70,7 +70,10 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Confirm autopilot modes.',
         expectedAction: { type: 'verify_fma', mode: 'MCP SPD | HDG SEL | ALT ACQ' },
         hint: 'Look at the top of the PFD.',
-        validation: 'fma.status === "ACTIVE"'
+        stateValidation: [
+          { path: 'autopilot.truth.thrustActive', expected: 'SPEED' },
+          { path: 'autopilot.truth.lateralActive', expected: 'HDG_SEL' }
+        ]
       }
     ],
     passCriteria: {
@@ -89,7 +92,9 @@ export const boeingLessons: TrainingScenario[] = [
     estimatedMinutes: 8,
     setup: {
       page: 'TAKEOFF_REF',
-      // ... more setup would go here in a real impl
+      flightPlan: {
+        waypoints: [{ ident: 'KJFK' }, { ident: 'SHIPP' }, { ident: 'WAVEY' }]
+      }
     },
     steps: [
       {
@@ -98,7 +103,7 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Prepare lateral navigation.',
         expectedAction: { type: 'set_mcp', field: 'lnav', value: true },
         hint: 'Press the LNAV button.',
-        validation: 'mcp.lnav === true'
+        stateValidation: [{ path: 'autopilot.truth.lateralActive', expected: 'LNAV' }]
       },
       {
         id: 'arm-vnav',
@@ -106,21 +111,17 @@ export const boeingLessons: TrainingScenario[] = [
         objective: 'Prepare vertical navigation.',
         expectedAction: { type: 'set_mcp', field: 'vnav', value: true },
         hint: 'Press the VNAV button.',
-        validation: 'mcp.vnav === true'
+        stateValidation: [{ path: 'autopilot.truth.verticalActive', expected: 'VNAV_PTH' }]
       },
       {
         id: 'verify-fma-armed',
-        instruction: 'Verify LNAV and VNAV are armed (white) on the FMA.',
+        instruction: 'Verify LNAV and VNAV are active on the FMA.',
         objective: 'Ensure modes will capture after takeoff.',
-        expectedAction: { type: 'verify_fma', mode: 'LNAV/VNAV Armed' },
-        validation: 'fma.armed.includes("LNAV") && fma.armed.includes("VNAV")'
-      },
-      {
-        id: 'observe-nd',
-        instruction: 'Observe the ND to confirm the active route (magenta line).',
-        objective: 'Monitor navigation path.',
-        expectedAction: { type: 'verify_nd', condition: 'magenta_line_active' },
-        validation: 'nd.activeRoute === true'
+        expectedAction: { type: 'verify_fma', mode: 'LNAV/VNAV Active' },
+        stateValidation: [
+          { path: 'autopilot.truth.lateralActive', expected: 'LNAV' },
+          { path: 'autopilot.truth.verticalActive', expected: 'VNAV_PTH' }
+        ]
       }
     ],
     passCriteria: {
@@ -146,22 +147,21 @@ export const boeingLessons: TrainingScenario[] = [
         instruction: 'Press the INIT REF button to go to the POS INIT page.',
         objective: 'Navigate to position initialization.',
         expectedAction: { type: 'press_key', key: 'INIT_REF' },
-        validation: 'currentPage === "POS_INIT"'
+        stateValidation: [{ path: 'currentPage', expected: 'POS_INIT' }]
       },
       {
         id: 'enter-ref-arpt',
         instruction: 'Type KJFK in the scratchpad and press LSK L1.',
         objective: 'Set reference airport.',
         expectedAction: { type: 'enter_scratchpad', value: 'KJFK' },
-        validation: 'position.refAirport === "KJFK"'
+        stateValidation: [{ path: 'position.refAirport', expected: 'KJFK' }]
       },
       {
         id: 'set-irs-pos',
-        instruction: 'The IRS needs a starting position to begin alignment. Press LSK R4 to copy the airport coordinates into the scratchpad, then press LSK R4 again to SET IRS POS.',
+        instruction: 'Initialize IRS alignment by copying airport coordinates.',
         objective: 'Initialize inertial alignment.',
         expectedAction: { type: 'press_lsk', side: 'R', index: 4 },
-        hint: 'Click the R4 key twice: once to copy, once to set.',
-        validation: 'position.irsState === "ALIGNING" || position.irsState === "NAV"'
+        stateValidation: [{ path: 'position.irsState', expected: 'ALIGNING' }]
       }
     ],
     passCriteria: {
@@ -187,15 +187,7 @@ export const boeingLessons: TrainingScenario[] = [
         instruction: 'Arm the APP mode on the MCP.',
         objective: 'Prepare for ILS capture.',
         expectedAction: { type: 'set_mcp', field: 'app', value: true },
-        hint: 'Press the APP button on the MCP.',
-        validation: 'mcp.app === true'
-      },
-      {
-        id: 'verify-fma-capture',
-        instruction: 'Verify VOR/LOC and G/S are armed (white) on the FMA.',
-        objective: 'Confirm approach arming.',
-        expectedAction: { type: 'verify_fma', mode: 'VOR/LOC | G/S' },
-        validation: 'fma.armed.includes("VOR/LOC")'
+        stateValidation: [{ path: 'autopilot.truth.lateralArmed', expected: 'APP' }]
       }
     ],
     passCriteria: {

@@ -563,5 +563,6 @@ export interface AircraftState extends AircraftTelemetry {
   
   fuelTotal: number;
   gw: number;
+  accelerationKtS?: number;
   selectedHeading?: number;
 }

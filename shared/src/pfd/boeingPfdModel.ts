@@ -46,7 +46,7 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
     verticalSpeed: aircraft?.verticalSpeedFpm || 0,
     pitch: aircraft?.pitchDeg || 0,
     bank: aircraft?.bankDeg || 0,
-    speedTrend: 0, // Need acceleration data for this
+    speedTrend: (aircraft?.accelerationKtS || 0) * 10,
     targetSpeed: state.autopilot.boeing.speed,
     targetAltitude: state.autopilot.boeing.altitude,
     radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,

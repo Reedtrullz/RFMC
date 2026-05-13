@@ -2412,7 +2412,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // 3. Dynamic Aircraft State (GS/Track)
     if (state.aircraftState) {
-      const { heading, tas } = state.aircraftState;
+      const { heading, tas, indicatedAirspeedKt: prevIas } = state.aircraftState;
       const { windDir, windSpeed } = state.takeoff; // Using takeoff wind as ambient for now
       
       const { gs, track } = calculateGroundSpeedAndTrack(
@@ -2422,10 +2422,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         windSpeed || 0
       );
 
+      const currentIas = updates.aircraftState?.indicatedAirspeedKt ?? prevIas;
+      const accel = dtSeconds > 0 ? (currentIas - prevIas) / dtSeconds : 0;
+
       updates.aircraftState = {
         ...state.aircraftState,
         gs: gs,
-        track: track
+        track: track,
+        accelerationKtS: accel
       };
 
       // Record Flight Path for Debrief

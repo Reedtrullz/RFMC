@@ -32,9 +32,12 @@ export class TrainingScenarioEngine {
     nextStep?: TrainingStep;
   } {
     const step = this.getCurrentStep();
-    const isCorrect = this.validateAction(action, step.expectedAction);
+    const isCorrectAction = this.validateAction(action, step.expectedAction);
+    const isStateCorrect = step.stateValidation 
+      ? this.validateState(currentState, step.stateValidation)
+      : true;
 
-    if (isCorrect) {
+    if (isCorrectAction && isStateCorrect) {
       this.currentStepIndex++;
       const completed = this.currentStepIndex >= this.scenario.steps.length;
       return {
@@ -43,10 +46,27 @@ export class TrainingScenarioEngine {
         nextStep: completed ? undefined : this.getCurrentStep()
       };
     } else {
+      let description = `Expected ${this.formatAction(step.expectedAction)}`;
+      let diagnosticHint: string | undefined;
+
+      if (!isStateCorrect && step.stateValidation) {
+        const failed = step.stateValidation.find(v => !this.checkCondition(this.getNestedValue(currentState, v.path), v.expected, v.operator));
+        if (failed) {
+           description = `Condition failed: ${failed.path} should be ${failed.expected}`;
+           
+           // Diagnostic logic
+           if (failed.path.includes('autopilot.truth')) {
+             diagnosticHint = this.getDiagnosticHint(failed, currentState);
+           }
+        }
+      } else if (!isCorrectAction) {
+        description += ` but got ${this.formatAction(action)}`;
+      }
+
       const mistake = createMistake(
         this.getMistakeType(action),
         step.id,
-        `Expected ${this.formatAction(step.expectedAction)} but got ${this.formatAction(action)}`,
+        diagnosticHint ? `${description}. Hint: ${diagnosticHint}` : description,
         'medium'
       );
       this.mistakes.push(mistake);
@@ -56,6 +76,38 @@ export class TrainingScenarioEngine {
         mistake
       };
     }
+  }
+
+  private getDiagnosticHint(failed: any, state: any): string | undefined {
+    if (failed.path.includes('lateralActive') && failed.expected === 'LNAV') {
+      if (!state.flightPlan.waypoints.length) return "LNAV requires an active flight plan.";
+      if (state.position.irsState !== 'NAV') return "LNAV requires aligned IRS.";
+    }
+    if (failed.path.includes('verticalActive') && failed.expected === 'VNAV_PTH') {
+      if (!state.performance.zfw) return "VNAV requires performance data (ZFW).";
+    }
+    return undefined;
+  }
+
+  private validateState(state: any, validations: any[]): boolean {
+    return validations.every(v => {
+      const actual = this.getNestedValue(state, v.path);
+      return this.checkCondition(actual, v.expected, v.operator);
+    });
+  }
+
+  private checkCondition(actual: any, expected: any, operator: string = '=='): boolean {
+    switch (operator) {
+      case '!=': return actual != expected;
+      case '>': return actual > expected;
+      case '<': return actual < expected;
+      case 'includes': return Array.isArray(actual) && actual.includes(expected);
+      default: return actual == expected;
+    }
+  }
+
+  private getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((o, i) => (o ? o[i] : undefined), obj);
   }
 
   private validateAction(actual: ExpectedAction, expected: ExpectedAction): boolean {

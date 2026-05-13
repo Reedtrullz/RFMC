@@ -20,14 +20,21 @@ export type ExpectedAction =
   | { type: 'verify_nd'; condition: string }
   | { type: 'enter_scratchpad'; value: string };
 
+export type StateValidation = {
+  path: string;
+  expected: any;
+  operator?: '==' | '!=' | '>' | '<' | 'includes';
+};
+
 export type TrainingStep = {
   id: string;
   instruction: string;
   objective: string;
   expectedAction: ExpectedAction;
+  stateValidation?: StateValidation[];
   hint?: string;
   commonMistake?: string;
-  validation: string; // A string identifier or a simple expression
+  validation?: string; 
 };
 
 export type PassCriteria = {
