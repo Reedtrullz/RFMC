@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFMCStore, scenarioEngine } from '../../store/useFMCStore';
-import { VerticalProfileEngine } from '@shared';
+import { VerticalProfileEngine, PerformanceEngine } from '@shared';
 import { SCENARIOS } from '@shared/fmc/scenarios';
 
 export function FmsInspector() {
@@ -77,6 +77,23 @@ export function FmsInspector() {
           </div>
         </section>
 
+        {/* Performance */}
+        <section>
+          <h4 className="text-amber-400 border-b border-amber-900/50 mb-1">PERFORMANCE</h4>
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span className="text-gray-400">FUEL FLOW:</span>
+              <span className="text-green-400">
+                {Math.round(PerformanceEngine.calculateFuelFlow(state.flightPhase, acState?.altitude || 0))} LBS/HR
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">GROSS WEIGHT:</span>
+              <span>{Math.round(state.performance.grossWeight / 1000)}k LBS</span>
+            </div>
+          </div>
+        </section>
+
         {/* VNAV Path Model */}
         <section>
           <h4 className="text-amber-400 border-b border-amber-900/50 mb-1">VNAV PATH MODEL</h4>
@@ -147,7 +164,7 @@ export function FmsInspector() {
               )}
 
               <button 
-                onClick={() => useFMCStore.setState({ activeScenario: null })}
+                onClick={() => useFMCStore.setState({ isReportVisible: true })}
                 className="w-full mt-2 bg-blue-900/40 hover:bg-blue-900/60 text-blue-200 p-1 rounded border border-blue-700/50 text-[10px]"
               >
                 FINISH & DEBRIEF

@@ -1,6 +1,12 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, PhaseManager, LegSequencer } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
+import { 
+  SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, 
+  parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
+  expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, 
+  TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, 
+  PhaseManager, LegSequencer, PerformanceEngine 
+} from '@shared';
 import { 
   selectFmcPositionSource, 
   calculateANP, 
@@ -176,6 +182,7 @@ const defaultState = {
   flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
   debriefMode: false,
   activeScenario: null as any | null,
+  isReportVisible: false,
   atsu: {
     messages: [],
     pendingUplink: null,
@@ -2296,7 +2303,23 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-    // 2. Navigation Source & ANP Logic
+
+
+    // 2. Performance & Fuel Logic
+    const fuelFlow = PerformanceEngine.calculateFuelFlow(state.flightPhase, state.aircraftState?.altitude || 0);
+    const newFuel = PerformanceEngine.updateFuelState(state.performance.fuel, fuelFlow, 1);
+    
+    updates.performance = {
+      ...state.performance,
+      fuel: newFuel,
+      grossWeight: (state.performance.zfw || 100000) + newFuel
+    };
+
+    if (newFuel < 5000 && state.performance.fuel >= 5000) {
+      alertBus.addAlert({ id: 'fuel-low', text: 'FUEL LOW', level: 'CAUTION', source: 'PERF', clearable: false });
+    }
+
+    // 3. Navigation Source & ANP Logic
     const activeSource = selectFmcPositionSource(sensors);
     const anp = calculateANP(sensors, activeSource);
     const rnp = DEFAULT_RNP[navPerformance.phase] || 2.0;

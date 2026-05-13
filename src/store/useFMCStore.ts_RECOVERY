@@ -1,0 +1,27 @@
+import { create } from 'zustand';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
+import { 
+  SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, 
+  parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
+  expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, 
+  TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, 
+  PhaseManager, LegSequencer, PerformanceEngine 
+} from '@shared';
+import { 
+  selectFmcPositionSource, 
+  calculateANP, 
+  DEFAULT_RNP,
+  calculateGroundSpeedAndTrack,
+  calculateIrsDrift
+} from '../fmc/fmsNavigation';
+import { parseWaypointInput } from '@shared/fmc/waypointParser';
+import { distanceNm } from '@shared/fmc/ndGeometry';
+import { alertBus } from '../services/AlertBus';
+import { AuralAlertService } from '../services/AuralAlertService';
+import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
+import { devLog, devError } from '@shared';
+import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
+import { ScenarioEngine } from '../../shared/src/fmc/ScenarioEngine';
+export const scenarioEngine = new ScenarioEngine();
+
+// ... (Rest of the file continues)

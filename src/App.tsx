@@ -6,6 +6,8 @@ import { DemoWelcome } from './components/DemoWelcome';
 import { NavigationDisplay } from './components/ND/NavigationDisplay';
 import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
+import { FmsInspector } from './components/Training/FmsInspector';
+import { TrainingReport } from './components/Training/TrainingReport';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useEffect } from 'react';
 import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
@@ -191,6 +193,7 @@ export default function App() {
       {!isKiosk && <ConnectionStatus />}
       <PerformanceOverlay enabled={import.meta.env.DEV} />
       <FmsInspector />
+      <TrainingReport />
 
       {/* PWA Update Prompt */}
       {(offlineReady || needRefresh) && (
