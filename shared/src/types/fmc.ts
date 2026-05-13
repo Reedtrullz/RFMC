@@ -471,6 +471,12 @@ export interface FMCState {
   tutorialHighlight: string | null;
   tutorialConfidence: number | null;
 
+  // ATSU / ACARS State
+  atsu: {
+    messages: AcarsMessage[];
+    pendingUplink: FlightPlan | null;
+  };
+
   // New logic systems
   flightPhase: FlightPhase;
   scratchpadMessages: FmcMessage[];
@@ -480,4 +486,13 @@ export interface FMCState {
   hiddenPanels: PanelId[];
   pinnedPanels: PanelId[];
   focusedPanel: PanelId | null;
+}
+
+export interface AcarsMessage {
+  id: string;
+  from: string;
+  text: string;
+  timestamp: number;
+  read: boolean;
+  type: 'AOC' | 'ATC' | 'WEATHER';
 }

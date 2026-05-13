@@ -1,0 +1,40 @@
+import { FMCState, PageType, DisplayData, inv, fmt, blank } from '../../../types/fmc';
+import { renderAtsuMenu, renderAtsuMessages } from './atsu';
+
+// ... (Rest of the file remains same, I'll just append/fix the end)
+
+export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
+  const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
+    MCDU_MENU: renderMcduMenu,
+    ATSU: renderAtsuMenu,
+    ATSU_MSGS: renderAtsuMessages,
+    // Add other Airbus pages here
+  };
+  return renderers[page] || null;
+}
+
+export function renderMcduMenu(state: FMCState): DisplayData {
+  return {
+    title: 'MCDU MENU',
+    pageIndicator: '',
+    lines: [
+      inv('  MCDU MENU', '', '', 'cyan'),
+      fmt(' FMGC', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' ATSU', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' AIDS', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      fmt(' CFDS', '<', '', 'magenta'),
+      fmt(' SELECT', '', '', 'green'),
+      blank(),
+      blank(),
+      blank(),
+      blank(),
+    ],
+    lskActions: {
+      L1: 'f_pln',
+      L2: 'atsu',
+    },
+  };
+}

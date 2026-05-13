@@ -176,6 +176,10 @@ const defaultState = {
   flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
   debriefMode: false,
   activeScenario: null as any | null,
+  atsu: {
+    messages: [],
+    pendingUplink: null,
+  },
   
   deleteMode: false,
   editWaypointIndex: null as number | null,

@@ -50,5 +50,44 @@ export const SCENARIOS: Record<string, TrainingScenario> = {
         action: { type: 'CHANGE_PHASE', payload: 'CLIMB' }
       }
     ]
+  },
+  REROUTE_WEATHER: {
+    id: 'reroute-weather',
+    name: 'Reroute Due to Weather',
+    description: 'A line of thunderstorms has developed on your route. Dispatch (AOC) will send a reroute via ACARS which you must review and accept.',
+    initialState: {
+      phase: 'CRUISE',
+      origin: 'KSEA',
+      destination: 'KSFO',
+    },
+    goals: [
+      { id: 'g1', text: 'Read ACARS weather alert', completed: false },
+      { id: 'g2', text: 'Review and ACCEPT AOC Uplink', completed: false },
+    ],
+    events: [
+      {
+        id: 'wx-msg',
+        type: 'MESSAGE',
+        trigger: { type: 'TIME', value: 5 },
+        action: { 
+          type: 'SEND_ACARS', 
+          payload: { from: 'DISPATCH', text: 'SIGMET 42: SEVERE TS ON ROUTE. REROUTE UPLINKED.', type: 'WEATHER' } 
+        }
+      },
+      {
+        id: 'route-uplink',
+        type: 'FAILURE', // Reusing FAILURE type as catch-all or we can add UPLINK
+        trigger: { type: 'TIME', value: 8 },
+        action: { 
+          type: 'UPLINK_ROUTE', 
+          payload: { 
+            waypoints: [
+              { ident: 'ELMAA', lat: 47.0, lon: -123.5 },
+              { ident: 'OED', lat: 42.4, lon: -122.9 }
+            ] 
+          } 
+        }
+      }
+    ]
   }
 };

@@ -1,5 +1,6 @@
 import type { FMCState, DisplayData, AirbusPageType, PageType, DisplayLine } from '../../../types/fmc';
 import { inferAirbusSemantic } from '../../pageLineSemantics';
+import { renderAtsuMenu, renderAtsuMessages } from './atsu';
 
 const W = 24;
 function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
@@ -10,11 +11,11 @@ function inv(text: string, left: string = '', right: string = '', color?: Displa
 }
 function blank() { return fmt(''); }
 
-const AIRBUS_PAGES: readonly string[] = ['INIT_A', 'INIT_B', 'F_PLN', 'DEP_ARR_A', 'PERF_TAKEOFF', 'PERF_APPR', 'FUEL_PRED', 'SEC_FPLN', 'RAD_NAV', 'PROG_A', 'DATA_INDEX', 'MCDU_MENU'];
+const AIRBUS_PAGES: readonly string[] = ['INIT_A', 'INIT_B', 'F_PLN', 'DEP_ARR_A', 'PERF_TAKEOFF', 'PERF_APPR', 'FUEL_PRED', 'SEC_FPLN', 'RAD_NAV', 'PROG_A', 'DATA_INDEX', 'MCDU_MENU', 'ATSU', 'ATSU_MSGS'];
 
 export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
   if (!AIRBUS_PAGES.includes(page)) return null;
-  const renderers: Record<AirbusPageType, (state: FMCState) => DisplayData> = {
+  const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
     INIT_A:             renderInitA,
     INIT_B:             renderInitB,
     F_PLN:              renderFpln,
@@ -27,8 +28,10 @@ export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => Dis
     PROG_A:             renderProgA320,
     DATA_INDEX:         renderDataIndex,
     MCDU_MENU:          renderMcduMenu,
+    ATSU:               renderAtsuMenu,
+    ATSU_MSGS:          renderAtsuMessages,
   };
-  return renderers[page as AirbusPageType];
+  return renderers[page] || null;
 }
 
 export function renderInitA(state: FMCState): DisplayData {
@@ -395,36 +398,10 @@ export function renderDataIndex(state: FMCState): DisplayData {
       blank(),
    ],
     lskActions: {
-      L1: null, L2: null, L3: null, L4: null,
+      L1: 'ac_status', L2: null, L3: null, L4: null,
       L5: null, L6: null,
       R1: null, R2: null, R3: null, R4: null,
       R5: null, R6: null,
-    },
-  };
-}
-
-export function renderAtsu(state: FMCState): DisplayData {
-  return {
-    title: 'ATSU',
-    pageIndicator: '',
-    lines: [
-      inv('  ATSU', '', '', 'cyan'),
-      fmt(' DATALINK', '<', '', 'white'),
-      fmt(' AOC MENU', '', '', 'white'),
-      fmt(' ATC MENU', '', '', 'white'),
-      blank(),
-      fmt(' COMM STATUS', '', '', 'white'),
-      fmt('  VHF3: READY', '', '', 'green'),
-      fmt('  SATCOM: READY', '', '', 'green'),
-      blank(),
-      blank(),
-      blank(),
-      blank(),
-      fmt('', ' <MCDU MENU', '', 'white'),
-      blank(),
-    ],
-    lskActions: {
-      L6: 'mcdu_menu',
     },
   };
 }
@@ -443,7 +420,6 @@ export function renderMcduMenu(state: FMCState): DisplayData {
       fmt(' SELECT', '', '', 'green'),
       fmt(' CFDS', '<', '', 'magenta'),
       fmt(' SELECT', '', '', 'green'),
-      blank(),
       blank(),
       blank(),
       blank(),

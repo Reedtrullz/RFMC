@@ -75,6 +75,33 @@ export class ScenarioEngine {
       case 'CHANGE_PHASE':
         updates.flightPhase = payload;
         break;
+      case 'SEND_ACARS':
+        const msg = {
+          id: Date.now().toString(),
+          from: payload.from || 'AOC',
+          text: payload.text,
+          timestamp: Date.now(),
+          read: false,
+          type: payload.type || 'AOC'
+        };
+        updates.atsu = {
+          ...state.atsu,
+          messages: [msg, ...state.atsu.messages]
+        };
+        break;
+      case 'UPLINK_ROUTE':
+        updates.atsu = {
+          ...state.atsu,
+          pendingUplink: payload
+        };
+        // Also trigger an ACARS message to notify student
+        this.processAction({
+          id: 'uplink-notify',
+          type: 'MESSAGE',
+          trigger: { type: 'TIME', value: 0 },
+          action: { type: 'SEND_ACARS', payload: { from: 'AOC', text: 'F-PLN UPLINK RECEIVED' } }
+        }, state, updates);
+        break;
     }
   }
 

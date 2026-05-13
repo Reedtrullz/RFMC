@@ -175,6 +175,50 @@ export function FmsInspector() {
           )}
         </section>
 
+        {/* ACARS Injection */}
+        <section className="bg-purple-900/20 p-2 rounded border border-purple-800/30">
+          <h4 className="text-purple-400 mb-1 font-bold">ACARS INJECTION</h4>
+          <div className="flex gap-1">
+            <input 
+              id="acars-input"
+              type="text" 
+              placeholder="MESSAGE TEXT..."
+              className="flex-1 bg-[#0a0c0e] border border-purple-800/50 text-purple-200 p-1 rounded text-[10px]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const input = document.getElementById('acars-input') as HTMLInputElement;
+                  if (input.value) {
+                    scenarioEngine.processAction({
+                      id: 'manual-acars',
+                      type: 'MESSAGE',
+                      trigger: { type: 'TIME', value: 0 },
+                      action: { type: 'SEND_ACARS', payload: { from: 'INST', text: input.value } }
+                    }, state, {});
+                    input.value = '';
+                  }
+                }
+              }}
+            />
+            <button 
+              onClick={() => {
+                const input = document.getElementById('acars-input') as HTMLInputElement;
+                if (input.value) {
+                  scenarioEngine.processAction({
+                    id: 'manual-acars',
+                    type: 'MESSAGE',
+                    trigger: { type: 'TIME', value: 0 },
+                    action: { type: 'SEND_ACARS', payload: { from: 'INST', text: input.value } }
+                  }, state, {});
+                  input.value = '';
+                }
+              }}
+              className="bg-purple-800 hover:bg-purple-700 text-white px-2 rounded"
+            >
+              SEND
+            </button>
+          </div>
+        </section>
+
         {/* Instructor Debug */}
         <section className="bg-blue-900/20 p-2 rounded border border-blue-800/30">
           <h4 className="text-blue-400 mb-1 font-bold">WHY DID IT DO THAT?</h4>
