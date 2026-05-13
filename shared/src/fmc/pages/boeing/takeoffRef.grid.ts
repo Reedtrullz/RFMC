@@ -29,6 +29,11 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     });
   }
 
+  const v1 = takeoff.v1 ? `${takeoff.v1}` : '[   ]';
+  const vr = takeoff.vr ? `${takeoff.vr}` : '[   ]';
+  const v2 = takeoff.v2 ? `${takeoff.v2}` : '[   ]';
+  const vColor = (v: string) => v === '[   ]' ? 'white' : 'green';
+
   return boeingPage([
     ...boeingTitle('TAKEOFF REF', '1/2'),
 
@@ -42,27 +47,32 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     seg(6, 1, takeoff.oat ? `${takeoff.oat}°C` : '---', 'green'),
 
     seg(7, 1, 'WIND', 'white', { size: 'small' }),
-    seg(8, 1, takeoff.windDir ? `${takeoff.windDir}°/${takeoff.windSpeed}KT` : '---', 'green'),
+    seg(8, 1, takeoff.windDir ? `${takeoff.windDir}°/${takeoff.windSpeed}` : '---', 'green'),
 
     seg(1, 20, 'V1', 'white', { size: 'small' }),
-    seg(2, 18, takeoff.v1 ? `${takeoff.v1} KT` : '[   ]', 'white'),
+    seg(2, 18, v1, vColor(v1)),
 
     seg(3, 20, 'VR', 'white', { size: 'small' }),
-    seg(4, 18, takeoff.vr ? `${takeoff.vr} KT` : '[   ]', 'white'),
+    seg(4, 18, vr, vColor(vr)),
 
     seg(5, 20, 'V2', 'white', { size: 'small' }),
-    seg(6, 18, takeoff.v2 ? `${takeoff.v2} KT` : '[   ]', 'white'),
+    seg(6, 18, v2, vColor(v2)),
 
-    seg(13, 16, 'INDEX>', 'white'),
+    seg(9, 13, 'THRUST LIMIT', 'white', { size: 'small' }),
+    seg(10, 16, 'SEL/24K >', 'white'),
+
+    seg(13, 0, '<INDEX', 'white'),
+    seg(13, 16, 'POS INIT>', 'white'),
   ], {
     L1: 'set_runway',
-    L3: 'set_to_mode',
-    L4: 'set_oat',
-    L5: 'set_wind',
-    L6: 'next_page',
+    L2: 'set_to_mode',
+    L3: 'set_oat',
+    L4: 'set_wind',
+    L6: 'menu',
     R1: 'set_v1',
     R2: 'set_vr',
     R3: 'set_v2',
-    R6: 'ident',
+    R5: 'thrust_limit',
+    R6: 'pos_init',
   });
 }

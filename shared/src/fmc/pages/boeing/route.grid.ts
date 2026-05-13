@@ -8,41 +8,39 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
   const color = state.isModified ? 'white' : 'green';
 
   if (rteSubPage === 0) {
+    const origin = route.origin || '[    ]';
+    const dest = route.destination || '[    ]';
+    const fltNo = route.flightNumber || '--------';
+    const coRte = route.companyRoute || '---------';
+
     return boeingPage([
       ...boeingTitle(title, '1/2'),
 
       seg(1, 1, 'ORIGIN', 'white', { size: 'small' }),
-      seg(2, 1, route.origin || '[    ]', color),
+      seg(1, 17, 'FLT NO', 'white', { size: 'small' }),
+      seg(2, 1, origin, color),
+      seg(2, 16, fltNo, color),
 
       seg(3, 1, 'DEST', 'white', { size: 'small' }),
-      seg(4, 1, route.destination || '[    ]', color),
+      seg(4, 1, dest, color),
 
       seg(5, 1, 'CO ROUTE', 'white', { size: 'small' }),
-      seg(6, 1, route.companyRoute || '---------', color),
-
-      seg(1, 17, 'FLT NO', 'white', { size: 'small' }),
-      seg(2, 16, route.flightNumber || '--------', color),
+      seg(6, 1, coRte, color),
 
       ...(state.isModified ? [seg(13, 0, '<ERASE', 'amber')] : []),
       seg(13, 18, 'ROUTE>', 'white'),
     ], {
       L1: 'set_origin',
-      L3: 'set_dest',
-      L6: state.isModified ? 'erase' : 'next_page',
+      L2: 'set_dest',
+      L3: 'set_co_route',
       R1: 'set_flt_no',
-      R3: 'dep_arr',
+      R6: 'next_page',
     });
   }
 
-  // Page 2
-  const routeLines = route.routeString || '----';
-  const routeTokens = routeLines.split(/\s+/).filter(Boolean);
-  const firstRouteFix = routeTokens.find(token =>
-    token !== 'DCT' &&
-    token !== route.origin &&
-    token !== route.destination
-  );
-  const routeToField = firstRouteFix ?? (routeLines.length > 11 ? routeLines.slice(0, 11) : routeLines);
+  // Page 2: Route Legs
+  const via = 'DIRECT';
+  const to = route.routeString ? route.routeString.split(/\s+/)[0] : ' [    ] ';
 
   return boeingPage([
     ...boeingTitle(title, '2/2'),
@@ -50,14 +48,17 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
     seg(1, 1, 'VIA', 'white', { size: 'small' }),
     seg(1, 13, 'TO', 'white', { size: 'small' }),
 
-    seg(2, 1, 'DIRECT', 'green'),
-    seg(2, 13, routeToField, color),
+    seg(2, 1, via, 'green'),
+    seg(2, 13, to, color),
+
+    seg(3, 1, '----', 'white', { size: 'small' }),
+    seg(3, 13, '----------', 'white', { size: 'small' }),
 
     ...(state.isModified ? [seg(13, 0, '<ERASE', 'amber')] : []),
+    seg(13, 1, '<ROUTE', 'white'),
     seg(13, 18, 'LEGS>', 'white'),
   ], {
-    L1: 'set_route',
-    L6: state.isModified ? 'erase' : 'prev_page',
+    L6: 'prev_page',
     R3: 'legs',
   });
 }

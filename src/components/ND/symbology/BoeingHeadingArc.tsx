@@ -100,9 +100,10 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
       )}
 
       {/* Track Diamond */}
-      {model.track !== model.heading && (
+      {Math.abs(model.track - model.heading) > 0.5 && (
         <g transform={`rotate(${model.track - model.heading} 50 ${cy})`}>
           <path d="M50 36 L52 39 L48 39 Z" fill="white" stroke="black" strokeWidth="0.2" />
+          <text x="50" y="34.5" fill="white" fontSize="2.2" textAnchor="middle" fontWeight="bold">TRK</text>
         </g>
       )}
     </g>

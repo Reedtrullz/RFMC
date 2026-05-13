@@ -56,7 +56,8 @@ export function renderBoeingProgressGrid(state: FMCState): DisplayData {
     seg(6, 20, '----', 'green'),
 
     seg(7, 1, 'DEST', 'white', { size: 'small' }),
-    seg(7, 20, 'FUEL', 'white', { size: 'small' }),
+    seg(7, 15, 'ETA', 'white', { size: 'small' }),
+    seg(7, 20, 'DTG', 'white', { size: 'small' }),
     seg(8, 1, dest, 'green'),
     seg(8, 14, '----', 'green'),
     seg(8, 20, '----', 'green'),
@@ -65,7 +66,9 @@ export function renderBoeingProgressGrid(state: FMCState): DisplayData {
     seg(11, 1, '0.0', 'green'),
 
     seg(13, 0, '<POS REF', 'white'),
+    seg(13, 16, 'INDEX>', 'white'),
   ], {
-    L6: 'pos_init', // Goes to POS REF
+    L6: 'pos_ref',
+    R6: 'menu',
   });
 }

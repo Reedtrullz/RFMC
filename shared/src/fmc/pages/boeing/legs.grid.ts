@@ -11,8 +11,9 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
   const start = legsPageIndex * perPage;
   const pageWaypoints = waypoints.slice(start, start + perPage);
 
-  const titleBase = aircraftState !== null ? '►LEGS' : 'LEGS';
-  const title = state.isModified ? `MOD ${titleBase}` : titleBase;
+  const titlePrefix = state.isModified ? 'MOD' : 'ACT';
+  const titleBase = 'LEGS';
+  const title = `${titlePrefix} ${titleBase}`;
   const modeSuffix = state.deleteMode ? ' DEL' : '';
 
   const segments: DisplaySegment[] = [
@@ -22,16 +23,19 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
   for (let i = 0; i < pageWaypoints.length; i++) {
     const wp = pageWaypoints[i];
     const row = 2 + i * 2;
-    const color = i === 0 && legsPageIndex === 0 ? 'magenta' : 'white';
+    const isActive = i === 0 && legsPageIndex === 0;
+    const wptColor = isActive ? 'magenta' : 'white';
 
     if (wp.discontinuity) {
-      segments.push(seg(row, 0, '□□□□□-DISCONTINUITY', 'white'));
+      segments.push(seg(row - 1, 1, '----- ROUTE DISCONTINUITY -----', 'white', { size: 'small' }));
+      segments.push(seg(row, 1, '□□□□□', 'white'));
     } else {
       const alt = wp.altitudeConstraint ? formatAltitude(wp.altitudeConstraint) : '-----';
-      const spd = wp.speedConstraint ? `${String(wp.speedConstraint.speed).padStart(3, ' ')}KT` : '---KT';
+      const spd = wp.speedConstraint ? `${String(wp.speedConstraint.speed).padStart(3, ' ')}` : ' ---';
       
-      segments.push(seg(row, 1, wp.ident, color));
-      segments.push(seg(row, 13, `${spd} ${alt}`, 'white', { size: 'small' }));
+      segments.push(seg(row - 1, 17, 'SPD/TGT  ALT', 'white', { size: 'small' }));
+      segments.push(seg(row, 1, wp.ident, wptColor));
+      segments.push(seg(row, 16, `${spd}kt /${alt}`, 'white', { size: 'small' }));
     }
   }
 
