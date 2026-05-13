@@ -65,6 +65,10 @@ export default function App() {
     } else if (path === '/visual/airbus/init-a') {
       setAircraft('AIRBUS_A320');
       setPage('INIT_A');
+    } else if (path === '/visual/airbus/init-a-aligning') {
+      setAircraft('AIRBUS_A320');
+      setPage('INIT_A');
+      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'ALIGNING', irsTimeRemaining: 360 } });
     } else if (path === '/visual/airbus/f-pln') {
       setAircraft('AIRBUS_A320');
       setPage('F_PLN');
@@ -72,10 +76,26 @@ export default function App() {
       setAircraft('BOEING_737');
       setNDMode('L', 'MAP');
       setShowNd(true);
+    } else if (path === '/visual/nd/boeing-map-failure') {
+      setAircraft('BOEING_737');
+      setNDMode('L', 'MAP');
+      setShowNd(true);
+      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF' } });
     } else if (path === '/visual/nd/airbus-arc') {
       setAircraft('AIRBUS_A320');
       setNDMode('L', 'ARC');
       setShowNd(true);
+    } else if (path === '/visual/nd/airbus-arc-aligning') {
+      setAircraft('AIRBUS_A320');
+      setNDMode('L', 'ARC');
+      setShowNd(true);
+      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'ALIGNING' } });
+    } else if (path === '/visual/boeing/scratchpad-caution') {
+      setAircraft('BOEING_737');
+      setPage('LEGS');
+      useFMCStore.setState({ 
+        alerts: [{ id: 'test-caution', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', timestamp: Date.now(), clearable: true }] 
+      });
     }
   }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex]);
 

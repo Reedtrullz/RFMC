@@ -12,8 +12,20 @@ export function MCPAnnunciator({ active, color = 'green' }: MCPAnnunciatorProps)
 
   return (
     <div 
-      className={`h-1.5 w-6 rounded-full transition-all duration-200 ${active ? colorMap[color] : 'bg-[#1a1a1a]'}`} 
+      className={`h-2 w-7 rounded-[1px] transition-all duration-300 relative overflow-hidden ${
+        active 
+          ? `${colorMap[color]} ring-1 ring-white/10` 
+          : 'bg-[#0a0a0a] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]'
+      }`} 
       style={{ opacity: active ? 'var(--cockpit-annun-intensity, 1)' : 1 }}
-    />
+    >
+      {/* Subsurface Scattering Effect */}
+      {active && (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/30" />
+      )}
+      
+      {/* Internal hardware detail */}
+      <div className="absolute inset-0 border border-white/5 opacity-20" />
+    </div>
   );
 }

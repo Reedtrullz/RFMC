@@ -41,7 +41,7 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
         }}
         className="overflow-hidden"
       />
-      {!error && (
+      {!level && (
         <span
           className={[
             'absolute top-1/2 -translate-y-1/2 w-[2px] h-[14px]',

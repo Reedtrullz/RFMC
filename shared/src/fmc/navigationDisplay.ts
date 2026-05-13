@@ -522,7 +522,7 @@ function processRoute(
   // 1. Add aircraft-to-active segment if appropriate (not in PLAN mode)
   if (!isPlanMode && activeIndex >= 0) {
     const activePoint = routePoints[activeIndex];
-    if (activePoint && activePoint.lat !== undefined) {
+    if (activePoint) {
       const cy = isCentered ? 50 : 84;
       const aircraftPoint = { x: 50, y: cy, visible: true, clipped: false, active: true, discontinuity: false, airport: false, label: '', id: 'aircraft', altitudeLabel: null, speedLabel: null };
       const clipped = clipRouteSegment(aircraftPoint, activePoint, isCentered);

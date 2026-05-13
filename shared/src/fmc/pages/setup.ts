@@ -70,9 +70,20 @@ export function renderPosInitPage(state: FMCState): DisplayData {
 
       seg(5, 0, '<GATE', 'white', { size: 'small' }),
       seg(6, 1, position.gate || '----', 'green'),
+      
+      // IRS Status Block
+      seg(8, 14, 'IRS STATUS', 'white', { size: 'small' }),
+      ...(position.irsState === 'ALIGNING' ? [
+        seg(9, 13, 'IN ALIGN', 'white'),
+        seg(10, 14, `${Math.ceil(position.irsTimeRemaining / 60)} MIN`, 'white')
+      ] : position.irsState === 'NAV' ? [
+        seg(9, 13, 'IRS NAV', 'green')
+      ] : [
+        seg(9, 13, 'IRS OFF', 'amber')
+      ]),
 
-      seg(8, 13, 'SET IRS POS', 'white', { size: 'small' }),
-      seg(9, 10, '□□□□.□ □□□□□.□', 'white'),
+      seg(12, 13, 'SET IRS POS', 'white', { size: 'small' }),
+      seg(13, 10, '□□□□.□ □□□□□.□', 'white'),
 
       seg(13, 0, '<INDEX', 'white'),
       seg(13, 18, 'ROUTE>', 'white'),

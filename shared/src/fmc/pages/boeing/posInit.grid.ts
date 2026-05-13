@@ -24,12 +24,22 @@ function renderPosInitPage1(state: FMCState): DisplayData {
     seg(5, 0, '<GATE', 'white', { size: 'small' }),
     seg(6, 1, state.position.gate || '----', 'green'),
 
-    seg(8, 13, 'SET IRS POS', 'white', { size: 'small' }),
+    seg(8, 14, 'IRS STATUS', 'white', { size: 'small' }),
+    ...(state.position.irsState === 'ALIGNING' ? [
+      seg(9, 13, 'IN ALIGN', 'white'),
+      seg(10, 14, `${Math.ceil(state.position.irsTimeRemaining / 60)} MIN`, 'white')
+    ] : state.position.irsState === 'NAV' ? [
+      seg(9, 13, 'IRS NAV', 'green')
+    ] : [
+      seg(9, 13, 'IRS OFF', 'amber')
+    ]),
+
+    seg(12, 13, 'SET IRS POS', 'white', { size: 'small' }),
     state.position.irsState === 'NAV'
-      ? seg(9, 10, lastPos, 'green')
+      ? seg(13, 10, lastPos, 'green')
       : state.position.irsAlignmentProgress > 0
-        ? seg(9, 10, `ALIGNING ${state.position.irsAlignmentProgress}%`, 'white', { blink: state.position.irsTimeRemaining < 60 })
-        : seg(9, 10, '□□□□.□ □□□□□.□', 'green'),
+        ? seg(13, 10, `ALIGNING ${state.position.irsAlignmentProgress}%`, 'white', { blink: state.position.irsTimeRemaining < 60 })
+        : seg(13, 10, '□□□□.□ □□□□□.□', 'white'),
 
     seg(13, 0, '<INDEX', 'white'),
     seg(13, 18, 'ROUTE>', 'white'),

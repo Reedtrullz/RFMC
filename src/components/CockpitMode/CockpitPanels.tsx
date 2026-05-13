@@ -84,7 +84,8 @@ export function ChecklistPanel() {
   const aircraft = useFMCStore(s => s.aircraft);
   const signsOn = useFMCStore(s => s.signsOn);
   const windowsLocked = useFMCStore(s => s.windowsLocked);
-  const mcp = useFMCStore(s => s.boeingMCPState);
+  const mcp = useFMCStore(s => s.autopilot.boeing);
+  const highlightControl = useFMCStore(s => s.highlightControl);
   const [sectionIndex, setSectionIndex] = useState(0);
   const { position, dragHandlers, isDragging } = useDraggable();
 
@@ -100,7 +101,7 @@ export function ChecklistPanel() {
     if (item.id === 'windows') completed = windowsLocked;
     if (item.relatedControl === 'LNAV') completed = mcp.lnav;
     if (item.relatedControl === 'VNAV') completed = mcp.vnav;
-    if (item.relatedControl === 'AT_ARM') completed = mcp.at;
+    if (item.relatedControl === 'AT_ARM') completed = mcp.autothrottleArm;
     
     return { ...item, completed };
   });

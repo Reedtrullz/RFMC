@@ -33,7 +33,15 @@ Use `reference-library/*/measurements.json` for measurement targets and `referen
 - **Symbology**: Route lines, waypoints, range rings, and mode labels must not overflow the display frame.
 - **Geometry**: Heading arc and data blocks must follow aircraft-specific design patterns (Boeing vs. Airbus).
 - **Boeing Modes**: MAP, PLAN, VOR, APP, FIX overlay, HOLD overlay, and route discontinuity display.
+- **Boeing Realism**: 
+    - **Digital Heading**: Centered numeric readout in a white-bordered box at the top of the compass.
+    - **IRS Flags**: "MAP FAILURE" (Amber) or "IRS ALIGN" center flags when not in NAV mode.
+    - **Nav Accuracy**: RNP/ANP readout in the bottom-right; ANP turns Amber when exceeding RNP.
 - **Airbus Modes**: ARC, ROSE NAV, PLAN, constraints on/off, and approach display.
+- **Airbus Realism**:
+    - **Failure Modes**: "MAP NOT AVAIL" or "IRS ALIGN" (Red) flags when unaligned.
+    - **Nav Accuracy**: "NAV ACCUR HIGH/LOW" status flags based on ANP/RNP monitoring.
+    - **Path Colors**: Active (Green), Modified (Yellow), Secondary (White).
 
 ## PFD / FMA
 

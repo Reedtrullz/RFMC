@@ -36,6 +36,14 @@ export const preflightScenario: TutorialScenario = {
       role: 'PM',
     },
     {
+      id: 'irs_align',
+      instruction: 'PM: IRS ALIGNING. Wait for alignment to reach NAV status. WHY: The IRS measures acceleration and rotation to track your position without GPS. It takes 7-10 minutes (accelerated here). Navigation and ND MAP will be available once status shows "IRS NAV".',
+      expectedAction: 'WAIT',
+      validate: (_input: string, state: FMCState) => state.position.irsState === 'NAV',
+      page: 'POS_INIT',
+      highlightField: 'IRS_STATUS',
+    },
+    {
       id: 'pos_init_gate',
       instruction: 'GATE is optional but good practice. It records your departure gate in the flight log. Type your gate (e.g., A12) and press LSK L3.',
       expectedAction: 'GATE',
@@ -443,7 +451,7 @@ export function calculateTutorialGrade(errors: number, timeMs: number, stepCount
 export function isStepComplete(step: any, state: any): boolean {
   if (state.currentPage !== step.page) return false;
   if (step.validate) {
-    return step.validate(state.scratchpad || '');
+    return step.validate(state.scratchpad || '', state);
   }
   return true;
 }

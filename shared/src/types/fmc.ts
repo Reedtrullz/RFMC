@@ -290,7 +290,7 @@ export interface TutorialStep {
   id: string;
   instruction: string;
   expectedAction: string;
-  validate: (input: string) => boolean;
+  validate: (input: string, state: FMCState) => boolean;
   page: PageType;
   highlightField?: string;
   role?: 'PF' | 'PM';

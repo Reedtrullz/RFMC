@@ -16,9 +16,16 @@ export const airbusBasicsScenario: TutorialScenario = {
       id: 'airbus_align_irs',
       instruction: 'The ND currently shows MAP NOT AVAIL because the IRS is off. Press LSK L1 to ALIGN IRS and start the 7-minute alignment process.',
       expectedAction: 'align_irs',
-      validate: () => true,
+      validate: (_input: string) => true,
       page: 'INIT_A',
       highlightField: 'L1',
+    },
+    {
+      id: 'airbus_align_irs_wait',
+      instruction: 'The IRS is now aligning. Notice the "MAP NOT AVAIL" flag on the ND. Navigation will be unavailable until alignment is complete (NAV status). This takes 7 minutes in a real A320, but is accelerated here. Wait for status to show "IRS NAV".',
+      expectedAction: 'WAIT',
+      validate: (_input: string, state: any) => state.position.irsState === 'NAV',
+      page: 'INIT_A',
     },
     {
       id: 'airbus_from_to',

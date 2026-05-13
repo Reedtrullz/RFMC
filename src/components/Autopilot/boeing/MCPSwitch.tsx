@@ -13,23 +13,36 @@ import { tactile } from '../../../utils/tactile';
 
 export function MCPSwitch({ label, active, onPress, showAnnunciator = true, small = false, highlighted }: MCPSwitchProps) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <button
-        onClick={() => {
-          tactile.feedback();
-          onPress();
-        }}
-        className={`relative flex items-center justify-center rounded-sm border-b-4 border-[#1a1a1a] bg-[#3a3d3d] text-center font-bold text-white shadow-lg transition-all hover:bg-[#4a4d4d] active:translate-y-1 active:border-b-0 ${
-          small ? 'h-11 w-16 text-[10px]' : 'h-14 w-20 text-[11px]'
-        } ${highlighted ? 'ring-4 ring-cdu-cyan animate-pulse shadow-[0_0_20px_rgba(0,255,255,0.4)]' : ''}`}
-      >
-        <span className="uppercase tracking-tighter leading-tight px-1">{label}</span>
+    <div className="flex flex-col items-center gap-2.5">
+      <div className="relative group">
+        {/* Outer Bezel (Deep Recess) */}
+        <div className="absolute -inset-1 rounded-sm bg-black/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]" />
         
-        {/* Button texture */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
-      </button>
+        <button
+          onClick={() => {
+            tactile.feedback();
+            onPress();
+          }}
+          className={`relative flex items-center justify-center rounded-[1px] border-b-[3px] border-black/60 bg-[#2d3030] text-center font-cdu text-white shadow-xl transition-all hover:bg-[#3d4040] active:translate-y-[2px] active:border-b-0 ${
+            small ? 'h-11 w-16 text-[9px]' : 'h-14 w-20 text-[10px]'
+          } ${highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]' : ''}`}
+        >
+          {/* Physical Texture */}
+          <div className="pointer-events-none absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+          
+          {/* Inner Shadow / Lighting */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+          <div className="pointer-events-none absolute inset-[1px] rounded-[1px] border border-white/5" />
+
+          <span className="relative z-10 uppercase tracking-tight leading-tight px-1 drop-shadow-sm">{label}</span>
+        </button>
+      </div>
       
-      {showAnnunciator && <MCPAnnunciator active={active} />}
+      {showAnnunciator && (
+        <div className="relative px-2 py-0.5 rounded-sm bg-black/60 shadow-inner">
+          <MCPAnnunciator active={active} />
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ export type DisplaySemantic =
   | 'modified'
   | 'guidance'
   | 'warning'
+  | 'caution'
   | 'placeholder'
   | 'scratchpad'
   | 'inverse'
@@ -22,7 +23,8 @@ export const BOEING_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   inactiveData: 'white',
   modified: 'shaded',
   guidance: 'magenta',
-  warning: 'amber',
+  warning: 'red',
+  caution: 'amber',
   placeholder: 'white',
   scratchpad: 'white',
   inverse: 'white',
@@ -37,7 +39,8 @@ export const AIRBUS_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   inactiveData: 'blue',
   modified: 'blue',
   guidance: 'magenta',
-  warning: 'amber',
+  warning: 'red',
+  caution: 'amber',
   placeholder: 'amber',
   scratchpad: 'white',
   inverse: 'white',

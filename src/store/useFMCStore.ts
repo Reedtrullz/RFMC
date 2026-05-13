@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, parseWaypointInput, selectFmcPositionSource, calculateANP, DEFAULT_RNP, distanceNm } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, selectFmcPositionSource, calculateANP, DEFAULT_RNP } from '@shared';
+import { parseWaypointInput } from '@shared/fmc/waypointParser';
+import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
@@ -2120,6 +2122,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       },
     });
   },
+  setDemoMode: (demo) => set({ demoMode: demo }),
   setHighContrast: (enabled) => set({ highContrast: enabled }),
   toggleHighContrast: () => set((state) => ({ highContrast: !state.highContrast })),
   toggleSigns: (playChime = true) => {
@@ -2195,6 +2198,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     updates.alerts = alertBus.getAlerts();
+    
+    // 4. Tutorial Progression (State-based)
+    if (state.tutorialActive && state.tutorialScenario) {
+      const scenario = findTutorial(state.tutorialScenario);
+      const step = scenario?.steps[state.tutorialStepIndex];
+      // Only auto-advance if the step is on the current page and its validation passes
+      // We pass empty string as input for state-based background checks
+      if (step && state.currentPage === step.page && step.validate('', { ...state, ...updates })) {
+        state.advanceTutorial();
+      }
+    }
 
     if (Object.keys(updates).length > 0) {
       set(updates);
