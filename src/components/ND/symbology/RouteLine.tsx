@@ -12,6 +12,8 @@ export function RouteLine({ model }: RouteLineProps) {
     inactive: isAirbus ? '#ffffff' : '#00ffff', // White (Secondary) for Airbus, Cyan for Boeing
   };
 
+  const glowFilter = (color: string) => `drop-shadow(0 0 2px ${color}) drop-shadow(0 0 1px rgba(0,0,0,0.8))`;
+
   return (
     <g>
       {/* Active Route */}
@@ -20,15 +22,19 @@ export function RouteLine({ model }: RouteLineProps) {
           ? colors.pending 
           : (segment.active ? colors.active : colors.inactive);
           
+        const width = segment.active ? (isAirbus ? '2.0' : '2.2') : '1.2';
+        const dashes = segment.dashed ? '3 3' : undefined;
+
         return segment.arcPath ? (
           <path
             key={`active-seg-${i}`}
             d={segment.arcPath}
             fill="none"
             stroke={strokeColor}
-            strokeWidth={segment.active ? '1.8' : '1.2'}
-            strokeDasharray={segment.dashed ? '3 2' : undefined}
-            opacity={0.9}
+            strokeWidth={width}
+            strokeDasharray={dashes}
+            style={{ filter: segment.active ? glowFilter(strokeColor) : undefined }}
+            opacity={segment.active ? 1.0 : 0.8}
           />
         ) : (
           <line
@@ -36,14 +42,15 @@ export function RouteLine({ model }: RouteLineProps) {
             x1={segment.x1} y1={segment.y1}
             x2={segment.x2} y2={segment.y2}
             stroke={strokeColor}
-            strokeWidth={segment.active ? '1.8' : '1.2'}
-            strokeDasharray={segment.dashed ? '3 2' : undefined}
-            opacity={0.9}
+            strokeWidth={width}
+            strokeDasharray={dashes}
+            style={{ filter: segment.active ? glowFilter(strokeColor) : undefined }}
+            opacity={segment.active ? 1.0 : 0.8}
           />
         );
       })}
 
-      {/* Pending Route (dashed white) */}
+      {/* Pending Route (dashed white/amber) */}
       {model.pendingRouteSegments.map((segment, i) => (
         segment.arcPath ? (
           <path
@@ -52,7 +59,7 @@ export function RouteLine({ model }: RouteLineProps) {
             fill="none"
             stroke={colors.pending}
             strokeWidth="1.2"
-            strokeDasharray="4 2"
+            strokeDasharray="6 3"
             opacity={0.9}
           />
         ) : (
@@ -62,7 +69,7 @@ export function RouteLine({ model }: RouteLineProps) {
             x2={segment.x2} y2={segment.y2}
             stroke={colors.pending}
             strokeWidth="1.2"
-            strokeDasharray="4 2"
+            strokeDasharray="6 3"
             opacity={0.9}
           />
         )
