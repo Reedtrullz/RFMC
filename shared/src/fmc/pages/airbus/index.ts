@@ -40,8 +40,12 @@ export function renderInitA(state: FMCState): DisplayData {
     pageIndicator: 'A',
     lines: [
       inv(`  ${title}              A`, '', '', 'cyan'),
-      fmt(' FROM/TO', 'ALN', '', 'white'),
-      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, ` ${route.alternate || '----'}`, '', 'magenta'),
+      fmt(' FROM/TO', state.position.irsState === 'NAV' ? 'IRS' : 'ALN', '', 'white'),
+      fmt(` ${route.origin || '----'}/${route.destination || '----'}`, 
+        state.position.irsState === 'NAV' ? ' ALIGNED' : 
+        state.position.irsState === 'ALIGNING' ? ` IN ALIGN >${Math.ceil(state.position.irsTimeRemaining/60)} MIN` :
+        '<ALIGN IRS', 
+        '', state.position.irsState === 'NAV' ? 'green' : 'magenta'),
       fmt(' COST INDEX', 'FLT NBR', '', 'white'),
       fmt(` ${performance.costIndex || '---'}`, ` ${route.flightNumber || '--------'}`, '', 'magenta'),
       fmt(' CRZ FL', '', '', 'white'),
@@ -54,7 +58,8 @@ export function renderInitA(state: FMCState): DisplayData {
       blank(),
     ],
     lskActions: {
-      L1: 'set_from_to', L2: 'set_cost_index', L3: 'set_crz_fl',
+      L1: state.position.irsState === 'OFF' ? 'align_irs' : 'data_index', 
+      L2: 'set_cost_index', L3: 'set_crz_fl',
       L4: null, L5: null, L6: null,
       R1: 'set_altn', R2: 'set_flt_nbr', R3: null,
       R4: null, R5: null, R6: 'init_b',
@@ -356,8 +361,8 @@ export function renderProgA320(state: FMCState): DisplayData {
       fmt(' EFOB', '', '---.-', 'white'),
       fmt(' WIND', '', '', 'white'),
       fmt(' ---°/---', '', '', 'green'),
-      blank(),
-      blank(),
+      fmt(' NAV ACCUR', 'REQUIRED', '', 'white'),
+      fmt(` ${state.navPerformance.anpNm > state.navPerformance.rnpNm ? 'LOW' : 'HIGH'}`, `   ${state.navPerformance.rnpNm.toFixed(2)}`, '', 'green'),
       blank(),
       blank(),
    ],

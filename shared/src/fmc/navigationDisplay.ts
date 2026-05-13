@@ -96,6 +96,10 @@ export function buildNavigationDisplayModel(
       ? state.autopilot.boeing.heading 
       : state.autopilot.airbus.heading ?? null,
     selectedCourse: aircraftStyle === 'boeing' ? state.autopilot.boeing.courseL : null,
+    irsState: state.position.irsState,
+    navSource: state.activeNavSource,
+    anpNm: state.navPerformance.anpNm,
+    rnpNm: state.navPerformance.rnpNm,
   };
 }
 
@@ -514,6 +518,32 @@ function processRoute(
       clipped: clipped.clipped,
     };
   }).filter(s => s.visible);
+
+  // 1. Add aircraft-to-active segment if appropriate (not in PLAN mode)
+  if (!isPlanMode && activeIndex >= 0) {
+    const activePoint = routePoints[activeIndex];
+    if (activePoint && activePoint.lat !== undefined) {
+      const cy = isCentered ? 50 : 84;
+      const aircraftPoint = { x: 50, y: cy, visible: true, clipped: false, active: true, discontinuity: false, airport: false, label: '', id: 'aircraft', altitudeLabel: null, speedLabel: null };
+      const clipped = clipRouteSegment(aircraftPoint, activePoint, isCentered);
+      
+      if (clipped.visible) {
+        routeSegments.unshift({
+          from: aircraftPoint as any,
+          to: activePoint,
+          x1: clipped.x1,
+          y1: clipped.y1,
+          x2: clipped.x2,
+          y2: clipped.y2,
+          dashed: isModified,
+          active: true,
+          modified: isModified,
+          visible: true,
+          clipped: clipped.clipped,
+        });
+      }
+    }
+  }
 
   return {
     points: routePoints.filter(p => isPointVisible(p, efis, visibleOverlays)),

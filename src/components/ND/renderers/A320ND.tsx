@@ -42,19 +42,28 @@ export function A320ND({ model }: A320NDProps) {
       <RangeRings model={model} color="#004433" />
       
       {/* Moving Symbology */}
-      <g clipPath="url(#a320-nd-clip)">
-        <AirportSymbol model={model} />
-        <RouteLine model={model} />
-        <WaypointSymbol model={model} />
-        <ConstraintsOverlay model={model} />
-        <HoldPattern model={model} />
-        <FixRing model={model} />
-        
-        {/* Advanced Overlays */}
-        <WXROverlay data={model.wxrData} />
-        <VerticalProfileOverlay points={model.verticalProfilePoints} />
-        <TCASOverlay targets={model.tcasTargets} />
-      </g>
+      {model.irsState === 'NAV' ? (
+        <g clipPath="url(#a320-nd-clip)">
+          <AirportSymbol model={model} />
+          <RouteLine model={model} />
+          <WaypointSymbol model={model} />
+          <ConstraintsOverlay model={model} />
+          <HoldPattern model={model} />
+          <FixRing model={model} />
+          
+          {/* Advanced Overlays */}
+          <WXROverlay data={model.wxrData} />
+          <VerticalProfileOverlay points={model.verticalProfilePoints} />
+          <TCASOverlay targets={model.tcasTargets} />
+        </g>
+      ) : (
+        <g transform="translate(50 50)" textAnchor="middle">
+           <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
+          <text y="2" fill="#ffcc00" fontSize="5" fontWeight="bold">
+            {model.irsState === 'OFF' ? 'MAP NOT AVAIL' : 'IRS ALIGN'}
+          </text>
+        </g>
+      )}
 
       {/* Navigation Foundation */}
       <AirbusHeadingScale model={model} />
@@ -63,8 +72,12 @@ export function A320ND({ model }: A320NDProps) {
       <WindVector model={model} />
       <ModeAnnunciations model={model} />
       
-      <g transform="translate(4 94)" fontSize="3.2" fill={colors.active} fontWeight="bold">
-        <text>FMC L</text>
+      {/* Nav Accuracy & Source */}
+      <g transform="translate(4 94)" fontSize="3" fill="#ffffff" fontWeight="bold">
+        <text>GPS {model.navSource === 'GPS' ? 'PRIMARY' : ''}</text>
+        <text y="4" fill={model.anpNm > model.rnpNm ? '#ffcc00' : '#00ff00'}>
+          ACCUR {model.anpNm > model.rnpNm ? 'LOW' : 'HIGH'}
+        </text>
       </g>
 
       {/* Aircraft Symbol */}

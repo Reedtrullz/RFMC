@@ -674,6 +674,43 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         get().stepPlanForward();
         return;
 
+      case 'align_irs':
+        if (state.aircraft === 'AIRBUS_A320') {
+          set({ 
+            position: { 
+              ...state.position, 
+              irsState: 'ALIGNING',
+              irsAlignmentProgress: 0,
+              irsTimeRemaining: 420 // 7 minutes
+            } 
+          });
+          handled = true;
+        }
+        break;
+
+      case 'set_from_to':
+        if (scratchpad) {
+          const [origin, dest] = scratchpad.split('/');
+          if (origin && dest) {
+            const oRes = isValidICAO(origin.toUpperCase());
+            const dRes = isValidICAO(dest.toUpperCase());
+            if (!oRes.valid || !dRes.valid) { set({ scratchpadError: 'INVALID FORMAT' }); return; }
+            set({
+              pendingRoute: { ...state.route, origin: origin.toUpperCase(), destination: dest.toUpperCase() },
+              pendingFlightPlan: { ...state.flightPlan, origin: origin.toUpperCase(), destination: dest.toUpperCase() },
+              isModified: true,
+              execLit: true,
+              scratchpad: ''
+            });
+            get().expandActiveRoute();
+            handled = true;
+          } else {
+            set({ scratchpadError: 'INVALID FORMAT' });
+            return;
+          }
+        }
+        break;
+
       case 'erase':
         set({
           pendingRoute: null,
@@ -1940,10 +1977,26 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   updateAirbusFCU: (update: Partial<AirbusFCUState>) => {
+    const state = get();
+    if (state.aircraft !== 'AIRBUS_A320') return;
+
+    const validatedUpdate = { ...update };
+    
+    // Managed Navigation Interlock
+    if (validatedUpdate.headingManaged) {
+      const hasFpln = state.flightPlan.origin && state.flightPlan.destination;
+      const irsAligned = state.position.irsState === 'NAV';
+      
+      if (!hasFpln || !irsAligned) {
+        delete validatedUpdate.headingManaged;
+        set({ scratchpad: !irsAligned ? 'IRS NOT ALIGNED' : 'F-PLN NOT READY', msgLight: true });
+      }
+    }
+
     set((state) => ({
       autopilot: {
         ...state.autopilot,
-        airbus: { ...state.autopilot.airbus, ...update }
+        airbus: { ...state.autopilot.airbus, ...validatedUpdate }
       }
     }));
 

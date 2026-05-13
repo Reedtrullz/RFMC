@@ -8,8 +8,8 @@ export function RouteLine({ model }: RouteLineProps) {
   const isAirbus = model.style === 'airbus';
   const colors = {
     active: isAirbus ? '#00ff00' : '#ff00ff', // Green for Airbus, Magenta for Boeing
-    pending: '#ffffff',
-    inactive: isAirbus ? '#00ff00' : '#00ffff', // Cyan for Boeing
+    pending: isAirbus ? '#ffcc00' : '#ffffff', // Yellow (Amber) for Airbus TMPY, White for Boeing MOD
+    inactive: isAirbus ? '#ffffff' : '#00ffff', // White (Secondary) for Airbus, Cyan for Boeing
   };
 
   return (

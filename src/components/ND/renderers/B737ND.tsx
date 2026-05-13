@@ -42,18 +42,24 @@ export function B737ND({ model }: B737NDProps) {
       <RangeRings model={model} color="#002233" />
       
       {/* Moving Symbology */}
-      <g clipPath="url(#b737-nd-clip)">
-        <AirportSymbol model={model} />
-        <RouteLine model={model} />
-        <WaypointSymbol model={model} />
-        <HoldPattern model={model} />
-        <FixRing model={model} />
-        
-        {/* Advanced Overlays */}
-        <WXROverlay data={model.wxrData} />
-        <VerticalProfileOverlay points={model.verticalProfilePoints} />
-        <TCASOverlay targets={model.tcasTargets} />
-      </g>
+      {model.irsState === 'NAV' ? (
+        <g clipPath="url(#b737-nd-clip)">
+          <AirportSymbol model={model} />
+          <RouteLine model={model} />
+          <WaypointSymbol model={model} />
+          <HoldPattern model={model} />
+          <FixRing model={model} />
+          
+          {/* Advanced Overlays */}
+          <WXROverlay data={model.wxrData} />
+          <VerticalProfileOverlay points={model.verticalProfilePoints} />
+          <TCASOverlay targets={model.tcasTargets} />
+        </g>
+      ) : (
+        <g clipPath="url(#b737-nd-clip)" opacity="0.3">
+          {/* Show minimal placeholders or nothing */}
+        </g>
+      )}
 
       {/* Navigation Foundation */}
       <BoeingHeadingArc model={model} />
@@ -61,6 +67,22 @@ export function B737ND({ model }: B737NDProps) {
       {/* Information Blocks */}
       <WindVector model={model} />
       <ModeAnnunciations model={model} />
+
+      {/* IRS Status Flags */}
+      {model.irsState !== 'NAV' && (
+        <g transform="translate(50 50)" textAnchor="middle">
+          <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
+          <text y="2" fill="#ffcc00" fontSize="5" fontWeight="bold">
+            {model.irsState === 'OFF' ? 'MAP FAILURE' : 'IRS ALIGN'}
+          </text>
+        </g>
+      )}
+
+      {/* ANP/RNP Display */}
+      <g transform="translate(96 94)" textAnchor="end" fontSize="3" fill="#ffffff" opacity="0.8">
+        <text y="-4">RNP {model.rnpNm.toFixed(2)}</text>
+        <text fill={model.anpNm > model.rnpNm ? '#ffcc00' : '#ffffff'}>ANP {model.anpNm.toFixed(2)}</text>
+      </g>
       
       <g transform="translate(4 94)" fontSize="3.2" fill={colors.active} fontWeight="bold">
         <text>FMC L</text>

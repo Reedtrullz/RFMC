@@ -121,4 +121,8 @@ export interface NavigationDisplayModel {
   track: number;
   selectedHeading: number | null;
   selectedCourse: number | null;
+  irsState: string;
+  navSource: string;
+  anpNm: number;
+  rnpNm: number;
 }
