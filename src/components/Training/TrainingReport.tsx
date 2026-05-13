@@ -13,7 +13,7 @@ export function TrainingReport() {
 
   const goals = scenario?.goals || [];
   const mistakes = scenario?.mistakes || [];
-  const completedGoals = goals.filter(g => g.completed).length;
+  const completedGoals = goals.filter((g: any) => g.completed).length;
   const goalScore = goals.length > 0 ? (completedGoals / goals.length) * 100 : 100;
   const mistakePenalty = mistakes.length * 10;
   const finalScore = Math.max(0, goalScore - mistakePenalty);
@@ -60,7 +60,7 @@ export function TrainingReport() {
                 <span>🎯</span> TRAINING OBJECTIVES
               </h3>
               <div className="space-y-2">
-                {goals.map(g => (
+                {goals.map((g: any) => (
                   <div key={g.id} className="flex items-center gap-2 text-sm p-2 bg-gray-900/50 rounded">
                     <span className={g.completed ? 'text-green-400' : 'text-gray-600'}>
                       {g.completed ? '✓' : '✗'}
@@ -80,7 +80,7 @@ export function TrainingReport() {
                 {mistakes.length === 0 ? (
                   <div className="text-gray-500 italic text-sm">No deviations recorded. Perfect flight.</div>
                 ) : (
-                  mistakes.map(m => (
+                  mistakes.map((m: any) => (
                     <div key={m.id} className="text-xs text-red-200 bg-red-900/20 p-2 rounded border-l-2 border-red-500">
                       {m.text}
                     </div>

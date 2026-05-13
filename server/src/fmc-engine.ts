@@ -41,8 +41,8 @@ export class FMCEngine {
       scratchpadError: null,
       demoMode: false,
       ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-      position: { refAirport: '', gate: '', irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 600 },
-      navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE' },
+      position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 600 },
+      navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE', anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'IRS' },
       activeNavSource: 'IRS',
       sensors: [
         { source: 'GPS', available: true, positionErrorNm: 0.05 },
@@ -52,7 +52,7 @@ export class FMCEngine {
       signsOn: false,
       windowsLocked: false,
       posPageIndex: 0,
-      performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
+      performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
       takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
       landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
       route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
@@ -138,7 +138,7 @@ export class FMCEngine {
       brightness: 100,
       cockpitMode: false,
       cockpitLayoutMode: 'fmc-focus',
-      hiddenPanels: ['nd', 'pfd', 'mcp', 'checklist', 'connection', 'settings'],
+      hiddenPanels: ['nd', 'pfd', 'autoflight', 'checklist', 'connection', 'settings'],
       pinnedPanels: [],
       focusedPanel: null,
       latency: 0,
@@ -159,6 +159,25 @@ export class FMCEngine {
       tutorialHighlight: null,
       tutorialConfidence: null,
       selectedPlanWaypointIndex: null,
+      trainingActive: false,
+      trainingScenario: null,
+      trainingEngine: null,
+      trainingMistakes: [],
+      trainingScore: null,
+      trainingStepIndex: 0,
+      trainingCompleted: false,
+      activeScenario: null,
+      flightPathHistory: [],
+      debriefMode: false,
+      isReportVisible: false,
+      tutorialHintLevel: 0,
+      tutorialHintTimer: null,
+      atsu: {
+        messages: [],
+        pendingUplink: null,
+      },
+      flightPhase: 'PREFLIGHT' as any,
+      scratchpadMessages: [],
     };
   }
 
@@ -1185,7 +1204,7 @@ export class FMCEngine {
     // LSK Action check
     if (action) {
       const actionMatches = !step.expectedAction || action === step.expectedAction;
-      const validatePasses = !step.validate || step.validate(sp);
+      const validatePasses = !step.validate || (step.validate as any)(sp, this.state);
       if (actionMatches && validatePasses) {
         this.advanceTutorial();
       } else {

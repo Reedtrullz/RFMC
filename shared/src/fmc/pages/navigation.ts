@@ -38,14 +38,14 @@ export function renderLegsPage(state: FMCState): DisplayData {
   }
 
   let currentWaypointIndex = -1;
-  if (aircraftState && aircraftState.position) {
+  if (aircraftState) {
     let minDist = Infinity;
     for (let i = 0; i < waypoints.length; i++) {
       const wp = waypoints[i];
       if (wp.lat !== undefined && wp.lon !== undefined) {
         const dist = greatCircleDistance(
-          aircraftState.position.lat,
-          aircraftState.position.lon,
+          aircraftState.lat,
+          aircraftState.lon,
           wp.lat,
           wp.lon
         );
@@ -180,12 +180,12 @@ export function renderProgressPage(state: FMCState): DisplayData {
   let hasTo = false;
   let hasNext = false;
 
-  if (aircraftState?.position && flightPlan.waypoints.length > 0) {
+  if (aircraftState && flightPlan.waypoints.length > 0) {
     const w0 = flightPlan.waypoints[0];
     if (w0.lat && w0.lon) {
       toWpt = w0.ident;
       hasTo = true;
-      dtgTo = greatCircleDistance(aircraftState.position.lat, aircraftState.position.lon, w0.lat, w0.lon);
+      dtgTo = greatCircleDistance(aircraftState.lat, aircraftState.lon, w0.lat, w0.lon);
       dtgDest += dtgTo;
 
       if (flightPlan.waypoints.length > 1) {
@@ -225,10 +225,10 @@ export function renderProgressPage(state: FMCState): DisplayData {
 
   // Command speed
   let cmdSpd = '---';
-  if (aircraftState?.speed !== undefined) {
+  if (aircraftState?.ias !== undefined) {
     // Usually PROG shows commanded Mach or IAS, e.g. .78 MACH or 280 KT
     // We'll just show current rounded speed as KT for now
-    cmdSpd = `${String(Math.round(aircraftState.speed))} KT`;
+    cmdSpd = `${String(Math.round(aircraftState.ias))} KT`;
   } else if (performance.costIndex) {
     // Fallback if not live
     cmdSpd = `ECON`;

@@ -26,10 +26,17 @@ const baseState = createBaseState({
     },
   },
   aircraftState: {
-    position: { lat: 39.5, lon: -75.5 }, // Central between JFK and DCA
+    lat: 39.5,
+    lon: -75.5,
     heading: 0,
     track: 0,
-    selectedHeading: 0,
+    ias: 0,
+    tas: 0,
+    vs: 0,
+    gs: 0,
+    altitude: 0,
+    fuelTotal: 0,
+    gw: 0,
   },
 });
 
@@ -210,7 +217,7 @@ describe('Navigation Display model', () => {
     const stateWithGeo = {
       ...baseState,
       efisL: { ...baseState.efisL, range: 40 }, // 40nm range so WPT2 at 60nm is clipped
-      aircraftState: { position: { lat: 0, lon: 0 }, speed: 0, heading: 0, altitude: 0 },
+      aircraftState: { lat: 0, lon: 0, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0 },
       flightPlan: {
         origin: '', destination: '', flightNumber: '', route: '',
         waypoints: [
@@ -228,7 +235,7 @@ describe('Navigation Display model', () => {
   it('includes relativeBearingDeg on geo-projected points', () => {
     const stateWithGeo = {
       ...baseState,
-      aircraftState: { position: { lat: 0, lon: 0 }, speed: 0, heading: 90, altitude: 0 },
+      aircraftState: { lat: 0, lon: 0, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 90, track: 0 },
       flightPlan: {
         origin: '', destination: '', flightNumber: '', route: '',
         waypoints: [{ ident: 'WPT1', lat: 0.1, lon: 0, discontinuity: false }], // North
@@ -243,7 +250,7 @@ describe('Navigation Display model', () => {
   it('uses direct-to target for active waypoint block', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
-      aircraftState: { position: { lat: 0, lon: 0 }, speed: 200, heading: 0, altitude: 0 },
+      aircraftState: { lat: 0, lon: 0, ias: 200, tas: 200, vs: 0, gs: 200, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0 },
       route: { ...baseState.route, directTo: 'DIXIE' },
       flightPlan: {
         origin: '', destination: '', flightNumber: '', route: '',
@@ -260,7 +267,7 @@ describe('Navigation Display model', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
       // Aircraft positioned near KJFK so both airports are within 160nm range
-      aircraftState: { position: { lat: 39.5, lon: -75.5 }, heading: 0, track: 0, selectedHeading: 0 },
+      aircraftState: { lat: 39.5, lon: -75.5, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0 },
       flightPlan: { ...baseState.flightPlan, origin: 'KJFK', destination: 'KDCA', waypoints: [] },
     });
     expect(model.activeRoutePoints[0].label).toBe('KJFK');

@@ -36,8 +36,8 @@ export class NavDatabaseService {
       ident: 'ELMAA4',
       runway: '16L',
       commonLegs: [
-        { type: 'VA', heading: 161, altitude: 1500 }, // Heading to Altitude
-        { type: 'DF', fixIdent: 'ELMAA', altitude: 5000 }, // Direct to Fix
+        { type: 'VA' as any, courseDeg: 161, altitudeConstraint: { value: 1500, type: 'AT' } }, // Heading to Altitude
+        { type: 'DF', fixIdent: 'ELMAA', altitudeConstraint: { value: 5000, type: 'AT' } }, // Direct to Fix
       ],
       transitions: [
         { ident: 'HQM', legs: [{ type: 'TF', fixIdent: 'HQM' }] }
@@ -50,9 +50,9 @@ export class NavDatabaseService {
       type: 'STAR',
       ident: 'HAWKZ7',
       commonLegs: [
-        { type: 'IF', fixIdent: 'HAWKZ', altitude: 12000, speed: 250 },
-        { type: 'TF', fixIdent: 'LIYTE', altitude: 8000, speed: 230 },
-        { type: 'TF', fixIdent: 'CHINS', altitude: 6000, speed: 210 },
+        { type: 'IF', fixIdent: 'HAWKZ', altitudeConstraint: { value: 12000, type: 'AT' }, speedConstraint: { value: 250, type: 'AT' } },
+        { type: 'TF', fixIdent: 'LIYTE', altitudeConstraint: { value: 8000, type: 'AT' }, speedConstraint: { value: 230, type: 'AT' } },
+        { type: 'TF', fixIdent: 'CHINS', altitudeConstraint: { value: 6000, type: 'AT' }, speedConstraint: { value: 210, type: 'AT' } },
       ],
       transitions: [
         { ident: 'YKM', legs: [{ type: 'TF', fixIdent: 'TITUS' }, { type: 'TF', fixIdent: 'HAWKZ' }] }

@@ -143,12 +143,12 @@ export function ConnectionStatus() {
 
           {connectionStatus === 'CONNECTED' && (
             <div className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-2 font-cdu text-[10px]">
-              <DiagnosticRow label="LAT" value={formatNumber(aircraftState?.position?.lat, 5)} />
-              <DiagnosticRow label="LON" value={formatNumber(aircraftState?.position?.lon, 5)} />
+              <DiagnosticRow label="LAT" value={formatNumber(aircraftState?.lat, 5)} />
+              <DiagnosticRow label="LON" value={formatNumber(aircraftState?.lon, 5)} />
               <DiagnosticRow label="ALT" value={`${formatNumber(aircraftState?.altitude)} FT`} />
               <DiagnosticRow label="HDG" value={`${formatNumber(aircraftState?.heading)}°`} />
-              <DiagnosticRow label="SPD" value={`${formatNumber(aircraftState?.speed)} KT`} />
-              <DiagnosticRow label="VS" value={`${formatNumber(aircraftState?.verticalSpeed)} FPM`} />
+              <DiagnosticRow label="SPD" value={`${formatNumber(aircraftState?.ias)} KT`} />
+              <DiagnosticRow label="VS" value={`${formatNumber(aircraftState?.vs)} FPM`} />
             </div>
           )}
 

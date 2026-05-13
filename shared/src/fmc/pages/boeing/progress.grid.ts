@@ -21,7 +21,7 @@ export function renderBoeingProgressGrid(state: FMCState): DisplayData {
   let hasTo = false;
   let hasNext = false;
 
-  if (aircraftState?.position && flightPlan.waypoints.length > 0) {
+  if (aircraftState && flightPlan.waypoints.length > 0) {
     // In a real FMC, we'd use the active waypoint index
     const w0 = flightPlan.waypoints[0];
     if (w0.lat && w0.lon) {

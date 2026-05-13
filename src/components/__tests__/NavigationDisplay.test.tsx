@@ -42,10 +42,17 @@ describe('NavigationDisplay', () => {
         { refFix: 'RBV', radial: 270, distance: 35 },
       ],
       aircraftState: {
-        position: { lat: 40.0, lon: -74.0 }, // Near DIXIE/RBV
+        lat: 40.0, lon: -74.0, // Near DIXIE/RBV
         heading: 0,
         track: 0,
         selectedHeading: 0,
+        altitude: 10000,
+        ias: 250,
+        tas: 250,
+        vs: 0,
+        fuelTotal: 10000,
+        gw: 120000,
+        gs: 250,
       }
     });
 
@@ -77,10 +84,17 @@ describe('NavigationDisplay', () => {
         ],
       },
       aircraftState: {
-        position: { lat: 48.5, lon: 2.5 },
+        lat: 48.5, lon: 2.5,
         heading: 0,
         track: 0,
         selectedHeading: 0,
+        altitude: 10000,
+        ias: 250,
+        tas: 250,
+        vs: 0,
+        fuelTotal: 10000,
+        gw: 120000,
+        gs: 250,
       }
     });
 

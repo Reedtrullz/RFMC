@@ -13,7 +13,7 @@ import {
   SimConnectPeriod,
 } from 'node-simconnect';
 import type { SimConnectConnection } from 'node-simconnect';
-import type { IAircraftAdapter, CDUDisplayData, AircraftState } from './IAircraftAdapter';
+import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './IAircraftAdapter';
 import type { AircraftType, ConnectionStatus } from '@shared';
 import { devLog, devError } from '@shared';
 
@@ -173,22 +173,28 @@ export class FBWA320Adapter implements IAircraftAdapter {
     await this.sendKeypress(lsk);
   }
 
-  async readAircraftState(): Promise<AircraftState> {
+  async readAircraftState(): Promise<AdapterAircraftState> {
     if (!this.simState) {
       return {
-        position: { lat: 40.6413, lon: -73.7781 },
+        lat: 40.6413, lon: -73.7781,
         heading: 45,
+        track: 45,
         altitude: 0,
-        speed: 0,
-        verticalSpeed: 0,
+        ias: 0, tas: 0, gs: 0, vs: 0, fuelTotal: 0, gw: 0,
       };
     }
     return {
-      position: { lat: this.simState.lat, lon: this.simState.lon },
+      lat: this.simState.lat,
+      lon: this.simState.lon,
       heading: this.simState.heading,
+      track: this.simState.heading,
       altitude: this.simState.altitude,
-      speed: this.simState.ias,
-      verticalSpeed: this.simState.vs,
+      ias: this.simState.ias,
+      tas: this.simState.tas || this.simState.ias,
+      gs: this.simState.gs || this.simState.ias,
+      vs: this.simState.vs,
+      fuelTotal: 0,
+      gw: 0,
       radios: (this.simState as any).radios,
     };
   }

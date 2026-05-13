@@ -9,8 +9,8 @@ export class PhaseManager {
     if (!acState) return 'PREFLIGHT';
 
     const altitude = acState.altitude || 0;
-    const speed = acState.speed || 0;
-    const vs = acState.verticalSpeed || 0;
+    const speed = acState.gs || 0;
+    const vs = acState.vs || 0;
     const crzAlt = state.performance.crzAlt || 30000;
 
     // PREFLIGHT logic

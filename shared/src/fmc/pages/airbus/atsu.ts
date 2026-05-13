@@ -1,4 +1,5 @@
-import { FMCState, DisplayData, inv, fmt, blank, AcarsMessage } from '@shared';
+import { FMCState, DisplayData, AcarsMessage } from '@shared';
+import { inv, fmt, blank } from './index';
 
 export function renderAtsuMenu(state: FMCState): DisplayData {
   const unreadCount = state.atsu.messages.filter(m => !m.read).length;

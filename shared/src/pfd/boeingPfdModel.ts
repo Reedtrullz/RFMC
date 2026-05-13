@@ -49,8 +49,8 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
   return {
     heading: aircraft?.heading || 0,
     altitude: aircraft?.altitude || 0,
-    speed: aircraft?.speed || 0,
-    verticalSpeed: aircraft?.verticalSpeed || 0,
+    speed: aircraft?.ias || 0,
+    verticalSpeed: aircraft?.vs || 0,
     pitch: 0, // Mock for now
     bank: 0, // Mock for now
     radioAltitude: (aircraft?.altitude || 0) < 2500 ? (aircraft?.altitude || 0) : null,

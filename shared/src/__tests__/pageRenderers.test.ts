@@ -224,8 +224,8 @@ describe('Airbus Page Renderers', () => {
   const airbusState = createBaseState({
     aircraft: 'AIRBUS_A320',
     currentPage: 'INIT_A',
-    position: { irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0, refAirport: '', gate: '' },
-    navPerformance: { anpNm: 0.05, rnpNm: 1.0, phase: 'ENROUTE' }
+    position: { irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0, refAirport: '', gate: '', lat: 0, lon: 0 },
+    navPerformance: { anpNm: 0.05, rnpNm: 1.0, anp: 0.05, rnp: 1.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' }
   });
 
   it('renders INIT A page with alignment prompt when IRS is off', () => {

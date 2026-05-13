@@ -22,17 +22,19 @@ export function AirbusMCDU() {
   const { send } = useWebSocket();
 
   const onPressKey = useCallback((key: string) => {
-    pressKey(key as CDUKey);
     if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
       send({ type: 'fmc.input', key: key as CDUKey });
+      return;
     }
+    pressKey(key as CDUKey);
   }, [pressKey, connectionMode, connectionStatus, send]);
 
   const onPressLSK = useCallback((side: 'L' | 'R', index: number) => {
-    pressLSK(side, index);
     if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
       send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
+      return;
     }
+    pressLSK(side, index);
   }, [pressLSK, connectionMode, connectionStatus, send]);
 
   const displayData = useFMCStore(s => s.getDisplayData());

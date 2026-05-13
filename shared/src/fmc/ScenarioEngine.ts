@@ -57,7 +57,7 @@ export class ScenarioEngine {
     return { updates, completedEvents };
   }
 
-  private processAction(event: ScenarioEvent, state: FMCState, updates: Partial<FMCState>) {
+  public processAction(event: ScenarioEvent, state: FMCState, updates: Partial<FMCState>) {
     const { type, payload } = event.action;
 
     switch (type) {

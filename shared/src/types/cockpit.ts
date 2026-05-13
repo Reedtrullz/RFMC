@@ -1,4 +1,4 @@
-export type PanelId = 'cdu' | 'nd' | 'pfd' | 'mcp' | 'instructor' | 'checklist' | 'connection' | 'settings';
+export type PanelId = 'cdu' | 'nd' | 'pfd' | 'autoflight' | 'instructor' | 'checklist' | 'connection' | 'settings';
 
 export type CockpitLayoutMode =
   | 'fmc-focus'

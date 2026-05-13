@@ -22,7 +22,7 @@ import { ModeHelpCard } from './ModeHelpCard';
 import { FirstRunGuidance } from './FirstRunGuidance';
 import { CockpitLayoutGrid } from './CockpitLayoutGrid';
 
-type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'mcp'>;
+type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
 
 interface LayoutControls {
   aircraft: AircraftType;
@@ -37,7 +37,7 @@ interface LayoutControls {
   onZoomReset: (panelId: InstrumentPanelId) => void;
 }
 
-const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'mcp'];
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
 
 function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPanelId {
   return !!panelId && instrumentPanelIds.includes(panelId as InstrumentPanelId);
@@ -178,7 +178,7 @@ function renderLayout(
     case 'automation':
       return (
         <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--automation">
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-automation__mcp' })}
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-automation__mcp' })}
           <div className="cockpit-pfd-nd-displays cockpit-automation__displays">
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
@@ -193,14 +193,14 @@ function renderLayout(
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
           </div>
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-approach__mcp' })}
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-approach__mcp' })}
         </CockpitLayoutGrid>
       );
 
     case 'full-deck':
       return (
         <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-full-deck__mcp' })}
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-full-deck__mcp' })}
           <div className="cockpit-full-deck__instruments">
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
@@ -215,7 +215,7 @@ function renderLayout(
           {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
           {renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
-          {renderInstrumentPanel('mcp', controls, { className: 'cockpit-mcp-slot cockpit-free-practice__optional' })}
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-free-practice__optional' })}
         </CockpitLayoutGrid>
       );
   }
@@ -277,20 +277,25 @@ function renderPanel(panelId: InstrumentPanelId) {
       return <NavigationDisplay />;
     case 'pfd':
       return <PrimaryFlightDisplay />;
-    case 'mcp':
+    case 'autoflight':
       return <AutopilotTrainer />;
   }
 }
 
 function targetForPanel(panelId: InstrumentPanelId, aircraft: AircraftType): InstrumentTarget {
+  if (aircraft === 'AIRBUS_A320') {
+    switch (panelId) {
+      case 'cdu': return 'airbusMcdu';
+      case 'nd': return 'airbusNd';
+      case 'pfd': return 'airbusPfd';
+      case 'autoflight': return 'airbusFcu';
+    }
+  }
+
   switch (panelId) {
-    case 'cdu':
-      return aircraft === 'AIRBUS_A320' ? 'airbusMcdu' : 'boeingCdu';
-    case 'nd':
-      return 'boeingNd';
-    case 'pfd':
-      return 'boeingPfd';
-    case 'mcp':
-      return 'boeingMcp';
+    case 'cdu': return 'boeingCdu';
+    case 'nd': return 'boeingNd';
+    case 'pfd': return 'boeingPfd';
+    case 'autoflight': return 'boeingMcp';
   }
 }

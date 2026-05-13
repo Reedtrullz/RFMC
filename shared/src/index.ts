@@ -9,6 +9,8 @@ export { getAirbusPageRenderer } from './fmc/pages/airbus';
 export { parseRouteString, greatCircleDistance, isProcedure } from './fmc/flightPlanParser';
 export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbriefParser';
 export { buildNavigationDisplayModel } from './fmc/navigationDisplay';
+export * from './fmc/ndGeometry';
+export * from './fmc/ndProjection';
 export type {
   NavigationDisplayModel,
   NDMapMode,
@@ -145,6 +147,8 @@ export * from './training/airbusLessons';
 export * from './fmc/waypointParser';
 export * from './fmc/fmsNavigation';
 export * from './fmc/pageRenderer';
+export * from './fmc/ScenarioEngine';
+export { FmsRuntimeEngine } from './fmc/FmsRuntimeEngine';
 export * from './fmc/MessageService';
 export * from './fmc/PhaseManager';
 export * from './fmc/VerticalProfileEngine';

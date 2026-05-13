@@ -11,7 +11,7 @@ export class LegSequencer {
     nextLeg: FlightPlanWaypoint | undefined,
     acState: AircraftState
   ): { sequence: boolean; reason: string } {
-    if (!acState.position) return { sequence: false, reason: 'No position' };
+
 
     const { type, fixIdent, heading, altitude: targetAlt } = currentLeg as any; // Cast for demo
     const { lat, lon, altitude: currentAlt, heading: currentHdg } = acState;
@@ -21,7 +21,7 @@ export class LegSequencer {
       case 'DF': // Direct to Fix
       case 'IF': // Initial Fix
         if (currentLeg.lat && currentLeg.lon) {
-          const dist = distanceNm(acState.position, { lat: currentLeg.lat, lon: currentLeg.lon });
+          const dist = distanceNm({ lat: acState.lat, lon: acState.lon }, { lat: currentLeg.lat, lon: currentLeg.lon });
           if (dist < 0.2) return { sequence: true, reason: `Arrived at ${currentLeg.ident}` };
         }
         break;
@@ -54,17 +54,17 @@ export class LegSequencer {
     acState: AircraftState
   ): { ok: boolean; message?: string } {
     const { altitudeConstraint, speedConstraint } = waypoint;
-    const { altitude, speed } = acState;
+    const { altitude, ias: speed } = acState;
 
     if (altitudeConstraint && altitude !== undefined) {
       const target = altitudeConstraint.altitude;
       if (altitudeConstraint.type === 'AT' && Math.abs(altitude - target) > 200) {
         return { ok: false, message: `Altitude Deviation: ${Math.round(altitude)}ft (Req ${target}ft)` };
       }
-      if (altitudeConstraint.type === 'ABOVE' && altitude < target - 100) {
+      if (altitudeConstraint.type === 'AT_OR_ABOVE' && altitude < target - 100) {
         return { ok: false, message: `Below Altitude: ${Math.round(altitude)}ft (Req ABOVE ${target}ft)` };
       }
-      if (altitudeConstraint.type === 'BELOW' && altitude > target + 100) {
+      if (altitudeConstraint.type === 'AT_OR_BELOW' && altitude > target + 100) {
         return { ok: false, message: `Above Altitude: ${Math.round(altitude)}ft (Req BELOW ${target}ft)` };
       }
     }

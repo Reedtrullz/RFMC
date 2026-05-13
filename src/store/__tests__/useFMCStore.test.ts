@@ -487,7 +487,7 @@ describe('FMC Store', () => {
       // Directly check updateFmsEcosystem logic for RNP alerts
       useFMCStore.setState({
         sensors: [{ source: 'GPS', available: true, positionErrorNm: 2.1 }],
-        navPerformance: { anpNm: 0, rnpNm: 1.0, phase: 'ENROUTE' }
+        navPerformance: { anp: 2.1, rnp: 1.0, anpNm: 2.1, rnpNm: 1.0, phase: 'ENROUTE', rnpManual: false, activeSource: 'GPS' }
       });
       
       useFMCStore.getState().updateFmsEcosystem();
@@ -495,7 +495,7 @@ describe('FMC Store', () => {
 
       useFMCStore.setState({
         sensors: [{ source: 'GPS', available: true, positionErrorNm: 0.1 }],
-        navPerformance: { anpNm: 0, rnpNm: 1.0, phase: 'ENROUTE' }
+        navPerformance: { anp: 0.1, rnp: 1.0, anpNm: 0.1, rnpNm: 1.0, phase: 'ENROUTE', rnpManual: false, activeSource: 'GPS' }
       });
       useFMCStore.getState().updateFmsEcosystem();
       expect(useFMCStore.getState().alerts.some(a => a.id === 'unable-rnp')).toBe(false);

@@ -13,7 +13,7 @@ export const panelLabels: Record<PanelId, string> = {
   cdu: 'CDU',
   nd: 'ND',
   pfd: 'PFD',
-  mcp: 'MCP',
+  autoflight: 'Autoflight',
   instructor: 'Instructor',
   checklist: 'Checklist',
   connection: 'Connection',

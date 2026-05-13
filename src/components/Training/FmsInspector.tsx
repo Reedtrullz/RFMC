@@ -20,7 +20,7 @@ export function FmsInspector() {
 
   const acState = state.aircraftState;
   const currentAlt = acState?.altitude || 0;
-  const gs = acState?.speed || 0;
+  const gs = acState?.gs || 0;
   
   // Calculate VNAV path data
   const destAlt = 3000;
@@ -56,8 +56,8 @@ export function FmsInspector() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">RNP / ANP:</span>
-              <span className={state.navPerformance.anpNm > state.navPerformance.rnpNm ? 'text-red-400' : 'text-green-400'}>
-                {state.navPerformance.rnpNm.toFixed(2)} / {state.navPerformance.anpNm.toFixed(2)}
+              <span className={state.navPerformance.anp > state.navPerformance.rnp ? 'text-red-400' : 'text-green-400'}>
+                {state.navPerformance.rnp.toFixed(2)} / {state.navPerformance.anp.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">

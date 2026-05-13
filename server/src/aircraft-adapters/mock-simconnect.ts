@@ -1,5 +1,5 @@
-import type { AircraftType, ConnectionStatus } from '@shared';
-import type { AircraftState, CDUDisplayData, IAircraftAdapter } from './IAircraftAdapter';
+import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState } from '@shared';
+import type { AdapterAircraftState, CDUDisplayData, IAircraftAdapter } from './IAircraftAdapter';
 
 interface MockSimConnectOptions {
   aircraftType?: AircraftType;
@@ -100,15 +100,21 @@ export class MockSimConnectAdapter implements IAircraftAdapter {
     await this.sendKeypress(`${side}${index}`);
   }
 
-  async readAircraftState(): Promise<AircraftState> {
+  async readAircraftState(): Promise<AdapterAircraftState> {
     this.ensureConnected();
     await this.delay();
     return {
-      position: { lat: 40.6413, lon: -73.7781 },
+      lat: 40.6413,
+      lon: -73.7781,
       heading: 270,
+      track: 270,
       altitude: 12000,
-      speed: 280,
-      verticalSpeed: 0,
+      ias: 280,
+      tas: 280,
+      gs: 280,
+      vs: 0,
+      fuelTotal: 10000,
+      gw: 120000,
       radios: {
         vor1: '113.90',
         vor2: '115.70',

@@ -146,14 +146,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
         const statePayload = {
           variables: { brightness: simDisplay.brightness },
-          aircraftState: {
-            position: aircraftState.position,
-            heading: aircraftState.heading,
-            altitude: aircraftState.altitude,
-            speed: aircraftState.speed,
-            verticalSpeed: aircraftState.verticalSpeed,
-            radios: aircraftState.radios,
-          },
+          aircraftState: aircraftState,
+          radios: aircraftState.radios,
         };
 
         const currentStateJSON = JSON.stringify(statePayload);

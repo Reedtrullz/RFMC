@@ -29,7 +29,9 @@ export function buildNavigationDisplayModel(
   // Projection based on mode
   const isPlanMode = resolvedEfis.mode === 'PLAN' || resolvedEfis.mode === 'PLN';
   
-  const aircraftPos = state.aircraftState?.position || { lat: 52.3, lon: 4.7 };
+  const aircraftPos = (state.aircraftState?.lat !== undefined && state.aircraftState?.lon !== undefined)
+    ? { lat: state.aircraftState.lat, lon: state.aircraftState.lon }
+    : { lat: 52.3, lon: 4.7 };
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
@@ -459,9 +461,11 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
 
 function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number, routeItems: RouteItem[]): NDAnchorZones {
   const aircraftState = state.aircraftState;
-  const aircraftPos = aircraftState?.position || { lat: 52.3, lon: 4.7 };
+  const aircraftPos = (aircraftState?.lat !== undefined && aircraftState?.lon !== undefined)
+    ? { lat: aircraftState.lat, lon: aircraftState.lon }
+    : { lat: 52.3, lon: 4.7 };
   const activeWP = routeItems[activeIndex];
-  const gs = aircraftState?.speed ?? 0;
+  const gs = aircraftState?.gs ?? 0;
 
   let waypointBlock: NDAnchorZones['waypointBlock'] = null;
   if (activeWP && activeWP.lat !== undefined && activeWP.lon !== undefined) {
@@ -486,7 +490,7 @@ function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number,
   }
 
   return {
-    speedBlock: { tas: aircraftState?.speed ?? 0, gs },
+    speedBlock: { tas: aircraftState?.tas ?? 0, gs },
     windBlock: { dir: state.takeoff.windDir, speed: state.takeoff.windSpeed },
     waypointBlock,
     navaidBlocks: [],

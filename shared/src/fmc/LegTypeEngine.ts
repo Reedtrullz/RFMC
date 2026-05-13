@@ -1,5 +1,6 @@
 import { ArincLegType, ProcedureLeg, NavFix } from '../navdata/navdataTypes';
 import { distanceNm } from './ndGeometry';
+import { AircraftState } from '../types/fmc';
 
 export type LegType =
   | "IF" // Initial Fix
@@ -27,43 +28,46 @@ export interface FmsLeg {
   turnDirection?: "L" | "R";
 }
 
-export interface AircraftState {
-  position: { lat: number; lon: number };
-  altitudeFt: number;
-  groundSpeedKt: number;
-  headingDeg: number;
-}
+
 
 export class LegTypeEngine {
   /**
    * Determines if the aircraft has reached the termination condition for the current leg.
    */
-  public static shouldSequenceLeg(leg: FmsLeg, aircraft: AircraftState): boolean {
+  public static shouldSequenceLeg(leg: FmsLeg, aircraft: AircraftState, nextLeg?: FmsLeg): boolean {
+    const aircraftPos = { lat: aircraft.lat, lon: aircraft.lon };
+    
     switch (leg.type) {
-      case "TF":
-      case "DF":
-      case "CF":
-      case "IF":
+      case "IF": // Initial Fix
+        return true; // Sequence immediately to start path
+
+      case "TF": // Track to Fix
+      case "DF": // Direct to Fix
+      case "CF": // Course to Fix
         if (!leg.to) return false;
-        return distanceNm(aircraft.position, { lat: leg.to.lat, lon: leg.to.lon }) < 0.3;
+        const distToFix = distanceNm(aircraftPos, { lat: leg.to.lat, lon: leg.to.lon });
+        
+        // Basic Fly-By logic: Sequence slightly early if we have a next leg to turn towards
+        const sequenceThreshold = nextLeg ? 0.5 : 0.2; 
+        return distToFix < sequenceThreshold;
       
-      case "CA":
-      case "VA":
-      case "FA":
-      case "HA":
-        return aircraft.altitudeFt >= (leg.altitudeConstraintFt || 0);
+      case "CA": // Course to Altitude
+      case "VA": // Heading to Altitude
+      case "FA": // Fix to Altitude
+      case "HA": // Hold to Altitude
+        return aircraft.altitude >= (leg.altitudeConstraintFt || 0) - 100;
       
-      case "VM":
-      case "HM":
-        return false; // Requires manual sequencing
+      case "VM": // Heading to Manual Termination
+      case "HM": // Hold to Manual
+        return false; // Requires pilot manual sequence (e.g. DIR TO)
       
-      case "VI":
-        // Heading to intercept logic would go here
+      case "VI": // Heading to Intercept
+        // Sequence if aircraft is on course to the next leg
         return false; 
 
-      case "RF":
+      case "RF": // Radius to Fix
         if (!leg.to) return false;
-        return distanceNm(aircraft.position, { lat: leg.to.lat, lon: leg.to.lon }) < 0.3;
+        return distanceNm(aircraftPos, { lat: leg.to.lat, lon: leg.to.lon }) < 0.3;
 
       default:
         return false;

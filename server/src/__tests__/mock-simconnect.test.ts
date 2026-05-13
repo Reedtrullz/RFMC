@@ -22,8 +22,9 @@ describe('MockSimConnectAdapter', () => {
     const state = await adapter.readAircraftState();
 
     expect(adapter.aircraftType).toBe('AIRBUS_A320');
-    expect(state.position).toEqual({ lat: 40.6413, lon: -73.7781 });
-    expect(state.speed).toBe(280);
+    expect(state.lat).toBe(40.6413);
+    expect(state.lon).toBe(-73.7781);
+    expect(state.ias).toBe(280);
   });
 
   it('models connection failures and disconnected read errors', async () => {

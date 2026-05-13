@@ -54,6 +54,7 @@ function mapFixToLeg(fix: NavFix, type: string): ExpandedLeg {
 }
 
 export function expandProcedure(procedure: Procedure): ExpandedLeg[] {
+  if (!procedure.legs) return [];
   return procedure.legs.map(leg => {
     const fix = leg.fixIdent ? getFix(leg.fixIdent) : null;
     return {

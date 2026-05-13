@@ -1,4 +1,4 @@
-import type { AircraftType, ConnectionStatus } from '@shared';
+import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState, RadioData } from '@shared';
 
 /**
  * Generic aircraft adapter interface for reading/writing CDU state.
@@ -14,26 +14,13 @@ export interface CDUDisplayData {
   /** Brightness level from 0.0 to 1.0 */
   brightness: number;
 }
-
+ 
 /** Aircraft dynamic state (position, heading, speed, etc.) */
-export interface AircraftState {
-  /** Aircraft position in degrees (lat, lon) */
-  position?: { lat: number; lon: number };
-  /** True heading in degrees */
-  heading?: number;
-  /** Altitude in feet */
-  altitude?: number;
-  /** Indicated airspeed in knots */
-  speed?: number;
-  /** Vertical speed in feet per minute */
-  verticalSpeed?: number;
-  /** Radio frequencies */
-  radios?: {
-    vor1?: string;
-    vor2?: string;
-    adf1?: string;
-  };
+export interface AdapterAircraftState extends SharedAircraftState {
+  radios?: RadioData;
 }
+
+
 
 export interface IAircraftAdapter {
   /** Human-readable name for logging and UI */
@@ -70,5 +57,5 @@ export interface IAircraftAdapter {
   sendLSK(side: 'L' | 'R', index: number): Promise<void>;
 
   /** Read the current aircraft state (position, heading, speed, etc.) */
-  readAircraftState(): Promise<AircraftState>;
+  readAircraftState(): Promise<AdapterAircraftState>;
 }

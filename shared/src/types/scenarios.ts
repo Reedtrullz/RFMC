@@ -15,7 +15,7 @@ export interface ScenarioEvent {
     value: string | number;
   };
   action: {
-    type: 'ADD_MESSAGE' | 'SET_FAILURE' | 'CHANGE_PHASE' | 'SCORE_EVENT';
+    type: 'ADD_MESSAGE' | 'SET_FAILURE' | 'CHANGE_PHASE' | 'SCORE_EVENT' | 'SEND_ACARS' | 'UPLINK_ROUTE';
     payload: any;
   };
   processed?: boolean;

@@ -19,7 +19,6 @@ import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay'
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
-import { FmsInspector } from './components/Training/FmsInspector';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -35,6 +34,24 @@ export default function App() {
   const setNDMode = useFMCStore(s => s.setNDMode);
   const cockpitMode = useFMCStore(s => s.cockpitMode);
   const setCockpitMode = useFMCStore(s => s.setCockpitMode);
+  const tick = useFMCStore(s => s.tick);
+
+  useEffect(() => {
+    let lastTime = performance.now();
+    let frameId: number;
+
+    const runTick = (time: number) => {
+      const dt = (time - lastTime) / 1000;
+      if (dt >= 0.1) { // 10Hz tick rate
+        tick(dt);
+        lastTime = time;
+      }
+      frameId = requestAnimationFrame(runTick);
+    };
+
+    frameId = requestAnimationFrame(runTick);
+    return () => cancelAnimationFrame(frameId);
+  }, [tick]);
 
   useEffect(() => {
     const path = window.location.pathname;

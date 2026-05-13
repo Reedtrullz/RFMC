@@ -3,13 +3,13 @@ import { inferAirbusSemantic } from '../../pageLineSemantics';
 import { renderAtsuMenu, renderAtsuMessages } from './atsu';
 
 const W = 24;
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
-  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: inferAirbusSemantic(color) };
+export function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color'], small: boolean = false): DisplayLine {
+  return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: false, color, small, semantic: inferAirbusSemantic(color) };
 }
-function inv(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+export function inv(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return { text: text.padEnd(W, ' '), leftLabel: left, rightLabel: right, inverse: true, color, semantic: inferAirbusSemantic(color, true) };
 }
-function blank() { return fmt(''); }
+export function blank() { return fmt(''); }
 
 const AIRBUS_PAGES: readonly string[] = ['INIT_A', 'INIT_B', 'F_PLN', 'DEP_ARR_A', 'PERF_TAKEOFF', 'PERF_APPR', 'FUEL_PRED', 'SEC_FPLN', 'RAD_NAV', 'PROG_A', 'DATA_INDEX', 'MCDU_MENU', 'ATSU', 'ATSU_MSGS'];
 

@@ -11,19 +11,18 @@ export function DebriefOverlay({ model }: DebriefOverlayProps) {
 
   if (!debriefMode || history.length < 2) return null;
 
+  const state = useFMCStore.getState();
+  const aircraftState = state.aircraftState;
+  if (!aircraftState) return null;
+ 
   const projectionContext: NDProjectionContext = {
     style: model.style,
     mode: model.mode,
     rangeNm: model.range,
     heading: model.heading,
     isCentered: model.centered,
-    aircraftPosition: model.activeRoutePoints.find(p => p.id === 'aircraft') 
-      ? { lat: 0, lon: 0 } // This is a bit tricky, projection logic usually takes aircraftPos
-      : { lat: 0, lon: 0 }, 
-    // Wait, projectionContext needs aircraftPosition. 
-    // We should probably get it from the store too.
-    aircraftPosition: useFMCStore.getState().aircraftState?.position || { lat: 0, lon: 0 },
-    planCenter: useFMCStore.getState().aircraftState?.position || { lat: 0, lon: 0 },
+    aircraftPosition: { lat: aircraftState.lat, lon: aircraftState.lon },
+    planCenter: { lat: aircraftState.lat, lon: aircraftState.lon },
   };
 
   const points = history.map(pos => {

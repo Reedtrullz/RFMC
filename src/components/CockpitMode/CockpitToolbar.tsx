@@ -9,7 +9,7 @@ export function CockpitToolbar() {
   const highContrast = useFMCStore(s => s.highContrast);
   const toggleHighContrast = useFMCStore(s => s.toggleHighContrast);
 
-  const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'mcp', 'instructor', 'checklist', 'connection', 'settings'];
+  const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'instructor', 'checklist', 'connection', 'settings'];
 
   return (
     <div className="flex bg-cdu-bezel/80 backdrop-blur-xl p-1 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar gap-1">

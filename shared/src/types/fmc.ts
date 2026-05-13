@@ -1,6 +1,8 @@
 import type { DisplayColor } from '../fmc/displayColors';
 import type { DisplaySemantic } from '../fmc/displaySemantics';
 import type { NDMapMode } from '../fmc/ndTypes';
+import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
+import type { TrainingScenarioEngine } from '../training/scenarioEngine';
 
 // ============================================================
 // Core FMC types shared between frontend and backend
@@ -47,6 +49,10 @@ export interface NavSensor {
 
 export interface NavigationPerformance {
   anpNm: number;
+  anp: number;
+  rnp: number;
+  rnpManual: boolean;
+  activeSource: NavSource;
   rnpNm: number;
   phase: 'TAKEOFF' | 'ENROUTE' | 'OCEANIC' | 'TERMINAL' | 'APPROACH';
 }
@@ -57,7 +63,7 @@ export interface FlightDeckAlert {
   id: string;
   text: string;
   level: AlertLevel;
-  source: 'FMC' | 'IRS' | 'AFDS' | 'EICAS' | 'NAV';
+  source: 'FMC' | 'IRS' | 'AFDS' | 'EICAS' | 'NAV' | 'PERF';
   timestamp: number;
   clearable: boolean;
 }
@@ -99,7 +105,8 @@ export type AirbusPageType =
   | 'DATA_INDEX'
   | 'MCDU_MENU'
   | 'AC_STATUS'
-  | 'ATSU';
+  | 'ATSU'
+  | 'ATSU_MSGS';
 
 /** All possible FMC pages (Boeing + Airbus) */
 export type PageType = BoeingPageType | AirbusPageType;
@@ -160,6 +167,7 @@ export interface DisplayLine {
 }
 
 import type { DisplaySegment } from './display';
+export type { DisplaySegment };
 
 /** Full CDU display data — what gets rendered on screen */
 export interface DisplayData {
@@ -282,6 +290,7 @@ export interface PerformanceData {
   fuel: number;
   cg: number;
   reserve: number;
+  grossWeight: number;
   clbWindDir?: number;
   clbWindSpeed?: number;
   crzWindDir?: number;
@@ -294,8 +303,8 @@ export interface PerformanceData {
 export interface PositionData {
   refAirport: string;
   gate: string;
-  lat?: number;
-  lon?: number;
+  lat: number;
+  lon: number;
   irsState: IrsState;
   irsAlignmentProgress: number; // 0-100
   irsTimeRemaining: number;     // seconds
@@ -398,9 +407,27 @@ export interface FMCState {
   simVariables: Record<string, number>;
   failureMessage: string | null;
   externalDisplayData: DisplayData | null;
+  airbusFmgc?: AirbusFmgcState;
 
   // New FMS Ecosystem fields
   navPerformance: NavigationPerformance;
+  
+  // Training state
+  trainingActive: boolean;
+  trainingScenario: TrainingScenario | null;
+  trainingEngine: TrainingScenarioEngine | null;
+  trainingMistakes: TrainingMistake[];
+  trainingScore: TrainingScore | null;
+  trainingStepIndex: number;
+  trainingCompleted: boolean;
+  activeScenario: any | null;
+  flightPathHistory: { lat: number; lon: number; timestamp: number }[];
+  debriefMode: boolean;
+  isReportVisible: boolean;
+  tutorialHintLevel: number;
+  tutorialHintTimer: any;
+
+
   activeNavSource: NavSource;
   sensors: NavSensor[];
   alerts: FlightDeckAlert[];
@@ -442,15 +469,17 @@ export interface FMCState {
   deleteMode: boolean;
   editWaypointIndex: number | null;
 
-  aircraftState: {
-    position?: { lat: number; lon: number };
-    heading?: number;
-    track?: number;
-    selectedHeading?: number;
-    altitude?: number;
-    speed?: number;
-    verticalSpeed?: number;
-  } | null;
+  aircraftState: AircraftState | null;
+
+
+
+
+
+
+
+
+
+
 
   brightness: number;
   cockpitMode: boolean;
@@ -495,4 +524,29 @@ export interface AcarsMessage {
   timestamp: number;
   read: boolean;
   type: 'AOC' | 'ATC' | 'WEATHER';
+}
+
+export interface AirbusFmgcState {
+  fm1Healthy: boolean;
+  fm2Healthy: boolean;
+  mode: 'DUAL' | 'SINGLE_1' | 'SINGLE_2' | 'INDEPENDENT';
+  leftMcduSource: 'FMGC1' | 'FMGC2' | 'ATSU' | 'CFDS';
+  rightMcduSource: 'FMGC1' | 'FMGC2' | 'ATSU' | 'CFDS';
+  temporaryFlightPlan?: FlightPlan;
+  secondaryFlightPlan?: FlightPlan;
+}
+
+export interface AircraftState {
+  altitude: number;
+  heading: number;
+  ias: number;
+  tas: number;
+  vs: number;
+  fuelTotal: number;
+  gw: number;
+  lat: number;
+  lon: number;
+  gs: number;
+  track: number;
+  selectedHeading?: number;
 }

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
+import type { FMCState, AircraftState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
 import { 
   SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, 
   parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
@@ -12,8 +12,9 @@ import {
   calculateANP, 
   DEFAULT_RNP,
   calculateGroundSpeedAndTrack,
-  calculateIrsDrift
-} from '../fmc/fmsNavigation';
+  calculateIrsDrift,
+  FmsRuntimeEngine
+} from '@shared';
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
@@ -22,16 +23,16 @@ import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValid
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
-type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'mcp'>;
+type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
 
 const defaultInstrumentZoom: Record<InstrumentPanelId, number> = {
   cdu: 1.35,
   nd: 1,
   pfd: 1,
-  mcp: 1,
+  autoflight: 1,
 };
 
-const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'mcp'];
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
 
 function isInstrumentPanelId(panelId: PanelId): panelId is InstrumentPanelId {
   return instrumentPanelIds.includes(panelId as InstrumentPanelId);
@@ -54,7 +55,7 @@ function modeZoomDefaults(mode: CockpitLayoutMode): Record<InstrumentPanelId, nu
   } as Record<InstrumentPanelId, number>;
 }
 
-import { ScenarioEngine } from '../../shared/src/fmc/ScenarioEngine';
+import { ScenarioEngine } from '@shared';
 export const scenarioEngine = new ScenarioEngine();
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
@@ -104,8 +105,8 @@ const defaultState = {
   demoMode: false,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '', irsState: 'OFF' as IrsState, irsAlignmentProgress: 0, irsTimeRemaining: 600 },
-  performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
+  position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'OFF' as IrsState, irsAlignmentProgress: 0, irsTimeRemaining: 600 },
+  performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
@@ -135,7 +136,7 @@ const defaultState = {
   externalDisplayData: null as DisplayData | null,
 
   // FMS Ecosystem state
-  navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE' } as NavigationPerformance,
+  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' } as NavigationPerformance,
   activeNavSource: 'IRS' as NavSource,
   sensors: [
     { source: 'GPS', available: true, positionErrorNm: 0.05 },
@@ -148,7 +149,6 @@ const defaultState = {
   tutorialActive: false,
   tutorialScenario: null as string | null,
   tutorialStepIndex: 0,
-  selectedPlanWaypointIndex: null,
   tutorialCompleted: false,
   tutorialHighlight: null as string | null,
   tutorialErrors: 0,
@@ -180,6 +180,7 @@ const defaultState = {
   takeoffRefPageIndex: 0,
   selectedPlanWaypointIndex: null,
   flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
+
   debriefMode: false,
   activeScenario: null as any | null,
   isReportVisible: false,
@@ -191,7 +192,7 @@ const defaultState = {
   deleteMode: false,
   editWaypointIndex: null as number | null,
 
-  aircraftState: null as any,
+  aircraftState: null as (AircraftState | null),
   brightness: 100,
   cockpitMode: false,
   latency: 0,
@@ -263,6 +264,7 @@ const defaultState = {
   // New logic systems
   flightPhase: 'PREFLIGHT' as FlightPhase,
   scratchpadMessages: [] as FmcMessage[],
+  posPageIndex: 0,
 };
 
 interface FMCActions {
@@ -283,19 +285,15 @@ interface FMCActions {
   setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => void;
   setSimVariables: (variables: Record<string, number>) => void;
   setAircraftState: (state: FMCState['aircraftState']) => void;
+  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => void;
   setConnectedLastError: (error: string | null) => void;
   setExternalDisplayData: (data: DisplayData | null) => void;
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
   clearFailureMode: () => void;
   setBrightness: (b: number) => void;
 
-  updateFlightPhase: () => {
-    const state = get();
-    const newPhase = PhaseManager.inferFlightPhase(state);
-    if (newPhase !== state.flightPhase) {
-      set({ flightPhase: newPhase });
-    }
-  },
+  updateFlightPhase: () => void;
+  tick: (dtSeconds: number) => void;
 
   loadFlightPlan: (data: Partial<FMCState['flightPlan']> & { route: string; waypoints?: FlightPlanWaypoint[] }) => void;
   resetState: () => void;
@@ -378,7 +376,7 @@ interface FMCActions {
   // Message actions
   addMessage: (text: string, severity: MessageSeverity, type?: 1 | 2) => void;
   clearActiveMessage: () => void;
-  updateFlightPhase: () => void;
+
 }
 
 interface ConnectionDiagnostics {
@@ -1360,7 +1358,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         const step = scenario.steps[get().tutorialStepIndex];
         if (step) {
           const actionMatches = !step.expectedAction || action === step.expectedAction;
-          const validatePasses = !step.validate || step.validate(scratchpad);
+          const validatePasses = !step.validate || step.validate(scratchpad, get());
           if (actionMatches && validatePasses) {
             get().advanceTutorial();
           } else {
@@ -1544,9 +1542,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   updateFlightPhase: () => {
     const state = get();
-    const newPhase = PhaseManager.inferFlightPhase(state);
-    if (newPhase !== state.flightPhase) {
-      set({ flightPhase: newPhase });
+    const updates = FmsRuntimeEngine.tick(state, 0);
+    if (updates.flightPhase) {
+      set({ flightPhase: updates.flightPhase });
+    }
+  },
+  tick: (dtSeconds: number) => {
+    const state = get();
+    const updates = FmsRuntimeEngine.tick(state, dtSeconds);
+    if (Object.keys(updates).length > 0) {
+      set(updates);
     }
   },
   setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => set({
@@ -2334,11 +2339,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     updates.sensors = newSensors;
     updates.activeNavSource = activeSource;
-    updates.navPerformance = { ...navPerformance, anpNm: anp, rnpNm: rnp };
+    updates.navPerformance = { ...navPerformance, anp, rnp, anpNm: anp, rnpNm: rnp };
 
     // 3. Dynamic Aircraft State (GS/Track)
     if (state.aircraftState) {
-      const { heading, speed: tas } = state.aircraftState;
+      const { heading, tas } = state.aircraftState;
       const { windDir, windSpeed } = state.takeoff; // Using takeoff wind as ambient for now
       
       const { gs, track } = calculateGroundSpeedAndTrack(
@@ -2350,13 +2355,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
       updates.aircraftState = {
         ...state.aircraftState,
-        speed: gs, // We display GS on ND as "speed"
+        gs: gs,
         track: track
       };
 
       // Record Flight Path for Debrief
-      if (state.aircraftState.position) {
-        const history = [...state.flightPathHistory, { ...state.aircraftState.position, timestamp: Date.now() }];
+      if (state.aircraftState.lat !== undefined && state.aircraftState.lon !== undefined) {
+        const history = [...state.flightPathHistory, { lat: state.aircraftState.lat, lon: state.aircraftState.lon, timestamp: Date.now() }];
         updates.flightPathHistory = history.slice(-1000); // Keep last 1000 seconds
 
         // Leg Sequencing Logic

@@ -20,9 +20,9 @@ export type SpeedConstraint = {
   type: 'AT' | 'ABOVE' | 'BELOW';
 };
 
-export type ProcedureType = 'SID' | 'STAR' | 'APPROACH';
 
-export type ArincLegType = 'IF' | 'TF' | 'DF' | 'CF' | 'RF' | 'HM';
+
+export type ArincLegType = 'IF' | 'TF' | 'DF' | 'CF' | 'RF' | 'HM' | 'VA' | 'CA' | 'FA' | 'HA' | 'VM';
 
 export type ProcedureLeg = {
   type: ArincLegType;
@@ -44,14 +44,7 @@ export type ExpandedLeg = {
   isFlyOver?: boolean;
 };
 
-export type Procedure = {
-  airport: string;
-  type: ProcedureType;
-  ident: string;
-  runway?: string;
-  transition?: string;
-  legs: ProcedureLeg[];
-};
+
 
 export interface Airport {
   icao: string;
@@ -72,7 +65,7 @@ export interface Runway {
 
 export interface Navaid {
   ident: string;
-  type: 'VOR' | 'DME' | 'VORDME' | 'NDB' | 'ILS' | 'LOC';
+  type: 'VOR' | 'DME' | 'VORDME' | 'NDB' | 'ILS' | 'LOC' | 'VORTAC' | 'TACAN';
   frequency?: string;
   lat: number;
   lon: number;
@@ -86,10 +79,14 @@ export interface ProcedureTransition {
 }
 
 export interface Procedure {
-  airportIcao: string;
   type: ProcedureType;
   ident: string;
   runway?: string;
-  transitions: ProcedureTransition[];
-  commonLegs: ProcedureLeg[]; // Added to handle common legs before/after transitions
+  airportIcao?: string;
+  transitions?: ProcedureTransition[];
+  commonLegs?: ProcedureLeg[];
+  
+  // Backward compatibility fields
+  airport?: string;
+  legs?: ProcedureLeg[];
 }

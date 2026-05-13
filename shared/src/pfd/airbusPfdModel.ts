@@ -11,7 +11,7 @@ export function buildAirbusFMAState(fcu: AirbusFCUState, fmc: FMCState): AirbusF
 
   let verticalMode: AirbusFMAState['verticalMode'] = '';
   if (fcu.altitudeManaged) {
-    verticalMode = fmc.aircraftState?.verticalSpeed! > 0 ? 'CLB' : 'DES';
+    verticalMode = fmc.aircraftState?.vs! > 0 ? 'CLB' : 'DES';
   } else if (fcu.verticalSpeed !== null) {
     verticalMode = 'V/S';
   } else if (fcu.fpa !== null) {
@@ -51,8 +51,8 @@ export function buildAirbusPFDState(state: FMCState): PFDState {
   return {
     heading: aircraft?.heading || 0,
     altitude: aircraft?.altitude || 0,
-    speed: aircraft?.speed || 0,
-    verticalSpeed: aircraft?.verticalSpeed || 0,
+    speed: aircraft?.ias || 0,
+    verticalSpeed: aircraft?.vs || 0,
     pitch: 0,
     bank: 0,
     radioAltitude: (aircraft?.altitude || 0) < 2500 ? (aircraft?.altitude || 0) : null,

@@ -1,5 +1,6 @@
 import type { PanelId } from './panelTypes';
 import { panelLabels } from './panelTypes';
+import { useFMCStore } from '../../store/useFMCStore';
 
 interface InstrumentHeaderProps {
   panelId: PanelId;
@@ -24,7 +25,13 @@ export function InstrumentHeader({
   onZoomOut,
   onZoomReset,
 }: InstrumentHeaderProps) {
-  const label = panelLabels[panelId];
+  const aircraft = useFMCStore(s => s.aircraft);
+  let label = panelLabels[panelId];
+  if (panelId === 'autoflight') {
+    label = aircraft === 'AIRBUS_A320' ? 'FCU' : 'MCP';
+  } else if (panelId === 'cdu') {
+    label = aircraft === 'AIRBUS_A320' ? 'MCDU' : 'CDU';
+  }
   const zoomLabel = typeof zoom === 'number' ? `${Math.round(zoom * 100)}%` : null;
 
   return (
