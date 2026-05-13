@@ -1,5 +1,5 @@
-import { FMCState, AircraftState, FlightPlanWaypoint } from '../types/fmc';
-import { distanceNm } from './ndGeometry';
+import { AircraftState, FlightPlanWaypoint } from '../types/fmc';
+import { LegTypeEngine, FmsLeg } from './LegTypeEngine';
 
 export class LegSequencer {
   /**
@@ -11,39 +11,27 @@ export class LegSequencer {
     nextLeg: FlightPlanWaypoint | undefined,
     acState: AircraftState
   ): { sequence: boolean; reason: string } {
-
-
-    const { type, fixIdent, heading, altitude: targetAlt } = currentLeg as any; // Cast for demo
-    const { lat, lon, altitude: currentAlt, heading: currentHdg } = acState;
-
-    switch (type) {
-      case 'TF': // Track to Fix
-      case 'DF': // Direct to Fix
-      case 'IF': // Initial Fix
-        if (currentLeg.lat && currentLeg.lon) {
-          const dist = distanceNm({ lat: acState.lat, lon: acState.lon }, { lat: currentLeg.lat, lon: currentLeg.lon });
-          if (dist < 0.2) return { sequence: true, reason: `Arrived at ${currentLeg.ident}` };
-        }
-        break;
-
-      case 'VA': // Heading to Altitude
-        if (targetAlt && currentAlt >= targetAlt - 50) {
-          return { sequence: true, reason: `Reached altitude ${targetAlt}ft` };
-        }
-        break;
-
-      case 'CA': // Course to Altitude
-        if (targetAlt && currentAlt >= targetAlt - 50) {
-          return { sequence: true, reason: `Reached altitude ${targetAlt}ft` };
-        }
-        break;
-
-      case 'FM': // Heading to Manual
-        // Pilot must manually sequence
-        break;
-    }
-
-    return { sequence: false, reason: 'Conditions not met' };
+    if (currentLeg.discontinuity) return { sequence: false, reason: 'Discontinuity ahead' };
+ 
+    // Map FlightPlanWaypoint to FmsLeg for the engine
+    const currentFmsLeg: FmsLeg = {
+      type: (currentLeg.legType as any) || 'TF',
+      to: { ident: currentLeg.ident, lat: currentLeg.lat || 0, lon: currentLeg.lon || 0, type: 'WAYPOINT' },
+      altitudeConstraintFt: currentLeg.altitudeConstraint?.altitude,
+    };
+ 
+    const nextFmsLeg: FmsLeg | undefined = nextLeg ? {
+      type: (nextLeg.legType as any) || 'TF',
+      to: { ident: nextLeg.ident, lat: nextLeg.lat || 0, lon: nextLeg.lon || 0, type: 'WAYPOINT' },
+      altitudeConstraintFt: nextLeg.altitudeConstraint?.altitude,
+    } : undefined;
+ 
+    const sequence = LegTypeEngine.shouldSequenceLeg(currentFmsLeg, acState, nextFmsLeg);
+ 
+    return { 
+      sequence, 
+      reason: sequence ? `Leg termination reached for ${currentLeg.ident}` : 'Continuing leg' 
+    };
   }
 
   /**

@@ -1,6 +1,7 @@
 import type { FMCState, NavigationPerformance, FlightPhase } from '../types/fmc';
 import { selectFmcPositionSource, calculateANP, DEFAULT_RNP } from './fmsNavigation';
 import { PhaseManager } from './PhaseManager';
+import { LegSequencer } from './LegSequencer';
 
 /**
  * FmsRuntimeEngine centralizes periodic FMS calculations.
@@ -25,6 +26,22 @@ export class FmsRuntimeEngine {
     const newPhase = PhaseManager.inferFlightPhase(state);
     if (newPhase !== state.flightPhase) {
       updates.flightPhase = newPhase;
+    }
+ 
+    // 3. Evaluate Leg Sequencing
+    if (state.aircraftState && state.flightPlan.waypoints.length > 0) {
+      const currentLeg = state.flightPlan.waypoints[0];
+      const nextLeg = state.flightPlan.waypoints[1];
+      const { sequence, reason } = LegSequencer.shouldSequence(currentLeg, nextLeg, state.aircraftState);
+      
+      if (sequence) {
+        updates.flightPlan = {
+          ...state.flightPlan,
+          waypoints: state.flightPlan.waypoints.slice(1)
+        };
+        // Also update performance engine with the change if needed
+        console.log(`Sequencing: ${reason}`);
+      }
     }
 
     return updates;
