@@ -384,7 +384,7 @@ html, body {
 }
 
 .cockpit-stage--fmc-focus {
-  grid-template-columns: minmax(430px, 580px);
+  grid-template-columns: minmax(480px, 680px);
 }
 
 .cockpit-stage--navigation {
@@ -396,8 +396,8 @@ html, body {
 .cockpit-stage--automation,
 .cockpit-stage--full-deck {
   width: 100%;
-  max-width: 1400px;
-  grid-template-rows: 260px minmax(0, 1fr);
+  max-width: 1680px;
+  grid-template-rows: 280px minmax(0, 1fr);
 }
 
 .cockpit-stage--approach {
@@ -421,8 +421,8 @@ html, body {
 
 .cockpit-stage--full-deck {
   width: 100%;
-  max-width: 1480px;
-  grid-template-rows: minmax(240px, 280px) minmax(0, 1fr);
+  max-width: 1800px;
+  grid-template-rows: minmax(260px, 320px) minmax(0, 1fr);
 }
 
 .cockpit-full-deck__mcp {
@@ -435,11 +435,11 @@ html, body {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(280px, 380px) minmax(300px, 430px) minmax(360px, 460px);
+  grid-template-columns: minmax(320px, 460px) minmax(340px, 520px) minmax(400px, 580px);
   align-items: center;
   justify-content: center;
   justify-items: center;
-  gap: clamp(14px, 1.5vw, 28px);
+  gap: clamp(16px, 2vw, 40px);
 }
 
 .cockpit-automation__mcp,
@@ -599,20 +599,20 @@ html, body {
 }
 
 .cockpit-pfd-nd-displays {
-  width: min(100%, 980px);
+  width: min(100%, 1120px);
   height: 100%;
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(340px, 430px));
+  grid-template-columns: repeat(2, minmax(400px, 520px));
   align-items: center;
   justify-items: center;
-  gap: clamp(16px, 2vw, 36px);
+  gap: clamp(20px, 2.5vw, 44px);
 }
 
 .cockpit-mcp-slot {
-  height: min(100%, 260px);
-  min-height: 240px;
+  height: min(100%, 300px);
+  min-height: 260px;
 }
 
 .mode-help-card,
