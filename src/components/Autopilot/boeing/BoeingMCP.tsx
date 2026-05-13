@@ -1,9 +1,9 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../store/useFMCStore';
 import { CockpitPanel } from '../../visual/CockpitPanel';
-import { SevenSegmentDisplay } from '../../visual/SevenSegmentDisplay';
-import { RotaryKnob } from '../../visual/RotaryKnob';
 import { MCPSwitch } from './MCPSwitch';
+import { MCPKnob } from './MCPKnob';
+import { MCPDisplayWindow } from './MCPDisplayWindow';
 
 interface BoeingMCPProps {
   state: BoeingMCPState;
@@ -25,13 +25,17 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
 
         {/* COURSE L */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-bold text-[#c8c8c8] uppercase tracking-wider">COURSE</span>
-          <SevenSegmentDisplay digits={3} value={state.courseL.toString().padStart(3, '0')} color="orange" />
-          <RotaryKnob 
+          <MCPDisplayWindow 
+            label="COURSE" 
+            value={state.courseL.toString().padStart(3, '0')} 
+            active={true}
+            highlighted={tutorialHighlight === 'COURSE_L'}
+          />
+          <MCPKnob 
             value={state.courseL} 
             onRotate={(d) => updateState({ courseL: (state.courseL + d + 360) % 360 })} 
-            highlighted={tutorialHighlight === 'COURSE_L'}
             label="COURSE"
+            highlighted={tutorialHighlight === 'COURSE_L'}
           />
         </div>
 
@@ -46,13 +50,15 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
               className="h-4 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-[8px] text-white/60 hover:text-white"
               onClick={() => pressButton('SPD_MACH_TOGGLE')}
             >SPD/MACH</button>
-            <SevenSegmentDisplay 
-              digits={3} 
+            <MCPDisplayWindow 
+              label="IAS/MACH" 
               value={state.mach !== null ? `.${Math.round(state.mach * 100)}` : state.speed} 
-              color="orange" 
+              active={true}
+              highlighted={tutorialHighlight === 'IAS_SEL'}
+              unit={state.mach !== null ? 'MACH' : 'SPD'}
             />
           </div>
-          <RotaryKnob 
+          <MCPKnob 
             value={state.mach !== null ? state.mach * 1000 : state.speed || 100} 
             onRotate={(d) => {
               if (state.mach !== null) {
@@ -61,8 +67,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
                 updateState({ speed: Math.max(100, Math.min(340, (state.speed || 100) + d)) });
               }
             }} 
-            highlighted={tutorialHighlight === 'IAS_SEL'}
             label="SPD/MACH"
+            highlighted={tutorialHighlight === 'IAS_SEL'}
           />
           <MCPSwitch label="LVL CHG" active={state.lvlChg} onPress={() => pressButton('lvlChg')} highlighted={tutorialHighlight === 'LVL_CHG'} />
         </div>
@@ -73,31 +79,46 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             <MCPSwitch label="LNAV" active={state.lnav} onPress={() => pressButton('lnav')} highlighted={tutorialHighlight === 'LNAV'} />
             <MCPSwitch label="VNAV" active={state.vnav} onPress={() => pressButton('vnav')} highlighted={tutorialHighlight === 'VNAV'} />
           </div>
-          <SevenSegmentDisplay digits={3} value={state.heading.toString().padStart(3, '0')} color="orange" />
-          <RotaryKnob 
+          <MCPDisplayWindow 
+            label="HEADING" 
+            value={state.heading.toString().padStart(3, '0')} 
+            active={true}
+            highlighted={tutorialHighlight === 'HDG_SEL'}
+          />
+          <MCPKnob 
             value={state.heading} 
             onRotate={(d) => updateState({ heading: (state.heading + d + 360) % 360 })} 
-            highlighted={tutorialHighlight === 'HDG_SEL'}
             label="HEADING"
+            highlighted={tutorialHighlight === 'HDG_SEL'}
           />
           <MCPSwitch label="HDG SEL" active={state.hdgSel} onPress={() => pressButton('hdgSel')} highlighted={tutorialHighlight === 'HDG_SEL_BTN'} />
         </div>
 
         {/* ALTITUDE Section */}
         <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
-          <SevenSegmentDisplay digits={5} value={state.altitude} color="orange" />
-          <RotaryKnob 
+          <MCPDisplayWindow 
+            label="ALTITUDE" 
+            value={state.altitude.toString().padStart(5, '0')} 
+            active={true}
+            highlighted={tutorialHighlight === 'ALT_SEL'}
+          />
+          <MCPKnob 
             value={state.altitude / 100} 
             onRotate={(d) => updateState({ altitude: Math.max(0, Math.min(50000, state.altitude + d * 100)) })} 
-            highlighted={tutorialHighlight === 'ALT_SEL'}
             label="ALTITUDE"
+            highlighted={tutorialHighlight === 'ALT_SEL'}
           />
           <MCPSwitch label="ALT HOLD" active={state.altHold} onPress={() => pressButton('altHold')} highlighted={tutorialHighlight === 'ALT_HOLD'} />
         </div>
 
         {/* V/S Section */}
         <div className="flex flex-col items-center gap-4 px-4">
-          <SevenSegmentDisplay digits={5} value={state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed) : '0'} color="orange" />
+          <MCPDisplayWindow 
+            label="VERT SPEED" 
+            value={state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed) : '0'} 
+            active={state.vs}
+            highlighted={tutorialHighlight === 'VS_MODE'}
+          />
           <div className="flex flex-col gap-1">
             <button 
               className="h-6 w-8 bg-[#1a1a1a] text-white text-[9px] rounded-t-sm border-b border-white/10 hover:bg-[#2a2a2a]"
@@ -134,11 +155,15 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
 
         {/* COURSE R */}
         <div className="flex flex-col items-center gap-2 border-l border-black/20 pl-4">
-          <span className="text-[10px] font-bold text-[#c8c8c8] uppercase tracking-wider">COURSE</span>
-          <SevenSegmentDisplay digits={3} value={state.courseR.toString().padStart(3, '0')} color="orange" />
-          <RotaryKnob 
+          <MCPDisplayWindow 
+            label="COURSE" 
+            value={state.courseR.toString().padStart(3, '0')} 
+            active={true}
+          />
+          <MCPKnob 
             value={state.courseR} 
             onRotate={(d) => updateState({ courseR: (state.courseR + d + 360) % 360 })} 
+            label="COURSE"
           />
         </div>
 

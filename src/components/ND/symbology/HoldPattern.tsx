@@ -31,23 +31,36 @@ export function HoldPattern({ model }: HoldPatternProps) {
         `}
         fill="none"
         stroke={color}
-        strokeWidth="1.2"
+        strokeWidth="0.8"
         strokeDasharray={hold.isPending ? '2 2' : undefined}
+        filter="url(#boeing-glow)"
       />
       
-      {/* Inbound arrow */}
-      <path d="M-1 -2 L0 0 L1 -2" fill="none" stroke={color} strokeWidth="0.8" />
+      {/* Inbound arrow at the entry point */}
+      <path d="M-1.2 -2.5 L0 0 L1.2 -2.5" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
       
-      <text
-        x={radius * 2 + 2}
-        y="-2"
-        fill={color}
-        fontSize="2.8"
-        fontWeight="bold"
-        transform={`rotate(${-hold.inboundCourse})`}
-      >
-        HOLD
-      </text>
+      {/* Label with Shadow */}
+      <g transform={`rotate(${-hold.inboundCourse}) translate(${radius * 2 + 3} 0)`}>
+         <text
+          fill="black"
+          fontSize="3.2"
+          fontWeight="900"
+          className="font-avionics"
+          stroke="black"
+          strokeWidth="0.8"
+          opacity="0.8"
+        >
+          HOLD
+        </text>
+        <text
+          fill={color}
+          fontSize="3.2"
+          fontWeight="bold"
+          className="font-avionics"
+        >
+          HOLD
+        </text>
+      </g>
     </g>
   );
 }

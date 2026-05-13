@@ -32,7 +32,7 @@ export function FixRing({ model }: FixRingProps) {
                 y2={refY - Math.cos(fix.radial * Math.PI / 180) * 100}
                 stroke={color}
                 strokeWidth="0.4"
-                strokeDasharray="2 2"
+                strokeDasharray="2 4"
                 opacity="0.6"
               />
             )}
@@ -45,23 +45,28 @@ export function FixRing({ model }: FixRingProps) {
                 r={distPx}
                 fill="none"
                 stroke={color}
-                strokeWidth="0.6"
-                strokeDasharray="4 2"
+                strokeWidth="0.5"
+                strokeDasharray="3 3"
                 opacity="0.8"
               />
             )}
 
             {/* Fix Label */}
-            <text
-              x={refX + 2}
-              y={refY - 2}
-              fill={color}
-              fontSize="2.4"
-              fontWeight="bold"
-              opacity="0.9"
-            >
-              {fix.ident ?? fix.refFix}
-            </text>
+            <g transform={`rotate(45 ${refX} ${refY}) translate(0 ${-distPx - 4})`}>
+              <text
+                x={refX}
+                y={refY}
+                fill={color}
+                fontSize="3"
+                fontWeight="bold"
+                textAnchor="middle"
+                className="font-avionics"
+                transform={`rotate(-45 ${refX} ${refY})`}
+                filter="url(#boeing-glow)"
+              >
+                {fix.ident ?? fix.refFix}
+              </text>
+            </g>
           </g>
         );
       })}

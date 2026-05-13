@@ -15,54 +15,81 @@ export function WaypointSymbol({ model }: WaypointSymbolProps) {
 
   return (
     <g>
-      {/* Active Waypoints */}
-      {model.activeRoutePoints.map(point => (
-        <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
-          {point.discontinuity ? (
-            <path d="M-2-2L2 2M2-2L-2 2" stroke="#ffaa00" strokeWidth="1" />
-          ) : (
-            <path
-              d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
-              fill={point.active ? (isAirbus ? 'none' : colors.active) : 'none'}
-              stroke={point.active ? colors.active : colors.inactive}
-              strokeWidth="0.8"
-            />
-          )}
-          <text 
-            x="3" 
-            y="1" 
-            fill={point.active ? colors.active : colors.text} 
-            fontSize="3.2" 
-            fontWeight="bold"
-            stroke="black"
-            strokeWidth="0.1"
-            paintOrder="stroke"
-          >
-            {point.label}
-          </text>
-          
-          {/* Constraints */}
-          {model.overlays.data && !point.discontinuity && (
-            <g transform="translate(0 4)" fontSize="2.4" fill={isAirbus ? '#ff00ff' : colors.text} opacity="0.8">
-              {point.speedLabel && <text y="0">{point.speedLabel}</text>}
-              {point.altitudeLabel && <text y={point.speedLabel ? 3 : 0}>{point.altitudeLabel}</text>}
-            </g>
-          )}
-        </g>
-      ))}
+      {/* Active Route Waypoints */}
+      {model.activeRoutePoints.map(point => {
+        const wptColor = point.active ? colors.active : colors.inactive;
+        const isDiscon = point.discontinuity;
 
-      {/* Pending Waypoints */}
+        return (
+          <g key={`active-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
+            {isDiscon ? (
+              <path d="M-3-3L3 3M3-3L-3 3" stroke="#ffaa00" strokeWidth="1.2" />
+            ) : (
+              <path
+                d={point.airport ? 'M-2.5 -2.5h5v5h-5z' : 'M0 -3.5 L3.5 0 L0 3.5 L-3.5 0 Z'}
+                fill={point.active && !isAirbus ? colors.active : 'none'}
+                stroke={wptColor}
+                strokeWidth="0.7"
+              />
+            )}
+            
+            {/* Label with Shadow for Readability */}
+            <g transform="translate(4 -1)">
+              <text 
+                fill="black" 
+                fontSize="3.4" 
+                fontWeight="900"
+                className="font-avionics"
+                opacity="0.8"
+                stroke="black"
+                strokeWidth="0.8"
+              >
+                {point.label}
+              </text>
+              <text 
+                fill={point.active ? colors.active : colors.text} 
+                fontSize="3.4" 
+                fontWeight="bold"
+                className="font-avionics"
+              >
+                {point.label}
+              </text>
+            </g>
+            
+            {/* VNAV Constraints */}
+            {model.overlays.data && !isDiscon && (
+              <g transform="translate(4 4)" fontSize="2.6" className="font-avionics" fontWeight="bold">
+                {point.speedLabel && (
+                  <text fill="#ffffff" filter="url(#boeing-glow)">{point.speedLabel}</text>
+                )}
+                {point.altitudeLabel && (
+                  <text 
+                    y={point.speedLabel ? 3.2 : 0} 
+                    fill={isAirbus ? '#ff00ff' : '#ffffff'}
+                    filter="url(#boeing-glow)"
+                  >
+                    {point.altitudeLabel}
+                  </text>
+                )}
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Pending (MOD) Route Waypoints */}
       {model.pendingRoutePoints.map(point => (
         <g key={`pending-wpt-${point.id}`} transform={`translate(${point.x} ${point.y})`}>
           {!point.discontinuity && (
             <path
-              d={point.airport ? 'M-2 -2h4v4h-4z' : 'M0 -2.5 L2.5 2.5 L-2.5 2.5 Z'}
+              d={point.airport ? 'M-2.5 -2.5h5v5h-5z' : 'M0 -3.5 L3.5 0 L0 3.5 L-3.5 0 Z'}
               fill="none"
               stroke={colors.pending}
-              strokeWidth="0.8"
+              strokeWidth="0.7"
+              strokeDasharray="2 2"
             />
           )}
-          <text x="3" y="1" fill={colors.pending} fontSize="3.2" fontWeight="bold">
+          <text x="4" y="1" fill={colors.pending} fontSize="3.4" fontWeight="bold" className="font-avionics" filter="url(#boeing-glow)">
             {point.label}
           </text>
         </g>

@@ -19,13 +19,22 @@ export function MCPAnnunciator({ active, color = 'green' }: MCPAnnunciatorProps)
       }`} 
       style={{ opacity: active ? 'var(--cockpit-annun-intensity, 1)' : 1 }}
     >
-      {/* Subsurface Scattering Effect */}
+      {/* Frosted Diffuser Texture */}
       {active && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/30" />
+        <div className="absolute inset-0 opacity-[0.15] bg-[url('https://www.transparenttextures.com/patterns/dust.png')] mix-blend-overlay" />
+      )}
+
+      {/* Subsurface Scattering & Glow Layer */}
+      {active && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/40" />
+          <div className="absolute inset-0 shadow-[inset_0_0_4px_rgba(255,255,255,0.4)]" />
+        </>
       )}
       
-      {/* Internal hardware detail */}
-      <div className="absolute inset-0 border border-white/5 opacity-20" />
+      {/* Internal hardware detail (Filament/LED) */}
+      <div className="absolute inset-x-1 top-1/2 -translate-y-1/2 h-[1px] bg-white/20 blur-[0.5px]" />
+      <div className="absolute inset-0 border border-white/5 opacity-30" />
     </div>
   );
 }

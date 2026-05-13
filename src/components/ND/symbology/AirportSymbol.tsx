@@ -11,11 +11,32 @@ export function AirportSymbol({ model }: AirportSymbolProps) {
   return (
     <g>
       {model.backgroundAirports.map(point => (
-        <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.6">
-          <rect x="-1.5" y="-1.5" width="3" height="3" fill="none" stroke={color} strokeWidth="0.5" />
-          <text x="2.5" y="1" fill={color} fontSize="2.4" fontWeight="bold">
-            {point.label}
-          </text>
+        <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.7">
+          {/* Airport Icon */}
+          <rect x="-2" y="-2" width="4" height="4" fill="none" stroke={color} strokeWidth="0.7" />
+          
+          {/* Label with Shadow */}
+          <g transform="translate(3 1)">
+            <text 
+              fill="black" 
+              fontSize="2.8" 
+              fontWeight="900" 
+              className="font-avionics"
+              stroke="black"
+              strokeWidth="0.6"
+              opacity="0.8"
+            >
+              {point.label}
+            </text>
+            <text 
+              fill={color} 
+              fontSize="2.8" 
+              fontWeight="bold" 
+              className="font-avionics"
+            >
+              {point.label}
+            </text>
+          </g>
         </g>
       ))}
     </g>
