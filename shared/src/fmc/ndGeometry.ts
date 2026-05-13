@@ -54,3 +54,24 @@ export function relativeBearing(hdg: number, bearing: number): number {
   while (diff > 180) diff -= 360;
   return diff;
 }
+
+/**
+ * Calculates a new point given a start point, bearing, and distance
+ */
+export function projectLatLon(start: LatLon, bearing: number, distance: number): LatLon {
+  const R = 3440.065; // Earth radius in NM
+  const dist = distance / R;
+  const brng = bearing * Math.PI / 180;
+  const lat1 = start.lat * Math.PI / 180;
+  const lon1 = start.lon * Math.PI / 180;
+
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) +
+    Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
+  const lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) * Math.cos(lat1),
+    Math.cos(dist) - Math.sin(lat1) * Math.sin(lat2));
+
+  return {
+    lat: lat2 * 180 / Math.PI,
+    lon: (lon2 * 180 / Math.PI + 540) % 360 - 180
+  };
+}

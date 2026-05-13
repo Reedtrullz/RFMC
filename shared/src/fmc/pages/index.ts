@@ -13,6 +13,7 @@ import { renderBoeingPosInitGrid } from './boeing/posInit.grid';
 import { renderBoeingRteGrid } from './boeing/route.grid';
 import { renderBoeingLegsGrid } from './boeing/legs.grid';
 import { renderBoeingTakeoffRefGrid } from './boeing/takeoffRef.grid';
+import { renderBoeingProgressGrid } from './boeing/progress.grid';
 
 export { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
 export { renderRtePage, renderDepArrPage } from './route';
@@ -34,7 +35,7 @@ export function getPageRenderer(page: PageType): ((state: FMCState) => DisplayDa
     THRUST_LIM: renderThrustLimPage,
     TAKEOFF_REF: renderBoeingTakeoffRefGrid,
     LEGS: renderBoeingLegsGrid,
-    PROGRESS: renderProgressPage,
+    PROGRESS: renderBoeingProgressGrid,
     HOLD: renderHoldPage,
     FIX: renderFixPage,
     MENU: renderMenuPage,

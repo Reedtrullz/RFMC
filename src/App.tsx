@@ -16,6 +16,7 @@ import { SettingsPanel, ChecklistPanel } from './components/CockpitMode/CockpitP
 import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
+import { EICASPanel } from './components/CockpitMode/EICASPanel';
 
 export default function App() {
   const isKiosk = useKioskMode();
@@ -113,6 +114,7 @@ export default function App() {
         <ConnectionStatus />
         <PerformanceOverlay enabled={import.meta.env.DEV} />
         <OrientationPrompt />
+        <EICASPanel />
       </>
     );
   }

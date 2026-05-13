@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId } from '@shared';
-import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager } from '@shared';
+import type { FMCState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert } from '@shared';
+import { SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, parseWaypointInput, selectFmcPositionSource, calculateANP, DEFAULT_RNP, distanceNm } from '@shared';
+import { alertBus } from '../services/AlertBus';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -84,7 +85,7 @@ const defaultState = {
   demoMode: false,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '', irsAligned: false, irsAlignmentProgress: 0 },
+  position: { refAirport: '', gate: '', irsState: 'OFF' as IrsState, irsAlignmentProgress: 0, irsTimeRemaining: 600 },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
@@ -113,6 +114,16 @@ const defaultState = {
   simVariables: {} as Record<string, number>,
   failureMessage: null as string | null,
   externalDisplayData: null as DisplayData | null,
+
+  // FMS Ecosystem state
+  navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE' } as NavigationPerformance,
+  activeNavSource: 'IRS' as NavSource,
+  sensors: [
+    { source: 'GPS', available: true, positionErrorNm: 0.05 },
+    { source: 'DME_DME', available: false, positionErrorNm: 0.15 },
+    { source: 'IRS', available: true, positionErrorNm: 2.0 },
+  ] as NavSensor[],
+  alerts: [] as FlightDeckAlert[],
 
   // Tutorial state
   tutorialActive: false,
@@ -147,6 +158,7 @@ const defaultState = {
   legsPageCount: 1,
   depArrSubPage: 'DEP' as const,
   rteSubPage: 0,
+  posPageIndex: 0,
   takeoffRefPageIndex: 0,
   
   deleteMode: false,
@@ -318,6 +330,10 @@ interface FMCActions {
   
   toggleSigns: (playChime?: boolean) => void;
   toggleWindows: () => void;
+  
+  setIrsMode: (mode: IrsState) => void;
+  updateFmsEcosystem: () => void;
+  clearAlert: (id: string) => void;
   
   highlightControl: (controlId: string) => void;
 }
@@ -538,6 +554,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           if (s.efisL?.mode === 'PLAN') updates.selectedPlanWaypointIndex = nextIndex * 5;
           set(updates);
         }
+      } else if (s.currentPage === 'POS_INIT') {
+        set({ posPageIndex: (s.posPageIndex + 1) % 3 });
       }
       handled = true;
     }
@@ -564,6 +582,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           if (s.efisL?.mode === 'PLAN') nextUpdates.selectedPlanWaypointIndex = nextIndex * 5;
           set(nextUpdates);
         }
+      } else if (s.currentPage === 'POS_INIT') {
+        set({ posPageIndex: (s.posPageIndex + 2) % 3 });
       }
       handled = true;
     }
@@ -1160,25 +1180,41 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         break;
       case 'set_irs_pos':
         if (scratchpad) {
-          // Simulate IRS alignment
-          set((s) => ({
-            position: { ...s.position, irsAligned: false, irsAlignmentProgress: 0 }
-          }));
+          const { position, route } = get();
           
-          let progress = 0;
-          const interval = setInterval(() => {
-            progress += 10;
-            set((s) => ({
-              position: { ...s.position, irsAlignmentProgress: progress }
-            }));
-            
-            if (progress >= 100) {
-              clearInterval(interval);
-              set((s) => ({
-                position: { ...s.position, irsAligned: true, irsAlignmentProgress: 100 }
-              }));
+          if (position.irsState !== 'ALIGNING' && position.irsState !== 'FAST_ALIGNING') {
+            set({ scratchpadError: 'NOT IN ALIGN MODE' });
+            return;
+          }
+
+          const parsed = parseWaypointInput(scratchpad, (id) => getWaypoint(id));
+          if (!parsed || parsed.type !== 'LAT_LONG') {
+             set({ scratchpadError: 'INVALID ENTRY' });
+             return;
+          }
+
+          if (route.origin) {
+            const origin = getAirport(route.origin);
+            if (origin) {
+              const dist = distanceNm({ lat: parsed.lat, lon: parsed.lon }, { lat: origin.lat, lon: origin.lon });
+              if (dist > 50) {
+                set({ scratchpadError: 'VERIFY POSITION' });
+                return;
+              }
             }
-          }, 1000);
+          }
+
+          set({ 
+            position: { 
+              ...state.position, 
+              lat: parsed.lat, 
+              lon: parsed.lon,
+              irsAlignmentProgress: 0,
+              irsTimeRemaining: state.position.irsState === 'FAST_ALIGNING' ? 30 : 600
+            },
+            scratchpad: ''
+          });
+          
           handled = true;
         }
         break;
@@ -1426,16 +1462,38 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   insertWaypoint: (index: number, ident: string) => {
     const state = get();
-    const result = isValidWaypoint(ident.toUpperCase());
-    if (!result.valid) { set({ scratchpadError: result.error }); return; }
-    
-    // Check Nav Database
     const id = ident.toUpperCase();
-    const dbPoint = getWaypoint(id) || getAirport(id);
-    if (!dbPoint) { set({ scratchpadError: 'NOT IN DATABASE' }); return; }
+    
+    // 1. Try advanced waypoint parser (Lat/Long, PBD, etc)
+    const parsed = parseWaypointInput(id, (wptId) => getWaypoint(wptId));
+    
+    let nextWaypoint: any = null;
+    
+    if (parsed) {
+      nextWaypoint = {
+        ident: parsed.ident,
+        lat: parsed.lat,
+        lon: parsed.lon,
+        coordinateSource: 'manual',
+        discontinuity: false,
+      };
+    } else {
+      // 2. Standard database lookup
+      const dbPoint = getWaypoint(id) || getAirport(id);
+      if (!dbPoint) {
+        set({ scratchpadError: 'NOT IN DATABASE' });
+        return;
+      }
+      nextWaypoint = {
+        ident: id,
+        lat: dbPoint.lat,
+        lon: dbPoint.lon,
+        coordinateSource: 'navdb',
+        discontinuity: false,
+      };
+    }
 
     const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
-    const nextWaypoint = { ident: id, discontinuity: false };
     if (waypoints[index]?.discontinuity) {
       waypoints[index] = nextWaypoint;
     } else {
@@ -2021,6 +2079,75 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   
   toggleWindows: () => set(state => ({ windowsLocked: !state.windowsLocked })),
 
+  setIrsMode: (mode) => {
+    set(state => ({
+      position: { 
+        ...state.position, 
+        irsState: mode,
+        irsTimeRemaining: mode === 'ALIGNING' ? 600 : (mode === 'FAST_ALIGNING' ? 30 : 0),
+        irsAlignmentProgress: 0
+      }
+    }));
+    
+    if (mode === 'OFF') {
+      alertBus.addAlert({ id: 'irs-off', text: 'IRS OFF', level: 'ADVISORY', source: 'IRS', clearable: true });
+    } else {
+      alertBus.removeAlert('irs-off');
+    }
+  },
+
+  clearAlert: (id) => {
+    alertBus.removeAlert(id);
+    set(state => ({ alerts: state.alerts.filter(a => a.id !== id) }));
+  },
+
+  updateFmsEcosystem: () => {
+    const state = get();
+    const { position, sensors, navPerformance } = state;
+    const updates: Partial<FMCState> = {};
+
+    // 1. IRS Alignment Logic
+    if (position.irsState === 'ALIGNING' || position.irsState === 'FAST_ALIGNING') {
+      if (position.irsTimeRemaining > 0) {
+        const newTime = Math.max(0, position.irsTimeRemaining - 1);
+        const total = position.irsState === 'ALIGNING' ? 600 : 30;
+        const progress = Math.round(((total - newTime) / total) * 100);
+        
+        updates.position = { 
+          ...position, 
+          irsTimeRemaining: newTime,
+          irsAlignmentProgress: progress
+        };
+
+        if (newTime === 0) {
+          updates.position.irsState = 'NAV';
+          updates.position.irsAlignmentProgress = 100;
+        }
+      }
+    }
+
+    // 2. Navigation Source & ANP Logic
+    const activeSource = selectFmcPositionSource(sensors);
+    const anp = calculateANP(sensors, activeSource);
+    const rnp = DEFAULT_RNP[navPerformance.phase] || 2.0;
+
+    updates.activeNavSource = activeSource;
+    updates.navPerformance = { ...navPerformance, anpNm: anp, rnpNm: rnp };
+
+    // 3. Alerts
+    if (anp > rnp) {
+      alertBus.addAlert({ id: 'unable-rnp', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', clearable: false });
+    } else {
+      alertBus.removeAlert('unable-rnp');
+    }
+
+    updates.alerts = alertBus.getAlerts();
+
+    if (Object.keys(updates).length > 0) {
+      set(updates);
+    }
+  },
+
   highlightControl: (controlId) => {
     set({
       tutorialHighlight: controlId,
@@ -2044,3 +2171,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     window.setTimeout(clearHighlight, 2500);
   },
 }));
+
+// Start the FMS Ecosystem tick (1Hz)
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    useFMCStore.getState().updateFmsEcosystem();
+  }, 1000);
+}

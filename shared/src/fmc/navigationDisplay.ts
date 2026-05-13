@@ -496,6 +496,9 @@ function processRoute(
     const hasDiscontinuity = from.discontinuity || to.discontinuity;
     
     const clipped = clipRouteSegment(from, to, isCentered);
+    
+    // A segment is active if it's on or after the path to the active waypoint
+    const active = index >= activeIndex - 1;
 
     return {
       from,
@@ -504,8 +507,8 @@ function processRoute(
       y1: clipped.y1,
       x2: clipped.x2,
       y2: clipped.y2,
-      dashed: hasDiscontinuity,
-      active: to.active,
+      dashed: hasDiscontinuity || !active || isModified,
+      active,
       modified: isModified,
       visible: clipped.visible && !hasDiscontinuity && from.visible && to.visible,
       clipped: clipped.clipped,

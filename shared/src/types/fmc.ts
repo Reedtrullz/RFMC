@@ -27,6 +27,41 @@ export interface EFISState {
   side: 'L' | 'R';
 }
 
+export type IrsState =
+  | 'OFF'
+  | 'ALIGNING'
+  | 'NAV'
+  | 'ATT'
+  | 'ALIGN_INTERRUPTED'
+  | 'FAST_ALIGNING'
+  | 'FAULT';
+
+export type NavSource = 'GPS' | 'DME_DME' | 'VOR_DME' | 'LOC' | 'IRS' | 'LOC_GPS';
+
+export interface NavSensor {
+  source: NavSource;
+  available: boolean;
+  positionErrorNm: number;
+  tunedStation?: string;
+}
+
+export interface NavigationPerformance {
+  anpNm: number;
+  rnpNm: number;
+  phase: 'TAKEOFF' | 'ENROUTE' | 'OCEANIC' | 'TERMINAL' | 'APPROACH';
+}
+
+export type AlertLevel = 'WARNING' | 'CAUTION' | 'ADVISORY' | 'STATUS';
+
+export interface FlightDeckAlert {
+  id: string;
+  text: string;
+  level: AlertLevel;
+  source: 'FMC' | 'IRS' | 'AFDS' | 'EICAS' | 'NAV';
+  timestamp: number;
+  clearable: boolean;
+}
+
 /** All possible Boeing 737 CDU pages */
 export type BoeingPageType =
   | 'IDENT'
@@ -214,8 +249,9 @@ export interface PositionData {
   gate: string;
   lat?: number;
   lon?: number;
-  irsAligned: boolean;
+  irsState: IrsState;
   irsAlignmentProgress: number; // 0-100
+  irsTimeRemaining: number;     // seconds
 }
 
 export interface IdentData {
@@ -316,6 +352,15 @@ export interface FMCState {
   failureMessage: string | null;
   externalDisplayData: DisplayData | null;
 
+  // New FMS Ecosystem fields
+  navPerformance: NavigationPerformance;
+  activeNavSource: NavSource;
+  sensors: NavSensor[];
+  alerts: FlightDeckAlert[];
+  
+  signsOn: boolean;
+  windowsLocked: boolean;
+
   hold: {
     fix: string;
     inboundCourse: number;
@@ -344,6 +389,7 @@ export interface FMCState {
   legsPageCount: number;
   depArrSubPage: 'DEP' | 'ARR';
   rteSubPage: number;
+  posPageIndex: number;
   takeoffRefPageIndex: number;
 
   deleteMode: boolean;

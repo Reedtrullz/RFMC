@@ -9,21 +9,25 @@ export function RouteLine({ model }: RouteLineProps) {
   const colors = {
     active: isAirbus ? '#00ff00' : '#ff00ff', // Green for Airbus, Magenta for Boeing
     pending: '#ffffff',
-    inactive: isAirbus ? '#00ff00' : '#00ccff',
+    inactive: isAirbus ? '#00ff00' : '#00ffff', // Cyan for Boeing
   };
 
   return (
     <g>
       {/* Active Route */}
-      {model.activeRouteSegments.map((segment, i) => (
-        segment.arcPath ? (
+      {model.activeRouteSegments.map((segment, i) => {
+        const strokeColor = segment.modified 
+          ? colors.pending 
+          : (segment.active ? colors.active : colors.inactive);
+          
+        return segment.arcPath ? (
           <path
             key={`active-seg-${i}`}
             d={segment.arcPath}
             fill="none"
-            stroke={segment.active ? colors.active : colors.inactive}
+            stroke={strokeColor}
             strokeWidth={segment.active ? '1.8' : '1.2'}
-            strokeDasharray={segment.dashed ? '2 2' : undefined}
+            strokeDasharray={segment.dashed ? '3 2' : undefined}
             opacity={0.9}
           />
         ) : (
@@ -31,15 +35,15 @@ export function RouteLine({ model }: RouteLineProps) {
             key={`active-seg-${i}`}
             x1={segment.x1} y1={segment.y1}
             x2={segment.x2} y2={segment.y2}
-            stroke={segment.active ? colors.active : colors.inactive}
+            stroke={strokeColor}
             strokeWidth={segment.active ? '1.8' : '1.2'}
-            strokeDasharray={segment.dashed ? '2 2' : undefined}
+            strokeDasharray={segment.dashed ? '3 2' : undefined}
             opacity={0.9}
           />
-        )
-      ))}
+        );
+      })}
 
-      {/* Pending Route */}
+      {/* Pending Route (dashed white) */}
       {model.pendingRouteSegments.map((segment, i) => (
         segment.arcPath ? (
           <path
