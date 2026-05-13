@@ -1,18 +1,31 @@
 import { useState } from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 import { getCockpitChecklists, type CockpitChecklistItem } from '../../checklists';
+import { useDraggable } from '../../hooks/useDraggable';
 
 export function SettingsPanel() {
   const isHidden = useFMCStore(s => s.hiddenPanels.includes('settings'));
   const cockpitMode = useFMCStore(s => s.cockpitMode);
   const brightness = useFMCStore(s => s.brightness);
   const setBrightness = useFMCStore(s => s.setBrightness);
+  const { position, dragHandlers, isDragging } = useDraggable();
 
   if (cockpitMode && isHidden) return null;
 
   return (
-    <div className="fixed top-24 right-6 w-64 bg-cdu-bezel/90 backdrop-blur-xl rounded-2xl border border-white/10 p-4 shadow-2xl z-30 pointer-events-auto animate-in fade-in zoom-in duration-200">
-      <h3 className="text-[10px] font-cdu text-cdu-cyan uppercase tracking-widest font-bold mb-4">Cockpit Settings</h3>
+    <div 
+      className={`fixed top-24 right-6 w-64 bg-cdu-bezel/90 backdrop-blur-xl rounded-2xl border border-white/10 p-4 shadow-2xl z-30 pointer-events-auto animate-in fade-in zoom-in duration-200 ${isDragging ? 'scale-[1.02] shadow-white/5' : ''}`}
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
+      }}
+    >
+      <div 
+        className="cursor-grab active:cursor-grabbing pb-2 mb-2 border-b border-white/5"
+        {...dragHandlers}
+      >
+        <h3 className="text-[10px] font-cdu text-cdu-cyan uppercase tracking-widest font-bold select-none">Cockpit Settings</h3>
+      </div>
       
       <div className="space-y-4">
         <div>
@@ -42,6 +55,7 @@ export function ChecklistPanel() {
   const aircraft = useFMCStore(s => s.aircraft);
   const highlightControl = useFMCStore(s => s.highlightControl);
   const [sectionIndex, setSectionIndex] = useState(0);
+  const { position, dragHandlers, isDragging } = useDraggable();
 
   if (cockpitMode && isHidden) return null;
 
@@ -50,8 +64,17 @@ export function ChecklistPanel() {
   const nextSection = () => setSectionIndex(index => (index + 1) % checklists.length);
 
   return (
-    <div className="fixed top-24 left-6 w-80 bg-white/95 backdrop-blur-xl rounded-lg border border-black/10 p-6 shadow-2xl z-30 pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-300">
-      <div className="flex items-center justify-between mb-4 pb-2 border-b border-black/5">
+    <div 
+      className={`fixed top-24 left-6 w-80 bg-white/95 backdrop-blur-xl rounded-lg border border-black/10 p-6 shadow-2xl z-30 pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-300 ${isDragging ? 'scale-[1.02] shadow-black/10' : ''}`}
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
+      }}
+    >
+      <div 
+        className="cursor-grab active:cursor-grabbing flex items-center justify-between mb-4 pb-2 border-b border-black/5 select-none"
+        {...dragHandlers}
+      >
         <h3 className="text-sm font-bold text-gray-800 uppercase tracking-tight">{section.title}</h3>
         <span className="text-[9px] font-bold bg-cdu-bezel text-white px-2 py-0.5 rounded">{section.badge}</span>
       </div>
