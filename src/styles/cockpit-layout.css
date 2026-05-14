@@ -57,8 +57,20 @@
 .cockpit-stage--automation,
 .cockpit-stage--full-deck {
   width: 100%;
-  max-width: 1680px;
-  grid-template-rows: 280px minmax(0, 1fr);
+  max-width: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(8px, 1.5vw, 24px);
+}
+
+.cockpit-full-deck__mcp {
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+}
+
+.cockpit-full-deck__instruments {
+  width: 100%;
+  max-width: 1600px;
 }
 
 .cockpit-stage--approach {
@@ -143,7 +155,13 @@
   gap: clamp(12px, 2vw, 32px);
   align-items: center;
   justify-content: center;
-  min-height: 0;
   min-width: 0;
+}
+
+.cockpit-mcp-slot {
+  width: 100%;
+  justify-self: stretch;
+  align-items: flex-start;
+  padding: 0;
 }
 
