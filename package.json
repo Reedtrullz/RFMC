@@ -18,7 +18,8 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "test:e2e:ci": "playwright test --project=desktop-chromium",
+    "test:e2e:ci": "playwright test --project=desktop-chromium --grep-invert \"Visual Regression\"",
+    "test:e2e:visual": "playwright test e2e/visual-navigation-display.spec.ts --project=desktop-chromium",
     "test:e2e:full": "playwright test",
     "check:status-docs": "node scripts/check-status-docs.mjs",
     "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=chromium"
