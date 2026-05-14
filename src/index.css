@@ -1,12 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './styles/tokens.css';
 @import './styles/reset.css';
 @import './styles/cockpit-layout.css';
 @import './styles/instruments.css';
 @import './styles/display.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Overlay Components (e.g. Help Cards, Menus) */
 .mode-help-card,

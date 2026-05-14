@@ -887,34 +887,40 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_gate':
         if (scratchpad) updates.position = { ...state.position, gate: scratchpad.toUpperCase() };
         break;
-      case 'set_crz_alt':
+      case 'set_crz_alt': {
         if (scratchpad) {
           const result = isValidAltitude(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
+          const alt = scratchpad.startsWith('FL') ? parseInt(scratchpad.slice(2)) * 100 : parseInt(scratchpad);
+          updates.performance = { ...state.performance, crzAlt: alt };
         }
         break;
+      }
       case 'set_cost_index': {
         if (scratchpad) {
-          const ci = parseInt(scratchpad);
-          if (isNaN(ci) || ci < 0 || ci > 500) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
+          const ci = parseInt(scratchpad, 10);
+          if (isNaN(ci) || ci < 0 || ci > 999) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
           updates.performance = { ...state.performance, costIndex: ci };
         }
         break;
       }
       case 'set_zfw': {
         if (scratchpad) {
-          const zfw = parseFloat(scratchpad);
+          const zfw = parseFloat(scratchpad) * 1000;
           if (isNaN(zfw) || zfw <= 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, zfw: zfw * 1000 };
+          updates.performance = { ...state.performance, zfw, grossWeight: zfw + state.performance.fuel };
+          if (state.takeoff.flaps) {
+            const speeds = PerformanceEngine.calculateTakeoffSpeeds(zfw + state.performance.fuel, state.takeoff.flaps);
+            updates.takeoff = { ...state.takeoff, suggestedV1: speeds.v1, suggestedVr: speeds.vr, suggestedV2: speeds.v2 };
+          }
         }
         break;
       }
       case 'set_reserve': {
         if (scratchpad) {
-          const res = parseFloat(scratchpad);
+          const res = parseFloat(scratchpad) * 1000;
           if (isNaN(res) || res < 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, reserve: res * 1000 };
+          updates.performance = { ...state.performance, reserve: res };
         }
         break;
       }
@@ -1009,39 +1015,48 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_v1':
+      case 'set_v1': {
         if (scratchpad) {
-          const v1 = parseInt(scratchpad) || 0;
+          const v1 = parseInt(scratchpad, 10);
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const newTakeoff = { ...state.takeoff, v1 };
           const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
           if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
           updates.takeoff = newTakeoff;
+        } else if (state.takeoff.suggestedV1) {
+          updates.takeoff = { ...state.takeoff, v1: state.takeoff.suggestedV1 };
         }
         break;
-      case 'set_vr':
+      }
+      case 'set_vr': {
         if (scratchpad) {
-          const vr = parseInt(scratchpad) || 0;
+          const vr = parseInt(scratchpad, 10);
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const newTakeoff = { ...state.takeoff, vr };
           const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
           if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
           updates.takeoff = newTakeoff;
+        } else if (state.takeoff.suggestedVr) {
+          updates.takeoff = { ...state.takeoff, vr: state.takeoff.suggestedVr };
         }
         break;
-      case 'set_v2':
+      }
+      case 'set_v2': {
         if (scratchpad) {
-          const v2 = parseInt(scratchpad) || 0;
+          const v2 = parseInt(scratchpad, 10);
           const result = isValidSpeed(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           const newTakeoff = { ...state.takeoff, v2 };
           const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
           if (!vsResult.valid) { set({ scratchpadError: vsResult.error }); return; }
           updates.takeoff = newTakeoff;
+        } else if (state.takeoff.suggestedV2) {
+          updates.takeoff = { ...state.takeoff, v2: state.takeoff.suggestedV2 };
         }
         break;
+      }
       case 'set_trim': {
         if (scratchpad) {
           const trim = parseFloat(scratchpad);
@@ -1128,36 +1143,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_v1': {
-        if (scratchpad) {
-          const v1 = parseInt(scratchpad, 10);
-          if (isNaN(v1)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, v1 };
-        } else if (state.takeoff.suggestedV1) {
-          updates.takeoff = { ...state.takeoff, v1: state.takeoff.suggestedV1 };
-        }
-        break;
-      }
-      case 'set_vr': {
-        if (scratchpad) {
-          const vr = parseInt(scratchpad, 10);
-          if (isNaN(vr)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, vr };
-        } else if (state.takeoff.suggestedVr) {
-          updates.takeoff = { ...state.takeoff, vr: state.takeoff.suggestedVr };
-        }
-        break;
-      }
-      case 'set_v2': {
-        if (scratchpad) {
-          const v2 = parseInt(scratchpad, 10);
-          if (isNaN(v2)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, v2 };
-        } else if (state.takeoff.suggestedV2) {
-          updates.takeoff = { ...state.takeoff, v2: state.takeoff.suggestedV2 };
-        }
-        break;
-      }
+
       case 'set_landing_vref': {
         if (scratchpad) {
           const vref = parseInt(scratchpad, 10);
@@ -1195,44 +1181,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_zfw': {
-        if (scratchpad) {
-          const zfw = parseFloat(scratchpad) * 1000;
-          if (isNaN(zfw)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, zfw, grossWeight: zfw + state.performance.fuel };
-          // Trigger speed recalc if flaps exist
-          if (state.takeoff.flaps) {
-            const speeds = PerformanceEngine.calculateTakeoffSpeeds(zfw + state.performance.fuel, state.takeoff.flaps);
-            updates.takeoff = { ...state.takeoff, suggestedV1: speeds.v1, suggestedVr: speeds.vr, suggestedV2: speeds.v2 };
-          }
-        }
-        break;
-      }
-      case 'set_cost_index': {
-        if (scratchpad) {
-          const ci = parseInt(scratchpad, 10);
-          if (isNaN(ci) || ci < 0 || ci > 999) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
-          updates.performance = { ...state.performance, costIndex: ci };
-        }
-        break;
-      }
-      case 'set_crz_alt': {
-        if (scratchpad) {
-          const result = isValidAltitude(scratchpad);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const alt = scratchpad.startsWith('FL') ? parseInt(scratchpad.slice(2)) * 100 : parseInt(scratchpad);
-          updates.performance = { ...state.performance, crzAlt: alt };
-        }
-        break;
-      }
-      case 'set_reserve': {
-        if (scratchpad) {
-          const res = parseFloat(scratchpad) * 1000;
-          if (isNaN(res)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, reserve: res };
-        }
-        break;
-      }
+
       // Airbus data entry
       case 'set_from_to': {
         if (scratchpad && scratchpad.includes('/')) {
@@ -1331,9 +1280,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           handled = true;
         }
         break;
-      case 'set_flaps':
-        if (scratchpad) updates.takeoff = { ...state.takeoff, flaps: scratchpad.toUpperCase() };
-        break;
+
       case 'set_flex': {
         if (scratchpad) {
           const temp = parseInt(scratchpad);
@@ -1449,18 +1396,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         handled = true;
         break;
       }
-      case 'set_landing_runway': {
-        if (scratchpad) {
-          updates.landing = { ...state.landing, runway: scratchpad.toUpperCase() };
-        }
-        break;
-      }
-      case 'set_landing_flaps': {
-        if (scratchpad) {
-          updates.landing = { ...state.landing, flaps: scratchpad.toUpperCase() };
-        }
-        break;
-      }
+
       case 'atsu':
         set({ page: 'ATSU' });
         handled = true;
