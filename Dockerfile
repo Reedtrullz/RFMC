@@ -1,5 +1,8 @@
 FROM node:22-alpine AS builder
 
+# Add build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -16,8 +19,8 @@ RUN npm run build
 # Stage 2: Production runtime
 FROM node:22-alpine
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+# Install curl for healthcheck and libc6-compat for native modules
+RUN apk add --no-cache curl libc6-compat
 
 WORKDIR /app
 
