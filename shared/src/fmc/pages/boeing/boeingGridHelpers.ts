@@ -1,4 +1,6 @@
-import type { DisplayColor, DisplaySegment, GridDisplayData, DisplayData } from '@shared';
+import type { DisplayColor } from '../../displayColors';
+import type { DisplaySegment, GridDisplayData, DisplayData } from '../../../types/display';
+import type { FMCState } from '../../../types/fmc';
 
 export function seg(
   row: number,

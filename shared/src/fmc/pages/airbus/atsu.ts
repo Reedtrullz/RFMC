@@ -1,4 +1,5 @@
-import { FMCState, DisplayData, AcarsMessage } from '@shared';
+import { FMCState, DisplayData } from '../../../types/fmc';
+import { AcarsMessage } from '../../../types/webSocket';
 import { inv, fmt, blank } from './index';
 
 export function renderAtsuMenu(state: FMCState): DisplayData {

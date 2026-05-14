@@ -1,4 +1,4 @@
-import type { FMCState, DisplayData, DisplaySegment } from '@shared';
+import type { FMCState, DisplayData, DisplaySegment } from '../../../types/fmc';
 import { boeingPage, boeingTitle, seg } from './boeingGridHelpers';
 import { getLegsLskActions } from '../navigation';
 
@@ -52,7 +52,7 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
   return boeingPage(segments, getLegsLskActions(state));
 }
 
-import { formatAltitudeConstraint, formatSpeedConstraint } from '@shared';
+import { formatAltitudeConstraint, formatSpeedConstraint } from '../../../navdata/constraints';
 
 function formatAltitude(constraint: any): string {
   return formatAltitudeConstraint(constraint);

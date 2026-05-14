@@ -4,8 +4,8 @@ export * from './types/webSocket';
 
 // FMC logic — shared between frontend and backend
 export { PAGE_LINES, PAGE_WIDTH, SCRATCHPAD_MAX, LSK_COUNT } from './fmc/constants';
-export { getPageRenderer } from './fmc/pages';
-export { getAirbusPageRenderer } from './fmc/pages/airbus';
+export { getPageRenderer } from './fmc/pages/index';
+export { getAirbusPageRenderer } from './fmc/pages/airbus/index';
 export { parseRouteString, greatCircleDistance, isProcedure } from './fmc/flightPlanParser';
 export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbriefParser';
 export { buildNavigationDisplayModel } from './fmc/navigationDisplay';

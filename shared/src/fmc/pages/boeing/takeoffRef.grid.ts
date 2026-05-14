@@ -1,4 +1,4 @@
-import type { FMCState, DisplayData } from '@shared';
+import type { FMCState, DisplayData } from '../../../types/fmc';
 import { boeingPage, boeingTitle, seg } from './boeingGridHelpers';
 
 export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {

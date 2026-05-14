@@ -137,7 +137,7 @@ export function renderFpln(state: FMCState): DisplayData {
   };
 }
 
-import { formatAltitudeConstraint } from '@shared';
+import { formatAltitudeConstraint } from '../../../navdata/constraints';
 function formatAltitude(constraint: any): string {
   return formatAltitudeConstraint(constraint);
 }
