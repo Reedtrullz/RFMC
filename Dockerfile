@@ -1,7 +1,11 @@
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
-# Add build dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -17,10 +21,12 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production runtime
-FROM node:22-alpine
+FROM node:22-slim
 
-# Install curl for healthcheck and libc6-compat for native modules
-RUN apk add --no-cache curl libc6-compat
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
