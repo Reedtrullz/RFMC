@@ -1,4 +1,3 @@
-import { devLog } from '@shared';
 import { createBridgeServer } from './bridge-server';
 import { logger, LogEvent } from './logging';
 
@@ -20,12 +19,12 @@ process.on('SIGINT', () => void shutdown());
 process.on('SIGTERM', () => void shutdown());
 
 bridge.start().then((port) => {
-  logger.info(LogEvent.SERVER_START, { 
+  logger.info(LogEvent.SERVER_START, {
     port,
     adapter: bridge.aircraft.name,
-    status: bridge.aircraft.connectionStatus
+    status: bridge.aircraft.connectionStatus,
   });
-}).catch(err => {
+}).catch((err) => {
   logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Failed to start server' });
   process.exit(1);
 });
