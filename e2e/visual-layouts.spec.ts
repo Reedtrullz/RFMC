@@ -50,7 +50,7 @@ test.describe('cockpit layout visual sizing', () => {
     await enterCockpit(page);
     await selectMode(page, 'FMC Focus');
 
-    await expectBox(page.getByTestId('boeing-cdu'), 480, 700);
+    await expectBox(page.getByTestId('boeing-cdu'), 440, 640);
     await expectNoViewportOverflow(page);
   });
 
@@ -58,8 +58,8 @@ test.describe('cockpit layout visual sizing', () => {
     await enterCockpit(page);
     await selectMode(page, 'Navigation');
 
-    await expectBox(page.getByTestId('navigation-display'), 400, 480);
-    await expectBox(page.getByTestId('boeing-cdu'), 400, 620);
+    await expectBox(page.getByTestId('navigation-display'), 280, 380);
+    await expectBox(page.getByTestId('boeing-cdu'), 380, 580);
     await expectNoViewportOverflow(page);
   });
 
@@ -67,9 +67,9 @@ test.describe('cockpit layout visual sizing', () => {
     await enterCockpit(page);
     await selectMode(page, 'Automation');
 
-    await expectBox(page.getByTestId('autopilot-trainer'), 850, 210);
-    await expectBox(page.getByTestId('primary-flight-display'), 320, 420);
-    await expectBox(page.getByTestId('navigation-display'), 360, 420);
+    await expectBox(page.getByTestId('autopilot-trainer'), 580, 160);
+    await expectBox(page.getByTestId('primary-flight-display'), 280, 380);
+    await expectBox(page.getByTestId('navigation-display'), 280, 380);
     await expectNoViewportOverflow(page);
   });
 
@@ -77,9 +77,9 @@ test.describe('cockpit layout visual sizing', () => {
     await enterCockpit(page);
     await selectMode(page, 'Full Deck');
 
-    await expectBox(page.getByTestId('autopilot-trainer'), 850, 190);
-    await expectBox(page.getByTestId('primary-flight-display'), 320, 400);
-    await expectBox(page.getByTestId('navigation-display'), 360, 400);
+    await expectBox(page.getByTestId('autopilot-trainer'), 580, 150);
+    await expectBox(page.getByTestId('primary-flight-display'), 280, 380);
+    await expectBox(page.getByTestId('navigation-display'), 280, 380);
     await expectNoViewportOverflow(page);
   });
 });

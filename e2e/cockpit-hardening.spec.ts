@@ -1,16 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { dismissWelcome } from './helpers';
 
 test.describe('Cockpit Hardening & Automation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/app');
-    await page.waitForLoadState('networkidle');
-
-    // Skip demo if present
-    const skipButton = page.locator('button:has-text("Skip Demo")');
-    try {
-      await skipButton.waitFor({ state: 'visible', timeout: 2000 });
-      await skipButton.click();
-    } catch (e) {}
+    await page.goto('/');
+    await dismissWelcome(page);
 
     // Ensure we are in cockpit mode
     const enterButton = page.getByRole('button', { name: 'Enter Cockpit' });
@@ -60,7 +54,7 @@ test.describe('Cockpit Hardening & Automation', () => {
     await expect(page.getByTestId('autopilot-trainer')).toBeVisible();
     
     // Verify Rotary Knob interaction
-    const altitudeKnob = page.locator('div[role="slider"][aria-label="ALTITUDE"]').first();
+    const altitudeKnob = page.getByTestId('mcp-altitude-knob').first();
     await altitudeKnob.focus();
     await page.keyboard.press('ArrowUp');
     // Success if no crash and element was focused

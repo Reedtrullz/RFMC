@@ -753,13 +753,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         return;
 
       case 'align_irs':
-        if (state.aircraft === 'AIRBUS_A320') {
+        if (state.aircraft === 'AIRBUS_A320' || state.aircraft === 'BOEING_737') {
           set({ 
             position: { 
               ...state.position, 
               irsState: 'ALIGNING',
               irsAlignmentProgress: 0,
-              irsTimeRemaining: 420 // 7 minutes
+              irsTimeRemaining: state.demoMode ? 2 : 420 // 7 minutes, or 2s in demo
             } 
           });
           handled = true;
@@ -1027,6 +1027,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else if (state.takeoff.suggestedV1) {
           updates.takeoff = { ...state.takeoff, v1: state.takeoff.suggestedV1 };
         }
+        handled = true;
         break;
       }
       case 'set_vr': {
@@ -1041,6 +1042,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else if (state.takeoff.suggestedVr) {
           updates.takeoff = { ...state.takeoff, vr: state.takeoff.suggestedVr };
         }
+        handled = true;
         break;
       }
       case 'set_v2': {
@@ -1055,6 +1057,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else if (state.takeoff.suggestedV2) {
           updates.takeoff = { ...state.takeoff, v2: state.takeoff.suggestedV2 };
         }
+        handled = true;
         break;
       }
       case 'set_trim': {
@@ -1070,6 +1073,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const result = isValidTemperature(scratchpad);
           if (!result.valid) { set({ scratchpadError: result.error }); return; }
           updates.takeoff = { ...state.takeoff, oat: parseInt(scratchpad) || 0 };
+          handled = true;
         }
         break;
       case 'set_assumed_temp': {
@@ -1077,6 +1081,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const temp = parseInt(scratchpad);
           if (isNaN(temp)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
           updates.takeoff = { ...state.takeoff, assumedTemp: temp };
+          handled = true;
         }
         break;
       }

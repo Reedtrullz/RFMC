@@ -46,6 +46,7 @@ function renderPosInitPage1(state: FMCState): DisplayData {
   ], {
     L1: 'set_ref_airport',
     L3: 'set_gate',
+    L4: 'align_irs',
     L6: 'menu',
     R4: 'set_irs_pos',
     R6: 'rte',

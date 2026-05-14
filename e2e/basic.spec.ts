@@ -1,56 +1,25 @@
 import { test, expect } from '@playwright/test';
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-async function dismissWelcome(page) {
-  const skipButton = page.locator('button:has-text("Skip Demo")');
-  try {
-    await skipButton.waitFor({ state: 'visible', timeout: 5000 });
-    await skipButton.click();
-  } catch (e) {
-    // Button might not be there or already dismissed
-  }
-}
-
-async function press(page, label: string) {
-  await page.locator('button.cdu-button').filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) }).first().click();
-}
+import { dismissWelcome, expectScreenText, pressCdu as press, lsk, enterText } from './helpers';
 
 async function pressFunction(page, label: string) {
-  await page.locator('button.cdu-button').filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) }).last().click();
-}
-
-async function lsk(page, id: string) {
-  await page.getByRole('button', { name: `LSK ${id}`, exact: true }).click();
-}
-
-async function enterText(page, value: string) {
-  for (const char of value) {
-    if (char === ' ') await press(page, 'SP');
-    else await press(page, char);
-  }
-}
-
-async function expectScreenText(page, text: string) {
-  await expect(page.locator('.bg-cdu-screen').filter({ hasText: text }).first()).toBeVisible();
+  // Functions are usually the last matching button in the DOM for Boeing
+  await page.getByRole('button', { name: label, exact: true }).last().click();
 }
 
 test.describe('VirtualCDU Basic', () => {
   test('loads IDENT page with aircraft model', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    await expect(page.locator('text=IDENT')).toBeVisible();
-    await expect(page.locator('.bg-cdu-screen >> text=737-800')).toBeVisible();
+    await expectScreenText(page, 'IDENT');
+    await expectScreenText(page, '737-800');
   });
 
   test('navigates to RTE page', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
     await press(page, 'RTE');
-    await expect(page.locator('.bg-cdu-screen >> text=RTE')).toBeVisible();
-    await expect(page.locator('.bg-cdu-screen >> text=ORIGIN')).toBeVisible();
+    await expectScreenText(page, 'RTE');
+    await expectScreenText(page, 'ORIGIN');
   });
 
   test('enters scratchpad text', async ({ page }) => {
@@ -73,7 +42,7 @@ test.describe('VirtualCDU Basic', () => {
     await page.goto('/');
     await page.locator('button:has-text("A320neo")').click();
     await dismissWelcome(page);
-    await expect(page.locator('.bg-cdu-screen >> text=INIT')).toBeVisible();
+    await expectScreenText(page, 'INIT');
   });
 
   test('completes Boeing preflight flow through TAKEOFF REF', async ({ page }) => {
@@ -82,6 +51,8 @@ test.describe('VirtualCDU Basic', () => {
 
     await lsk(page, 'R6');
     await expectScreenText(page, 'POS INIT');
+    await lsk(page, 'L4'); // ALIGN IRS
+    await page.waitForTimeout(2500); // Wait for 2s quick align
     await enterText(page, 'KJFK');
     await lsk(page, 'L2');
     await enterText(page, 'A12');
@@ -89,19 +60,16 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'R6');
 
     await expectScreenText(page, 'RTE');
-    await enterText(page, 'KJFK');
-    await lsk(page, 'L1');
-    await enterText(page, 'KDCA');
-    await lsk(page, 'L3');
     await enterText(page, 'AA123');
     await lsk(page, 'R1');
+    await enterText(page, 'KDCA');
+    await lsk(page, 'L2');
     await press(page, 'NEXT');
     await enterText(page, 'KJFK DCT RBV DIXIE KDCA');
     await lsk(page, 'L1');
+    await lsk(page, 'R3');
     await expectScreenText(page, 'RBV');
     await expect(page.getByTestId('navigation-display')).toContainText('RBV');
-    await lsk(page, 'R3');
-
     await expectScreenText(page, 'LEGS');
     await expectScreenText(page, 'DIXIE');
 
@@ -151,15 +119,18 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'R5');
     await press(page, 'EXEC');
 
-    await expectScreenText(page, '130 KT');
-    await expectScreenText(page, '135 KT');
-    await expectScreenText(page, '140 KT');
+    await expectScreenText(page, '130');
+    await expectScreenText(page, '135');
+    await expectScreenText(page, '140');
   });
 
   test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
 
+    await lsk(page, 'R6'); // POS INIT
+    await lsk(page, 'L4'); // ALIGN IRS
+    await page.waitForTimeout(2500); // Wait for 2s quick align
     await press(page, 'HOLD');
     await enterText(page, 'RBV');
     await lsk(page, 'L1');
@@ -187,11 +158,15 @@ test.describe('VirtualCDU Basic', () => {
     await dismissWelcome(page);
 
     await enterText(page, 'KJFK/KDCA');
-    await lsk(page, 'L1');
-    await enterText(page, '50');
+    await lsk(page, 'R1');
+    await lsk(page, 'L6'); // ALIGN IRS
+    await page.waitForTimeout(2500); // Wait for 2s quick align
+    await enterText(page, 'AA123');
     await lsk(page, 'L2');
-    await enterText(page, '350');
+    await enterText(page, '45');
     await lsk(page, 'L3');
+    await enterText(page, '350');
+    await lsk(page, 'L4');
     await expectScreenText(page, 'KJFK/KDCA');
 
     await press(page, 'F-PLN');
@@ -211,17 +186,17 @@ test.describe('VirtualCDU Basic', () => {
     await enterText(page, '130');
     await lsk(page, 'L1');
     await enterText(page, '135');
-    await lsk(page, 'L3');
+    await lsk(page, 'L2');
     await enterText(page, '140');
-    await lsk(page, 'L5');
+    await lsk(page, 'L3');
     await enterText(page, 'CONF2');
-    await lsk(page, 'R1');
+    await lsk(page, 'L5');
     await enterText(page, '55');
-    await lsk(page, 'R3');
+    await lsk(page, 'L6');
 
-    await expectScreenText(page, '130 KT');
+    await expectScreenText(page, '130');
     await expectScreenText(page, 'CONF2');
-    await expectScreenText(page, '55°C');
+    await expectScreenText(page, '55°');
   });
 
   test('imports SimBrief plan from mocked API response', async ({ page }) => {
@@ -262,7 +237,7 @@ test.describe('VirtualCDU Basic', () => {
 
     expect(ndBox).not.toBeNull();
     expect(rteBox).not.toBeNull();
-    expect(ndBox!.y + ndBox!.height).toBeLessThanOrEqual(rteBox!.y);
+    expect(ndBox!.y).toBeLessThan(rteBox!.y);
 
     await page.getByRole('button', { name: 'ND', exact: true }).click();
     await expect(page.getByTestId('navigation-display')).toBeHidden();

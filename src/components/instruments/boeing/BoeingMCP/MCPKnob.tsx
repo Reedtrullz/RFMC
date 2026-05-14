@@ -17,6 +17,10 @@ export function MCPKnob({ label, value, onRotate, onPress, unit, highlighted }: 
         <div className="absolute -inset-2 rounded-full bg-black/40 shadow-[inset_0_2px_6px_rgba(0,0,0,0.8)]" />
         
         <div 
+          role="slider"
+          aria-label={label}
+          aria-valuenow={value}
+          data-testid={`mcp-${label.toLowerCase().replace(/[\s\/]/g, '-')}-knob`}
           className={`relative h-14 w-14 cursor-ns-resize rounded-full bg-[#1c1c1c] shadow-[0_6px_12px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.15)] transition-all active:scale-95 group-hover:bg-[#252525] ${
             highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_15px_rgba(0,255,255,0.4)]' : ''
           }`}
