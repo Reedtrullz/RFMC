@@ -50,18 +50,22 @@ export function InstrumentShell({
       <div className="instrument-shell__edge-highlight" />
       <div className="instrument-shell__wear" />
       
-      {profile?.screwPositions?.map((pos, idx) => (
-        <BezelScrew 
-          key={idx}
-          className="absolute" 
-          style={{ 
-            left: `${(pos.x / profile.outerWidthMm) * 100}%`,
-            top: `${(pos.y / profile.outerHeightMm) * 100}%`,
-            transform: `translate(-50%, -50%) rotate(${pos.rotation}deg)`
-          }} 
-          rotation={pos.rotation} 
-        />
-      ))}
+      {profile?.screwPositions?.map((pos, idx) => {
+        const left = profile?.outerWidthMm ? `${(pos.x / profile.outerWidthMm) * 100}%` : '0%';
+        const top = profile?.outerHeightMm ? `${(pos.y / profile.outerHeightMm) * 100}%` : '0%';
+        return (
+          <BezelScrew 
+            key={idx}
+            className="absolute" 
+            style={{ 
+              left,
+              top,
+              transform: `translate(-50%, -50%) rotate(${pos.rotation}deg)`
+            }} 
+            rotation={pos.rotation} 
+          />
+        );
+      })}
 
       <div className="instrument-shell__content">
         {children}

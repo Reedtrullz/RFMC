@@ -1,3 +1,4 @@
+import { type AlertLevel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { ScratchpadRow } from './display/ScratchpadRow';
 

@@ -11,7 +11,8 @@ export function useAuralAlerts() {
   const tcasAlert = useFMCStore(s => s.tcasAlert);
   const aircraft = useFMCStore(s => s.aircraft);
   const apStatus = useFMCStore(s => s.autopilot.truth.autopilotStatus);
-  const fma = useFMCStore(s => s.autopilot.truth.fma);
+  const { lateralActive, verticalActive, thrustActive } = useFMCStore(s => s.autopilot.truth);
+  const fma = { lateralActive, verticalActive, thrustActive };
   
   const alerts = useFMCStore(s => s.alerts);
   

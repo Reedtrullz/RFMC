@@ -24,6 +24,23 @@ const mockState: FMCState = {
   takeoffRefPageIndex: 0,
   posPageIndex: 0,
   radios: { vor1: '113.90', vor2: '115.70', adf1: '342' },
+  efisL: { mode: 'MAP', range: 40, overlays: {}, centered: false, side: 'L' },
+  efisR: { mode: 'MAP', range: 40, overlays: {}, centered: false, side: 'R' },
+  autopilot: {
+    truth: {
+      lateralActive: 'OFF',
+      verticalActive: 'OFF',
+      thrustActive: 'OFF',
+      autopilotStatus: 'OFF',
+      lastModeChangeTimestamps: { thrust: 0, lateral: 0, vertical: 0 }
+    }
+  },
+  fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [],
+  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
+  holdPending: null,
+  isModified: false,
+  execLit: false,
 } as any;
 
 describe('Page Snapshots', () => {
@@ -39,7 +56,7 @@ describe('Page Snapshots', () => {
       const text = gridToPlainText(grid);
       
       expect(text.split('\n')).toHaveLength(14);
-      text.split('\n').forEach(line => expect(line).toHaveLength(24));
+      text.split('\n').forEach((line: string) => expect(line).toHaveLength(24));
       
       expect(text).toMatchSnapshot();
     });
@@ -54,7 +71,7 @@ describe('Page Snapshots', () => {
       const text = gridToPlainText(grid);
       
       expect(text.split('\n')).toHaveLength(14);
-      text.split('\n').forEach(line => expect(line).toHaveLength(24));
+      text.split('\n').forEach((line: string) => expect(line).toHaveLength(24));
       
       expect(text).toMatchSnapshot();
     });

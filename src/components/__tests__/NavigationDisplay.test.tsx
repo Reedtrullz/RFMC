@@ -69,7 +69,7 @@ describe('NavigationDisplay', () => {
     expect(screen.getAllByText('MAP').length).toBeGreaterThan(0);
     expect(screen.getAllByText('40').length).toBeGreaterThan(0);
     expect(screen.getAllByText('RBV').length).toBeGreaterThan(0);
-    expect(screen.getByText('250')).toBeInTheDocument();
+    expect(screen.getAllByText('250').length).toBeGreaterThan(0);
     expect(screen.getByText('10000A')).toBeInTheDocument();
     expect(screen.getByTestId('nd-hold-overlay')).toBeInTheDocument();
     expect(screen.getAllByTestId('nd-fix-overlay')).toHaveLength(2);
@@ -105,7 +105,8 @@ describe('NavigationDisplay', () => {
         altitudeFt: 10000,
         indicatedAirspeedKt: 250,
         verticalSpeedFpm: 0,
-      }
+      },
+      efisL: { mode: 'ARC', range: 40, overlays: {}, centered: false, side: 'L' },
     });
 
     render(<NavigationDisplay />);
@@ -136,6 +137,25 @@ describe('NavigationDisplay', () => {
           { ident: 'DIXIE', discontinuity: false },
         ],
       },
+      aircraftState: {
+        lat: 40.0, lon: -74.0,
+        heading: 0,
+        track: 0,
+        selectedHeading: 0,
+        altitude: 10000,
+        ias: 250,
+        tas: 250,
+        vs: 0,
+        fuelTotal: 10000,
+        gw: 120000,
+        gs: 250,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 10000,
+        indicatedAirspeedKt: 250,
+        verticalSpeedFpm: 0,
+      },
+      efisL: { mode: 'MAP', range: 40, overlays: {}, centered: false, side: 'L' },
     });
 
     render(<NavigationDisplay />);

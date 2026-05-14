@@ -22,7 +22,7 @@ export function useCDUKeyboard() {
 
       // Alphanumeric
       if (/^[A-Z0-9]$/.test(key)) {
-        pressKey(key);
+        pressKey(key as any);
         return;
       }
 

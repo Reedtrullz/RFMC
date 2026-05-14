@@ -181,8 +181,10 @@ function buildVerticalProfilePoints(state: FMCState, routePoints: NDRoutePoint[]
   // Interpolate position (very simplified)
   // Real implementation would walk the segments
   const activePoint = routePoints[activeIndex];
+  if (!activePoint || activePoint.distanceNm === undefined) return [];
+  
   const totalDist = destPoint.distanceNm - (activePoint.distanceNm || 0);
-  const ratio = (tdDistance - (activePoint.distanceNm || 0)) / totalDist;
+  const ratio = (tdDistance - (activePoint.distanceNm || 0)) / (totalDist || 1);
 
   if (ratio < 0 || ratio > 1) return [];
 

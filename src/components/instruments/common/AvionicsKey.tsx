@@ -1,4 +1,4 @@
-import { tactile } from '../../utils/tactile';
+import { tactile } from '../../../utils/tactile';
 
 interface AvionicsKeyProps {
   label: string;

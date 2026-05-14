@@ -1,6 +1,6 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
-import { CockpitPanel } from '../../../visual/CockpitPanel';
+import { CockpitPanel } from '../../common/CockpitPanel';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
 import { MCPDisplayWindow } from './MCPDisplayWindow';

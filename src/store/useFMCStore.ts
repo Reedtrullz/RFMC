@@ -1679,7 +1679,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     } else if (activeMsg) {
       scratchpadText = activeMsg.text;
       scratchpadColor = activeMsg.color;
-      blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'WARNING';
+      blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'IMPORTANT';
       semantic = activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
     }
 

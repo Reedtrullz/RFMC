@@ -1,4 +1,5 @@
 import { NAV_FIXES } from '../navdata/navdataStore';
+import { AIRPORTS, WAYPOINTS } from './airFMCData';
 import type { NavFix } from '../navdata/navdataTypes';
 
 interface GeoPoint {
@@ -15,6 +16,10 @@ export function getAirportCoordinates(icao: string): GeoPoint | null {
   if (fix && fix.type === 'AIRPORT') {
     return { lat: fix.lat, lon: fix.lon };
   }
+  const airport = AIRPORTS[icao.toUpperCase()];
+  if (airport) {
+    return { lat: airport.lat, lon: airport.lon };
+  }
   return null;
 }
 
@@ -26,6 +31,10 @@ export function getWaypointCoordinates(ident: string): GeoPoint | null {
   const fix = NAV_FIXES[ident.toUpperCase()];
   if (fix && fix.type !== 'AIRPORT') {
     return { lat: fix.lat, lon: fix.lon };
+  }
+  const waypoint = WAYPOINTS[ident.toUpperCase()];
+  if (waypoint) {
+    return { lat: waypoint.lat, lon: waypoint.lon };
   }
   return null;
 }

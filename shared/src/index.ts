@@ -67,6 +67,7 @@ export {
   composeLegacyDisplayLine,
   displayDataToGrid,
   displayLineToSegments,
+  gridToPlainText,
   scratchpadToGridSegment,
   seg,
   title,

@@ -60,6 +60,7 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
     seg(13, 1, '<ROUTE', 'white'),
     seg(13, 18, 'LEGS>', 'white'),
   ], {
+    L1: 'set_route',
     L6: 'prev_page',
     R3: 'legs',
   });

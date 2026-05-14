@@ -1,0 +1,256 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Page Snapshots > Airbus F_PLN matches snapshot 1`] = `
+"  F-PLN     ---- / ---- 
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Airbus INIT_A matches snapshot 1`] = `
+"  INIT              A   
+CO RTE FROM/TO          
+ --------  [  ]/[  ]    
+FLT NBR ALTN/CO RTE     
+ -------- ----/-------- 
+LAT COST INDEX          
+  0.0N ---              
+LONG CRZ FL/TEMP        
+ 0.0E -----/--°         
+                        
+ TROPO                  
+ 36090                  
+                        
+<IRS INIT       INIT B >"
+`;
+
+exports[`Page Snapshots > Airbus INIT_B matches snapshot 1`] = `
+"  INIT              B   
+< ZFW                   
+ ---.-                  
+< BLOCK                 
+ ---.-                  
+< CG                    
+ --.-                   
+                        
+                        
+                        
+                        
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Airbus MCDU_MENU matches snapshot 1`] = `
+"  MCDU MENU             
+< FMGC                  
+ SELECT                 
+< ATSU                  
+ SELECT                 
+< AIDS                  
+ SELECT                 
+< CFDS                  
+ SELECT                 
+                        
+                        
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Airbus PERF_TAKEOFF matches snapshot 1`] = `
+"  PERF              TO  
+ V1                 [  ]
+ VR                 [  ]
+ V2                 [  ]
+ TRANS ALT              
+ 5000                   
+ THR RED/ACC            
+ 1500/3000              
+ FLAPS/THS              
+ 1/UP0.0                
+ FLEX TO TEMP           
+  ---                   
+ ENG OUT ACC            
+ 1500        NEXT PHASE>"
+`;
+
+exports[`Page Snapshots > Airbus PROG_A matches snapshot 1`] = `
+"  PROG                  
+ ---- / ----            
+ CRZ FL            FL---
+ OPT FL              ---
+ REC MAX FL          ---
+ DIST            ---- NM
+ ETA               ----Z
+ EFOB              ---.-
+ WIND                   
+ ---°/---               
+REQUIRED NAV ACCUR      
+   2.00 HIGH            
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Airbus RAD_NAV matches snapshot 1`] = `
+"  RAD NAV               
+ VOR1/FREQ              
+< --- / 113.90          
+ VOR2/FREQ              
+< --- / 115.70          
+ ADF1/FREQ              
+< 342                   
+                        
+                        
+                        
+                        
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Boeing FIX matches snapshot 1`] = `
+"  FIX              1/1  
+                        
+< REF FIX 1    REF FIX 2
+ ----               ----
+                        
+< RAD/DIS 1    RAD/DIS 2
+ ---/---         ---/---
+                        
+ ABEAM PTS              
+ ---/---                
+ ----                   
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Boeing HOLD matches snapshot 1`] = `
+"  HOLD             1/1  
+                        
+< FIX                   
+ ----                   
+                        
+< INBOUND CRS           
+ ---                    
+< LEG TIME              
+ 1.0 MIN                
+                        
+< LEG DIST              
+ ---                    
+< DIR                   
+ R                      "
+`;
+
+exports[`Page Snapshots > Boeing IDENT matches snapshot 1`] = `
+"  IDENT             1/1 
+ MODEL          DRAG    
+ 737-800        +0.0    
+ NAV DATA    ACTIVE     
+ FMC21A1                
+ OP PROGRAM             
+ 2247662-03             
+ ENGINES                
+ 26K                    
+                        
+                        
+                        
+                        
+<INDEX          POS INIT"
+`;
+
+exports[`Page Snapshots > Boeing LEGS matches snapshot 1`] = `
+"  ACT LEGS          1/1 
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        "
+`;
+
+exports[`Page Snapshots > Boeing MENU matches snapshot 1`] = `
+"  MENU             1/1  
+< IDENT                 
+ A/C IDENTIFICATION     
+< POS INIT              
+ POSITION INIT          
+< PERF INIT             
+ PERFORMANCE INIT       
+< THRUST LIM            
+ TAKEOFF REFERENCE      
+ DEP/ARR                
+ DEPARTURES/ARRIVAL     
+ ATC                    
+ COMM/ALTN              
+                        "
+`;
+
+exports[`Page Snapshots > Boeing POS_INIT matches snapshot 1`] = `
+"  POS INIT          1/3 
+ LAST POS               
+ 0.0N 0.0E              
+<REF AIRPORT            
+ ----                   
+<GATE                   
+ ----                   
+                        
+              IRS STATUS
+             IRS OFF    
+                        
+                        
+             SET IRS POS
+<INDEX    □□□□.□ □ROUTE>"
+`;
+
+exports[`Page Snapshots > Boeing PROGRESS matches snapshot 1`] = `
+"  PROGRESS          1/1 
+ LAST          ATA  FUEL
+ ----         ----  ----
+ TO            ETA  DTG 
+ ----         ----  ----
+ NEXT               DTG 
+ ----               ----
+ DEST          ETA  DTG 
+ ----         ----  ----
+                        
+ FUEL USE               
+ 0.0                    
+                        
+<POS REF        INDEX>  "
+`;
+
+exports[`Page Snapshots > Boeing RTE matches snapshot 1`] = `
+"  RTE               1/2 
+ ORIGIN          FLT NO 
+ [    ]         --------
+ DEST                   
+ [    ]                 
+ CO ROUTE               
+ ---------              
+                        
+                        
+                        
+                        
+                        
+                        
+                  ROUTE>"
+`;

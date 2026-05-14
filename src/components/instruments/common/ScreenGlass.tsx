@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { EffectProfiles, type ScreenEffectProfile } from './EffectProfiles';
 
 interface ScreenGlassProps {

@@ -1,5 +1,5 @@
 import type { AirbusFCUState } from '@shared';
-import { CockpitPanel } from '../../../visual/CockpitPanel';
+import { CockpitPanel } from '../../common/CockpitPanel';
 import { FCUDisplay } from './FCUDisplay';
 import { FCUButton } from './FCUButton';
 import { useFMCStore } from '../../../../store/useFMCStore';
