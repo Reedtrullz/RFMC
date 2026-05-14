@@ -63,8 +63,8 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     seg(5, 20, 'V2', 'white', { size: 'small' }),
     seg(6, 18, v2.text.padStart(3), v2.color, { size: v2.size }),
 
-    seg(9, 13, 'THRUST LIMIT', 'white', { size: 'small' }),
-    seg(10, 16, 'SEL/24K >', 'white'),
+    seg(9, 11, 'THRUST LIMIT', 'white', { size: 'small' }),
+    seg(10, 14, 'SEL/24K >', 'white'),
 
     seg(13, 0, '<INDEX', 'white'),
     seg(13, 16, 'POS INIT>', 'white'),

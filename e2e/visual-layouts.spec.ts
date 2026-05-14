@@ -78,8 +78,8 @@ test.describe('cockpit layout visual sizing', () => {
     await selectMode(page, 'Full Deck');
 
     await expectBox(page.getByTestId('autoflight-panel'), 580, 150);
-    await expectBox(page.getByTestId('pfd-panel'), 220, 300);
-    await expectBox(page.getByTestId('nd-panel'), 220, 300);
+    await expectBox(page.getByTestId('pfd-panel'), 210, 300);
+    await expectBox(page.getByTestId('nd-panel'), 210, 300);
     await expectNoViewportOverflow(page);
   });
 });

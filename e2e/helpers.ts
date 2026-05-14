@@ -115,9 +115,6 @@ export async function lsk(page: Page, id: string) {
  * Extremely robust: retries the key press if the scratchpad doesn't update.
  */
 export async function enterText(page: Page, text: string) {
-  // Target the hidden pre tag which contains the single source of truth for the grid text
-  const scratchpad = page.locator('[data-testid="scratchpad"] pre.sr-only');
-
   let expected = '';
 
   for (const char of text) {
@@ -127,18 +124,15 @@ export async function enterText(page: Page, text: string) {
       char === '.' ? '.' :
       char;
 
-    const target = expected + char;
-
     await expect(async () => {
-      const current = (await scratchpad.textContent() || '').replace(/\s/g, '');
-      if (current.includes(target.replace(/\s/g, ''))) return;
+      const current = await page.evaluate(() => (window as any).useFMCStore?.getState().scratchpad || '');
+      if (current.includes(expected + char)) return;
 
       await pressCdu(page, key);
 
-      const after = (await scratchpad.textContent() || '').replace(/\s/g, '');
-      if (!after.includes(target.replace(/\s/g, ''))) {
-        console.log(`[enterText] char="${char}" target="${target}" got="${after}"`);
-        throw new Error(`Scratchpad did not reflect "${char}". Got "${after}", expected to include "${target}"`);
+      const after = await page.evaluate(() => (window as any).useFMCStore?.getState().scratchpad || '');
+      if (!after.includes(expected + char)) {
+        throw new Error(`Scratchpad did not reflect "${char}". Got "${after}", expected to include "${expected + char}"`);
       }
     }).toPass({ timeout: 4000, intervals: [500] });
 

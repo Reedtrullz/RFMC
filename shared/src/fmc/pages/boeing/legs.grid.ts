@@ -34,9 +34,9 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
       const spd = wp.speedConstraint ? `${String(wp.speedConstraint.speed).padStart(3, ' ')}` : ' ---';
       const legLabel = wp.legType ? `(${wp.legType})` : wp.ident;
       
-      segments.push(seg(row - 1, 17, 'SPD/TGT  ALT', 'white', { size: 'small' }));
+      segments.push(seg(row - 1, 12, 'SPD/TGT  ALT', 'white', { size: 'small' }));
       segments.push(seg(row, 1, legLabel, wptColor));
-      segments.push(seg(row, 16, `${spd}kt /${alt}`, 'white', { size: 'small' }));
+      segments.push(seg(row, 11, `${spd}kt /${alt}`, 'white', { size: 'small' }));
     }
   }
 

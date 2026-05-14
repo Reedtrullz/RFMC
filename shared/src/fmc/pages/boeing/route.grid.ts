@@ -42,7 +42,8 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
 
   // Page 2: Route Legs
   const via = 'DIRECT';
-  const to = route.routeString ? route.routeString.split(/\s+/)[0] : ' [    ] ';
+  const toRaw = route.routeString ? route.routeString.split(/\s+/)[0] : ' [    ] ';
+  const to = toRaw.slice(0, 10);
 
   return boeingPage([
     ...boeingTitle(title, '2/2'),
