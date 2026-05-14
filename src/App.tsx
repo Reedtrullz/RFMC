@@ -165,7 +165,9 @@ export default function App() {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-black">
       <div className="flex w-full shrink-0 justify-center items-center py-3 px-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
-        <AutopilotTrainer />
+        <div data-testid="autoflight-panel">
+          <AutopilotTrainer />
+        </div>
         <button
           type="button"
           aria-pressed={showNd}
@@ -189,12 +191,12 @@ export default function App() {
       <main className="grid min-h-0 flex-1 w-full grid-cols-[minmax(220px,1fr)_minmax(260px,1fr)_minmax(320px,420px)] place-items-center gap-4 overflow-hidden p-3 max-lg:grid-cols-2">
         <div className="contents">
           {/* PFD Section */}
-          <InstrumentSlot className="h-full w-full max-w-[320px]">
+          <InstrumentSlot className="h-full w-full max-w-[320px]" dataTestId="pfd-panel">
             <PrimaryFlightDisplay />
           </InstrumentSlot>
 
           {/* ND Section */}
-          <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`}>
+          <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`} dataTestId="nd-panel">
             <NavigationDisplay />
           </InstrumentSlot>
         </div>
@@ -203,6 +205,7 @@ export default function App() {
         <InstrumentSlot
           className="h-full w-full max-lg:col-span-2"
           contentClassName="normal-cdu-scale origin-top"
+          dataTestId="cdu-panel"
         >
           <CDU />
         </InstrumentSlot>

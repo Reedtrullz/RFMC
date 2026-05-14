@@ -9,7 +9,7 @@ test.describe('Autopilot Mode Guards', () => {
 
   test('LNAV should be rejected if no route is active', async ({ page }) => {
     // 1. Ensure we are in Boeing 737 (default)
-    await expect(page.getByTestId('autopilot-trainer')).toBeVisible();
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
 
     // 2. Press LNAV
     await page.getByRole('button', { name: 'LNAV', exact: true }).click();

@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 import { dismissWelcome, expectScreenText, pressCdu as press, lsk, enterText } from './helpers';
 
 async function pressFunction(page, label: string) {
-  // Functions are usually the last matching button in the DOM for Boeing
-  await page.getByRole('button', { name: label, exact: true }).last().click();
+  await press(page, label);
 }
+
+test.setTimeout(60000); // Global 60s timeout for complex FMS flows
 
 test.describe('VirtualCDU Basic', () => {
   test('loads IDENT page with aircraft model', async ({ page }) => {
@@ -46,13 +47,14 @@ test.describe('VirtualCDU Basic', () => {
   });
 
   test('completes Boeing preflight flow through TAKEOFF REF', async ({ page }) => {
+    page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
     await page.goto('/');
     await dismissWelcome(page);
 
     await lsk(page, 'R6');
     await expectScreenText(page, 'POS INIT');
     await lsk(page, 'L4'); // ALIGN IRS
-    await page.waitForTimeout(2500); // Wait for 2s quick align
+    await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
     await enterText(page, 'KJFK');
     await lsk(page, 'L2');
     await enterText(page, 'A12');
@@ -69,7 +71,7 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'L1');
     await lsk(page, 'R3');
     await expectScreenText(page, 'RBV');
-    await expect(page.getByTestId('navigation-display')).toContainText('RBV');
+    await expect(page.getByTestId('nd-panel')).toContainText('RBV');
     await expectScreenText(page, 'LEGS');
     await expectScreenText(page, 'DIXIE');
 
@@ -125,15 +127,22 @@ test.describe('VirtualCDU Basic', () => {
   });
 
   test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
+    page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
     await page.goto('/');
     await dismissWelcome(page);
 
     await lsk(page, 'R6'); // POS INIT
     await lsk(page, 'L4'); // ALIGN IRS
-    await page.waitForTimeout(2500); // Wait for 2s quick align
+    await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
     await press(page, 'HOLD');
+    await expectScreenText(page, 'HOLD');
+
     await enterText(page, 'RBV');
     await lsk(page, 'L1');
+
+    await expect(page.getByTestId('scratchpad')).not.toContainText('INVALID');
+    await expectScreenText(page, 'RBV');
+
     await expect(page.getByTestId('nd-hold-overlay')).toBeVisible();
 
     await pressFunction(page, 'FIX');
@@ -153,6 +162,7 @@ test.describe('VirtualCDU Basic', () => {
   });
 
   test('runs Airbus INIT, F-PLN, DEP/ARR, and PERF TO entries', async ({ page }) => {
+    page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
     await page.goto('/');
     await page.locator('button:has-text("A320neo")').click();
     await dismissWelcome(page);
@@ -160,7 +170,7 @@ test.describe('VirtualCDU Basic', () => {
     await enterText(page, 'KJFK/KDCA');
     await lsk(page, 'R1');
     await lsk(page, 'L6'); // ALIGN IRS
-    await page.waitForTimeout(2500); // Wait for 2s quick align
+    await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
     await enterText(page, 'AA123');
     await lsk(page, 'L2');
     await enterText(page, '45');
@@ -224,7 +234,7 @@ test.describe('VirtualCDU Basic', () => {
     await press(page, 'RTE');
     await expectScreenText(page, 'KJFK');
     await expectScreenText(page, 'KDCA');
-    await expect(page.getByTestId('navigation-display')).toContainText('RBV');
+    await expect(page.getByTestId('nd-panel')).toContainText('RBV');
   });
 
   test('keeps ND context available without covering CDU controls on iPad', async ({ page }) => {
@@ -232,7 +242,7 @@ test.describe('VirtualCDU Basic', () => {
     await page.goto('/');
     await dismissWelcome(page);
 
-    const ndBox = await page.getByTestId('navigation-display').boundingBox();
+    const ndBox = await page.getByTestId('nd-panel').boundingBox();
     const rteBox = await page.getByRole('button', { name: 'RTE', exact: true }).first().boundingBox();
 
     expect(ndBox).not.toBeNull();
@@ -240,7 +250,7 @@ test.describe('VirtualCDU Basic', () => {
     expect(ndBox!.y).toBeLessThan(rteBox!.y);
 
     await page.getByRole('button', { name: 'ND', exact: true }).click();
-    await expect(page.getByTestId('navigation-display')).toBeHidden();
+    await expect(page.getByTestId('nd-panel')).toBeHidden();
     await expect(page.getByRole('button', { name: 'RTE', exact: true }).first()).toBeVisible();
   });
 

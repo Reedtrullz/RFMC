@@ -6,6 +6,7 @@ interface InstrumentSlotProps {
   contentClassName?: string;
   scale?: number;
   maxHeight?: string;
+  dataTestId?: string;
 }
 
 interface InstrumentFrameSlotProps {
@@ -20,11 +21,13 @@ export function InstrumentSlot({
   contentClassName = '',
   scale,
   maxHeight,
+  dataTestId,
 }: InstrumentSlotProps) {
   return (
     <div
       className={`instrument-slot ${className}`}
       style={{ '--instrument-slot-max-height': maxHeight } as CSSProperties}
+      data-testid={dataTestId}
     >
       <div
         className={`instrument-slot__content ${contentClassName}`}

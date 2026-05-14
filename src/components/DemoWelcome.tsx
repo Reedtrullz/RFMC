@@ -182,7 +182,10 @@ export function DemoWelcome() {
         </div>
 
         <button
-          onClick={() => useFMCStore.getState().setMode('ACTIVE')}
+          onClick={() => {
+            useFMCStore.getState().setMode('ACTIVE');
+            useFMCStore.getState().setDemoMode(true);
+          }}
           className="w-full p-2.5 bg-transparent border border-cdu-text/20 hover:border-cdu-text/50 rounded text-cdu-text/50 hover:text-cdu-text text-xs font-cdu uppercase tracking-wider transition-colors">
           Skip Demo — Explore Freely
         </button>

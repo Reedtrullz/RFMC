@@ -21,18 +21,18 @@ test.describe('Cockpit Hardening & Automation', () => {
     await page.getByRole('button', { name: 'Navigation', exact: true }).click();
     
     // Check if ND is visible initially
-    await expect(page.getByTestId('navigation-display')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
     
     // Toggle ND via toolbar
     const ndToggle = page.getByRole('button', { name: 'ND', exact: true });
     await ndToggle.click();
     
     // ND should be hidden
-    await expect(page.getByTestId('navigation-display')).not.toBeVisible();
+    await expect(page.getByTestId('nd-panel')).not.toBeVisible();
     
     // Toggle back
     await ndToggle.click();
-    await expect(page.getByTestId('navigation-display')).toBeVisible();
+    await expect(page.getByTestId('nd-panel')).toBeVisible();
   });
 
   test('Focus mode via Esc key', async ({ page }) => {
@@ -51,7 +51,7 @@ test.describe('Cockpit Hardening & Automation', () => {
     // Switch to Automation layout
     await page.getByRole('button', { name: 'Automation', exact: true }).click();
     
-    await expect(page.getByTestId('autopilot-trainer')).toBeVisible();
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
     
     // Verify Rotary Knob interaction
     const altitudeKnob = page.getByTestId('mcp-altitude-knob').first();

@@ -236,7 +236,7 @@ function renderInstrumentPanel(
       target={targetForPanel(panelId, controls.aircraft)}
       className={options.className}
       preferredScale={zoom}
-      dataTestId={`cockpit-panel-${panelId}`}
+      dataTestId={`${panelId}-panel`}
       overlay={
         <InstrumentHeader
           panelId={panelId}
@@ -262,7 +262,7 @@ function renderFocusedPanel(panelId: InstrumentPanelId, controls: LayoutControls
       target={targetForPanel(panelId, controls.aircraft)}
       preferredScale={Math.max(controls.instrumentZoom[panelId] ?? 1, 1)}
       allowOverflowZoom
-      dataTestId={`cockpit-focused-${panelId}`}
+      dataTestId={`focused-${panelId}-panel`}
     >
       {renderPanel(panelId)}
     </InstrumentFit>

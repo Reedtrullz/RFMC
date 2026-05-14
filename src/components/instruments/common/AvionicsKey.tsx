@@ -33,6 +33,7 @@ export function AvionicsKey({
   return (
     <button
       type="button"
+      data-testid={`key-${variant}-${label}`}
       aria-label={ariaLabel}
       disabled={disabled}
       className={[
@@ -50,6 +51,8 @@ export function AvionicsKey({
         if (!disabled) {
           tactile.feedback();
           onPress();
+        } else {
+          console.log(`[FMC] Key clicked but DISABLED: ${label}`);
         }
       }}
     >

@@ -531,7 +531,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   pressKey: (key: CDUKey) => {
     const startTime = performance.now();
-    devLog('pressKey called with:', key);
+    console.log(`[FMC] pressKey: ${key}`);
     const { scratchpad, currentPage } = get();
     let handled = false;
 
@@ -759,7 +759,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
               ...state.position, 
               irsState: 'ALIGNING',
               irsAlignmentProgress: 0,
-              irsTimeRemaining: state.demoMode ? 2 : 420 // 7 minutes, or 2s in demo
+              irsTimeRemaining: state.demoMode ? 1 : 420 // 1s in demo, 7m in prod
             } 
           });
           handled = true;
@@ -1309,7 +1309,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_fix_ref_1':
         if (scratchpad) {
           const result = isValidWaypoint(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
+          if (!result.valid) { 
+            set({ scratchpadError: result.error }); return; 
+          }
           const entryIndex = action.endsWith('_1') ? 1 : 0;
           const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
           fixEntries[entryIndex] = { ...fixEntries[entryIndex], refFix: scratchpad.toUpperCase() };
@@ -1322,11 +1324,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_fix_radial_distance_1':
         if (scratchpad) {
           const parts = scratchpad.split('/');
-          if (parts.length !== 2) { set({ scratchpadError: 'INVALID FORMAT' }); return; }
+          if (parts.length !== 2) { 
+            set({ scratchpadError: 'INVALID FORMAT' }); return; 
+          }
           const radial = parseInt(parts[0], 10);
           const distance = parseInt(parts[1], 10);
-          if (isNaN(radial) || radial < 1 || radial > 360) { set({ scratchpadError: 'INVALID RADIAL' }); return; }
-          if (isNaN(distance) || distance < 0 || distance > 999) { set({ scratchpadError: 'INVALID DISTANCE' }); return; }
+          if (isNaN(radial) || radial < 1 || radial > 360) { 
+            set({ scratchpadError: 'INVALID RADIAL' }); return; 
+          }
+          if (isNaN(distance) || distance < 0 || distance > 999) { 
+            set({ scratchpadError: 'INVALID DISTANCE' }); return; 
+          }
           const entryIndex = action.endsWith('_1') ? 1 : 0;
           const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
           fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
@@ -1880,6 +1888,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({
       ...defaultState,
       aircraft: type,
+      demoMode: state.demoMode, // Preserve demoMode
       currentPage: startPage,
       pageHistory: [],
       cockpitMode: state.cockpitMode,
@@ -2490,7 +2499,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       position: { 
         ...state.position, 
         irsState: mode,
-        irsTimeRemaining: mode === 'ALIGNING' ? 600 : (mode === 'FAST_ALIGNING' ? 30 : 0),
+        irsTimeRemaining: mode === 'ALIGNING' ? (state.demoMode ? 1 : 600) : (mode === 'FAST_ALIGNING' ? (state.demoMode ? 1 : 30) : 0),
         irsAlignmentProgress: 0
       }
     }));
@@ -2516,7 +2525,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (position.irsState === 'ALIGNING' || position.irsState === 'FAST_ALIGNING') {
       if (position.irsTimeRemaining > 0) {
         const newTime = Math.max(0, position.irsTimeRemaining - 1);
-        const total = position.irsState === 'ALIGNING' ? 600 : 30;
+        const total = position.irsState === 'ALIGNING' ? (state.demoMode ? 1 : 600) : (state.demoMode ? 1 : 30);
         const progress = Math.round(((total - newTime) / total) * 100);
         
         updates.position = { 
@@ -2708,4 +2717,7 @@ if (typeof window !== 'undefined') {
   setInterval(() => {
     useFMCStore.getState().updateFmsEcosystem();
   }, 1000);
+
+  // Expose store for E2E testing
+  (window as any).useFMCStore = useFMCStore;
 }

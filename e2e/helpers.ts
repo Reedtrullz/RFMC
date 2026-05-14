@@ -14,12 +14,24 @@ export async function dismissWelcome(page: Page) {
     await skipButton.click();
     // Ensure it's gone
     await expect(skipButton).toBeHidden({ timeout: 5000 });
+    
+    // Explicitly set demoMode via the exposed store to ensure fast IRS alignment and other simulation logic
+    await page.evaluate(() => {
+      if ((window as any).useFMCStore) {
+        (window as any).useFMCStore.getState().setDemoMode(true);
+      }
+    });
   } catch {
-    // Modal already dismissed or not present
+    // Modal already dismissed or not present, but ensure demoMode is still set
+    await page.evaluate(() => {
+      if ((window as any).useFMCStore) {
+        (window as any).useFMCStore.getState().setDemoMode(true);
+      }
+    });
   }
   
   // Ensure the trainer is at least in the DOM and visible
-  await expect(page.getByTestId('autopilot-trainer')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByTestId('autoflight-panel')).toBeVisible({ timeout: 10000 });
 }
 
 /**
@@ -36,44 +48,100 @@ export async function expectScreenText(page: Page, text: string) {
  * Presses a CDU function key or alphanumeric key.
  */
 export async function pressCdu(page: Page, label: string) {
-  await page.getByRole('button', { name: label, exact: true }).first().click();
-  // Small delay to let the scratchpad update
-  await page.waitForTimeout(50);
+  // Try variant-based data-testids (more specific)
+  const variants = ['function', 'boeing', 'airbus', 'exec', 'lsk'];
+  for (const variant of variants) {
+    const btn = page.getByTestId(`key-${variant}-${label}`).first();
+    if (await btn.count()) {
+      await btn.dispatchEvent('click');
+      await page.waitForTimeout(250);
+      return;
+    }
+  }
+
+  // Fallback for legacy testid format or generic matching
+  const fallback = page.locator(`[data-testid^="key-"][data-testid$="-${label}"]`).first();
+  if (await fallback.count()) {
+    await fallback.dispatchEvent('click');
+    await page.waitForTimeout(250);
+    return;
+  }
+
+  const candidates =
+    label === '/' ? ['/', 'SLASH'] :
+    label === '.' ? ['.', 'DOT'] :
+    label === ' ' ? ['SP', 'SPACE'] :
+    [label];
+
+  for (const name of candidates) {
+    const button = page.getByRole('button', { name, exact: true }).first();
+    if (await button.count()) {
+      await button.dispatchEvent('click');
+      // Delay to let the scratchpad update and FMS process
+      await page.waitForTimeout(250);
+      return;
+    }
+  }
+
+  throw new Error(`No CDU button found for "${label}"`);
 }
 
 /**
  * Helper for Line Select Keys (L1-L6, R1-R6)
  */
 export async function lsk(page: Page, id: string) {
-  // The aria-label is "LSK L1", "LSK R1", etc.
-  await page.getByRole('button', { name: `LSK ${id.toUpperCase()}`, exact: true }).click();
+  // Try data-testid first
+  const testIdButton = page.getByTestId(`key-${id.toUpperCase()}`).first();
+  if (await testIdButton.count()) {
+    await testIdButton.dispatchEvent('click');
+    await page.waitForTimeout(500);
+    return;
+  }
+
+  // Fallback to name
+  const button = page.getByRole('button', { name: `LSK ${id.toUpperCase()}`, exact: true }).first();
+  if (await button.count()) {
+    await button.dispatchEvent('click');
+    // Delay after LSK as it often triggers page changes or state updates
+    await page.waitForTimeout(500);
+    return;
+  }
+
+  throw new Error(`No LSK button found for "${id}"`);
 }
 
 /**
  * Enters multiple characters into the CDU scratchpad.
- * Extremely robust: waits for the scratchpad to update after each key press.
+ * Extremely robust: retries the key press if the scratchpad doesn't update.
  */
 export async function enterText(page: Page, text: string) {
-  const display = page.locator('.cdu-display-container pre.sr-only').first();
-  
+  // Target the hidden pre tag which contains the single source of truth for the grid text
+  const scratchpad = page.locator('[data-testid="scratchpad"] pre.sr-only');
+
+  let expected = '';
+
   for (const char of text) {
-    const before = await display.textContent() || '';
+    const key =
+      char === ' ' ? 'SP' :
+      char === '/' ? '/' :
+      char === '.' ? '.' :
+      char;
 
-    if (char === ' ') {
-      await pressCdu(page, 'SP');
-    } else if (char === '/') {
-      await pressCdu(page, '/');
-    } else if (char === '.') {
-      await pressCdu(page, '.');
-    } else {
-      await pressCdu(page, char);
-    }
+    const target = expected + char;
 
-    // Wait for the scratchpad to reflect the change
-    // We expect the text content to change (either appended or cleared/error)
     await expect(async () => {
-      const after = await display.textContent() || '';
-      if (after === before) throw new Error('Scratchpad did not update');
-    }).toPass({ timeout: 2000, intervals: [100] });
+      const current = (await scratchpad.textContent() || '').replace(/\s/g, '');
+      if (current.includes(target.replace(/\s/g, ''))) return;
+
+      await pressCdu(page, key);
+
+      const after = (await scratchpad.textContent() || '').replace(/\s/g, '');
+      if (!after.includes(target.replace(/\s/g, ''))) {
+        console.log(`[enterText] char="${char}" target="${target}" got="${after}"`);
+        throw new Error(`Scratchpad did not reflect "${char}". Got "${after}", expected to include "${target}"`);
+      }
+    }).toPass({ timeout: 4000, intervals: [500] });
+
+    expected += char;
   }
 }

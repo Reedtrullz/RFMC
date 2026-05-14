@@ -133,3 +133,17 @@
     --instrument-slot-scale: 0.5;
   }
 }
+
+/* Layout Stage Display Containers */
+.cockpit-pfd-nd-displays,
+.cockpit-full-deck__instruments {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: clamp(12px, 2vw, 32px);
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+}
+
