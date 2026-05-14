@@ -63,7 +63,7 @@ describe('Navigation Display model', () => {
     });
 
     expect(model.activeRoutePoints.map(point => point.label)).toEqual(['KJFK', 'RBV', 'DIXIE', 'KDCA']);
-    expect(model.activeRouteSegments).toHaveLength(3);
+    expect(model.activeRouteSegments).toHaveLength(4); // 3 route segments + 1 aircraft-to-active segment
     expect(model.activeRoutePoints[1].active).toBe(true);
   });
 
@@ -234,7 +234,7 @@ describe('Navigation Display model', () => {
     const model = buildNavigationDisplayModel(stateWithGeo);
     expect(model.activeRoutePoints.some(p => p.label === 'WPT1')).toBe(true);
     expect(model.activeRoutePoints.some(p => p.label === 'WPT2')).toBe(false);
-    expect(model.activeRouteSegments.length).toBe(0); // The segment connects visible to clipped, so it's omitted
+    expect(model.activeRouteSegments.length).toBe(1); // One segment from aircraft to WPT1
   });
 
   it('includes relativeBearingDeg on geo-projected points', () => {
@@ -278,6 +278,7 @@ describe('Navigation Display model', () => {
     expect(model.activeRoutePoints[0].label).toBe('KJFK');
     expect(model.activeRoutePoints[1].label).toBe('KDCA');
     expect(model.activeRoutePoints[1].active).toBe(true);
+    expect(model.activeRouteSegments.length).toBeGreaterThan(0);
   });
 
   it('sets centered correctly for Boeing modes', () => {

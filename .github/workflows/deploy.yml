@@ -1,8 +1,10 @@
 name: Deploy to VPS
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
     branches: [main]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
@@ -13,6 +15,7 @@ jobs:
   deploy:
     name: Deploy VirtualCDU
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,12 +30,16 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_racknerd
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa_racknerd
           chmod 600 ~/.ssh/id_rsa_racknerd
           ssh-keyscan -H 198.23.137.16 >> ~/.ssh/known_hosts
 
+      - name: Smoke test SSH connection
+        run: |
+          ssh -i ~/.ssh/id_rsa_racknerd deploy@198.23.137.16 "echo SSH_OK"
+
       - name: Run Ansible playbook
         run: |
-          ansible-playbook -i inventory/hosts.yml ansible-playbook.yml
+          ansible-playbook -i inventory/hosts.yml ansible-playbook.yml -vv
         env:
           ANSIBLE_HOST_KEY_CHECKING: false

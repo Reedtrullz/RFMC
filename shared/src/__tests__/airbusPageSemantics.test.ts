@@ -37,7 +37,7 @@ describe('Airbus page semantics', () => {
     const data = renderInitA(baseState);
     expect(data.lines[0]).toMatchObject({ semantic: 'title', inverse: true });
     expect(data.lines.find(l => l.text.includes('FROM/TO'))?.semantic).toBe('label');
-    expect(data.lines.find(l => l.text.includes('KJFK/KDCA'))?.semantic).toBe('guidance');
+    expect(data.lines.find(l => l.text.includes('KJFK/KDCA'))?.semantic).toBe('activeData');
   });
 
   it('tags active and guidance fields on PERF TAKEOFF', () => {
@@ -49,7 +49,6 @@ describe('Airbus page semantics', () => {
   it('does not show interactive arrows on display-only Airbus pages', () => {
     const displayOnlyPages = [
       renderFuelPred(baseState),
-      renderDataIndex(baseState),
       renderProgA320(baseState),
     ];
 

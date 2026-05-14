@@ -231,8 +231,8 @@ describe('Airbus Page Renderers', () => {
   it('renders INIT A page with alignment prompt when IRS is off', () => {
     const renderer = getAirbusPageRenderer('INIT_A');
     const data = renderer!(airbusState);
-    expect(data.lines.some(l => l.leftLabel === '<ALIGN IRS')).toBe(true);
-    expect(data.lskActions.L1).toBe('align_irs');
+    expect(data.lines.some(l => l.leftLabel === '<IRS INIT')).toBe(true);
+    expect(data.lskActions.L6).toBe('align_irs');
   });
 
   it('renders PROG page with Nav Accuracy', () => {

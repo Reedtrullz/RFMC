@@ -2,7 +2,7 @@
   hosts: vps
   gather_facts: false
   vars:
-    repo_url: "git@github.com:Reedtrullz/RFMC.git"
+    repo_url: "https://github.com/Reedtrullz/RFMC.git"
     app_dir: "/home/deploy/virtual-cdu"
     container_name: "virtual-cdu"
     host_port: "8082"
