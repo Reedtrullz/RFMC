@@ -73,6 +73,24 @@ const defaultTruth: AutopilotState['truth'] = {
   }
 };
 
+const BOEING_ACTION_MAP: Record<string, string> = {
+  LNAV: 'lnav',
+  VNAV: 'vnav',
+  LVL_CHG: 'lvlChg',
+  HDG_SEL: 'hdgSel',
+  VOR_LOC: 'vorLoc',
+  APP: 'app',
+  ALT_HLD: 'altHold',
+  VS: 'vs',
+  N1: 'n1',
+  SPEED: 'speedMode',
+  cmdA: 'cmdA',
+  cmdB: 'cmdB',
+  cwsA: 'cwsA',
+  cwsB: 'cwsB',
+  SPD_MACH_TOGGLE: 'SPD_MACH_TOGGLE',
+};
+
 export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
   boeing: defaultBoeingMCP,
   airbus: defaultAirbusFCU,
@@ -82,10 +100,10 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
   updateAirbus: (update) => set(state => ({ airbus: { ...state.airbus, ...update } })),
 
   pressButton: (action) => {
-    // We need to know the aircraft type to process the action
-    // In a real refactor, we might want to pass aircraft type or have separate stores
-    // For now, we'll try to infer or just handle both
-    const boeingUpdate = processBoeingMCPAction(get().boeing, action as any);
+    // 1. Normalize action for Boeing logic
+    const normalizedAction = BOEING_ACTION_MAP[action] ?? action;
+    
+    const boeingUpdate = processBoeingMCPAction(get().boeing, normalizedAction as any);
     if (Object.keys(boeingUpdate).length > 0) {
       set(state => ({ boeing: { ...state.boeing, ...boeingUpdate } }));
       return;

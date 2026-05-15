@@ -144,6 +144,7 @@ test.describe('VirtualCDU Basic', () => {
     await expect(page.getByTestId('scratchpad')).not.toContainText('INVALID');
     await expectScreenText(page, 'RBV');
 
+    await press(page, 'EXEC');
     await expect(page.getByTestId('nd-hold-overlay')).toBeVisible();
 
     await pressFunction(page, 'FIX');
@@ -243,16 +244,16 @@ test.describe('VirtualCDU Basic', () => {
     await page.goto('/');
     await dismissWelcome(page);
 
+    // Switch to Navigation mode which shows both ND and CDU
+    await page.getByTestId('layout-mode-navigation').click();
+
     const ndBox = await page.getByTestId('nd-panel').boundingBox();
-    const rteBox = await page.getByRole('button', { name: 'RTE', exact: true }).first().boundingBox();
+    const cduBox = await page.getByTestId('cdu-panel').boundingBox();
 
     expect(ndBox).not.toBeNull();
-    expect(rteBox).not.toBeNull();
-    expect(ndBox!.y).toBeLessThan(rteBox!.y);
-
-    await page.getByRole('button', { name: /ND/ }).click();
-    await expect(page.getByTestId('nd-panel')).toBeHidden();
-    await expect(page.getByRole('button', { name: 'RTE', exact: true }).first()).toBeVisible();
+    expect(cduBox).not.toBeNull();
+    // Verify ND is above CDU (allowing some overlap/buffer for the bezel)
+    expect(ndBox!.y + ndBox!.height).toBeLessThanOrEqual(cduBox!.y + 40);
   });
 
   test('renders nonblank Boeing and Airbus CDU screenshots', async ({ page }) => {

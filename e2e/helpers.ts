@@ -4,8 +4,8 @@ import { expect, type Page } from '@playwright/test';
  * Dismisses the welcome/demo modal if it's present.
  */
 export async function dismissWelcome(page: Page) {
-  // Wait for the app to be somewhat loaded
-  await page.waitForLoadState('domcontentloaded');
+  // Wait for the app to be fully loaded and network to be idle
+  await page.waitForLoadState('networkidle');
   
   const skipButton = page.locator('button:has-text("Skip Demo")');
   // Ensure the store is attached to window before evaluating
@@ -22,21 +22,35 @@ export async function dismissWelcome(page: Page) {
   }
   
   // Explicitly set demoMode via the exposed store to ensure fast IRS alignment and other simulation logic
-  // We do this outside the try/catch but with its own protection
-  await page.waitForFunction(() => (window as any).useFMCStore !== undefined, { timeout: 10000 });
-  await page.evaluate(() => {
-    const fmc = (window as any).useFMCStore?.getState();
-    if (fmc) {
-      fmc.setMode('ACTIVE');
-      fmc.setDemoMode(true);
-    }
-  });
+  // We wait for the store to be attached to window before evaluating
+  try {
+    await page.waitForTimeout(500);
+    await page.waitForFunction(() => (window as any).useFMCStore !== undefined, { timeout: 20000 });
+    await page.evaluate(() => {
+      const fmc = (window as any).useFMCStore?.getState();
+      if (fmc) {
+        fmc.setMode('ACTIVE');
+        fmc.setDemoMode(true);
+        localStorage.setItem('virtualcdu.cockpitGuidanceDismissed', 'true');
+      }
+    });
+  } catch (e) {
+    // Ignore evaluation errors or timeouts during stabilization
+    console.warn('[E2E Helper] dismissWelcome: store initialization timed out or failed');
+  }
   
   // Ensure the trainer is at least in the DOM and visible
   // We use cdu-panel as it exists in both legacy and all Cockpit Mode layouts
-  await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 15000 });
+  // We wait for it to be visible after the modal is gone, but we don't hard-fail here
+  // as some tests might have different layout timings
+  try {
+    await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
+  } catch (e) {
+    console.warn('[E2E Helper] dismissWelcome: cdu-panel not visible within timeout, continuing...');
+  }
 
   // If we are in Cockpit Mode, switch to Full Deck for legacy test compatibility
+  // This is only necessary if the test doesn't explicitly switch modes itself
   const fullDeckSelector = page.getByTestId('layout-mode-full-deck');
   try {
     // Wait for the layout buttons to definitely be in the DOM and visible

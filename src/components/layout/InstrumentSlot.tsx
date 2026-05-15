@@ -13,6 +13,7 @@ interface InstrumentFrameSlotProps {
   children: ReactNode;
   scale?: number;
   className?: string;
+  dataTestId?: string;
 }
 
 export function InstrumentSlot({
@@ -43,9 +44,10 @@ export function InstrumentFrameSlot({
   children,
   scale = 1,
   className = '',
+  dataTestId,
 }: InstrumentFrameSlotProps) {
   return (
-    <div className={`cockpit-instrument ${className}`}>
+    <div className={`cockpit-instrument ${className}`} data-testid={dataTestId}>
       <div
         className="cockpit-scale"
         style={{ '--scale': scale } as CSSProperties}

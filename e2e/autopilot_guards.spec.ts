@@ -5,9 +5,11 @@ test.describe('Autopilot Mode Guards', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    // Switch to Automation mode so MCP/FCU is visible
-    await page.getByTestId('layout-mode-automation').click();
+    // Switch to Full Deck mode so both MCP/FCU and CDU/Scratchpad are visible
+    await page.getByTestId('layout-mode-full-deck').click();
     await expect(page.getByTestId('autoflight-panel')).toBeVisible();
+    await expect(page.getByTestId('cdu-panel')).toBeVisible();
+    await expect(page.getByTestId('scratchpad')).toBeVisible();
   });
 
   test('LNAV should be rejected if no route is active', async ({ page }) => {

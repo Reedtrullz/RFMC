@@ -2800,4 +2800,5 @@ if (typeof window !== 'undefined') {
   (window as any).useAutopilotStore = useAutopilotStore;
   (window as any).useConnectionStore = useConnectionStore;
   (window as any).useTrainingStore = useTrainingStore;
+  (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
 }
