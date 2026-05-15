@@ -8,7 +8,7 @@
 // column placement are all preserved.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { GridDisplayData, DisplaySegment } from '@virtual-cdu/shared/types/display';
+import type { GridDisplayData, DisplaySegment } from '@virtual-cdu/shared';
 
 export type { GridDisplayData, DisplaySegment };
 
