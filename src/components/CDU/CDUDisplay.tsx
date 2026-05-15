@@ -1,36 +1,30 @@
 import React, { useEffect, useRef } from 'react';
-import { useDisplaySettings }       from '../../store/displaySettingsStore';
-import { getRenderer }              from '../../renderers/rendererRegistry';
-import type { DisplayData }         from '../../renderers/types';
+import { useDisplaySettings }        from '../../store/displaySettingsStore';
+import { getRenderer }               from '../../renderers/rendererRegistry';
+import { gridToPlainText }           from '@virtual-cdu/shared/fmc/displayGrid';
+import type { RendererDisplayData }  from '../../renderers/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CDUDisplay
 //
-// A <canvas>-based CDU display component that delegates all drawing to the
-// active renderer resolved from the display settings store.
+// <canvas>-based CDU display component. Delegates all drawing to the active
+// renderer resolved from the display settings Zustand store.
 //
-// DPR strategy (Codex P2 fix):
-//   The standard HiDPI canvas pattern is used:
-//     1. Set backing-store size to CSS-px × devicePixelRatio (sharp pixels).
-//     2. Scale the 2D context by dpr so that renderer code writes in CSS-px
-//        coordinates (no renderer changes required).
-//     3. Set CSS width/height to the original CSS-px values so the element
-//        occupies the correct layout space.
-//   This produces crisp text on Retina/iPad while keeping renderer geometry
-//   completely DPR-agnostic.
+// DPR strategy:
+//   1. Backing store = CSS-px × devicePixelRatio (sharp HiDPI pixels).
+//   2. ctx.setTransform(dpr, …) maps CSS-logical coordinates → backing store.
+//   3. CSS width/height are the original CSS-px values (correct layout size).
+//   4. BaseRenderer helpers (rowTop, rowHeight, …) divide canvas.width /
+//      canvas.height by dpr and return CSS-logical px, so there is no
+//      double-scaling on Retina / iPad.
 //
-//   IMPORTANT: renderers must read canvas geometry via BaseRenderer helpers
-//   (rowTop, rowHeight, leftEdge, rowWidth) which all operate on canvas.width
-//   / canvas.height.  After ctx.scale(dpr, dpr) the context transforms those
-//   CSS-space values to backing-store pixels automatically.
-//
-// Resize strategy:
-//   A single combined effect handles resize AND re-render, keyed on all six
-//   dependencies, so dimension changes always produce a fresh frame.
+// Accessibility:
+//   A visually-hidden <div> sibling renders plain text via gridToPlainText()
+//   so screen readers receive content equivalent to the existing grid renderer.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface CDUDisplayProps {
-  data: DisplayData;
+  data: RendererDisplayData;
   /** Logical (CSS) width in px. */
   width?:  number;
   /** Logical (CSS) height in px. */
@@ -47,17 +41,14 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { displayStyle, crtIntensity, wearIntensity } = useDisplaySettings();
 
-  // ── Single effect: resize → scale context → render ──────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = window.devicePixelRatio ?? 1;
+    const dpr      = window.devicePixelRatio ?? 1;
     const backingW = Math.round(width  * dpr);
     const backingH = Math.round(height * dpr);
 
-    // Only resize the backing store when dimensions actually change to avoid
-    // wiping a perfectly valid bitmap on every unrelated state update.
     const needsResize =
       canvas.width  !== backingW ||
       canvas.height !== backingH;
@@ -67,23 +58,22 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
       canvas.height = backingH;
     }
 
-    // Apply DPR scale so renderers can write in CSS-px coordinates.
-    // Must be re-applied whenever the context is reset (i.e. after a resize).
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Re-apply DPR scale after any backing-store resize (resize resets transform).
     if (needsResize) {
-      // Resizing the backing store resets the transform – re-apply scale.
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // Render immediately – never leave a blank or stale canvas.
-    const renderer = getRenderer(displayStyle);
-    renderer.render(data, canvas, {
+    getRenderer(displayStyle).render(data, canvas, {
       intensity:     crtIntensity,
       wearIntensity: wearIntensity,
     });
   }, [data, displayStyle, crtIntensity, wearIntensity, width, height]);
+
+  // Plain-text representation for screen readers.
+  const srText = gridToPlainText(data.grid);
 
   return (
     <div
@@ -96,14 +86,31 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
         borderRadius: '6px',
         boxShadow: 'inset 0 0 18px rgba(0,0,0,0.8)',
       }}
-      role="img"
-      aria-label="CDU display"
     >
+      {/* Visually-hidden text representation for assistive technology */}
+      <div
+        aria-label="CDU display"
+        role="img"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'pre',
+          border: 0,
+          fontFamily: 'monospace',
+        }}
+      >
+        {srText}
+      </div>
+
       <canvas
         ref={canvasRef}
+        aria-hidden
         style={{
-          // CSS dimensions keep the element in correct layout space.
-          // The backing store is larger by ×dpr for crisp rendering.
           display: 'block',
           width:   `${width}px`,
           height:  `${height}px`,

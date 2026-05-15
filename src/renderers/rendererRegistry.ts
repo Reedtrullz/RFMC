@@ -5,23 +5,25 @@ import type { DisplayRenderer } from './types';
 // ─────────────────────────────────────────────────────────────────────────────
 // Renderer registry
 //
-// Add new renderer implementations here.  The key becomes the display-style
-// identifier stored in Zustand and used by CDUDisplay.tsx.
+// Singletons are intentional: renderers carry no FMC state, only optional
+// internal render-pass state (e.g. phosphor persistence buffer in
+// ClassicCrtRenderer). Creating one instance per style avoids re-allocating
+// that buffer on every React render cycle.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** All registered display style keys. */
-export type DisplayStyle = 'ng-lcd' | 'classic-crt';
-
-/** Map of style key → singleton renderer instance. */
-export const rendererMap: Record<DisplayStyle, DisplayRenderer> = {
+export const rendererMap: Record<string, DisplayRenderer> = {
   'ng-lcd':      new NgLcdRenderer(),
   'classic-crt': new ClassicCrtRenderer(),
 } as const;
 
+export type DisplayStyle = keyof typeof rendererMap;
+
 /**
  * Returns the renderer for the given style key.
- * Falls back to 'ng-lcd' if an unknown key is passed (defensive guard).
+ * Falls back to 'ng-lcd' if the key is unknown — this prevents a runtime
+ * crash if a persisted settings value refers to a style that was later
+ * renamed or removed.
  */
-export function getRenderer(style: DisplayStyle): DisplayRenderer {
+export function getRenderer(style: string): DisplayRenderer {
   return rendererMap[style] ?? rendererMap['ng-lcd'];
 }
