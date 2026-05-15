@@ -127,25 +127,35 @@ test.describe('VirtualCDU Basic', () => {
     await expectScreenText(page, '140');
   });
 
-  test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
-    page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
-    await page.goto('/');
-    await dismissWelcome(page);
+   test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
+     page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
+     await page.goto('/');
+     await dismissWelcome(page);
 
-    await lsk(page, 'R6'); // POS INIT
-    await lsk(page, 'L4'); // ALIGN IRS
-    await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
-    await press(page, 'HOLD');
-    await expectScreenText(page, 'HOLD');
+     // Set up a route that includes RBV so HOLD fix validation passes
+     await lsk(page, 'R6'); // POS INIT
+     await lsk(page, 'L4'); // ALIGN IRS
+     await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
+     await press(page, 'RTE'); // RTE
+     await enterText(page, 'KJFK'); // Origin
+     await lsk(page, 'L1');
+     await enterText(page, 'KDCA'); // Destination
+     await lsk(page, 'L1');
+     await enterText(page, 'KJFK DCT RBV J42 LENDY8 KDCA'); // Route with RBV
+     await lsk(page, 'L1');
+     await press(page, 'EXEC');
 
-    await enterText(page, 'RBV');
-    await lsk(page, 'L1');
+     await press(page, 'HOLD');
+     await expectScreenText(page, 'HOLD');
 
-    await expect(page.getByTestId('scratchpad')).not.toContainText('INVALID');
-    await expectScreenText(page, 'RBV');
+     await enterText(page, 'RBV');
+     await lsk(page, 'L1');
 
-    await press(page, 'EXEC');
-    await expect(page.getByTestId('nd-hold-overlay')).toBeVisible();
+     await expect(page.getByTestId('scratchpad')).not.toContainText('INVALID');
+     await expectScreenText(page, 'RBV');
+
+     await press(page, 'EXEC');
+     await expect(page.getByTestId('nd-hold-overlay')).toBeVisible();
 
     await pressFunction(page, 'FIX');
     await enterText(page, 'KJFK');
@@ -239,13 +249,13 @@ test.describe('VirtualCDU Basic', () => {
     await expect(page.getByTestId('nd-panel')).toContainText('RBV');
   });
 
-  test('keeps ND context available without covering CDU controls on iPad', async ({ page }) => {
-    await page.setViewportSize({ width: 820, height: 1180 });
-    await page.goto('/');
-    await dismissWelcome(page);
+   test('keeps ND context available without covering CDU controls on iPad', async ({ page }) => {
+     await page.setViewportSize({ width: 768, height: 1024 }); // Standard iPad dimensions
+     await page.goto('/');
+     await dismissWelcome(page);
 
-    // Switch to Navigation mode which shows both ND and CDU
-    await page.getByTestId('layout-mode-navigation').click();
+     // Switch to Navigation mode which shows both ND and CDU
+     await page.getByTestId('layout-mode-navigation').click();
 
     const ndBox = await page.getByTestId('nd-panel').boundingBox();
     const cduBox = await page.getByTestId('cdu-panel').boundingBox();
