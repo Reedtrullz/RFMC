@@ -89,4 +89,32 @@ test.describe('cockpit layout visual sizing', () => {
     
     await expectNoViewportOverflow(page);
   });
+
+  test('Flight Deck Scan has uncluttered readable instrument layout', async ({ page }) => {
+    await page.goto('/');
+    await dismissWelcome(page);
+
+    await page.getByRole('button', { name: 'Enter Cockpit' }).click();
+    await page.getByRole('button', { name: 'Flight Deck Scan' }).click();
+
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
+    await expect(page.getByTestId('pfd-panel')).toBeVisible();
+    await expect(page.getByTestId('nd-panel')).toBeVisible();
+    await expect(page.getByTestId('cdu-panel')).toBeVisible();
+
+    // Verify secondary panels are NOT visible by default in this mode
+    await expect(page.getByText('PRELIGHT CHECKLIST')).not.toBeVisible();
+    await expect(page.getByText('Required panels are currently hidden')).not.toBeVisible();
+
+    const mcpBox = await page.getByTestId('autoflight-panel').boundingBox();
+    const pfdBox = await page.getByTestId('pfd-panel').boundingBox();
+    const ndBox = await page.getByTestId('nd-panel').boundingBox();
+    const cduBox = await page.getByTestId('cdu-panel').boundingBox();
+
+    // Verify substantial sizes (ensuring they aren't crushed by overlays)
+    expect(mcpBox?.width).toBeGreaterThan(1000);
+    expect(pfdBox?.width).toBeGreaterThan(260);
+    expect(ndBox?.width).toBeGreaterThan(300);
+    expect(cduBox?.width).toBeGreaterThan(260);
+  });
 });

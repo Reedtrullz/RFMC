@@ -85,6 +85,78 @@
   animation: cockpit-hint-pulse 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
+.cockpit-first-run {
+  position: absolute;
+  left: clamp(8px, 1vw, 18px);
+  bottom: clamp(8px, 1vw, 18px);
+  z-index: 30;
+  width: min(520px, calc(100% - 2rem));
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.cockpit-first-run strong {
+  display: block;
+}
+
+.cockpit-first-run span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cockpit-first-run button {
+  flex: 0 0 auto;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 0.35rem 0.55rem;
+  background: rgba(255,255,255,0.05);
+}
+
+.panel-tray {
+  position: absolute;
+  right: clamp(8px, 1vw, 18px);
+  bottom: clamp(8px, 1vw, 18px);
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  pointer-events: auto;
+}
+
+.panel-tray button {
+  color: rgba(255,255,255,0.86);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  background: rgba(3, 6, 7, 0.72);
+  padding: 0.35rem 0.55rem;
+  backdrop-filter: blur(8px);
+}
+
+.panel-tray button:hover {
+  color: #00d7ff;
+  border-color: rgba(0, 215, 255, 0.35);
+}
+
+.cockpit-layout-warning {
+  position: absolute;
+  left: clamp(12px, 1.2vw, 22px);
+  top: clamp(12px, 1.2vw, 22px);
+  z-index: 40;
+  width: min(340px, calc(100% - 2rem));
+  pointer-events: auto;
+}
+
+.cockpit-layout-warning > * {
+  height: auto !important;
+  min-height: 0;
+}
+
 @keyframes cockpit-hint-pulse {
   0% { opacity: 1; filter: brightness(1); }
   50% { opacity: 0.7; filter: brightness(1.4); }

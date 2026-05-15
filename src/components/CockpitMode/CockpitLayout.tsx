@@ -121,7 +121,9 @@ export function CockpitLayout() {
 
       <main className="cockpit-main">
         <FirstRunGuidance />
-        <ModeHelpCard mode={layoutMode} onResetLayout={restoreRecommendedLayout} />
+        {layoutMode !== 'full-deck' && (
+          <ModeHelpCard mode={layoutMode} onResetLayout={restoreRecommendedLayout} />
+        )}
         <div className="cockpit-main__stage">
           {focusedPanel && isInstrumentPanelId(focusedPanel) ? (
             <FocusOverlay panelId={focusedPanel} onClose={() => setFocusedPanel(null)}>
@@ -129,14 +131,17 @@ export function CockpitLayout() {
             </FocusOverlay>
           ) : (
             <>
-              {!validation.valid && (
-                <CockpitEmptyState
-                  mode={layoutMode}
-                  missingPanels={validation.missingRequired}
-                  onRestore={restoreRecommendedLayout}
-                />
-              )}
               {renderLayout(layoutMode, orientation, controls)}
+              
+              {!validation.valid && (
+                <div className="cockpit-layout-warning">
+                  <CockpitEmptyState
+                    mode={layoutMode}
+                    missingPanels={validation.missingRequired}
+                    onRestore={restoreRecommendedLayout}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
