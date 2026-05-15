@@ -1,16 +1,15 @@
 import type { AirbusFCUState } from '@shared';
-import { CockpitPanel } from '../../common/CockpitPanel';
+import { InstrumentShell } from '../../common/InstrumentShell';
 import { FCUDisplay } from './FCUDisplay';
 import { FCUButton } from './FCUButton';
 import { useFMCStore } from '../../../../store/useFMCStore';
+import { PushPullRotary } from '../../common/PushPullRotary';
 
 interface AirbusFCUProps {
   state: AirbusFCUState;
   updateState: (update: Partial<AirbusFCUState>) => void;
   pressButton: (action: string) => void;
 }
-
-import { PushPullRotary } from '../../common/PushPullRotary';
 
 export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
   const truth = useFMCStore(s => s.autopilot.truth);
@@ -32,8 +31,8 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
   };
 
   return (
-    <CockpitPanel variant="airbus" className="w-full">
-      <div className="flex w-full items-center justify-between gap-6 overflow-x-auto pb-2 px-2">
+    <InstrumentShell variant="airbus-fcu" className="w-full">
+      <div className="flex w-full items-center justify-between gap-6 overflow-x-auto pb-4 px-2 pt-2">
         
         {/* SPEED/MACH Section */}
         <div className="flex flex-col items-center gap-3">

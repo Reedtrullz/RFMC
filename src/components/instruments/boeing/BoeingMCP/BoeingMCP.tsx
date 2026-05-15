@@ -1,6 +1,6 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
-import { CockpitPanel } from '../../common/CockpitPanel';
+import { InstrumentShell } from '../../common/InstrumentShell';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
 import { MCPDisplayWindow } from './MCPDisplayWindow';
@@ -16,8 +16,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   
   return (
-    <CockpitPanel variant="boeing" className="w-full">
-      <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-2">
+    <InstrumentShell variant="boeing-mcp" className="w-full">
+      <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-4 pt-2">
         
         {/* FD LEFT */}
         <div className="flex flex-col gap-4 pr-4 border-r border-black/20">
@@ -170,6 +170,6 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
       </div>
-    </CockpitPanel>
+    </InstrumentShell>
   );
 }

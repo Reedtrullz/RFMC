@@ -1,5 +1,6 @@
-import React from 'react';
-import { useFMCStore } from '../../../store/useFMCStore';
+import { useAircraftStore } from '../../../store/aircraftStore';
+import { useAutopilotStore } from '../../../store/autopilotStore';
+import { useFMCStore } from '../../../store/fmcStore';
 import { FMA } from '../common/FMA';
 import { SpeedTape } from '../common/SpeedTape';
 import { AltitudeTape } from '../common/AltitudeTape';
@@ -8,9 +9,18 @@ import { PfdAlerts } from '../common/PfdAlerts';
 import { buildBoeingPFDState } from '@shared';
 
 export function BoeingPFD() {
-  const state = useFMCStore(s => s);
-  const pfd = buildBoeingPFDState(state);
-  const mcp = state.autopilot.boeing;
+  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const autopilot = useAutopilotStore(s => s);
+  const fmc = useFMCStore(s => s);
+  
+  // Aggregate state for the builder (legacy compatibility for now)
+  const aggregatedState = {
+    ...fmc,
+    aircraftState,
+    autopilot
+  };
+
+  const pfd = buildBoeingPFDState(aggregatedState as any);
 
   return (
     <div className="flex h-full w-full flex-col bg-black overflow-hidden font-mono">

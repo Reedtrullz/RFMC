@@ -1,5 +1,12 @@
-import type { ReactNode } from 'react';
-import { BOEING_CDU_GEOMETRY, AIRBUS_MCDU_GEOMETRY, type InstrumentGeometryProfile } from './GeometryProfiles';
+import { 
+  BOEING_CDU_GEOMETRY, 
+  AIRBUS_MCDU_GEOMETRY, 
+  BOEING_ND_GEOMETRY,
+  AIRBUS_ND_GEOMETRY,
+  BOEING_MCP_GEOMETRY,
+  AIRBUS_FCU_GEOMETRY,
+  type InstrumentGeometryProfile 
+} from './GeometryProfiles';
 import { BezelScrew } from './BezelScrew';
 
 export type InstrumentShellVariant =
@@ -30,6 +37,10 @@ export function InstrumentShell({
   const defaults: Partial<Record<InstrumentShellVariant, InstrumentGeometryProfile>> = {
     'boeing-cdu': BOEING_CDU_GEOMETRY,
     'airbus-mcdu': AIRBUS_MCDU_GEOMETRY,
+    'boeing-nd': BOEING_ND_GEOMETRY,
+    'airbus-nd': AIRBUS_ND_GEOMETRY,
+    'boeing-mcp': BOEING_MCP_GEOMETRY,
+    'airbus-fcu': AIRBUS_FCU_GEOMETRY,
   };
 
   const profile = { ...defaults[variant], ...geometryProfile };
