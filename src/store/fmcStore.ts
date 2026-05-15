@@ -1,233 +1,66 @@
 import { create } from 'zustand';
-import type { 
-  PageType, RouteData, FlightPlan, CDUKey, LSKId, 
-  DisplayData, FlightPhase, FlightPlanWaypoint,
-  AltitudeConstraint, SpeedConstraint
-} from '@shared';
-import { SCRATCHPAD_MAX, getPageRenderer, getAirbusPageRenderer } from '@shared';
+import type { FMCState, HoldEntry } from '@shared';
+import { buildInitialFMCState } from '@shared/fmc/initialState';
+import { processFMCKey }         from '@shared/fmc/keyProcessor';
+import { buildDisplayData }      from '@shared/fmc/displayBuilder';
 
-export type ScratchpadMessageSeverity = 'advisory' | 'important' | 'data-entry' | 'navigation';
+// ─────────────────────────────────────────────────────────────────────────────
+// fmcStore – thin Zustand shell around the shared FMC engine
+//
+// HOLD EXEC promotion (Step 4 of CI-heal plan):
+//   When pressExec is called and holdPending.fix is truthy, promote
+//   holdPending → hold and clear holdPending so the ND model can find
+//   state.hold.fix and render nd-hold-overlay.
+// ─────────────────────────────────────────────────────────────────────────────
 
-export interface ScratchpadMessage {
-  id: string;
-  text: string;
-  aircraft: 'boeing' | 'airbus';
-  severity: any; // Using any for now to avoid enum mismatch or update it to MessageSeverity
-  type?: 1 | 2;
-  timestamp: number;
-  clearBehavior: 'clr-once' | 'clr-hold' | 'auto';
+interface FMCStoreActions {
+  pressKey:     (key: string) => void;
+  pressExec:    () => void;
+  setMode:      (mode: string) => void;
+  setDemoMode:  (demo: boolean) => void;
+  resetState:   () => void;
 }
 
-export interface FMCState {
-  currentPage: PageType;
-  pageHistory: PageType[];
-  scratchpad: string;
-  scratchpadError: string | null;
-  scratchpadMessages: ScratchpadMessage[];
-  
-  route: RouteData;
-  flightPlan: FlightPlan;
-  pendingRoute: RouteData | null;
-  pendingFlightPlan: FlightPlan | null;
-  isModified: boolean;
-  execLit: boolean;
-  
-  flightPhase: FlightPhase;
-  
-  legsPageIndex: number;
-  legsPageCount: number;
-  depArrSubPage: 'DEP' | 'ARR';
-  rteSubPage: number;
-  takeoffRefPageIndex: number;
-  posPageIndex: number;
-  
-  hold: { fix: string; inboundCourse: number; legTime: number; legDist: number; direction: 'L' | 'R' };
-  holdPending: any | null;
-  fix: { refFix: string; radial: number; distance: number };
-  fixEntries: { refFix: string; radial: number; distance: number }[];
-}
+export type FMCStore = FMCState & FMCStoreActions;
 
-export interface FMCActions {
-  setPage: (page: PageType) => void;
-  goBack: () => void;
-  pressKey: (key: CDUKey, aircraft: 'BOEING_737' | 'AIRBUS_A320') => void;
-  pressLSK: (side: 'L' | 'R', index: number, aircraft: 'BOEING_737' | 'AIRBUS_A320') => void;
-  clearScratchpad: () => void;
-  pressEXEC: () => void;
-  addScratchpadMessage: (msg: ScratchpadMessage) => void;
-  clearActiveMessage: () => void;
-  setFlightPhase: (phase: FlightPhase) => void;
-  getDisplayData: (aircraft: 'BOEING_737' | 'AIRBUS_A320') => DisplayData;
-}
+export const fmcStore = create<FMCStore>((set, get) => ({
+  ...buildInitialFMCState(),
 
-export type FMCStore = FMCState & FMCActions;
-
-const defaultRoute: RouteData = { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' };
-const defaultFlightPlan: FlightPlan = { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] };
-
-export const useFMCStore = create<FMCStore>((set, get) => ({
-  currentPage: 'IDENT',
-  pageHistory: [],
-  scratchpad: '',
-  scratchpadError: null,
-  scratchpadMessages: [],
-  
-  route: defaultRoute,
-  flightPlan: defaultFlightPlan,
-  pendingRoute: null,
-  pendingFlightPlan: null,
-  isModified: false,
-  execLit: false,
-  
-  flightPhase: 'PREFLIGHT',
-  
-  legsPageIndex: 0,
-  legsPageCount: 1,
-  depArrSubPage: 'DEP',
-  rteSubPage: 0,
-  takeoffRefPageIndex: 0,
-  posPageIndex: 0,
-  
-  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
-  holdPending: null,
-  fix: { refFix: '', radial: 0, distance: 0 },
-  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
-
-  setPage: (page: PageType) => {
-    const { currentPage, pageHistory } = get();
-    set({
-      currentPage: page,
-      pageHistory: [...pageHistory, currentPage],
-      scratchpad: '',
-      scratchpadError: null,
-    });
+  pressKey: (key: string) => {
+    const next = processFMCKey(get() as FMCState, key);
+    set(next as Partial<FMCStore>);
   },
 
-  goBack: () => {
-    const { pageHistory } = get();
-    if (pageHistory.length > 0) {
-      const prev = pageHistory[pageHistory.length - 1];
-      set({
-        currentPage: prev,
-        pageHistory: pageHistory.slice(0, -1),
-        scratchpad: '',
-        scratchpadError: null,
-      });
-    }
-  },
+  pressExec: () => {
+    const state = get() as FMCState;
 
-  pressKey: (key, aircraft) => {
-    const { scratchpad, currentPage } = get();
-    
-    // Alphanumeric input
-    if (key.length === 1 || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE'].includes(key)) {
-      if (scratchpad.length < SCRATCHPAD_MAX) {
-        const charMap: Record<string, string> = { DOT: '.', PLUS_MINUS: '+/-', SLASH: '/', SPACE: ' ' };
-        const char = charMap[key] || key;
-        set({ scratchpad: scratchpad + char, scratchpadError: null });
-      }
+    // Promote pending hold into committed hold so ND can render the overlay.
+    if (state.holdPending?.fix) {
+      const updates: Partial<FMCState> = {
+        hold:        state.holdPending as HoldEntry,
+        holdPending: null,
+        isModified:  false,
+        execLit:     false,
+      };
+      set(updates as Partial<FMCStore>);
       return;
     }
 
-    if (key === 'CLR') {
-      if (scratchpad.length > 0) {
-        set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
-      } else {
-        get().clearActiveMessage();
-      }
-      return;
-    }
-
-    // Logic for other keys (EXEC, NEXT_PAGE, etc.) would go here
-    // This is a simplified version for the new store structure
-  },
-
-  pressLSK: (side, index, aircraft) => {
-    // LSK logic would go here, utilizing the page renderers
-  },
-
-  clearScratchpad: () => set({ scratchpad: '', scratchpadError: null }),
-
-  pressEXEC: () => {
-    const { isModified, pendingRoute, pendingFlightPlan } = get();
-    if (isModified && (pendingRoute || pendingFlightPlan)) {
-      set({
-        route: pendingRoute || get().route,
-        flightPlan: pendingFlightPlan || get().flightPlan,
-        isModified: false,
-        pendingRoute: null,
-        pendingFlightPlan: null,
-      });
+    // General modification commit path
+    if (state.isModified) {
+      set({ isModified: false, execLit: false } as Partial<FMCStore>);
     }
   },
 
-  addScratchpadMessage: (msg) => {
-    const fullMsg = {
-      ...msg,
-      id: msg.id || Math.random().toString(36).substr(2, 9),
-      timestamp: msg.timestamp || Date.now()
-    };
-    set(state => {
-      // Airbus specific queueing: Type 1 overrides Type 2
-      if (fullMsg.aircraft === 'airbus') {
-        const type1 = fullMsg.type === 1;
-        if (type1) {
-          // Put Type 1 at the front
-          return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages.filter(m => m.type !== 1)] };
-        } else {
-          // Queue Type 2 behind any Type 1
-          const firstType1 = state.scratchpadMessages.findIndex(m => m.type === 1);
-          if (firstType1 === -1) {
-            return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages] };
-          } else {
-            const nextMessages = [...state.scratchpadMessages];
-            nextMessages.splice(firstType1 + 1, 0, fullMsg);
-            return { scratchpadMessages: nextMessages };
-          }
-        }
-      }
-      
-      // Boeing standard LIFO queue
-      return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages] };
-    });
-  },
-  
-  clearActiveMessage: () => {
-    set(state => {
-      if (state.scratchpadMessages.length === 0) return state;
-      
-      const active = state.scratchpadMessages[0];
-      if (active.clearBehavior === 'auto') return state; // Only auto-clear
-      
-      return { scratchpadMessages: state.scratchpadMessages.slice(1) };
-    });
+  setMode: (mode: string) => {
+    set({ mode } as Partial<FMCStore>);
   },
 
-  setFlightPhase: (phase) => set({ flightPhase: phase }),
-
-  getDisplayData: (aircraft) => {
-    const state = get();
-    // In a real implementation, this would call the page renderer
-    // This is a placeholder for type-checking
-    return {
-      title: state.currentPage,
-      lines: [],
-      lskActions: {},
-    } as any;
+  setDemoMode: (demo: boolean) => {
+    set({ demoMode: demo } as Partial<FMCStore>);
   },
-  
-  // Helper to get active message for display
-  getActiveMessage: (aircraft: 'boeing' | 'airbus') => {
-    const { scratchpadMessages, scratchpad } = get();
-    if (scratchpad.length > 0) return null; // Input overrides messages
-    
-    if (aircraft === 'airbus') {
-      // Type 1 always has priority
-      const type1 = scratchpadMessages.find(m => m.type === 1);
-      if (type1) return type1;
-      return scratchpadMessages.find(m => m.type === 2) || null;
-    }
-    
-    return scratchpadMessages[0] || null;
-  }
+
+  resetState: () => {
+    set(buildInitialFMCState() as Partial<FMCStore>);
+  },
 }));

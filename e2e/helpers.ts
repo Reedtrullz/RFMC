@@ -52,9 +52,17 @@ export async function dismissWelcome(page: Page) {
   // Only switch to full-deck if we are already confirmed in cockpit mode AND the toolbar is
   // accessible. This avoids racing with tests that enter cockpit mode themselves, and prevents
   // nd-panel timeout in fmc-focus mode (where nd is intentionally hidden).
-  const isCockpitReady = await page.evaluate(() => {
-    return (window as any).useCockpitLayoutStore?.getState().cockpitMode === true;
-  });
+  //
+  // Wrapped in try/catch: an earlier timeout in this function must not cascade into an
+  // unhandled rejection that aborts the entire test run.
+  let isCockpitReady = false;
+  try {
+    isCockpitReady = await page.evaluate(() => {
+      return (window as any).useCockpitLayoutStore?.getState().cockpitMode === true;
+    });
+  } catch {
+    isCockpitReady = false;
+  }
 
   if (isCockpitReady) {
     const toolbar = page.getByTestId('cockpit-panel-toolbar');

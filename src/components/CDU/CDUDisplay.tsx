@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useDisplaySettings }        from '../../store/displaySettingsStore';
 import { getRenderer }               from '../../renderers/rendererRegistry';
-import { gridToPlainText }           from '@virtual-cdu/shared/fmc/displayGrid';
-import type { RendererDisplayData }  from '../../renderers/types';
+import { gridToPlainText }           from '@shared/fmc/displayGrid';
+import type { RendererDisplayData, DisplaySegment } from '../../renderers/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CDUDisplay
@@ -88,8 +88,8 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
   // actually toggle. The interval is only active when needed and is torn down
   // on cleanup to avoid timer leaks.
   const hasBlinking =
-    data.grid.segments.some(s => s.blink) ||
-    data.scratchpad.some(s => s.blink);
+    data.grid.segments.some((s: DisplaySegment) => s.blink) ||
+    data.scratchpad.some((s: DisplaySegment) => s.blink);
 
   useEffect(() => {
     if (!hasBlinking) return;

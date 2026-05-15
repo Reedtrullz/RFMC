@@ -1,7 +1,7 @@
 import { BaseRenderer, SCRATCHPAD_ROW } from './BaseRenderer';
 import type { RendererDisplayData, RenderOptions } from './types';
-import type { DisplayColor } from '@virtual-cdu/shared/fmc/displayColors';
-import { buildCells } from '@virtual-cdu/shared/fmc/displayGrid';
+import type { DisplayColor } from '@shared/fmc/displayColors';
+import { buildCells } from '@shared/fmc/displayGrid';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NG LCD Renderer – clean, professional Boeing 737-800 LCD CDU aesthetic

@@ -1,7 +1,7 @@
 import { BaseRenderer, SCRATCHPAD_ROW } from './BaseRenderer';
 import type { RendererDisplayData, RenderOptions } from './types';
-import type { DisplayColor } from '@virtual-cdu/shared/fmc/displayColors';
-import { buildCells } from '@virtual-cdu/shared/fmc/displayGrid';
+import type { DisplayColor } from '@shared/fmc/displayColors';
+import { buildCells } from '@shared/fmc/displayGrid';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Classic CRT Renderer – retro green-phosphor Boeing CDU aesthetic
@@ -80,7 +80,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
       ctx.globalAlpha = 1;
     }
 
-    // ── 3. Page content rows (0–13) ───────────────────────────────────────────
+    // ── 3. Page content rows (0–13) ──────────────────────────────────────────
     const cells = buildCells(data.grid);
     const cols  = data.grid.columns;
 
@@ -127,7 +127,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
       }
     }
 
-    // ── 4. Scratchpad (per-segment, below page rows) ─────────────────────────
+    // ── 4. Scratchpad (per-segment, below page rows) ──────────────────────────
     this._drawScratchpad(ctx, canvas, data, t);
 
     // ── 5. Capture for persistence ────────────────────────────────────────────
