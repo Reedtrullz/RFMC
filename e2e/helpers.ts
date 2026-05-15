@@ -49,32 +49,47 @@ export async function dismissWelcome(page: Page) {
     console.warn('[E2E Helper] dismissWelcome: cdu-panel not visible within timeout, continuing...');
   }
 
-  // If we are in Cockpit Mode, switch to Full Deck for legacy test compatibility
+  // If we are in Cockpit Mode, ensure we are in Full Deck for legacy test compatibility
   // This is only necessary if the test doesn't explicitly switch modes itself
-  const fullDeckSelector = page.getByTestId('layout-mode-full-deck');
+  await ensureTrainingMode(page, 'full-deck');
+}
+
+/**
+ * Ensures the specified training mode is active.
+ */
+export async function ensureTrainingMode(page: Page, mode: string) {
+  const isCockpit = await page.evaluate(() => {
+    return (window as any).useCockpitLayoutStore?.getState().cockpitMode === true;
+  });
+
+  if (!isCockpit) return;
+
+  const selector = page.getByTestId(`layout-mode-${mode}`);
   try {
-    // Wait for the layout buttons to definitely be in the DOM and visible
-    await fullDeckSelector.waitFor({ state: 'visible', timeout: 5000 });
+    await selector.waitFor({ state: 'visible', timeout: 5000 });
     
-    // Check if we are already in full-deck to avoid redundant clicks
-    const isFullDeck = await page.evaluate(() => {
-      const state = (window as any).useCockpitLayoutStore?.getState();
-      return state?.cockpitLayoutMode === 'full-deck';
+    // Check current state
+    const currentMode = await page.evaluate(() => {
+      return (window as any).useCockpitLayoutStore?.getState().cockpitLayoutMode;
     });
 
-    if (!isFullDeck) {
-      await fullDeckSelector.click();
+    if (currentMode !== mode) {
+      await selector.click();
+      // Wait for state sync
+      await page.waitForFunction((m) => {
+        return (window as any).useCockpitLayoutStore?.getState().cockpitLayoutMode === m;
+      }, mode, { timeout: 5000 });
     }
-    
-    // Wait for the main instruments to be visible to confirm layout
-    await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId('pfd-panel')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
-    
-    // Extra stabilization delay to ensure React effects have finished
-    await page.waitForTimeout(500);
+
+    // Wait for core instruments of this mode to be visible
+    if (mode === 'full-deck' || mode === 'navigation') {
+      await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
+    }
+    if (mode === 'full-deck' || mode === 'navigation' || mode === 'automation') {
+      await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
+    }
   } catch (e) {
-    // Already in full view or button not present, continue
+    console.warn(`[E2E Helper] Failed to ensure training mode ${mode}:`, e.message);
   }
 }
 
