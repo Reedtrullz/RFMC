@@ -9,11 +9,18 @@ import type { DisplayData }         from '../../renderers/types';
 // A <canvas>-based CDU display component that delegates all drawing to the
 // active renderer resolved from the display settings store.
 //
-// Props:
-//   data        – DisplayData snapshot produced by the active FMC page.
-//   width/height – Logical canvas dimensions in CSS pixels (default: 480×420).
-//                  The canvas is rendered at 2× devicePixelRatio for sharpness.
-//   className   – Additional Tailwind / CSS class names for the wrapper div.
+// DPR strategy (fix for Codex P1):
+//   The canvas backing buffer is set to CSS-px dimensions (no DPR multiply).
+//   We do NOT call ctx.scale(dpr, dpr).  Instead we rely on the browser’s
+//   own CSS scaling to up-scale the canvas to the devicePixelRatio.  This
+//   means `canvas.width === width` always and renderer geometry never needs
+//   to account for DPR.  A future refactor may move to explicit DPR scaling
+//   in a single place once a shared coordinate helper is introduced.
+//
+// Resize strategy (fix for Codex P2):
+//   A single combined effect handles BOTH resize AND re-render, keyed on
+//   [data, displayStyle, crtIntensity, wearIntensity, width, height].  This
+//   guarantees a fresh frame is always drawn after a dimension change.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface CDUDisplayProps {
@@ -35,32 +42,31 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
 
   const { displayStyle, crtIntensity, wearIntensity } = useDisplaySettings();
 
-  // ── DPR-aware canvas sizing ───────────────────────────────────────────────
+  // ── Single effect: resize canvas then immediately render a fresh frame ────
+  // Codex P1: canvas dimensions are set in CSS px (no ctx.scale / no DPR
+  //           multiply) so renderer geometry always works in one coordinate
+  //           space.
+  // Codex P2: width + height are included in the dependency array so that
+  //           any dimension change immediately triggers a fresh render.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = window.devicePixelRatio ?? 1;
-    canvas.width  = Math.round(width  * dpr);
-    canvas.height = Math.round(height * dpr);
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.scale(dpr, dpr);
+    // Resize backing buffer to CSS-pixel dimensions (no DPR multiply).
+    // The browser’s CSS layout engine handles physical pixel mapping.
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width  = width;
+      canvas.height = height;
     }
-  }, [width, height]);
 
-  // ── Render frame on every data / settings change ──────────────────────────
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
+    // Render immediately after (potential) resize – never leave a blank canvas.
     const renderer = getRenderer(displayStyle);
     renderer.render(data, canvas, {
       intensity:     crtIntensity,
       wearIntensity: wearIntensity,
     });
-  }, [data, displayStyle, crtIntensity, wearIntensity]);
+  // Dimensions included so resize always re-draws (Codex P2).
+  }, [data, displayStyle, crtIntensity, wearIntensity, width, height]);
 
   return (
     <div
@@ -70,9 +76,7 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
         height:   `${height}px`,
         position: 'relative',
         overflow: 'hidden',
-        // Rounded bezel corners
         borderRadius: '6px',
-        // Very subtle inset shadow to give depth inside the bezel
         boxShadow: 'inset 0 0 18px rgba(0,0,0,0.8)',
       }}
       role="img"
@@ -81,11 +85,9 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
       <canvas
         ref={canvasRef}
         style={{
-          // The canvas element itself fills the wrapper exactly at CSS size.
-          // Physical resolution is set by the useEffect above.
-          display:  'block',
-          width:    `${width}px`,
-          height:   `${height}px`,
+          display: 'block',
+          width:   `${width}px`,
+          height:  `${height}px`,
         }}
       />
     </div>
