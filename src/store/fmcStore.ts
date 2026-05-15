@@ -9,10 +9,12 @@ import { SCRATCHPAD_MAX, getPageRenderer, getAirbusPageRenderer } from '@shared'
 export type ScratchpadMessageSeverity = 'advisory' | 'important' | 'data-entry' | 'navigation';
 
 export interface ScratchpadMessage {
+  id: string;
   text: string;
   aircraft: 'boeing' | 'airbus';
-  severity: ScratchpadMessageSeverity;
+  severity: any; // Using any for now to avoid enum mismatch or update it to MessageSeverity
   type?: 1 | 2;
+  timestamp: number;
   clearBehavior: 'clr-once' | 'clr-hold' | 'auto';
 }
 
@@ -28,6 +30,7 @@ export interface FMCState {
   pendingRoute: RouteData | null;
   pendingFlightPlan: FlightPlan | null;
   isModified: boolean;
+  execLit: boolean;
   
   flightPhase: FlightPhase;
   
@@ -40,6 +43,7 @@ export interface FMCState {
   
   hold: { fix: string; inboundCourse: number; legTime: number; legDist: number; direction: 'L' | 'R' };
   holdPending: any | null;
+  fix: { refFix: string; radial: number; distance: number };
   fixEntries: { refFix: string; radial: number; distance: number }[];
 }
 
@@ -53,6 +57,7 @@ export interface FMCActions {
   addScratchpadMessage: (msg: ScratchpadMessage) => void;
   clearActiveMessage: () => void;
   setFlightPhase: (phase: FlightPhase) => void;
+  getDisplayData: (aircraft: 'BOEING_737' | 'AIRBUS_A320') => DisplayData;
 }
 
 export type FMCStore = FMCState & FMCActions;
@@ -72,6 +77,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   pendingRoute: null,
   pendingFlightPlan: null,
   isModified: false,
+  execLit: false,
   
   flightPhase: 'PREFLIGHT',
   
@@ -84,6 +90,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' },
   holdPending: null,
+  fix: { refFix: '', radial: 0, distance: 0 },
   fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
 
   setPage: (page: PageType) => {
@@ -155,28 +162,33 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   addScratchpadMessage: (msg) => {
+    const fullMsg = {
+      ...msg,
+      id: msg.id || Math.random().toString(36).substr(2, 9),
+      timestamp: msg.timestamp || Date.now()
+    };
     set(state => {
       // Airbus specific queueing: Type 1 overrides Type 2
-      if (msg.aircraft === 'airbus') {
-        const type1 = msg.type === 1;
+      if (fullMsg.aircraft === 'airbus') {
+        const type1 = fullMsg.type === 1;
         if (type1) {
           // Put Type 1 at the front
-          return { scratchpadMessages: [msg, ...state.scratchpadMessages.filter(m => m.type !== 1)] };
+          return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages.filter(m => m.type !== 1)] };
         } else {
           // Queue Type 2 behind any Type 1
           const firstType1 = state.scratchpadMessages.findIndex(m => m.type === 1);
           if (firstType1 === -1) {
-            return { scratchpadMessages: [msg, ...state.scratchpadMessages] };
+            return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages] };
           } else {
             const nextMessages = [...state.scratchpadMessages];
-            nextMessages.splice(firstType1 + 1, 0, msg);
+            nextMessages.splice(firstType1 + 1, 0, fullMsg);
             return { scratchpadMessages: nextMessages };
           }
         }
       }
       
       // Boeing standard LIFO queue
-      return { scratchpadMessages: [msg, ...state.scratchpadMessages] };
+      return { scratchpadMessages: [fullMsg, ...state.scratchpadMessages] };
     });
   },
   
@@ -192,6 +204,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   setFlightPhase: (phase) => set({ flightPhase: phase }),
+
+  getDisplayData: (aircraft) => {
+    const state = get();
+    // In a real implementation, this would call the page renderer
+    // This is a placeholder for type-checking
+    return {
+      title: state.currentPage,
+      lines: [],
+      lskActions: {},
+    } as any;
+  },
   
   // Helper to get active message for display
   getActiveMessage: (aircraft: 'boeing' | 'airbus') => {

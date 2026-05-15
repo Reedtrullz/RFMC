@@ -68,7 +68,7 @@ export const useAircraftStore = create<AircraftStore>((set) => ({
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   
   aircraftState: null,
-  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' },
+  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, xteNm: 0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' },
   activeNavSource: 'IRS',
   sensors: [
     { source: 'GPS', available: true, positionErrorNm: 0.05 },

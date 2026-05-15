@@ -64,7 +64,6 @@ export function CockpitLayout() {
   const highContrast = useCockpitLayoutStore(s => s.highContrast);
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const orientation = useOrientation();
-  const orientation = useOrientation();
   
   useWakeLock(true);
 

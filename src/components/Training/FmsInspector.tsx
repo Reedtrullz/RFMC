@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useFMCStore, scenarioEngine } from '../../store/useFMCStore';
+import { useFMCStore } from '../../store/fmcStore';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useTrainingStore } from '../../store/trainingStore';
 import { useAlertStore } from '../../store/alertStore';
-import { VerticalProfileEngine, PerformanceEngine } from '@shared';
+import { VerticalProfileEngine } from '@shared';
 import { SCENARIOS } from '@shared/fmc/scenarios';
+import { scenarioEngine } from '@shared/training/scenarioEngine';
 
 export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,10 +14,10 @@ export function FmsInspector() {
   const aircraftState = useAircraftStore(s => s.aircraftState);
   const aircraft = useAircraftStore(s => s.aircraft);
   const flightPhase = useFMCStore(s => s.flightPhase);
-  const activeNavSource = useFMCStore(s => s.activeNavSource);
-  const navPerformance = useFMCStore(s => s.navPerformance);
+  const activeNavSource = useAircraftStore(s => s.activeNavSource);
+  const navPerformance = useAircraftStore(s => s.navPerformance);
   const flightPlan = useFMCStore(s => s.flightPlan);
-  const performance = useFMCStore(s => s.performance);
+  const performance = useAircraftStore(s => s.performance);
   const scratchpadMessages = useFMCStore(s => s.scratchpadMessages);
   
   const activeScenario = useTrainingStore(s => s.activeScenario);
@@ -160,7 +161,7 @@ export function FmsInspector() {
               </div>
 
               <button 
-                onClick={() => useFMCStore.setState({ isReportVisible: true })}
+                onClick={() => useTrainingStore.setState({ isReportVisible: true })}
                 className="w-full mt-2 bg-cdu-cyan text-black font-black p-2 rounded-sm text-[9px] uppercase hover:bg-cdu-cyan/80 transition-colors"
               >
                 Finish & Debrief
@@ -173,8 +174,9 @@ export function FmsInspector() {
                 onChange={(e) => {
                   const s = SCENARIOS[e.target.value];
                   if (s) {
-                    scenarioEngine.startScenario(s);
-                    useFMCStore.setState({ activeScenario: { ...s } });
+                    scenarioEngine.loadScenario(s as any);
+                    scenarioEngine.start();
+                    useTrainingStore.setState({ activeScenario: { ...s } });
                   }
                 }}
                 defaultValue=""
@@ -231,7 +233,7 @@ export function FmsInspector() {
           Debrief {debriefMode ? 'Active' : 'Off'}
         </button>
         <button 
-          onClick={() => addMessage("GPS 1 FAILURE", "ALERT")}
+          onClick={() => addMessage("GPS 1 FAILURE", "ALERT", aircraft === 'BOEING_737' ? 'boeing' : 'airbus')}
           className="bg-cdu-error/10 hover:bg-cdu-error/20 text-cdu-error p-2 rounded-sm border-2 border-cdu-error/40 font-black uppercase text-[9px] transition-all"
         >
           Fail GPS

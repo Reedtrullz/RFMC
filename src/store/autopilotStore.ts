@@ -9,7 +9,7 @@ export interface AutopilotStore {
   
   updateBoeingMCP: (update: Partial<BoeingMCPState>) => void;
   updateAirbusFCU: (update: Partial<AirbusFCUState>) => void;
-  pressMCPButton: (action: string, aircraft: 'BOEING_737' | 'AIRBUS_A320') => void;
+  pressMCPButton: (action: keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE', aircraft: 'BOEING_737' | 'AIRBUS_A320') => void;
 }
 
 const defaultBoeingMCP: BoeingMCPState = {
@@ -84,8 +84,8 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
 
   pressMCPButton: (action, aircraft) => {
     if (aircraft === 'BOEING_737') {
-      const newState = processBoeingMCPAction(get().boeing, action);
-      set({ boeing: newState });
+      const newState = processBoeingMCPAction(get().boeing, action as any);
+      set({ boeing: newState as BoeingMCPState });
     } else {
       // Airbus FCU action processing placeholder
     }

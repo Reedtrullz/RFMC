@@ -65,7 +65,8 @@ export const useAlertStore = create<AlertStore>((set, get) => ({
       from,
       text,
       timestamp: Date.now(),
-      read: false
+      read: false,
+      type: 'AOC'
     };
     set(state => ({
       atsu: {

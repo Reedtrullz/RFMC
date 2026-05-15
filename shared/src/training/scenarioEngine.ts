@@ -13,6 +13,11 @@ export class TrainingScenarioEngine {
     this.scenario = scenario;
     this.isHintsEnabled = options.hintsEnabled ?? true;
   }
+  
+  loadScenario(scenario: TrainingScenario) {
+    this.scenario = scenario;
+    this.currentStepIndex = 0;
+  }
 
   start() {
     this.startTime = Date.now();
@@ -166,3 +171,12 @@ export class TrainingScenarioEngine {
     };
   }
 }
+
+// Singleton for easier integration with existing components
+export const scenarioEngine = new TrainingScenarioEngine({ 
+  id: 'placeholder', 
+  name: 'Placeholder', 
+  steps: [], 
+  estimatedMinutes: 5,
+  passCriteria: { minScore: 80 } 
+} as any);

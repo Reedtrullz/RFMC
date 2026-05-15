@@ -140,8 +140,8 @@ export interface FmcMessage {
   id: string;
   text: string;
   severity: MessageSeverity;
-  color: 'white' | 'amber';
   timestamp: number;
+  aircraft?: 'boeing' | 'airbus';
   type?: 1 | 2; // Airbus Type I or II
 }
 
@@ -364,6 +364,8 @@ export interface TutorialStep {
   validate: (input: string, state: FMCState) => boolean;
   page: PageType;
   highlightField?: string;
+  highlightControl?: string;
+  hint?: string;
   role?: 'PF' | 'PM';
   requiredPanels?: PanelId[];
   preferredLayout?: CockpitLayoutMode;

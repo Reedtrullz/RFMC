@@ -6,6 +6,7 @@ import { useFMCStore } from '../../store/fmcStore';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useAutopilotStore } from '../../store/autopilotStore';
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
+import { useTrainingStore } from '../../store/trainingStore';
 import { BoeingNDFrame } from './frame/BoeingNDFrame';
 import { AirbusNDFrame } from './frame/AirbusNDFrame';
 import { NDControls } from './NDControls';
@@ -18,30 +19,28 @@ export function NavigationDisplay() {
   const aircraftState = useAircraftStore(s => s.aircraftState);
   const position = useAircraftStore(s => s.position);
   
-  const autopilot = useAutopilotStore(s => s.autopilot);
+  const autopilot = useAutopilotStore(s => s);
   
-  const efisL = useFMCStore(s => s.efisL);
-  const efisR = useFMCStore(s => s.efisR);
+  const efisL = useCockpitLayoutStore(s => s.efisL);
+  const efisR = useCockpitLayoutStore(s => s.efisR);
   const flightPlan = useFMCStore(s => s.flightPlan);
   const route = useFMCStore(s => s.route);
   const isModified = useFMCStore(s => s.isModified);
   const pendingFlightPlan = useFMCStore(s => s.pendingFlightPlan);
   const pendingRoute = useFMCStore(s => s.pendingRoute);
-  const selectedPlanWaypointIndex = useFMCStore(s => s.selectedPlanWaypointIndex);
+  const selectedPlanWaypointIndex = useTrainingStore(s => s.selectedPlanWaypointIndex);
   const fixEntries = useFMCStore(s => s.fixEntries);
   const fix = useFMCStore(s => s.fix);
   const hold = useFMCStore(s => s.hold);
   const holdPending = useFMCStore(s => s.holdPending);
-  const trafficTargets = useFMCStore(s => s.trafficTargets);
-  const activeNavSource = useFMCStore(s => s.activeNavSource);
-  const navPerformance = useFMCStore(s => s.navPerformance);
-  const performance = useFMCStore(s => s.performance);
+  const trafficTargets = useCockpitLayoutStore(s => s.trafficTargets);
+  const activeNavSource = useAircraftStore(s => s.activeNavSource);
+  const navPerformance = useAircraftStore(s => s.navPerformance);
+  const performance = useAircraftStore(s => s.performance);
   
   // Training and Demo state
-  // Assuming they are still in fmcStore or moved to trainingStore
-  // For now keeping them from fmcStore if they exist there
-  const demoMode = useFMCStore(s => s.demoMode);
-  const tutorialActive = useFMCStore(s => s.tutorialActive);
+  const demoMode = useTrainingStore(s => s.trainingActive);
+  const tutorialActive = useTrainingStore(s => s.tutorialActive);
 
   const side = 'L'; // In a multi-display setup, this would be a prop
   const efis = side === 'L' ? efisL : efisR;

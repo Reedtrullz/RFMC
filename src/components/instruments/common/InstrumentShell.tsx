@@ -1,3 +1,4 @@
+import React, { ReactNode } from 'react';
 import { 
   BOEING_CDU_GEOMETRY, 
   AIRBUS_MCDU_GEOMETRY, 

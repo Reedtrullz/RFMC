@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CockpitLayoutMode, PanelId } from '@shared';
+import type { CockpitLayoutMode, PanelId, EFISState, TCASTarget } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
 export type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
@@ -44,6 +44,9 @@ export interface CockpitLayoutState {
   highContrast: boolean;
   brightness: number;
   showKeyboardHelp: boolean;
+  efisL: EFISState;
+  efisR: EFISState;
+  trafficTargets: TCASTarget[];
 }
 
 export interface CockpitLayoutActions {
@@ -62,6 +65,8 @@ export interface CockpitLayoutActions {
   toggleHighContrast: () => void;
   setBrightness: (b: number) => void;
   toggleKeyboardHelp: () => void;
+  setEFISMode: (side: 'L' | 'R', mode: any) => void;
+  setEFISRange: (side: 'L' | 'R', range: number) => void;
 }
 
 export type CockpitLayoutStore = CockpitLayoutState & CockpitLayoutActions;
@@ -76,6 +81,9 @@ export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
   highContrast: false,
   brightness: 100,
   showKeyboardHelp: false,
+  efisL: { mode: 'MAP', range: 40, overlays: { wpt: false, arpt: false, sta: false, data: false, pos: false, terr: false, wxr: false, tfc: false, cstr: false }, centered: true, side: 'L' },
+  efisR: { mode: 'MAP', range: 40, overlays: { wpt: false, arpt: false, sta: false, data: false, pos: false, terr: false, wxr: false, tfc: false, cstr: false }, centered: true, side: 'R' },
+  trafficTargets: [],
 
   setCockpitMode: (enabled: boolean) => set({ cockpitMode: enabled }),
   
@@ -142,4 +150,10 @@ export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
   toggleHighContrast: () => set(state => ({ highContrast: !state.highContrast })),
   setBrightness: (b: number) => set({ brightness: Math.min(100, Math.max(0, b)) }),
   toggleKeyboardHelp: () => set(state => ({ showKeyboardHelp: !state.showKeyboardHelp })),
+  setEFISMode: (side, mode) => set(state => ({
+    [side === 'L' ? 'efisL' : 'efisR']: { ...state[side === 'L' ? 'efisL' : 'efisR'], mode }
+  } as any)),
+  setEFISRange: (side, range) => set(state => ({
+    [side === 'L' ? 'efisL' : 'efisR']: { ...state[side === 'L' ? 'efisL' : 'efisR'], range }
+  } as any)),
 }));

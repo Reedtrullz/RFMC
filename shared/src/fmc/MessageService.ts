@@ -16,7 +16,6 @@ export class MessageService {
       id,
       text,
       severity,
-      color,
       timestamp: Date.now(),
       type,
     };

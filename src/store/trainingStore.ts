@@ -30,6 +30,10 @@ export interface TrainingState {
   trainingScore: TrainingScore | null;
   trainingStepIndex: number;
   trainingCompleted: boolean;
+  activeScenario: any | null;
+  debriefMode: boolean;
+  selectedPlanWaypointIndex: number | null;
+  isReportVisible: boolean;
 }
 
 export interface TrainingActions {
@@ -45,6 +49,11 @@ export interface TrainingActions {
   startTraining: (scenarioId: string) => void;
   stopTraining: () => void;
   processTrainingAction: (action: any) => void;
+  setDebriefMode: (active: boolean) => void;
+  setSelectedPlanWaypoint: (index: number | null) => void;
+  stepPlanForward: () => void;
+  stepPlanBackward: () => void;
+  resetPlanWaypoint: () => void;
 }
 
 export type TrainingStore = TrainingState & TrainingActions;
@@ -70,6 +79,10 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
   trainingScore: null,
   trainingStepIndex: 0,
   trainingCompleted: false,
+  activeScenario: null,
+  debriefMode: false,
+  selectedPlanWaypointIndex: null,
+  isReportVisible: false,
 
   startTutorial: (scenarioName: string) => {
     const scenario = findTutorial(scenarioName);
@@ -125,4 +138,18 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
   processTrainingAction: (action: any) => {
     // Placeholder for training action processing
   },
+
+  setDebriefMode: (active: boolean) => set({ debriefMode: active }),
+  
+  setSelectedPlanWaypoint: (index: number | null) => set({ selectedPlanWaypointIndex: index }),
+  
+  stepPlanForward: () => set(state => ({
+    selectedPlanWaypointIndex: state.selectedPlanWaypointIndex === null ? 0 : state.selectedPlanWaypointIndex + 1
+  })),
+  
+  stepPlanBackward: () => set(state => ({
+    selectedPlanWaypointIndex: state.selectedPlanWaypointIndex === null ? 0 : Math.max(0, state.selectedPlanWaypointIndex - 1)
+  })),
+  
+  resetPlanWaypoint: () => set({ selectedPlanWaypointIndex: null }),
 }));

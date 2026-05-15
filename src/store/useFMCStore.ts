@@ -1627,7 +1627,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       semantic = 'warning';
     } else if (activeMsg) {
       scratchpadText = activeMsg.text;
-      scratchpadColor = activeMsg.color;
+      scratchpadColor = activeMsg.severity === 'ADVISORY' ? 'white' : 'amber';
       blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'IMPORTANT';
       semantic = activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
     }
@@ -1673,8 +1673,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   addMessage: (text: string, severity: MessageSeverity, type?: 1 | 2) => {
     const { scratchpadMessages, aircraft } = get();
     const id = Math.random().toString(36).substring(7);
-    const color = severity === 'ADVISORY' ? 'white' : 'amber';
-    const message: FmcMessage = { id, text, severity, color, timestamp: Date.now(), type };
+    const message: FmcMessage = { id, text, severity, timestamp: Date.now(), type };
 
     let newMessages = [...scratchpadMessages];
     if (aircraft === 'AIRBUS_A320') {
