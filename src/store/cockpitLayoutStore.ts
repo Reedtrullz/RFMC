@@ -6,9 +6,9 @@ export type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autofli
 
 const defaultInstrumentZoom: Record<InstrumentPanelId, number> = {
   cdu: 1.35,
-  nd: 1,
-  pfd: 1,
-  autoflight: 1,
+  nd: 1.45,
+  pfd: 1.45,
+  autoflight: 1.45,
 };
 
 const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];

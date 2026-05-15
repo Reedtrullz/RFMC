@@ -21,7 +21,7 @@ const DEFAULT_SIZE: Size = { width: 1, height: 1 };
 export function InstrumentFit({
   children,
   target,
-  preferredScale = 1,
+  preferredScale = 2,
   allowOverflowZoom = false,
   className = '',
   overlay,

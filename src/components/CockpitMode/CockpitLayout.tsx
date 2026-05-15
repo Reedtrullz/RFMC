@@ -211,8 +211,7 @@ function renderLayout(
       return (
         <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
           {renderInstrumentPanel('autoflight', controls, { 
-            className: 'cockpit-mcp-slot cockpit-full-deck__mcp',
-            preferredScale: 1.0 
+            className: 'cockpit-mcp-slot cockpit-full-deck__mcp'
           })}
           <div className="cockpit-full-deck__instruments">
             {renderInstrumentPanel('pfd', controls)}

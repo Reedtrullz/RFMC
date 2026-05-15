@@ -36,7 +36,6 @@ export const allPanelIds: PanelId[] = [
   'settings',
 ];
 
-export const cockpitInstrumentPanels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
 
 export const trainingModes: TrainingModeConfig[] = [
   {
@@ -63,7 +62,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['nd', 'cdu'],
     primaryPanel: 'nd',
     layoutPreset: 'twoPanelTraining',
-    defaultZoom: { nd: 1, cdu: 1.05 },
+    defaultZoom: { nd: 1.45, cdu: 1.05 },
     defaultOverlays: ['instructor'],
     beginnerHint: 'Use this mode when the lesson asks you to verify route geometry or waypoint changes.',
     practiceTask: 'Enter or modify a route, then verify the route line and active waypoint on the ND.',
@@ -78,7 +77,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['autoflight', 'pfd'],
     primaryPanel: 'autoflight',
     layoutPreset: 'threePanelTraining',
-    defaultZoom: { autoflight: 1.15, pfd: 1.1, nd: 1.1 },
+    defaultZoom: { autoflight: 1.35, pfd: 1.25, nd: 1.25 },
     defaultOverlays: ['instructor'],
     beginnerHint: 'Use this mode for LNAV/VNAV, selected heading, selected altitude, AP, and approach-mode drills.',
     practiceTask: 'Change an automation mode and confirm the FMA/ND response.',
@@ -93,7 +92,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['pfd', 'nd'],
     primaryPanel: 'pfd',
     layoutPreset: 'threePanelTraining',
-    defaultZoom: { pfd: 1.05, nd: 1, autoflight: 0.95 },
+    defaultZoom: { pfd: 1.35, nd: 1.35, autoflight: 1.25 },
     defaultOverlays: ['checklist'],
     beginnerHint: 'Use this mode when configuring or monitoring an approach.',
     practiceTask: 'Verify approach data, arm approach modes, and monitor lateral/vertical guidance.',
@@ -108,7 +107,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['autoflight', 'pfd', 'nd', 'cdu'],
     primaryPanel: 'autoflight',
     layoutPreset: 'fullDeck',
-    defaultZoom: { autoflight: 1.0, pfd: 1.02, nd: 1.02, cdu: 0.92 },
+    defaultZoom: { autoflight: 1.2, pfd: 1.15, nd: 1.15, cdu: 1.05 },
     defaultOverlays: [],
     beginnerHint: 'Use this mode to understand how the instruments relate, then focus a panel for detailed input.',
     practiceTask: 'Cross-check setup across CDU/MCDU, MCP/FCU, PFD, and ND.',

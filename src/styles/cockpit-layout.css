@@ -83,7 +83,7 @@
 .cockpit-stage--approach {
   width: 100%;
   max-width: 1400px;
-  grid-template-rows: minmax(0, 1fr) minmax(240px, 280px);
+  grid-template-rows: minmax(0, 1fr) minmax(280px, 320px);
 }
 
 .cockpit-stage--free-practice {
