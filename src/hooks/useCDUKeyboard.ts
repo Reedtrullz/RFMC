@@ -23,6 +23,12 @@ export function useCDUKeyboard() {
         // e.preventDefault(); 
       }
 
+      // Help toggle (check before general alphanumeric to avoid intercepting 'H')
+      if (e.key === '?' || e.key === 'h' || e.key === 'H') {
+        toggleKeyboardHelp();
+        return;
+      }
+
       // Alphanumeric
       if (/^[A-Z0-9]$/.test(key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
         pressKey(key as any);
@@ -66,12 +72,6 @@ export function useCDUKeyboard() {
           pressKey('NEXT_PAGE');
           break;
         
-        // Help
-        case '?':
-        case 'h':
-        case 'H':
-          toggleKeyboardHelp();
-          break;
 
         // LSK Mapping (F1-F6)
         case 'F1': case 'F2': case 'F3': case 'F4': case 'F5': case 'F6':
@@ -85,5 +85,5 @@ export function useCDUKeyboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [pressKey, aircraft]);
+  }, [pressKey, pressLSK, aircraft, toggleKeyboardHelp]);
 }

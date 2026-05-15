@@ -13,6 +13,6 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
   const grid = displayDataToGrid(displayData);
 
   return (
-    <CDUDisplayGrid grid={grid} variant={isAirbus ? 'airbus' : 'boeing'} />
+    <CDUDisplayGrid grid={grid} variant={isAirbus ? 'airbus' : 'boeing'} testId="main-cdu-display" />
   );
 }

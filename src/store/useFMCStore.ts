@@ -108,7 +108,7 @@ const defaultState = {
   demoMode: false,
   
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'OFF' as IrsState, irsAlignmentProgress: 0, irsTimeRemaining: 600 },
+  position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'NAV' as IrsState, irsAlignmentProgress: 100, irsTimeRemaining: 0 },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },

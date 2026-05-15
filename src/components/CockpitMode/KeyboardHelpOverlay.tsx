@@ -5,6 +5,15 @@ export const KeyboardHelpOverlay: React.FC = () => {
   const show = useCockpitLayoutStore(s => s.showKeyboardHelp);
   const toggle = useCockpitLayoutStore(s => s.toggleKeyboardHelp);
 
+  React.useEffect(() => {
+    if (!show) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') toggle();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [show, toggle]);
+
   if (!show) return null;
 
   const shortcuts = [

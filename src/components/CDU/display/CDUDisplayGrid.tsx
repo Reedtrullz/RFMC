@@ -6,9 +6,12 @@ interface CDUDisplayGridProps {
   variant?: 'boeing' | 'airbus';
   className?: string;
   children?: React.ReactNode;
+  testId?: string;
 }
 
-export function CDUDisplayGrid({ grid, variant = 'boeing', className = '', children }: CDUDisplayGridProps) {
+export function CDUDisplayGrid({ 
+  grid, variant = 'boeing', className = '', children, testId = 'cdu-display-grid' 
+}: CDUDisplayGridProps) {
   const cells = buildCells(grid);
 
   const style = {
@@ -17,10 +20,9 @@ export function CDUDisplayGrid({ grid, variant = 'boeing', className = '', child
   } as CSSProperties;
 
   return (
-    <div className={`cdu-display-container ${className}`}>
+    <div className={`cdu-display-container ${className}`} data-testid={testId}>
       <div
         className={`cdu-display-matrix cdu-display-matrix--${variant}`}
-        data-testid="cdu-display-grid"
         style={style}
         aria-hidden="true"
       >
@@ -47,7 +49,7 @@ export function CDUDisplayGrid({ grid, variant = 'boeing', className = '', child
         ))}
         {children}
       </div>
-      <pre className="sr-only" aria-live="polite">
+      <pre className="sr-only" aria-live="polite" data-testid={`${testId}-text`}>
         {gridToPlainText(grid)}
       </pre>
     </div>

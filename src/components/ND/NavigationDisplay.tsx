@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import {
   buildNavigationDisplayModel,
 } from '@shared';
-import { useFMCStore } from '../../store/fmcStore';
+import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useAutopilotStore } from '../../store/autopilotStore';
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
@@ -15,35 +15,34 @@ import { A320ND } from './renderers/A320ND';
 
 export function NavigationDisplay() {
   // Using narrow selectors to prevent unnecessary re-renders
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const aircraftState = useAircraftStore(s => s.aircraftState);
-  const position = useAircraftStore(s => s.position);
+  const aircraft = useFMCStore(s => s.aircraft);
+  const aircraftState = useFMCStore(s => s.aircraftState);
+  const position = useFMCStore(s => s.position);
+  const activeNavSource = useFMCStore(s => s.activeNavSource);
+  const navPerformance = useFMCStore(s => s.navPerformance);
+  const performance = useFMCStore(s => s.performance);
+  const takeoff = useFMCStore(s => s.takeoff);
+  const landing = useFMCStore(s => s.landing);
+  const ident = useFMCStore(s => s.ident);
   
-  const autopilot = useAutopilotStore(s => s);
+  // Training and Demo state
+  const demoMode = useFMCStore(s => s.demoMode);
+  const tutorialActive = useFMCStore(s => s.tutorialActive);
+  const autopilot = useFMCStore(s => s.autopilot as any); // Use legacy autopilot if available
+  const efisL = useFMCStore(s => s.efisL);
+  const efisR = useFMCStore(s => s.efisR);
+  const trafficTargets = useFMCStore(s => s.trafficTargets as any);
   
-  const efisL = useCockpitLayoutStore(s => s.efisL);
-  const efisR = useCockpitLayoutStore(s => s.efisR);
   const flightPlan = useFMCStore(s => s.flightPlan);
   const route = useFMCStore(s => s.route);
   const isModified = useFMCStore(s => s.isModified);
   const pendingFlightPlan = useFMCStore(s => s.pendingFlightPlan);
   const pendingRoute = useFMCStore(s => s.pendingRoute);
-  const selectedPlanWaypointIndex = useTrainingStore(s => s.selectedPlanWaypointIndex);
   const fixEntries = useFMCStore(s => s.fixEntries);
   const fix = useFMCStore(s => s.fix);
   const hold = useFMCStore(s => s.hold);
   const holdPending = useFMCStore(s => s.holdPending);
-  const trafficTargets = useCockpitLayoutStore(s => s.trafficTargets);
-  const activeNavSource = useAircraftStore(s => s.activeNavSource);
-  const navPerformance = useAircraftStore(s => s.navPerformance);
-  const performance = useAircraftStore(s => s.performance);
-  const takeoff = useAircraftStore(s => s.takeoff);
-  const landing = useAircraftStore(s => s.landing);
-  const ident = useAircraftStore(s => s.ident);
-  
-  // Training and Demo state
-  const demoMode = useTrainingStore(s => s.trainingActive);
-  const tutorialActive = useTrainingStore(s => s.tutorialActive);
+  const selectedPlanWaypointIndex = useFMCStore(s => s.selectedPlanWaypointIndex);
 
   const side = 'L'; // In a multi-display setup, this would be a prop
   const efis = side === 'L' ? efisL : efisR;

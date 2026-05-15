@@ -30,7 +30,7 @@ export function AirbusMCDU() {
       send({ type: 'fmc.input', key: key as CDUKey });
       return;
     }
-    pressKey(key as CDUKey, 'AIRBUS_A320');
+    pressKey(key as CDUKey);
   }, [pressKey, connectionMode, connectionStatus, send]);
 
   const onPressLSK = useCallback((side: 'L' | 'R', index: number) => {
@@ -38,10 +38,10 @@ export function AirbusMCDU() {
       send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
       return;
     }
-    pressLSK(side, index, 'AIRBUS_A320');
+    pressLSK(side, index);
   }, [pressLSK, connectionMode, connectionStatus, send]);
 
-  const displayData = useFMCStore(s => s.getDisplayData('AIRBUS_A320'));
+  const displayData = useFMCStore(s => s.getDisplayData());
   const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {
     const lskId = `${side}${index}`;
     const action = displayData.lskActions[lskId];

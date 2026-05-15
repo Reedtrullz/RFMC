@@ -26,7 +26,7 @@ export function Boeing737CDU() {
   const tutorialHintLevel = useTrainingStore(s => s.tutorialHintLevel);
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
-  const displayData = useFMCStore(s => s.getDisplayData('BOEING_737'));
+  const displayData = useFMCStore(s => s.getDisplayData());
 
   const { send } = useWebSocket();
 
@@ -35,7 +35,7 @@ export function Boeing737CDU() {
       send({ type: 'fmc.input', key: key as CDUKey });
       return;
     }
-    pressKey(key as CDUKey, 'BOEING_737');
+    pressKey(key as CDUKey);
   }, [pressKey, connectionMode, connectionStatus, send]);
 
   const onPressLSK = useCallback((side: 'L' | 'R', index: number) => {
@@ -43,7 +43,7 @@ export function Boeing737CDU() {
       send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
       return;
     }
-    pressLSK(side, index, 'BOEING_737');
+    pressLSK(side, index);
   }, [pressLSK, connectionMode, connectionStatus, send]);
 
   const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {

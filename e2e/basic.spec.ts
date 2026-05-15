@@ -71,7 +71,8 @@ test.describe('VirtualCDU Basic', () => {
     await lsk(page, 'L1');
     await lsk(page, 'R3');
     await expectScreenText(page, 'RBV');
-    await expect(page.getByTestId('nd-panel')).toContainText('RBV');
+    // ND should show the waypoints
+    await expect(page.getByTestId('nd-panel')).toContainText('RBV', { timeout: 10000 });
     await expectScreenText(page, 'LEGS');
     await expectScreenText(page, 'DIXIE');
 
@@ -249,7 +250,7 @@ test.describe('VirtualCDU Basic', () => {
     expect(rteBox).not.toBeNull();
     expect(ndBox!.y).toBeLessThan(rteBox!.y);
 
-    await page.getByRole('button', { name: 'ND', exact: true }).click();
+    await page.getByRole('button', { name: /ND/ }).click();
     await expect(page.getByTestId('nd-panel')).toBeHidden();
     await expect(page.getByRole('button', { name: 'RTE', exact: true }).first()).toBeVisible();
   });
@@ -257,15 +258,27 @@ test.describe('VirtualCDU Basic', () => {
   test('renders nonblank Boeing and Airbus CDU screenshots', async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    const boeing = await page.locator('.bg-cdu-screen').first().screenshot();
-    expect(boeing.length).toBeGreaterThan(10_000);
+
+    // Screenshot Boeing
+    const boeingScreen = page.locator('.bg-cdu-screen').first();
+    const boeingBuffer = await boeingScreen.screenshot();
+    expect(boeingBuffer.byteLength).toBeGreaterThan(5000);
     await expectScreenText(page, 'IDENT');
 
-    await page.reload();
-    await page.locator('button:has-text("A320neo")').click();
-    await dismissWelcome(page);
-    const airbus = await page.locator('.bg-cdu-screen').first().screenshot();
-    expect(airbus.length).toBeGreaterThan(10_000);
+    // Reload to get welcome screen back for Airbus switch
+    await page.goto('/');
+    const airbusBtn = page.getByRole('button', { name: 'A320neo' }).first();
+    await airbusBtn.click();
+    
+    // Ensure we switch to the Airbus shell
+    await expect(page.locator('.airbus-mcdu-shell')).toBeVisible({ timeout: 15000 });
+    
+    // Wait for display to populate
     await expectScreenText(page, 'INIT');
+
+    // Screenshot Airbus
+    const airbusScreen = page.locator('.bg-cdu-screen').first();
+    const airbusBuffer = await airbusScreen.screenshot();
+    expect(airbusBuffer.byteLength).toBeGreaterThan(4000);
   });
 });

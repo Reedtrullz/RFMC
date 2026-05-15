@@ -1,15 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-async function dismissWelcome(page: Page) {
-  const skipButton = page.locator('button:has-text("Skip Demo")');
-  try {
-    await skipButton.waitFor({ state: 'visible', timeout: 5000 });
-    await skipButton.click();
-  } catch {
-    // Welcome may already be dismissed.
-  }
-}
-
+import { dismissWelcome } from './helpers';
 async function enterCockpit(page: Page) {
   await page.goto('/');
   await dismissWelcome(page);
