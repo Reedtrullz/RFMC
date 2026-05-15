@@ -162,3 +162,8 @@ export * from './fmc/GpwsEngine';
 export * from './fmc/TcasEngine';
 export * from './autopilot/AutoflightModeManager';
 export * from './training/DebriefSystem';
+
+// New FMC engine modules introduced in feat/canvas-renderer
+export { buildInitialFMCState } from './fmc/initialState';
+export { processFMCKey }        from './fmc/keyProcessor';
+export { buildDisplayData }     from './fmc/displayBuilder';
