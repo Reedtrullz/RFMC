@@ -155,6 +155,14 @@ test.describe('VirtualCDU Basic', () => {
       });
       await page.waitForTimeout(1000);
 
+      // Ensure cockpit mode with ND visible (navigation layout)
+      await page.evaluate(() => {
+        const cockpit = (window as any).useCockpitLayoutStore?.getState();
+        if (cockpit) cockpit.setCockpitMode(true);
+      });
+      await expect(page.getByTestId('layout-mode-navigation')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('layout-mode-navigation').click();
+
       await press(page, 'HOLD');
      await expectScreenText(page, 'HOLD');
 
@@ -260,9 +268,11 @@ test.describe('VirtualCDU Basic', () => {
   });
 
    test('keeps ND context available without covering CDU controls on iPad', async ({ page }) => {
-     await page.setViewportSize({ width: 768, height: 1024 }); // Standard iPad dimensions
      await page.goto('/');
      await dismissWelcome(page);
+
+     // Set iPad viewport after dismissWelcome to avoid mobile layout timing issues
+     await page.setViewportSize({ width: 768, height: 1024 });
 
      // Enter cockpit mode so layout-mode-navigation is available
      await page.evaluate(() => {
