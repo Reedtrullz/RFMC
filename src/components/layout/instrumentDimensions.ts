@@ -53,10 +53,10 @@ export const instrumentDimensions: Record<InstrumentTarget, InstrumentDimensions
     maxWidth: 650,
   },
   boeingMcp: {
-    idealWidth: 1200,
-    idealHeight: 240,
-    minReadableWidth: 850,
-    maxWidth: 1360,
+    idealWidth: 1760,
+    idealHeight: 300,
+    minReadableWidth: 1180,
+    maxWidth: 1760,
   },
   airbusFcu: {
     idealWidth: 1000,

@@ -54,18 +54,25 @@
   grid-template-columns: minmax(400px, 580px) minmax(400px, 540px);
 }
 
-.cockpit-stage--automation,
-.cockpit-stage--full-deck {
+.cockpit-stage--automation {
   width: 100%;
   max-width: 100%;
   grid-template-rows: 280px minmax(0, 1fr);
   gap: clamp(8px, 1.5vw, 24px);
 }
 
-.cockpit-full-deck__mcp {
+.cockpit-stage--full-deck {
   width: 100%;
-  max-width: none;
-  justify-self: stretch;
+  max-width: 100%;
+  grid-template-rows: clamp(260px, 30vh, 340px) minmax(0, 1fr);
+  gap: clamp(12px, 1.8vw, 28px);
+}
+
+.cockpit-full-deck__mcp {
+  width: min(100%, 1760px);
+  max-width: 1760px;
+  justify-self: center;
+  align-self: center;
 }
 
 .cockpit-full-deck__instruments {

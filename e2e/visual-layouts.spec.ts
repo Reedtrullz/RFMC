@@ -80,6 +80,13 @@ test.describe('cockpit layout visual sizing', () => {
     await expectBox(page.getByTestId('autoflight-panel'), 580, 150);
     await expectBox(page.getByTestId('pfd-panel'), 210, 300);
     await expectBox(page.getByTestId('nd-panel'), 210, 300);
+    
+    // Verify right-side of MCP is not clipped (Bug fix verification)
+    const mcp = page.getByTestId('autoflight-panel');
+    await expect(mcp.getByText('CMD A')).toBeVisible();
+    await expect(mcp.getByText('CWS B')).toBeVisible();
+    await expect(mcp.getByText('VOR LOC')).toBeVisible();
+    
     await expectNoViewportOverflow(page);
   });
 });

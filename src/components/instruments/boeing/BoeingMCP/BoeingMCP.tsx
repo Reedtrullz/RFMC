@@ -17,7 +17,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   
   return (
     <InstrumentShell variant="boeing-mcp" className="w-full">
-      <div className="flex w-full items-start justify-between gap-4 overflow-x-auto pb-4 pt-2">
+      <div className="flex min-w-0 w-full items-start justify-between gap-4 overflow-visible pb-4 pt-2">
         
         {/* FD LEFT */}
         <div className="flex flex-col gap-4 pr-4 border-r border-black/20">
