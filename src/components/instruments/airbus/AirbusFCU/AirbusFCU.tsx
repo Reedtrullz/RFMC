@@ -140,6 +140,6 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
         </div>
 
       </div>
-    </CockpitPanel>
+    </InstrumentShell>
   );
 }
