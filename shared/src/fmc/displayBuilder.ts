@@ -2,6 +2,7 @@ import type { FMCState } from '../types/fmc';
 import type { DisplayData } from '../types/fmc';
 import { displayDataToGrid, scratchpadToGridSegment } from './displayGrid';
 import { getPageRenderer } from './pages/index';
+import type { DisplayColor } from '../fmc/displayColors';
 import type { RendererDisplayData } from './displayBuilderTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27,12 +28,13 @@ export function buildDisplayData(state: FMCState): RendererDisplayData {
   // Convert to the richer GridDisplayData model used by canvas renderers.
   const grid = displayDataToGrid(legacyData);
 
-  // Build scratchpad segments.
-  const spText =
-    state.scratchpadError ?? state.scratchpad;
-  const scratchpad = spText
-    ? [scratchpadToGridSegment(spText, state.scratchpadError != null ? 'amber' : 'white')]
-    : [];
+    // Build scratchpad segments.
+    const spText =
+      state.scratchpadError ?? state.scratchpad;
+    let color: DisplayColor = state.scratchpadError != null ? 'amber' : 'white';
+    const scratchpad = spText
+      ? [scratchpadToGridSegment(spText, { color })]
+      : [];
 
   return { grid, scratchpad };
 }

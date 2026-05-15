@@ -1,5 +1,6 @@
 import type { DisplayColor } from '../fmc/displayColors';
 import type { DisplaySemantic } from '../fmc/displaySemantics';
+export { DisplayColor, DisplaySemantic };
 import type { NDMapMode } from '../fmc/ndTypes';
 import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
 import type { TrainingScenarioEngine } from '../training/scenarioEngine';
