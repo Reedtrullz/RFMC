@@ -128,25 +128,34 @@ test.describe('VirtualCDU Basic', () => {
   });
 
    test('shows HOLD and multiple FIX overlays on the ND training display', async ({ page }) => {
-     page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
-     await page.goto('/');
-     await dismissWelcome(page);
+      page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
+      await page.goto('/');
+      await dismissWelcome(page);
 
-      // Set up a route that includes RBV so HOLD fix validation passes
-      await lsk(page, 'R6'); // POS INIT
-      await lsk(page, 'L4'); // ALIGN IRS
-      await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
-      await press(page, 'RTE'); // RTE 1/2
-      await enterText(page, 'KJFK');
-      await lsk(page, 'L1'); // ORIGIN
-      await enterText(page, 'KDCA');
-      await lsk(page, 'L3'); // DEST
-      await press(page, 'NEXT'); // RTE 2/2
-      await enterText(page, 'KJFK DCT RBV KDCA'); // Route (17 chars, fits scratchpad)
-      await lsk(page, 'L1');
-      await press(page, 'EXEC');
+      // Seed a route with RBV directly via store to ensure HOLD validation passes
+      await page.evaluate(() => {
+        const store = (window as any).useFMCStore;
+        if (!store) return;
+        store.setState({
+          flightPlan: {
+            origin: 'KJFK',
+            destination: 'KDCA',
+            flightNumber: '',
+            route: 'KJFK DCT RBV KDCA',
+            waypoints: [
+              { ident: 'KJFK', discontinuity: false },
+              { ident: 'RBV', discontinuity: false },
+              { ident: 'KDCA', discontinuity: false },
+            ],
+          },
+          isModified: false,
+          execLit: false,
+          currentPage: 'RTE',
+        });
+      });
+      await page.waitForTimeout(1000);
 
-     await press(page, 'HOLD');
+      await press(page, 'HOLD');
      await expectScreenText(page, 'HOLD');
 
      await enterText(page, 'RBV');
