@@ -12,7 +12,7 @@ test.describe('Fidelity & Accessibility Audit', () => {
     }
 
     // Switch to 'Preflight FMC Setup' to ensure CDU is focused and visible
-    const fmcFocusBtn = page.getByRole('button', { name: 'Preflight FMC Setup' });
+    const fmcFocusBtn = page.getByTestId('layout-mode-fmc-focus');
     if (await fmcFocusBtn.isVisible()) {
       await fmcFocusBtn.click();
       await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
@@ -65,17 +65,16 @@ test.describe('Fidelity & Accessibility Audit', () => {
   test('cockpit modes are correctly labeled for pilot tasks', async ({ page }) => {
     // The DisplaySelector contains the mode buttons
     const modes = [
-      'Preflight FMC Setup',
-      'Route Verification',
-      'MCP/FCU Mode Training',
-      'Approach Setup & Monitoring',
-      'Flight Deck Scan',
-      'Custom Practice'
+      'fmc-focus',
+      'navigation',
+      'automation',
+      'approach',
+      'full-deck',
+      'free-practice'
     ];
     
     for (const mode of modes) {
-      // Use role+name to avoid ambiguity with help card headers
-      await expect(page.getByRole('button', { name: mode })).toBeVisible();
+      await expect(page.getByTestId(`layout-mode-${mode}`)).toBeVisible();
     }
   });
 

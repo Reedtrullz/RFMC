@@ -5,12 +5,21 @@ async function enterCockpit(page: Page) {
   await page.goto('/');
   await dismissWelcome(page);
   await page.getByRole('button', { name: 'Enter Cockpit' }).click();
-  await expect(page.getByRole('button', { name: 'FMC Focus' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Preflight FMC Setup' })).toBeVisible();
 }
 
-async function selectMode(page: Page, name: string) {
-  await page.getByRole('button', { name }).click();
-  await expect(page.getByRole('button', { name })).toHaveClass(/bg-cdu-cyan/);
+const modeMapping = {
+  'FMC Focus': 'fmc-focus',
+  'Navigation': 'navigation',
+  'Automation': 'automation',
+  'Full Deck': 'full-deck',
+} as const;
+
+async function selectMode(page: Page, name: keyof typeof modeMapping) {
+  const modeId = modeMapping[name];
+  const button = page.getByTestId(`layout-mode-${modeId}`);
+  await button.click();
+  await expect(button).toHaveClass(/bg-cdu-cyan/);
 }
 
 async function expectBox(locator: Locator, minWidth: number, minHeight: number) {

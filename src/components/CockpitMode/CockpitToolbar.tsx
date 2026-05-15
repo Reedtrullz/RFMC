@@ -12,7 +12,10 @@ export function CockpitToolbar() {
   const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'instructor', 'checklist', 'connection', 'settings'];
 
   return (
-    <div className="flex bg-[#0a0c0c] p-0 rounded border border-white/5 overflow-x-auto no-scrollbar gap-0 items-stretch h-8">
+    <div 
+      data-testid="cockpit-panel-toolbar"
+      className="flex bg-[#0a0c0c] p-0 rounded border border-white/5 overflow-x-auto no-scrollbar gap-0 items-stretch h-8"
+    >
       <div className="px-4 flex items-center bg-[#1a1c1c] border-r border-[#2a2d2d]">
         <span className="text-[9px] font-cdu text-white/40 uppercase tracking-[0.2em] font-black">PANELS</span>
       </div>

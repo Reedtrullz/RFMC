@@ -14,6 +14,8 @@ export function DisplaySelector({
       {trainingModes.map((m) => (
         <button
           key={m.id}
+          data-testid={`layout-mode-${m.id}`}
+          aria-label={m.label}
           onClick={() => onSelect(m.id)}
           title={m.purpose}
           className={`

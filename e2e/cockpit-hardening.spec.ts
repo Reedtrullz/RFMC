@@ -13,12 +13,13 @@ test.describe('Cockpit Hardening & Automation', () => {
       await enterButton.click();
     } catch (e) {}
     
-    await expect(page.getByText('Panels', { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('cockpit-panel-toolbar')).toBeVisible({ timeout: 10000 });
   });
 
   test('Panel Toolbar toggles visibility', async ({ page }) => {
     // Switch to Navigation layout first
-    await page.getByRole('button', { name: 'Navigation', exact: true }).click();
+    // Switch to Navigation layout first (Route Verification)
+    await page.getByTestId('layout-mode-navigation').click();
     
     // Check if ND is visible initially
     await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
@@ -49,7 +50,8 @@ test.describe('Cockpit Hardening & Automation', () => {
 
   test('Boeing MCP Interaction', async ({ page }) => {
     // Switch to Automation layout
-    await page.getByRole('button', { name: 'Automation', exact: true }).click();
+    // Switch to Automation layout (MCP/FCU Mode Training)
+    await page.getByTestId('layout-mode-automation').click();
     
     await expect(page.getByTestId('autoflight-panel')).toBeVisible();
     
