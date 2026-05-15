@@ -152,6 +152,13 @@ test.describe('VirtualCDU Basic', () => {
           execLit: false,
           currentPage: 'RTE',
         });
+        // Set IRS to NAV in the AircraftStore so ND symbology renders
+        const acStore = (window as any).useAircraftStore;
+        if (acStore) {
+          acStore.setState({
+            position: { ...acStore.getState().position, irsState: 'NAV' },
+          });
+        }
       });
       await page.waitForTimeout(1000);
 
@@ -271,14 +278,15 @@ test.describe('VirtualCDU Basic', () => {
      await page.goto('/');
      await dismissWelcome(page);
 
-     // Set iPad viewport after dismissWelcome to avoid mobile layout timing issues
-     await page.setViewportSize({ width: 768, height: 1024 });
-
      // Enter cockpit mode so layout-mode-navigation is available
      await page.evaluate(() => {
        const cockpit = (window as any).useCockpitLayoutStore?.getState();
        if (cockpit) cockpit.setCockpitMode(true);
      });
+
+     // Set iPad landscape viewport (avoids portrait orientation overlay)
+     await page.setViewportSize({ width: 1024, height: 768 });
+
      await expect(page.getByTestId('layout-mode-navigation')).toBeVisible({ timeout: 10000 });
 
      // Switch to Navigation mode which shows both ND and CDU
@@ -289,8 +297,16 @@ test.describe('VirtualCDU Basic', () => {
 
     expect(ndBox).not.toBeNull();
     expect(cduBox).not.toBeNull();
-    // Verify ND is above CDU (allowing some overlap/buffer for the bezel)
-    expect(ndBox!.y + ndBox!.height).toBeLessThanOrEqual(cduBox!.y + 40);
+    // Verify panels don't overlap (allow for bezel in both axes)
+    const ndBottom = ndBox!.y + ndBox!.height;
+    const ndRight = ndBox!.x + ndBox!.width;
+    const cduTop = cduBox!.y;
+    const cduLeft = cduBox!.x;
+    // Either ND is above CDU (bottom of ND <= top of CDU + bezel)
+    // or ND is left of CDU (right of ND <= left of CDU + bezel)
+    const verticalOk = ndBottom <= cduTop + 40;
+    const horizontalOk = ndRight <= cduLeft + 40;
+    expect(verticalOk || horizontalOk).toBe(true);
   });
 
   test('renders nonblank Boeing and Airbus CDU screenshots', async ({ page }) => {
