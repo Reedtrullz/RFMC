@@ -1,6 +1,6 @@
 import type { DisplayColor } from '../../displayColors';
-import type { DisplaySegment, GridDisplayData, DisplayData } from '../../../types/display';
-import type { FMCState } from '../../../types/fmc';
+import type { DisplaySegment, GridDisplayData } from '../../../types/display';
+import type { FMCState, DisplayData } from '../../../types/fmc';
 
 export function seg(
   row: number,
