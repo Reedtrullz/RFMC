@@ -1356,6 +1356,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
            const ident = scratchpad.toUpperCase();
            const result = isValidWaypoint(ident);
            if (!result.valid) { set({ scratchpadError: result.error }); return; }
+           const { flightPlan } = get();
+           const inRoute = flightPlan.waypoints.some(w => w.ident === ident);
+           if (!inRoute) {
+             set({ scratchpadError: 'NOT IN ROUTE' });
+             return;
+           }
            state.setHoldFix(ident);
            handled = true;
          }
