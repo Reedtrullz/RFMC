@@ -154,9 +154,57 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
   },
 
-  addScratchpadMessage: (msg) => set(state => ({ scratchpadMessages: [msg, ...state.scratchpadMessages] })),
+  addScratchpadMessage: (msg) => {
+    set(state => {
+      // Airbus specific queueing: Type 1 overrides Type 2
+      if (msg.aircraft === 'airbus') {
+        const type1 = msg.type === 1;
+        if (type1) {
+          // Put Type 1 at the front
+          return { scratchpadMessages: [msg, ...state.scratchpadMessages.filter(m => m.type !== 1)] };
+        } else {
+          // Queue Type 2 behind any Type 1
+          const firstType1 = state.scratchpadMessages.findIndex(m => m.type === 1);
+          if (firstType1 === -1) {
+            return { scratchpadMessages: [msg, ...state.scratchpadMessages] };
+          } else {
+            const nextMessages = [...state.scratchpadMessages];
+            nextMessages.splice(firstType1 + 1, 0, msg);
+            return { scratchpadMessages: nextMessages };
+          }
+        }
+      }
+      
+      // Boeing standard LIFO queue
+      return { scratchpadMessages: [msg, ...state.scratchpadMessages] };
+    });
+  },
   
-  clearActiveMessage: () => set(state => ({ scratchpadMessages: state.scratchpadMessages.slice(1) })),
+  clearActiveMessage: () => {
+    set(state => {
+      if (state.scratchpadMessages.length === 0) return state;
+      
+      const active = state.scratchpadMessages[0];
+      if (active.clearBehavior === 'auto') return state; // Only auto-clear
+      
+      return { scratchpadMessages: state.scratchpadMessages.slice(1) };
+    });
+  },
 
   setFlightPhase: (phase) => set({ flightPhase: phase }),
+  
+  // Helper to get active message for display
+  getActiveMessage: (aircraft: 'boeing' | 'airbus') => {
+    const { scratchpadMessages, scratchpad } = get();
+    if (scratchpad.length > 0) return null; // Input overrides messages
+    
+    if (aircraft === 'airbus') {
+      // Type 1 always has priority
+      const type1 = scratchpadMessages.find(m => m.type === 1);
+      if (type1) return type1;
+      return scratchpadMessages.find(m => m.type === 2) || null;
+    }
+    
+    return scratchpadMessages[0] || null;
+  }
 }));

@@ -17,7 +17,7 @@ export function AirbusMCDU() {
   const isKiosk = useKioskMode();
   const pressKey = useFMCStore(s => s.pressKey);
   const pressLSK = useFMCStore(s => s.pressLSK);
-  const msgLight = useAircraftStore(s => s.annunciators.msg);
+  const annunciators = useAircraftStore(s => s.airbusAnnunciators);
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useConnectionStore(s => s.connectionMode);
   const connectionStatus = useConnectionStore(s => s.connectionStatus);
@@ -57,7 +57,7 @@ export function AirbusMCDU() {
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <AirbusMCDUShell msgLight={<AnnunciatorLight label="MSG" active={msgLight} color="amber" />}>
+      <AirbusMCDUShell annunciators={annunciators}>
         <AirbusDisplayBay
           brightness={brightness}
           getLSKLabel={getLSKLabel}

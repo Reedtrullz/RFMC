@@ -48,3 +48,31 @@ export const AIRBUS_MCDU_GEOMETRY: InstrumentGeometryProfile = {
   bezelRadiusMm: 2,
   recessDepthMm: 4,
 };
+
+export const BOEING_ND_GEOMETRY: InstrumentGeometryProfile = {
+  outerWidthMm: 184,
+  outerHeightMm: 184,
+  screenRect: { x: 15, y: 15, width: 154, height: 154 },
+  screwPositions: [
+    { x: 8, y: 8, rotation: 45 },
+    { x: 176, y: 8, rotation: -45 },
+    { x: 8, y: 176, rotation: 135 },
+    { x: 176, y: 176, rotation: -135 },
+  ],
+  bezelRadiusMm: 8,
+  recessDepthMm: 12,
+};
+
+export const AIRBUS_ND_GEOMETRY: InstrumentGeometryProfile = {
+  outerWidthMm: 184,
+  outerHeightMm: 184,
+  screenRect: { x: 13, y: 13, width: 158, height: 158 },
+  screwPositions: [
+    { x: 6, y: 6, rotation: 0 },
+    { x: 178, y: 6, rotation: 90 },
+    { x: 6, y: 178, rotation: 180 },
+    { x: 178, y: 178, rotation: 270 },
+  ],
+  bezelRadiusMm: 4,
+  recessDepthMm: 8,
+};

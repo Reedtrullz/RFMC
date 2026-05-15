@@ -1,14 +1,15 @@
-import type { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { InstrumentShell } from '../../instruments/common/InstrumentShell';
-import { BezelScrew } from '../../instruments/common/BezelScrew';
 import { PanelLabel } from '../../instruments/common/PanelLabel';
+import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
+import { BoeingAnnunciators } from '../../../store/aircraftStore';
 
 interface BoeingCDUShellProps {
-  msgLight: ReactNode;
+  annunciators: BoeingAnnunciators;
   children: ReactNode;
 }
 
-export function BoeingCDUShell({ msgLight, children }: BoeingCDUShellProps) {
+export function BoeingCDUShell({ annunciators, children }: BoeingCDUShellProps) {
   return (
     <InstrumentShell
       variant="boeing-cdu"
@@ -16,9 +17,13 @@ export function BoeingCDUShell({ msgLight, children }: BoeingCDUShellProps) {
       data-testid="boeing-cdu"
     >
 
-      <div className="mb-2 flex w-full items-center justify-between px-5">
+      <div className="mb-2 flex w-full items-center justify-between px-5 h-8">
         <PanelLabel>BOEING 737-800</PanelLabel>
-        {msgLight}
+        <div className="flex gap-4">
+          <AnnunciatorLight label="FAIL" active={annunciators.fail} color="amber" />
+          <AnnunciatorLight label="MSG" active={annunciators.msg} color="amber" />
+          <AnnunciatorLight label="OFST" active={annunciators.ofst} color="amber" />
+        </div>
       </div>
       
       <div className="instrument-shell__content">

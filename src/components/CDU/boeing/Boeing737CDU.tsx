@@ -18,7 +18,7 @@ export function Boeing737CDU() {
 
   const pressKey = useFMCStore(s => s.pressKey);
   const pressLSK = useFMCStore(s => s.pressLSK);
-  const msgLight = useAircraftStore(s => s.annunciators.msg);
+  const annunciators = useAircraftStore(s => s.boeingAnnunciators);
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useConnectionStore(s => s.connectionMode);
   const connectionStatus = useConnectionStore(s => s.connectionStatus);
@@ -71,7 +71,7 @@ export function Boeing737CDU() {
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <BoeingCDUShell msgLight={<AnnunciatorLight label="MSG" active={msgLight} color="amber" />}>
+      <BoeingCDUShell annunciators={annunciators}>
         <BoeingDisplayBay
           brightness={brightness}
           getLSKLabel={getLSKLabel}

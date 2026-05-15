@@ -3,6 +3,7 @@ import { NavigationDisplayModel } from '@shared';
 import { InstrumentBezel } from '../../instruments/common/InstrumentBezel';
 import { ScreenGlass } from '../../instruments/common/ScreenGlass';
 import { EffectProfiles } from '../../instruments/common/EffectProfiles';
+import { AIRBUS_ND_GEOMETRY } from '../../instruments/common/GeometryProfiles';
 
 interface AirbusNDFrameProps {
   model: NavigationDisplayModel;
@@ -10,6 +11,8 @@ interface AirbusNDFrameProps {
 }
 
 export function AirbusNDFrame({ model, children }: AirbusNDFrameProps) {
+  const { screenRect } = AIRBUS_ND_GEOMETRY;
+
   return (
     <InstrumentBezel variant="airbus-nd" className="h-full w-full">
       <ScreenGlass 
@@ -17,7 +20,10 @@ export function AirbusNDFrame({ model, children }: AirbusNDFrameProps) {
         variant="airbus"
         effectProfile={EffectProfiles.AIRBUS_ND}
       >
-        <svg viewBox="0 0 100 100" className="h-full w-full font-avionics select-none">
+        <svg 
+          viewBox={`0 0 ${screenRect.width} ${screenRect.height}`}
+          className="h-full w-full font-avionics select-none"
+        >
           <defs>
             <filter id="airbus-bloom" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="0.4" />
@@ -27,7 +33,7 @@ export function AirbusNDFrame({ model, children }: AirbusNDFrameProps) {
             </filter>
           </defs>
           
-          <rect width="100" height="100" fill="#010303" />
+          <rect width={screenRect.width} height={screenRect.height} fill="#010303" />
           <g filter="url(#airbus-bloom)">
             {children}
           </g>

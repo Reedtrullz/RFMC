@@ -45,7 +45,6 @@ test.describe('Fidelity & Accessibility Audit', () => {
   });
 
   test('cockpit modes are correctly labeled for pilot tasks', async ({ page }) => {
-    const toolbar = page.locator('.cockpit-toolbar, .cockpit-grid'); // Adjust selector as needed
     // The DisplaySelector contains the mode buttons
     const modes = [
       'Preflight FMC Setup',
@@ -59,5 +58,23 @@ test.describe('Fidelity & Accessibility Audit', () => {
     for (const mode of modes) {
       await expect(page.getByText(mode)).toBeVisible();
     }
+  });
+
+  test('hardware annunciators are rendered correctly', async ({ page }) => {
+    // Check Boeing annunciators (MSG, FAIL, OFST)
+    await page.getByRole('button', { name: /BOEING/i }).click(); // Switch to Boeing if needed
+    const boeingAnnun = page.locator('.boeing-cdu-shell');
+    await expect(boeingAnnun.getByText('MSG')).toBeVisible();
+    await expect(boeingAnnun.getByText('FAIL')).toBeVisible();
+    await expect(boeingAnnun.getByText('OFST')).toBeVisible();
+
+    // Check Airbus annunciators (FAIL, MCDU MENU, FM, IND, RDY)
+    await page.getByRole('button', { name: /AIRBUS/i }).click();
+    const airbusAnnun = page.locator('.airbus-mcdu-shell');
+    await expect(airbusAnnun.getByText('FAIL')).toBeVisible();
+    await expect(airbusAnnun.getByText('MCDU MENU')).toBeVisible();
+    await expect(airbusAnnun.getByText('FM')).toBeVisible();
+    await expect(airbusAnnun.getByText('IND')).toBeVisible();
+    await expect(airbusAnnun.getByText('RDY')).toBeVisible();
   });
 });
