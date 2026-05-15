@@ -19,7 +19,7 @@ export function HoldPattern({ model }: HoldPatternProps) {
 
   return (
     <g data-testid="nd-hold-overlay" transform={`translate(${hold.x} ${hold.y}) rotate(${hold.inboundCourse})`}>
-      {/* Racetrack path */}
+      {/* Racetrack path (High-Fidelity) */}
       <path
         d={`
           M 0 0
@@ -32,31 +32,40 @@ export function HoldPattern({ model }: HoldPatternProps) {
         fill="none"
         stroke={color}
         strokeWidth="0.8"
-        strokeDasharray={hold.isPending ? '2 2' : undefined}
-        filter="url(#boeing-glow)"
+        strokeDasharray={hold.isPending ? '2.5 2.5' : undefined}
+        filter="url(#nd-glow)"
       />
       
-      {/* Inbound arrow at the entry point */}
-      <path d="M-1.2 -2.5 L0 0 L1.2 -2.5" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Inbound entry arrow */}
+      <path 
+        d="M-1.5 -3 L0 0 L1.5 -3" 
+        fill="none" 
+        stroke={color} 
+        strokeWidth="1" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        filter="url(#nd-glow)"
+      />
       
-      {/* Label with Shadow */}
+      {/* Label with industrial contrast */}
       <g transform={`rotate(${-hold.inboundCourse}) translate(${radius * 2 + 3} 0)`}>
          <text
           fill="black"
-          fontSize="3.2"
+          fontSize="3.8"
           fontWeight="900"
           className="font-avionics"
           stroke="black"
-          strokeWidth="0.8"
-          opacity="0.8"
+          strokeWidth="1.2"
+          opacity="0.9"
         >
           HOLD
         </text>
         <text
           fill={color}
-          fontSize="3.2"
-          fontWeight="bold"
+          fontSize="3.8"
+          fontWeight="900"
           className="font-avionics"
+          filter="url(#nd-glow)"
         >
           HOLD
         </text>
