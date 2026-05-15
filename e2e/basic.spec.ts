@@ -132,18 +132,19 @@ test.describe('VirtualCDU Basic', () => {
      await page.goto('/');
      await dismissWelcome(page);
 
-     // Set up a route that includes RBV so HOLD fix validation passes
-     await lsk(page, 'R6'); // POS INIT
-     await lsk(page, 'L4'); // ALIGN IRS
-     await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
-     await press(page, 'RTE'); // RTE
-     await enterText(page, 'KJFK'); // Origin
-     await lsk(page, 'L1');
-     await enterText(page, 'KDCA'); // Destination
-     await lsk(page, 'L1');
-     await enterText(page, 'KJFK DCT RBV J42 LENDY8 KDCA'); // Route with RBV
-     await lsk(page, 'L1');
-     await press(page, 'EXEC');
+      // Set up a route that includes RBV so HOLD fix validation passes
+      await lsk(page, 'R6'); // POS INIT
+      await lsk(page, 'L4'); // ALIGN IRS
+      await page.waitForTimeout(5000); // Wait for IRS alignment and stabilization
+      await press(page, 'RTE'); // RTE 1/2
+      await enterText(page, 'KJFK');
+      await lsk(page, 'L1'); // ORIGIN
+      await enterText(page, 'KDCA');
+      await lsk(page, 'L3'); // DEST
+      await press(page, 'NEXT'); // RTE 2/2
+      await enterText(page, 'KJFK DCT RBV KDCA'); // Route (17 chars, fits scratchpad)
+      await lsk(page, 'L1');
+      await press(page, 'EXEC');
 
      await press(page, 'HOLD');
      await expectScreenText(page, 'HOLD');
@@ -253,6 +254,13 @@ test.describe('VirtualCDU Basic', () => {
      await page.setViewportSize({ width: 768, height: 1024 }); // Standard iPad dimensions
      await page.goto('/');
      await dismissWelcome(page);
+
+     // Enter cockpit mode so layout-mode-navigation is available
+     await page.evaluate(() => {
+       const cockpit = (window as any).useCockpitLayoutStore?.getState();
+       if (cockpit) cockpit.setCockpitMode(true);
+     });
+     await expect(page.getByTestId('layout-mode-navigation')).toBeVisible({ timeout: 10000 });
 
      // Switch to Navigation mode which shows both ND and CDU
      await page.getByTestId('layout-mode-navigation').click();
