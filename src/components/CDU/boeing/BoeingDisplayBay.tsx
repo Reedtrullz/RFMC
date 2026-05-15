@@ -11,14 +11,23 @@ interface BoeingDisplayBayProps {
   onPressLSK: (side: 'L' | 'R', index: number) => void;
 }
 
+import { BOEING_737_CDU_TOKENS } from '../../instruments/common/tokens/boeing-cdu.tokens';
+
 export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintLevel, onPressLSK }: BoeingDisplayBayProps) {
+  const tokens = BOEING_737_CDU_TOKENS;
+  const mmToPx = 3.8; // Approximate conversion for high-fidelity feel
+  
+  const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
+  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`; // Approximate width for LSK columns
+  const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
+
   const displayBayStyle = {
     display: 'grid',
-    gridTemplateColumns: '44px minmax(0, 1fr) 44px',
-    gridTemplateRows: 'repeat(14, var(--cdu-row-h, 21px)) auto',
-    columnGap: '0.35rem',
-    '--cdu-row-h': '21px',
-    '--cdu-row-height': '21px',
+    gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
+    gridTemplateRows: `repeat(${tokens.screen.rows}, ${rowHeight}) ${scratchpadHeight}`,
+    columnGap: '0.2rem',
+    '--cdu-row-h': rowHeight,
+    '--cdu-row-height': rowHeight,
     '--cdu-inverse-bg': '#39ff14',
     backgroundImage: `
       radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
@@ -48,7 +57,7 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintL
           gridRow: 15,
           gridColumn: 2,
           filter: `brightness(${brightness}%)`,
-          height: '24px',
+          height: scratchpadHeight,
           display: 'flex',
           alignItems: 'center',
           paddingLeft: '4px',

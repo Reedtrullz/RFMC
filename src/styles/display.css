@@ -65,12 +65,12 @@
 }
 
 /* Colors */
-.cdu-display-cell--white { color: #fff; }
-.cdu-display-cell--green { color: #39ff14; }
-.cdu-display-cell--magenta { color: #f0f; }
-.cdu-display-cell--cyan { color: #0ff; }
-.cdu-display-cell--amber { color: #ffb000; }
-.cdu-display-cell--red { color: #f33; }
+.cdu-display-cell--white { color: var(--airbus-white, #fff); }
+.cdu-display-cell--green { color: var(--boeing-green, #39ff14); }
+.cdu-display-cell--magenta { color: var(--boeing-magenta, #f0f); }
+.cdu-display-cell--cyan { color: var(--boeing-cyan, #0ff); }
+.cdu-display-cell--amber { color: var(--boeing-amber, #ffb000); }
+.cdu-display-cell--red { color: var(--annun-red, #f33); }
 
 /* Scratchpad Cursor */
 .scratchpad-cursor {

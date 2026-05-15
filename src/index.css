@@ -79,12 +79,14 @@
 
 /* Hint animations */
 .avionics-key--highlighted {
-  box-shadow: 0 0 15px var(--boeing-cyan);
-  animation: pulse 2s infinite;
+  outline: 2px solid var(--boeing-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 15px rgba(0, 215, 255, 0.5);
+  animation: cockpit-hint-pulse 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes cockpit-hint-pulse {
+  0% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.7; filter: brightness(1.4); }
+  100% { opacity: 1; filter: brightness(1); }
 }

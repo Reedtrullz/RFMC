@@ -1,64 +1,67 @@
-import { useFMCStore } from '../../store/useFMCStore';
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 import { panelLabels, type PanelId } from '../workspace/panelTypes';
 
 export function CockpitToolbar() {
-  const hiddenPanels = useFMCStore(s => s.hiddenPanels);
-  const togglePanelHidden = useFMCStore(s => s.togglePanelHidden);
-  const setCockpitMode = useFMCStore(s => s.setCockpitMode);
-  const restoreRecommendedLayout = useFMCStore(s => s.restoreRecommendedLayout);
-  const highContrast = useFMCStore(s => s.highContrast);
-  const toggleHighContrast = useFMCStore(s => s.toggleHighContrast);
+  const hiddenPanels = useCockpitLayoutStore(s => s.hiddenPanels);
+  const togglePanelHidden = useCockpitLayoutStore(s => s.togglePanelHidden);
+  const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
+  const restoreRecommendedLayout = useCockpitLayoutStore(s => s.restoreRecommendedLayout);
+  const highContrast = useCockpitLayoutStore(s => s.highContrast);
+  const toggleHighContrast = useCockpitLayoutStore(s => s.toggleHighContrast);
 
   const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'instructor', 'checklist', 'connection', 'settings'];
 
   return (
-    <div className="flex bg-cdu-bezel/80 backdrop-blur-xl p-1 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar gap-1">
-      <div className="px-3 flex items-center border-r border-white/10 mr-1">
-        <span className="text-[10px] font-cdu text-white/40 uppercase tracking-widest font-bold">Panels</span>
+    <div className="flex bg-[#0a0c0c] p-0 rounded border border-white/5 overflow-x-auto no-scrollbar gap-0 items-stretch h-8">
+      <div className="px-4 flex items-center bg-[#1a1c1c] border-r border-[#2a2d2d]">
+        <span className="text-[9px] font-cdu text-white/40 uppercase tracking-[0.2em] font-black">PANELS</span>
       </div>
-      {panels.map((id) => {
-        const isHidden = hiddenPanels.includes(id);
-        const label = panelLabels[id] || id.toUpperCase();
-        
-        return (
-          <button
-            key={id}
-            onClick={() => togglePanelHidden(id)}
-            className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all whitespace-nowrap
-              ${!isHidden 
-                ? 'bg-cdu-cyan/20 text-cdu-cyan border border-cdu-cyan/30 shadow-lg shadow-cdu-cyan/10' 
-                : 'text-white/30 hover:text-white/50 hover:bg-white/5 border border-transparent'}
-            `}
-          >
-            <div className={`w-1.5 h-1.5 rounded-full ${!isHidden ? 'bg-cdu-cyan animate-pulse' : 'bg-white/10'}`} />
-            <span className="text-[9px] font-cdu uppercase tracking-wider">{label}</span>
-          </button>
-        );
-      })}
       
-      <div className="ml-auto flex items-center px-2 border-l border-white/10">
+      <div className="flex flex-1 overflow-x-auto no-scrollbar">
+        {panels.map((id) => {
+          const isHidden = hiddenPanels.includes(id);
+          const label = panelLabels[id] || id.toUpperCase();
+          
+          return (
+            <button
+              key={id}
+              onClick={() => togglePanelHidden(id)}
+              className={`
+                flex items-center gap-2 px-4 transition-all whitespace-nowrap border-r border-[#2a2d2d]
+                ${!isHidden 
+                  ? 'bg-cdu-cyan/10 text-cdu-cyan' 
+                  : 'text-white/20 hover:text-white/40 hover:bg-white/5'}
+              `}
+            >
+              <div className={`w-1 h-1 rounded-full ${!isHidden ? 'bg-cdu-cyan shadow-[0_0_4px_rgba(0,255,255,0.8)]' : 'bg-white/5'}`} />
+              <span className="text-[9px] font-cdu uppercase font-bold tracking-tight">{label}</span>
+            </button>
+          );
+        })}
+      </div>
+      
+      <div className="flex items-center bg-[#1a1c1c] border-l border-[#2a2d2d]">
         <button
           onClick={restoreRecommendedLayout}
-          className="px-3 py-1.5 text-white/45 hover:text-white text-[9px] font-cdu uppercase tracking-wider transition-colors"
+          className="px-4 h-full text-white/30 hover:text-white hover:bg-white/5 text-[9px] font-cdu uppercase font-bold border-r border-[#2a2d2d] transition-colors"
         >
-          Reset Panels
+          RESTORE
         </button>
         <button
           onClick={toggleHighContrast}
           aria-pressed={highContrast}
           className={`
-            px-3 py-1.5 text-[9px] font-cdu uppercase tracking-wider transition-colors
-            ${highContrast ? 'text-cdu-cyan' : 'text-white/45 hover:text-white'}
+            px-4 h-full text-[9px] font-cdu uppercase font-bold border-r border-[#2a2d2d] transition-colors
+            ${highContrast ? 'text-cdu-cyan bg-cdu-cyan/5' : 'text-white/30 hover:text-white hover:bg-white/5'}
           `}
         >
-          Contrast
+          CONTRAST
         </button>
         <button
           onClick={() => setCockpitMode(false)}
-          className="px-3 py-1.5 text-cdu-error/60 hover:text-cdu-error text-[9px] font-cdu uppercase tracking-wider transition-colors"
+          className="px-4 h-full text-cdu-error/40 hover:text-cdu-error hover:bg-cdu-error/5 text-[9px] font-cdu uppercase font-bold transition-colors"
         >
-          Exit Cockpit
+          EXIT
         </button>
       </div>
     </div>

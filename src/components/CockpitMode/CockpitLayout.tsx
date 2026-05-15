@@ -22,6 +22,10 @@ import { ModeHelpCard } from './ModeHelpCard';
 import { FirstRunGuidance } from './FirstRunGuidance';
 import { CockpitLayoutGrid } from './CockpitLayoutGrid';
 
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
+import { useAircraftStore } from '../../store/aircraftStore';
+import { KeyboardHelpOverlay } from './KeyboardHelpOverlay';
+
 type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
 
 interface LayoutControls {
@@ -44,21 +48,22 @@ function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPane
 }
 
 export function CockpitLayout() {
-  const aircraft = useFMCStore(s => s.aircraft);
-  const layoutMode = useFMCStore(s => s.cockpitLayoutMode);
-  const setLayoutMode = useFMCStore(s => s.setCockpitLayoutMode);
-  const focusedPanel = useFMCStore(s => s.focusedPanel);
-  const setFocusedPanel = useFMCStore(s => s.setFocusedPanel);
-  const hiddenPanels = useFMCStore(s => s.hiddenPanels);
-  const pinnedPanels = useFMCStore(s => s.pinnedPanels);
-  const togglePanelHidden = useFMCStore(s => s.togglePanelHidden);
-  const togglePanelPinned = useFMCStore(s => s.togglePanelPinned);
-  const restoreRecommendedLayout = useFMCStore(s => s.restoreRecommendedLayout);
-  const instrumentZoom = useFMCStore(s => s.instrumentZoom);
-  const adjustInstrumentZoom = useFMCStore(s => s.adjustInstrumentZoom);
-  const resetInstrumentZoom = useFMCStore(s => s.resetInstrumentZoom);
-  const highContrast = useFMCStore(s => s.highContrast);
-  const brightness = useFMCStore(s => s.brightness);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const layoutMode = useCockpitLayoutStore(s => s.cockpitLayoutMode);
+  const setLayoutMode = useCockpitLayoutStore(s => s.setCockpitLayoutMode);
+  const focusedPanel = useCockpitLayoutStore(s => s.focusedPanel);
+  const setFocusedPanel = useCockpitLayoutStore(s => s.setFocusedPanel);
+  const hiddenPanels = useCockpitLayoutStore(s => s.hiddenPanels);
+  const pinnedPanels = useCockpitLayoutStore(s => s.pinnedPanels);
+  const togglePanelHidden = useCockpitLayoutStore(s => s.togglePanelHidden);
+  const togglePanelPinned = useCockpitLayoutStore(s => s.togglePanelPinned);
+  const restoreRecommendedLayout = useCockpitLayoutStore(s => s.restoreRecommendedLayout);
+  const instrumentZoom = useCockpitLayoutStore(s => s.instrumentZoom);
+  const adjustInstrumentZoom = useCockpitLayoutStore(s => s.adjustInstrumentZoom);
+  const resetInstrumentZoom = useCockpitLayoutStore(s => s.resetInstrumentZoom);
+  const highContrast = useCockpitLayoutStore(s => s.highContrast);
+  const brightness = useCockpitLayoutStore(s => s.brightness);
+  const orientation = useOrientation();
   const orientation = useOrientation();
   
   useWakeLock(true);
@@ -138,6 +143,7 @@ export function CockpitLayout() {
         </div>
         <PanelTray hiddenPanels={hiddenPanels} onShow={togglePanelHidden} />
       </main>
+      <KeyboardHelpOverlay />
     </div>
   );
 }

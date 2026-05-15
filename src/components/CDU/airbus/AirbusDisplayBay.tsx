@@ -10,17 +10,27 @@ interface AirbusDisplayBayProps {
   onPressLSK: (side: 'L' | 'R', index: number) => void;
 }
 
+import { AIRBUS_A320_MCDU_TOKENS } from '../../instruments/common/tokens/airbus-mcdu.tokens';
+
 export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPressLSK }: AirbusDisplayBayProps) {
+  const tokens = AIRBUS_A320_MCDU_TOKENS;
+  const mmToPx = 3.8;
+  
+  const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
+  const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
+  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`;
+  const totalWidth = `${tokens.screen.widthMm * mmToPx + (tokens.lsk.insetMm * mmToPx * 8)}px`;
+
   return (
     <div className="instrument-display-recess">
       <div
         className="p-1"
         style={{
           display: 'grid',
-          gridTemplateColumns: '48px minmax(0, 1fr) 48px',
-          gridTemplateRows: 'repeat(14, var(--airbus-row-height, 21px)) var(--airbus-scratchpad-height, 28px)',
+          gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
+          gridTemplateRows: `repeat(${tokens.screen.rows}, ${rowHeight}) ${scratchpadHeight}`,
           columnGap: '0.25rem',
-          width: 'var(--airbus-display-width, 420px)',
+          width: totalWidth,
         }}
       >
         <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
@@ -28,7 +38,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
 
         <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
           <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30">
-            <div className="w-full" style={{ height: 'calc(14 * var(--airbus-row-height, 21px))' }}>
+            <div className="w-full" style={{ height: `calc(${tokens.screen.rows} * ${rowHeight})` }}>
               <Display variant="airbus" />
             </div>
           </ScreenGlass>
@@ -39,7 +49,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
             gridRow: 15,
             gridColumn: 2,
             filter: `brightness(${brightness}%)`,
-            height: 'var(--airbus-scratchpad-height, 28px)',
+            height: scratchpadHeight,
             display: 'flex',
             alignItems: 'center',
           }}

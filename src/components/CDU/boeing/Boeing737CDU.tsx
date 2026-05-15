@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
-import { useFMCStore } from '../../../store/useFMCStore';
+import { useFMCStore } from '../../../store/fmcStore';
+import { useAircraftStore } from '../../../store/aircraftStore';
+import { useConnectionStore } from '../../../store/connectionStore';
+import { useTrainingStore } from '../../../store/trainingStore';
+import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
 import type { CDUKey } from '@shared';
 import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
 import { BoeingCDUShell } from './BoeingCDUShell';
@@ -14,14 +18,14 @@ export function Boeing737CDU() {
 
   const pressKey = useFMCStore(s => s.pressKey);
   const pressLSK = useFMCStore(s => s.pressLSK);
-  const msgLight = useFMCStore(s => s.msgLight);
+  const msgLight = useAircraftStore(s => s.annunciators.msg);
   const execLit = useFMCStore(s => s.execLit);
-  const connectionMode = useFMCStore(s => s.connectionMode);
-  const connectionStatus = useFMCStore(s => s.connectionStatus);
-  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
-  const tutorialHintLevel = useFMCStore(s => s.tutorialHintLevel);
-  const brightness = useFMCStore(s => s.brightness);
-  const setBrightness = useFMCStore(s => s.setBrightness);
+  const connectionMode = useConnectionStore(s => s.connectionMode);
+  const connectionStatus = useConnectionStore(s => s.connectionStatus);
+  const tutorialHighlight = useTrainingStore(s => s.tutorialHighlight);
+  const tutorialHintLevel = useTrainingStore(s => s.tutorialHintLevel);
+  const brightness = useCockpitLayoutStore(s => s.brightness);
+  const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
   const displayData = useFMCStore(s => s.getDisplayData());
 
   const { send } = useWebSocket();

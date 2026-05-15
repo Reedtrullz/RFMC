@@ -170,7 +170,7 @@
 /* Avionics Keys */
 .avionics-key {
   position: relative;
-  min-height: 38px;
+  min-height: 44px;
   border: 1px solid rgba(0,0,0,0.85);
   border-radius: 5px;
   background:

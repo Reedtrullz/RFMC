@@ -30,7 +30,13 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
   });
 
   return (
-    <div className="relative" data-testid="scratchpad">
+    <div 
+      className="relative" 
+      data-testid="scratchpad"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-label={`Scratchpad: ${text}`}
+    >
       <CDUDisplayGrid
         variant={variant}
         grid={{

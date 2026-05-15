@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
+import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 
 /**
  * Captures physical keyboard events and routes them to the FMC pressKey action.
  */
 export function useCDUKeyboard() {
   const pressKey = useFMCStore(s => s.pressKey);
+  const pressLSK = useFMCStore(s => s.pressLSK);
   const aircraft = useFMCStore(s => s.aircraft);
+  const toggleKeyboardHelp = useCockpitLayoutStore(s => s.toggleKeyboardHelp);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -15,13 +18,13 @@ export function useCDUKeyboard() {
 
       const key = e.key.toUpperCase();
       
-      // Prevent browser shortcuts like backspace navigating away
-      if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-'].includes(e.key)) {
-        // e.preventDefault(); // Might be too aggressive for all keys, but good for some
+      // Prevent browser shortcuts
+      if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6'].includes(e.key)) {
+        // e.preventDefault(); 
       }
 
       // Alphanumeric
-      if (/^[A-Z0-9]$/.test(key)) {
+      if (/^[A-Z0-9]$/.test(key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
         pressKey(key as any);
         return;
       }
@@ -48,15 +51,34 @@ export function useCDUKeyboard() {
           pressKey('SPACE');
           break;
         case 'Enter':
-          if (aircraft === 'BOEING_737') {
-            pressKey('EXEC');
-          }
+          pressKey('EXEC');
+          break;
+        case 'PageUp':
+          pressKey('PREV_PAGE');
+          break;
+        case 'PageDown':
+          pressKey('NEXT_PAGE');
           break;
         case 'ArrowUp':
           pressKey('PREV_PAGE');
           break;
         case 'ArrowDown':
           pressKey('NEXT_PAGE');
+          break;
+        
+        // Help
+        case '?':
+        case 'h':
+        case 'H':
+          toggleKeyboardHelp();
+          break;
+
+        // LSK Mapping (F1-F6)
+        case 'F1': case 'F2': case 'F3': case 'F4': case 'F5': case 'F6':
+          e.preventDefault();
+          const index = parseInt(e.key.substring(1)) - 1;
+          const side = e.shiftKey ? 'R' : 'L';
+          pressLSK(side, index);
           break;
       }
     };

@@ -10,13 +10,46 @@ import { B737ND } from './renderers/B737ND';
 import { A320ND } from './renderers/A320ND';
 
 export function NavigationDisplay() {
-  const state = useFMCStore(s => s);
+  const aircraft = useFMCStore(s => s.aircraft);
+  const efisL = useFMCStore(s => s.efisL);
+  const efisR = useFMCStore(s => s.efisR);
+  const flightPlan = useFMCStore(s => s.flightPlan);
+  const route = useFMCStore(s => s.route);
+  const isModified = useFMCStore(s => s.isModified);
+  const pendingFlightPlan = useFMCStore(s => s.pendingFlightPlan);
+  const pendingRoute = useFMCStore(s => s.pendingRoute);
+  const aircraftState = useFMCStore(s => s.aircraftState);
+  const selectedPlanWaypointIndex = useFMCStore(s => s.selectedPlanWaypointIndex);
+  const fixEntries = useFMCStore(s => s.fixEntries);
+  const fix = useFMCStore(s => s.fix);
+  const hold = useFMCStore(s => s.hold);
+  const holdPending = useFMCStore(s => s.holdPending);
+  const trafficTargets = useFMCStore(s => s.trafficTargets);
+  const demoMode = useFMCStore(s => s.demoMode);
+  const tutorialActive = useFMCStore(s => s.tutorialActive);
+  const performance = useFMCStore(s => s.performance);
+  const autopilot = useFMCStore(s => s.autopilot);
+  const position = useFMCStore(s => s.position);
+  const activeNavSource = useFMCStore(s => s.activeNavSource);
+  const navPerformance = useFMCStore(s => s.navPerformance);
+
   const side = 'L'; // In a multi-display setup, this would be a prop
-  const efis = side === 'L' ? state.efisL : state.efisR;
+  const efis = side === 'L' ? efisL : efisR;
   
   const model = useMemo(
-    () => buildNavigationDisplayModel(state, efis),
-    [state, efis]
+    () => buildNavigationDisplayModel({
+      aircraft, efisL, efisR, flightPlan, route, isModified, 
+      pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
+      fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
+      tutorialActive, performance, autopilot, position, activeNavSource, navPerformance
+    } as any, efis),
+    [
+      aircraft, efisL, efisR, flightPlan, route, isModified, 
+      pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
+      fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
+      tutorialActive, performance, autopilot, position, activeNavSource, navPerformance,
+      efis
+    ]
   );
 
   return (

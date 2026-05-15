@@ -41,7 +41,7 @@ export const cockpitInstrumentPanels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflig
 export const trainingModes: TrainingModeConfig[] = [
   {
     id: 'fmc-focus',
-    label: 'FMC Focus',
+    label: 'Preflight FMC Setup',
     purpose: 'Work close-up in the CDU or MCDU without other cockpit panels competing for attention.',
     aircraft: 'both',
     visiblePanels: ['cdu', 'instructor'],
@@ -56,7 +56,7 @@ export const trainingModes: TrainingModeConfig[] = [
   },
   {
     id: 'navigation',
-    label: 'Navigation',
+    label: 'Route Verification',
     purpose: 'Practice route, LEGS, FIX, HOLD, and DIR TO workflows with the ND visible beside the CDU/MCDU.',
     aircraft: 'both',
     visiblePanels: ['nd', 'cdu', 'instructor'],
@@ -71,7 +71,7 @@ export const trainingModes: TrainingModeConfig[] = [
   },
   {
     id: 'automation',
-    label: 'Automation',
+    label: 'MCP/FCU Mode Training',
     purpose: 'Learn MCP/FCU mode selection and verify the result on the PFD/FMA and ND.',
     aircraft: 'both',
     visiblePanels: ['autoflight', 'pfd', 'nd', 'instructor'],
@@ -86,7 +86,7 @@ export const trainingModes: TrainingModeConfig[] = [
   },
   {
     id: 'approach',
-    label: 'Approach',
+    label: 'Approach Setup & Monitoring',
     purpose: 'Monitor approach setup with PFD/FMA and ND first, while keeping automation controls available.',
     aircraft: 'both',
     visiblePanels: ['pfd', 'nd', 'autoflight', 'checklist'],
@@ -101,7 +101,7 @@ export const trainingModes: TrainingModeConfig[] = [
   },
   {
     id: 'full-deck',
-    label: 'Full Deck',
+    label: 'Flight Deck Scan',
     purpose: 'Show every primary cockpit tool for overview and cross-checking, not detailed CDU input.',
     aircraft: 'both',
     visiblePanels: ['autoflight', 'pfd', 'nd', 'cdu', 'checklist', 'connection'],
@@ -116,7 +116,7 @@ export const trainingModes: TrainingModeConfig[] = [
   },
   {
     id: 'free-practice',
-    label: 'Free Practice',
+    label: 'Custom Practice',
     purpose: 'Freely choose visible panels for instrument practice outside a guided lesson.',
     aircraft: 'both',
     visiblePanels: ['pfd', 'nd'],

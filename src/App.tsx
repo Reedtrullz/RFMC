@@ -19,6 +19,7 @@ import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay'
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
+import { useCockpitLayoutStore } from './store/cockpitLayoutStore';
 import { useAuralAlerts } from './hooks/useAuralAlerts';
 
 export default function App() {
@@ -33,8 +34,10 @@ export default function App() {
   const setRteSubPage = useFMCStore(s => s.setRteSubPage);
   const setTakeoffRefPageIndex = useFMCStore(s => s.setTakeoffRefPageIndex);
   const setNDMode = useFMCStore(s => s.setNDMode);
-  const cockpitMode = useFMCStore(s => s.cockpitMode);
-  const setCockpitMode = useFMCStore(s => s.setCockpitMode);
+  
+  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
+  const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
+  
   const tick = useFMCStore(s => s.tick);
 
   useAuralAlerts();
