@@ -31,7 +31,17 @@ export async function dismissWelcome(page: Page) {
   }
   
   // Ensure the trainer is at least in the DOM and visible
-  await expect(page.getByTestId('autoflight-panel')).toBeVisible({ timeout: 10000 });
+  // We use cdu-panel as it exists in both legacy and all Cockpit Mode layouts
+  await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 15000 });
+
+  // If we are in Cockpit Mode, switch to 'Flight Deck Scan' (full-deck) 
+  // to ensure all panels (MCP/FCU, ND, PFD) are visible for legacy E2E tests
+  const fullDeckBtn = page.getByRole('button', { name: 'Flight Deck Scan' });
+  if (await fullDeckBtn.isVisible()) {
+    await fullDeckBtn.click();
+    // Wait for the autopilot panel to become visible as a smoke test for the layout switch
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible({ timeout: 5000 });
+  }
 }
 
 /**

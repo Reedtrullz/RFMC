@@ -1,6 +1,6 @@
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
-import { useFMCStore } from '../../../store/fmcStore';
+import { useFMCStore } from '../../../store/useFMCStore';
 import { FMA } from '../common/FMA';
 import { SpeedTape } from '../common/SpeedTape';
 import { AltitudeTape } from '../common/AltitudeTape';

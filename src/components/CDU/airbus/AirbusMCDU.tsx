@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
-import { useFMCStore } from '../../../store/fmcStore';
+import { useFMCStore } from '../../../store/useFMCStore';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useTrainingStore } from '../../../store/trainingStore';

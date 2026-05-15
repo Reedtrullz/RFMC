@@ -125,8 +125,6 @@ export default function App() {
     }
   }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex]);
 
-  const showWelcome = mode === 'STANDBY' && !tutorialActive && !tutorialCompleted;
-
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -150,22 +148,15 @@ export default function App() {
     setNeedRefresh(false);
   };
 
-  if (cockpitMode) {
-    return (
-      <>
-        <CockpitLayout />
-        <SettingsPanel />
-        <ChecklistPanel />
-        <TrainingOverlay />
-        <ConnectionStatus />
-        <PerformanceOverlay enabled={import.meta.env.DEV} />
-        <OrientationPrompt />
-        <EICASPanel />
-      </>
-    );
-  }
-
-  return (
+  const content = cockpitMode ? (
+    <>
+      <CockpitLayout />
+      <SettingsPanel />
+      <ChecklistPanel />
+      <OrientationPrompt />
+      <EICASPanel />
+    </>
+  ) : (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-black">
       <div className="flex w-full shrink-0 justify-center items-center py-3 px-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
         <div data-testid="autoflight-panel">
@@ -178,10 +169,10 @@ export default function App() {
           className={`ml-4 px-3 py-2 rounded font-cdu text-xs font-bold uppercase transition-colors ${
             showNd
               ? 'bg-cdu-cyan/20 text-cdu-cyan border border-cdu-cyan/40'
-              : 'bg-cdu-bezel text-cdu-text/50 border border-cdu-bezel-light'
+              : 'bg-cdu-bezel-light border-cdu-bezel-light text-cdu-text/40 hover:text-cdu-text/60'
           }`}
         >
-          ND
+          {showNd ? 'Hide ND' : 'Show ND'}
         </button>
         <button 
           onClick={() => setCockpitMode(true)}
@@ -191,20 +182,17 @@ export default function App() {
         </button>
       </div>
 
-      <main className="grid min-h-0 flex-1 w-full grid-cols-[minmax(220px,1fr)_minmax(260px,1fr)_minmax(320px,420px)] place-items-center gap-4 overflow-hidden p-3 max-lg:grid-cols-2">
-        <div className="contents">
-          {/* PFD Section */}
-          <InstrumentSlot className="h-full w-full max-w-[320px]" dataTestId="pfd-panel">
+      <main className="grid flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden bg-black p-2 lg:p-4 gap-2 lg:gap-4">
+        <div className="flex min-h-0 flex-col items-center justify-center gap-4 lg:flex-row">
+          <InstrumentSlot className="h-full w-full max-w-[360px]" dataTestId="pfd-panel">
             <PrimaryFlightDisplay />
           </InstrumentSlot>
 
-          {/* ND Section */}
           <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`} dataTestId="nd-panel">
             <NavigationDisplay />
           </InstrumentSlot>
         </div>
 
-        {/* CDU Section */}
         <InstrumentSlot
           className="h-full w-full max-lg:col-span-2"
           contentClassName="normal-cdu-scale origin-top"
@@ -213,6 +201,14 @@ export default function App() {
           <CDU />
         </InstrumentSlot>
       </main>
+    </div>
+  );
+
+  const showWelcome = mode === 'STANDBY' && !tutorialActive && !tutorialCompleted;
+
+  return (
+    <>
+      {content}
       {showWelcome && <DemoWelcome />}
       {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
       <TrainingOverlay />
@@ -220,8 +216,8 @@ export default function App() {
       <PerformanceOverlay enabled={import.meta.env.DEV} />
       <FmsInspector />
       <TrainingReport />
+      <AuralAlertsHandler />
 
-      {/* PWA Update Prompt */}
       {(offlineReady || needRefresh) && (
         <div className="fixed bottom-4 right-4 z-50 flex max-w-sm flex-col gap-2 rounded-sm border border-cdu-cyan/30 bg-black/90 p-4 font-cdu text-xs text-cdu-text shadow-lg backdrop-blur-sm">
           <p className="text-cdu-cyan">
@@ -247,6 +243,11 @@ export default function App() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
+}
+
+function AuralAlertsHandler() {
+  useAuralAlerts();
+  return null;
 }

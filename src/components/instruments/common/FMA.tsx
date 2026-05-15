@@ -1,6 +1,6 @@
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
-import { useFMCStore } from '../../../store/fmcStore';
+import { useFMCStore } from '../../../store/useFMCStore';
 import { buildBoeingFMAState, buildAirbusFMAState } from '@shared';
 
 export function FMA() {
