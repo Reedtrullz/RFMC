@@ -9,25 +9,31 @@ import type { DisplayData }         from '../../renderers/types';
 // A <canvas>-based CDU display component that delegates all drawing to the
 // active renderer resolved from the display settings store.
 //
-// DPR strategy (fix for Codex P1):
-//   The canvas backing buffer is set to CSS-px dimensions (no DPR multiply).
-//   We do NOT call ctx.scale(dpr, dpr).  Instead we rely on the browser’s
-//   own CSS scaling to up-scale the canvas to the devicePixelRatio.  This
-//   means `canvas.width === width` always and renderer geometry never needs
-//   to account for DPR.  A future refactor may move to explicit DPR scaling
-//   in a single place once a shared coordinate helper is introduced.
+// DPR strategy (Codex P2 fix):
+//   The standard HiDPI canvas pattern is used:
+//     1. Set backing-store size to CSS-px × devicePixelRatio (sharp pixels).
+//     2. Scale the 2D context by dpr so that renderer code writes in CSS-px
+//        coordinates (no renderer changes required).
+//     3. Set CSS width/height to the original CSS-px values so the element
+//        occupies the correct layout space.
+//   This produces crisp text on Retina/iPad while keeping renderer geometry
+//   completely DPR-agnostic.
 //
-// Resize strategy (fix for Codex P2):
-//   A single combined effect handles BOTH resize AND re-render, keyed on
-//   [data, displayStyle, crtIntensity, wearIntensity, width, height].  This
-//   guarantees a fresh frame is always drawn after a dimension change.
+//   IMPORTANT: renderers must read canvas geometry via BaseRenderer helpers
+//   (rowTop, rowHeight, leftEdge, rowWidth) which all operate on canvas.width
+//   / canvas.height.  After ctx.scale(dpr, dpr) the context transforms those
+//   CSS-space values to backing-store pixels automatically.
+//
+// Resize strategy:
+//   A single combined effect handles resize AND re-render, keyed on all six
+//   dependencies, so dimension changes always produce a fresh frame.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface CDUDisplayProps {
   data: DisplayData;
-  /** Logical width in CSS px. */
+  /** Logical (CSS) width in px. */
   width?:  number;
-  /** Logical height in CSS px. */
+  /** Logical (CSS) height in px. */
   height?: number;
   className?: string;
 }
@@ -39,33 +45,44 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
   className,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const { displayStyle, crtIntensity, wearIntensity } = useDisplaySettings();
 
-  // ── Single effect: resize canvas then immediately render a fresh frame ────
-  // Codex P1: canvas dimensions are set in CSS px (no ctx.scale / no DPR
-  //           multiply) so renderer geometry always works in one coordinate
-  //           space.
-  // Codex P2: width + height are included in the dependency array so that
-  //           any dimension change immediately triggers a fresh render.
+  // ── Single effect: resize → scale context → render ──────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Resize backing buffer to CSS-pixel dimensions (no DPR multiply).
-    // The browser’s CSS layout engine handles physical pixel mapping.
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width  = width;
-      canvas.height = height;
+    const dpr = window.devicePixelRatio ?? 1;
+    const backingW = Math.round(width  * dpr);
+    const backingH = Math.round(height * dpr);
+
+    // Only resize the backing store when dimensions actually change to avoid
+    // wiping a perfectly valid bitmap on every unrelated state update.
+    const needsResize =
+      canvas.width  !== backingW ||
+      canvas.height !== backingH;
+
+    if (needsResize) {
+      canvas.width  = backingW;
+      canvas.height = backingH;
     }
 
-    // Render immediately after (potential) resize – never leave a blank canvas.
+    // Apply DPR scale so renderers can write in CSS-px coordinates.
+    // Must be re-applied whenever the context is reset (i.e. after a resize).
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (needsResize) {
+      // Resizing the backing store resets the transform – re-apply scale.
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // Render immediately – never leave a blank or stale canvas.
     const renderer = getRenderer(displayStyle);
     renderer.render(data, canvas, {
       intensity:     crtIntensity,
       wearIntensity: wearIntensity,
     });
-  // Dimensions included so resize always re-draws (Codex P2).
   }, [data, displayStyle, crtIntensity, wearIntensity, width, height]);
 
   return (
@@ -85,6 +102,8 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({
       <canvas
         ref={canvasRef}
         style={{
+          // CSS dimensions keep the element in correct layout space.
+          // The backing store is larger by ×dpr for crisp rendering.
           display: 'block',
           width:   `${width}px`,
           height:  `${height}px`,

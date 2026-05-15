@@ -11,11 +11,37 @@ import type { DisplayData, DisplayLine, RenderOptions } from './types';
 //   ④ Phosphor persistence (afterimage on change)
 //   ⑤ Optional curvature distortion (at intensity >= 50)
 //   ⑥ Subtle glass haze (wearIntensity)
+//
+// Codex P1 fix: OffscreenCanvas is guarded with a feature check.
+// Browsers that do not support OffscreenCanvas (older Safari, WebViews,
+// jsdom test environment) fall back to an in-memory HTMLCanvasElement so
+// that classic-crt mode degrades gracefully instead of hard-crashing.
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** True when the browser supports OffscreenCanvas. */
+const SUPPORTS_OFFSCREEN = typeof OffscreenCanvas !== 'undefined';
+
+/**
+ * Creates a persistence buffer of the given dimensions.
+ * Returns an OffscreenCanvas when supported, otherwise a plain
+ * HTMLCanvasElement (which works identically as a drawImage source).
+ */
+function createPersistenceBuffer(
+  width: number,
+  height: number
+): OffscreenCanvas | HTMLCanvasElement {
+  if (SUPPORTS_OFFSCREEN) {
+    return new OffscreenCanvas(width, height);
+  }
+  const el = document.createElement('canvas');
+  el.width  = width;
+  el.height = height;
+  return el;
+}
 
 /** Maps semantic color roles to physical CRT phosphor hex values. */
 const CRT_PALETTE: Record<NonNullable<DisplayLine['color']>, string> = {
-  white:   '#c8ffb4',  // slightly warm white-green
+  white:   '#c8ffb4',  // warm white-green
   green:   '#39ff14',  // classic bright phosphor green
   amber:   '#ffcc00',  // amber – selected fields
   cyan:    '#80ffff',
@@ -23,12 +49,15 @@ const CRT_PALETTE: Record<NonNullable<DisplayLine['color']>, string> = {
   red:     '#ff4040',
 };
 
-const CRT_BG         = '#000300'; // near-black with a faint green cast
-const SCRATCHPAD_BG  = '#000500';
+const CRT_BG        = '#000300';
+const SCRATCHPAD_BG = '#000500';
 
 export class ClassicCrtRenderer extends BaseRenderer {
-  /** Offscreen canvas used to carry the previous frame for phosphor persistence. */
-  private _prevFrame: OffscreenCanvas | null = null;
+  /**
+   * Offscreen persistence buffer (OffscreenCanvas or HTMLCanvasElement).
+   * Null until the first frame is rendered.
+   */
+  private _prevFrame: OffscreenCanvas | HTMLCanvasElement | null = null;
 
   getName(): string {
     return 'Classic CRT';
@@ -44,7 +73,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
 
     const intensity     = Math.max(0, Math.min(100, options?.intensity     ?? 65));
     const wearIntensity = Math.max(0, Math.min(100, options?.wearIntensity ?? 35));
-    const t             = intensity / 100;  // normalised 0-1
+    const t             = intensity / 100;
 
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
@@ -55,11 +84,9 @@ export class ClassicCrtRenderer extends BaseRenderer {
 
     // ── 2. Phosphor persistence ──────────────────────────────────────────────
     if (t > 0 && this._prevFrame) {
-      // Blend the previous frame at reduced opacity before drawing the new one.
-      // This creates the characteristic phosphor afterimage.
-      const persistAlpha = 0.18 * t;  // 0 → no afterimage, 1 → strong trail
+      const persistAlpha = 0.18 * t;
       ctx.globalAlpha = persistAlpha;
-      ctx.drawImage(this._prevFrame as unknown as CanvasImageSource, 0, 0);
+      ctx.drawImage(this._prevFrame as CanvasImageSource, 0, 0);
       ctx.globalAlpha = 1;
     }
 
@@ -79,12 +106,10 @@ export class ClassicCrtRenderer extends BaseRenderer {
       ctx.font         = this.fontString(canvas, rowIndex, size);
       ctx.textBaseline = 'middle';
 
-      // Multi-pass glow (bloom effect)
       if (t > 0.1) {
         const blurRadius = Math.round(2 + 6 * t);
-        ctx.shadowColor = glow;
-        ctx.shadowBlur  = blurRadius;
-        // Extra passes intensify the bloom
+        ctx.shadowColor  = glow;
+        ctx.shadowBlur   = blurRadius;
         const passes = intensity >= 60 ? 3 : 2;
         for (let p = 0; p < passes; p++) {
           ctx.fillStyle = hex;
@@ -92,7 +117,6 @@ export class ClassicCrtRenderer extends BaseRenderer {
         }
       }
 
-      // Crisp text pass on top
       ctx.shadowBlur = 0;
       ctx.fillStyle  = hex;
       ctx.fillText(line.text, x, y + h / 2, w);
@@ -116,7 +140,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
       this._drawVignette(ctx, canvas, t);
     }
 
-    // ── 8. CRT curvature (barrel distortion simulation via corner darken) ────
+    // ── 8. CRT curvature corner darken ───────────────────────────────────────
     if (intensity >= 50) {
       this._drawCurvatureDarken(ctx, canvas, t);
     }
@@ -157,25 +181,19 @@ export class ClassicCrtRenderer extends BaseRenderer {
     ctx.shadowBlur   = 0;
   }
 
-  /**
-   * Draws horizontal scanlines at every other pixel row.
-   * Opacity scales with intensity.
-   */
   private _drawScanlines(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     t: number
   ): void {
-    const alpha       = 0.08 + 0.22 * t;  // 0.08 subtle → 0.30 strong
+    const alpha       = 0.08 + 0.22 * t;
     const lineSpacing = Math.max(2, Math.round(canvas.height / 240));
-
     ctx.fillStyle = `rgba(0,0,0,${alpha})`;
     for (let y = 0; y < canvas.height; y += lineSpacing * 2) {
       ctx.fillRect(0, y, canvas.width, lineSpacing);
     }
   }
 
-  /** Radial vignette that darkens the corners and edges. */
   private _drawVignette(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
@@ -185,21 +203,14 @@ export class ClassicCrtRenderer extends BaseRenderer {
     const cx = width  / 2;
     const cy = height / 2;
     const r  = Math.sqrt(cx * cx + cy * cy) * 1.05;
-
     const gradient = ctx.createRadialGradient(cx, cy, r * 0.35, cx, cy, r);
     gradient.addColorStop(0,   'rgba(0,0,0,0)');
     gradient.addColorStop(0.7, `rgba(0,0,0,${0.1 * t})`);
     gradient.addColorStop(1.0, `rgba(0,0,0,${0.55 * t})`);
-
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
   }
 
-  /**
-   * Simulates CRT barrel curvature by darkening corners with a sharp
-   * corner-focused gradient — a lightweight substitute for actual mesh
-   * distortion which would require WebGL.
-   */
   private _drawCurvatureDarken(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
@@ -208,8 +219,6 @@ export class ClassicCrtRenderer extends BaseRenderer {
     if (t < 0.5) return;
     const { width, height } = canvas;
     const alpha = 0.12 * ((t - 0.5) / 0.5);
-
-    // Four corner gradients
     const corners: Array<[number, number]> = [
       [0, 0], [width, 0], [0, height], [width, height],
     ];
@@ -223,38 +232,42 @@ export class ClassicCrtRenderer extends BaseRenderer {
     });
   }
 
-  /** Subtle static haze simulating aged CRT glass. */
   private _drawGlassHaze(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     w: number
   ): void {
-    // A faint greenish tint over the whole display
     ctx.fillStyle = `rgba(0,30,0,${0.04 * w})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  /** Copies the current canvas into the persistence offscreen buffer. */
+  /**
+   * Copies the current canvas into the persistence buffer.
+   *
+   * Codex P1 fix: uses createPersistenceBuffer() which guards against
+   * missing OffscreenCanvas support via an HTMLCanvasElement fallback.
+   */
   private _captureFrame(canvas: HTMLCanvasElement): void {
+    // Re-allocate buffer when dimensions change (e.g. orientation flip).
     if (
       !this._prevFrame ||
       this._prevFrame.width  !== canvas.width ||
       this._prevFrame.height !== canvas.height
     ) {
-      this._prevFrame = new OffscreenCanvas(canvas.width, canvas.height);
+      this._prevFrame = createPersistenceBuffer(canvas.width, canvas.height);
     }
-    const pCtx = this._prevFrame.getContext('2d') as OffscreenCanvasRenderingContext2D | null;
+
+    const pCtx = this._prevFrame.getContext('2d') as
+      | CanvasRenderingContext2D
+      | OffscreenCanvasRenderingContext2D
+      | null;
+
     if (pCtx) {
       pCtx.clearRect(0, 0, canvas.width, canvas.height);
       pCtx.drawImage(canvas, 0, 0);
     }
   }
 
-  /**
-   * Converts a hex colour string to an rgba glow colour.
-   * @param hex    – '#rrggbb' format
-   * @param alpha  – desired alpha (0-1)
-   */
   private _glowColorFromHex(hex: string, alpha: number): string {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
