@@ -37,6 +37,9 @@ export function NavigationDisplay() {
   const activeNavSource = useAircraftStore(s => s.activeNavSource);
   const navPerformance = useAircraftStore(s => s.navPerformance);
   const performance = useAircraftStore(s => s.performance);
+  const takeoff = useAircraftStore(s => s.takeoff);
+  const landing = useAircraftStore(s => s.landing);
+  const ident = useAircraftStore(s => s.ident);
   
   // Training and Demo state
   const demoMode = useTrainingStore(s => s.trainingActive);
@@ -50,14 +53,15 @@ export function NavigationDisplay() {
       aircraft, efisL, efisR, flightPlan, route, isModified, 
       pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
       fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
-      tutorialActive, performance, autopilot, position, activeNavSource, navPerformance
+      tutorialActive, performance, autopilot, position, activeNavSource, navPerformance,
+      takeoff, landing, ident
     } as any, efis),
     [
       aircraft, efisL, efisR, flightPlan, route, isModified, 
       pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
       fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
       tutorialActive, performance, autopilot, position, activeNavSource, navPerformance,
-      efis
+      takeoff, landing, ident, efis
     ]
   );
 
