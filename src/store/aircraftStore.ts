@@ -83,7 +83,10 @@ export const useAircraftStore = create<AircraftStore>((set) => ({
   boeingAnnunciators: { msg: false, exec: false, fail: false, ofst: false },
   airbusAnnunciators: { fm1: false, fm2: false, ind: false, rdy: false, fail: false, fm: false, mcduMenu: false },
 
-  setAircraft: (type) => set({ aircraft: type }),
+  setAircraft: (type) => {
+    set({ aircraft: type });
+    // This will be synchronized with useFMCStore via subscription or direct call
+  },
   setAircraftState: (state) => set({ aircraftState: state }),
   setIrsMode: (mode) => set(state => ({ position: { ...state.position, irsState: mode } })),
   toggleSigns: () => set(state => ({ signsOn: !state.signsOn })),

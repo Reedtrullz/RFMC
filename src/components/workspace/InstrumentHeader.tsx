@@ -1,6 +1,7 @@
 import type { PanelId } from './panelTypes';
 import { panelLabels } from './panelTypes';
-import { useFMCStore } from '../../store/useFMCStore';
+import { useAircraftStore } from '../../store/aircraftStore';
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 
 interface InstrumentHeaderProps {
   panelId: PanelId;
@@ -25,7 +26,10 @@ export function InstrumentHeader({
   onZoomOut,
   onZoomReset,
 }: InstrumentHeaderProps) {
-  const aircraft = useFMCStore(s => s.aircraft);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const layoutMode = useCockpitLayoutStore(s => s.cockpitLayoutMode);
+  const togglePanelPinned = useCockpitLayoutStore(s => s.togglePanelPinned);
+  const pinnedPanels = useCockpitLayoutStore(s => s.pinnedPanels);
   let label = panelLabels[panelId];
   if (panelId === 'autoflight') {
     label = aircraft === 'AIRBUS_A320' ? 'FCU' : 'MCP';

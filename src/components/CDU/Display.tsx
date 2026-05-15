@@ -1,6 +1,7 @@
 import { useFMCStore } from '../../store/useFMCStore';
 import { displayDataToGrid } from '@shared';
 import { CDUDisplayGrid } from './display/CDUDisplayGrid';
+import { useAircraftStore } from '../../store/aircraftStore';
 
 interface DisplayProps {
   variant?: 'boeing' | 'airbus';
@@ -8,7 +9,7 @@ interface DisplayProps {
 
 export function Display({ variant = 'boeing' }: DisplayProps) {
   const displayData = useFMCStore(s => s.getDisplayData());
-  const aircraft = useFMCStore(s => s.aircraft);
+  const aircraft = useAircraftStore(s => s.aircraft);
   const isAirbus = variant === 'airbus' || aircraft === 'AIRBUS_A320';
   const grid = displayDataToGrid(displayData);
 

@@ -18,6 +18,7 @@ export interface ConnectionState {
   failureMessage: null | string;
   externalDisplayData: null | DisplayData;
   latency: number;
+  sessionStartTime: number | null;
 }
 
 export interface ConnectionActions {
@@ -49,6 +50,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
   failureMessage: null,
   externalDisplayData: null,
   latency: 0,
+  sessionStartTime: null,
 
   setMode: (mode: FMCMode) => set({ mode }),
   setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),

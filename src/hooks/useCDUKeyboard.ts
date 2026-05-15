@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
+import { useAircraftStore } from '../store/aircraftStore';
 import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 
 /**
@@ -8,7 +9,7 @@ import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 export function useCDUKeyboard() {
   const pressKey = useFMCStore(s => s.pressKey);
   const pressLSK = useFMCStore(s => s.pressLSK);
-  const aircraft = useFMCStore(s => s.aircraft);
+  const aircraft = useAircraftStore(s => s.aircraft);
   const toggleKeyboardHelp = useCockpitLayoutStore(s => s.toggleKeyboardHelp);
 
   useEffect(() => {
@@ -20,10 +21,10 @@ export function useCDUKeyboard() {
       
       // Prevent browser shortcuts
       if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6'].includes(e.key)) {
-        // e.preventDefault(); 
+        e.preventDefault(); 
       }
 
-      // Help toggle (check before general alphanumeric to avoid intercepting 'H')
+      // Help toggle (Shift + / = ?)
       if (e.key === '?' || e.key === 'h' || e.key === 'H') {
         toggleKeyboardHelp();
         return;

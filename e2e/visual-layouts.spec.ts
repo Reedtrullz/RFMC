@@ -4,7 +4,7 @@ import { dismissWelcome } from './helpers';
 async function enterCockpit(page: Page) {
   await page.goto('/');
   await dismissWelcome(page);
-  await page.getByRole('button', { name: 'Enter Cockpit' }).click();
+  // Cockpit Mode is now default, just verify we're there
   await expect(page.getByRole('button', { name: 'Preflight FMC Setup' })).toBeVisible();
 }
 
@@ -94,7 +94,6 @@ test.describe('cockpit layout visual sizing', () => {
     await page.goto('/');
     await dismissWelcome(page);
 
-    await page.getByRole('button', { name: 'Enter Cockpit' }).click();
     await page.getByRole('button', { name: 'Flight Deck Scan' }).click();
 
     await expect(page.getByTestId('autoflight-panel')).toBeVisible();

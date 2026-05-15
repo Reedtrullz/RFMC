@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useWebSocket, saveServerUrl, getServerUrl } from '../hooks/useWebSocket';
 import { useFMCStore } from '../store/useFMCStore';
+import { useAircraftStore } from '../store/aircraftStore';
+import { useConnectionStore } from '../store/connectionStore';
+import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 import { CDUButton } from './CDU/CDUButton';
 
 const AIRCRAFT_LABELS: Record<string, string> = {
@@ -18,21 +21,21 @@ export function ConnectionStatus() {
   const [showSettings, setShowSettings] = useState(false);
   const [serverUrl, setServerUrl] = useState(getServerUrl());
   const { connect, disconnect } = useWebSocket({ autoConnect: false });
-  const isHidden = useFMCStore(s => s.hiddenPanels.includes('connection'));
-  const cockpitMode = useFMCStore(s => s.cockpitMode);
-
-  const connectionStatus = useFMCStore(s => s.connectionStatus);
-  const connectionMode = useFMCStore(s => s.connectionMode);
-  const configuredAircraft = useFMCStore(s => s.aircraft);
-  const connectedAircraft = useFMCStore(s => s.connectedAircraft);
-  const connectedAircraftType = useFMCStore(s => s.connectedAircraftType);
-  const connectedCapabilities = useFMCStore(s => s.connectedCapabilities);
-  const adapterHealth = useFMCStore(s => s.adapterHealth);
-  const structuredCapabilities = useFMCStore(s => s.structuredCapabilities);
-  const lastError = useFMCStore(s => s.lastError);
-  const aircraftState = useFMCStore(s => s.aircraftState);
-  const latency = useFMCStore(s => s.latency);
-  const sessionStartTime = useFMCStore(s => s.sessionStartTime);
+  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('connection'));
+  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
+  const configuredAircraft = useAircraftStore(s => s.aircraft);
+  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const connectionStatus = useConnectionStore(s => s.connectionStatus);
+  const connectionMode = useConnectionStore(s => s.connectionMode);
+  const connectedAircraft = useConnectionStore(s => s.connectedAircraft);
+  const lastError = useConnectionStore(s => s.lastError);
+  const adapterHealth = useConnectionStore(s => s.adapterHealth);
+  
+  const connectedAircraftType = useConnectionStore(s => s.connectedAircraftType);
+  const connectedCapabilities = useConnectionStore(s => s.connectedCapabilities);
+  const structuredCapabilities = useConnectionStore(s => s.structuredCapabilities);
+  const latency = useConnectionStore(s => s.latency);
+  const sessionStartTime = useConnectionStore(s => s.sessionStartTime);
   const [uptime, setUptime] = useState('00:00:00');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 

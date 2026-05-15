@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import type { ClientMessage } from '@shared';
 import { webSocketClient } from '../services/WebSocketClient';
-import { useFMCStore } from '../store/useFMCStore';
+import { useConnectionStore } from '../store/connectionStore';
 
 interface UseWebSocketOptions {
   url?: string;
@@ -9,7 +9,7 @@ interface UseWebSocketOptions {
 }
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  const fmcStatus = useFMCStore(s => s.connectionStatus);
+  const fmcStatus = useConnectionStore(s => s.connectionStatus);
   const [status, setStatus] = useState(fmcStatus);
 
   useEffect(() => {

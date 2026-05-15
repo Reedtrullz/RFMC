@@ -72,7 +72,7 @@ export interface CockpitLayoutActions {
 export type CockpitLayoutStore = CockpitLayoutState & CockpitLayoutActions;
 
 export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
-  cockpitMode: false,
+  cockpitMode: true,
   cockpitLayoutMode: 'fmc-focus' as CockpitLayoutMode,
   hiddenPanels: getRecommendedHiddenPanels('fmc-focus'),
   pinnedPanels: [],

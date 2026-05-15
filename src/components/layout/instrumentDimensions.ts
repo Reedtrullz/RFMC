@@ -29,16 +29,16 @@ export const instrumentDimensions: Record<InstrumentTarget, InstrumentDimensions
     maxWidth: 600,
   },
   boeingNd: {
-    idealWidth: 520,
-    idealHeight: 560,
+    idealWidth: 600,
+    idealHeight: 650,
     minReadableWidth: 400,
-    maxWidth: 620,
+    maxWidth: 750,
   },
   airbusNd: {
-    idealWidth: 540,
-    idealHeight: 540,
+    idealWidth: 600,
+    idealHeight: 600,
     minReadableWidth: 400,
-    maxWidth: 650,
+    maxWidth: 750,
   },
   boeingPfd: {
     idealWidth: 450,

@@ -20,6 +20,7 @@ import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
 import { useCockpitLayoutStore } from './store/cockpitLayoutStore';
+import { useAircraftStore } from './store/aircraftStore';
 import { useAuralAlerts } from './hooks/useAuralAlerts';
 
 export default function App() {
@@ -28,8 +29,8 @@ export default function App() {
   const mode = useFMCStore(s => s.mode);
   const tutorialActive = useFMCStore(s => s.tutorialActive);
   const tutorialCompleted = useFMCStore(s => s.tutorialCompleted);
-  const aircraft = useFMCStore(s => s.aircraft);
-  const setAircraft = useFMCStore(s => s.setAircraft);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const setAircraft = useAircraftStore(s => s.setAircraft);
   const setPage = useFMCStore(s => s.setPage);
   const setRteSubPage = useFMCStore(s => s.setRteSubPage);
   const setTakeoffRefPageIndex = useFMCStore(s => s.setTakeoffRefPageIndex);
@@ -39,8 +40,6 @@ export default function App() {
   const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
   
   const tick = useFMCStore(s => s.tick);
-
-  useAuralAlerts();
 
   useEffect(() => {
     let lastTime = performance.now();

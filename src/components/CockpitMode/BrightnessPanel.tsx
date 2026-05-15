@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFMCStore } from '../../store/useFMCStore';
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 
 export type BrightnessPreset = 'DAY' | 'DUSK' | 'NIGHT' | 'DIM';
 
@@ -11,8 +11,10 @@ const PRESETS: Record<BrightnessPreset, { label: string; value: number }> = {
 };
 
 export function BrightnessPanel() {
-  const brightness = useFMCStore(s => s.brightness);
-  const setBrightness = useFMCStore(s => s.setBrightness);
+  const brightness = useCockpitLayoutStore(s => s.brightness);
+  const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
+  const highContrast = useCockpitLayoutStore(s => s.highContrast);
+  const setHighContrast = useCockpitLayoutStore(s => s.setHighContrast);
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-cdu-bezel/40 px-3 py-2 backdrop-blur-md">

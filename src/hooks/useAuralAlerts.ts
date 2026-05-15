@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
+import { useAircraftStore } from '../store/aircraftStore';
+import { useAutopilotStore } from '../store/autopilotStore';
 import { AuralAlertService } from '../services/AuralAlertService';
 
 /**
@@ -9,16 +11,16 @@ import { AuralAlertService } from '../services/AuralAlertService';
 export function useAuralAlerts() {
   const gpwsAlert = useFMCStore(s => s.gpwsAlert);
   const tcasAlert = useFMCStore(s => s.tcasAlert);
-  const aircraft = useFMCStore(s => s.aircraft);
-  const apStatus = useFMCStore(s => s.autopilot.truth.autopilotStatus);
-  const { lateralActive, verticalActive, thrustActive } = useFMCStore(s => s.autopilot.truth);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const autopilotTruth = useAutopilotStore(s => s.truth);
+  const { lateralActive, verticalActive, thrustActive, autopilotStatus } = autopilotTruth;
   const fma = { lateralActive, verticalActive, thrustActive };
   
   const alerts = useFMCStore(s => s.alerts);
   
   const lastGpws = useRef(gpwsAlert);
   const lastTcas = useRef(tcasAlert);
-  const lastApStatus = useRef(apStatus);
+  const lastApStatus = useRef(autopilotStatus);
   const lastProcessedAlertId = useRef<string | null>(null);
   const lastFma = useRef(JSON.stringify(fma));
 
@@ -69,12 +71,12 @@ export function useAuralAlerts() {
     lastTcas.current = tcasAlert;
 
     // Handle Autopilot Disconnect
-    if (lastApStatus.current !== 'OFF' && apStatus === 'OFF') {
+    if (lastApStatus.current !== 'OFF' && autopilotStatus === 'OFF') {
       AuralAlertService.playBoeingWarning(); // Cavalry charge is used for both for now, or specifically Boeing
     }
-    lastApStatus.current = apStatus;
+    lastApStatus.current = autopilotStatus;
 
-  }, [gpwsAlert, tcasAlert, apStatus, aircraft, alerts, fma]);
+  }, [gpwsAlert, tcasAlert, autopilotStatus, aircraft, alerts, fma]);
 
   // Global user interaction listener to resume audio context
   useEffect(() => {

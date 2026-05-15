@@ -2,6 +2,8 @@ import type { AirbusFCUState } from '@shared';
 import { InstrumentShell } from '../../common/InstrumentShell';
 import { FCUDisplay } from './FCUDisplay';
 import { FCUButton } from './FCUButton';
+import { useAutopilotStore } from '../../../../store/autopilotStore';
+import { useCockpitLayoutStore } from '../../../../store/cockpitLayoutStore';
 import { useFMCStore } from '../../../../store/useFMCStore';
 import { PushPullRotary } from '../../common/PushPullRotary';
 
@@ -12,7 +14,7 @@ interface AirbusFCUProps {
 }
 
 export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
-  const truth = useFMCStore(s => s.autopilot.truth);
+  const truth = useAutopilotStore(s => s.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   const highlighted = (controlId: string) => tutorialHighlight === controlId;
 

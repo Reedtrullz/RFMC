@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
+import { useAircraftStore } from '../store/aircraftStore';
+import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 import { tutorialScenarios, airbusTutorialScenarios, parseSimBriefJSON } from '@shared';
 
 export function DemoWelcome() {
   const tutorialActive = useFMCStore(s => s.tutorialActive);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const setAircraft = useAircraftStore(s => s.setAircraft);
+  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
+  const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
   const startTutorial = useFMCStore(s => s.startTutorial);
-  const setAircraft = useFMCStore(s => s.setAircraft);
-  const aircraft = useFMCStore(s => s.aircraft);
 
   const [showSimBrief, setShowSimBrief] = useState(false);
   const [tab, setTab] = useState<'demos' | 'training'>('training');

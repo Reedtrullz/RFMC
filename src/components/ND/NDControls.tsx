@@ -17,7 +17,7 @@ export function NDControls({ model, side }: NDControlsProps) {
   const modes = model.style === 'airbus' ? AIRBUS_MODES : BOEING_MODES;
 
   return (
-    <div className="mt-2 flex flex-col gap-2 bg-[#1a1c1c] p-3 rounded-md border-t-2 border-[#2a2d2d] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
+    <div className="mt-1 flex flex-col gap-1 bg-[#1a1c1c] p-2 rounded border-t border-[#2a2d2d] shadow-[inset_0_1px_5px_rgba(0,0,0,0.8)]">
       {/* Upper Panel: Knobs */}
       <div className="flex items-start justify-between">
         {/* Mode Selector Knob Look */}
@@ -63,7 +63,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             lit={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
             onPress={() => state.toggleNDOverlay(side, ov.toLowerCase() as any)}
             variant={model.style === 'airbus' ? 'airbus' : 'boeing'}
-            className="!h-7 !text-[8px] !min-w-0"
+            className="!h-6 !text-[7px] !min-w-0"
           />
         ))}
         {model.style === 'boeing' && (
@@ -73,7 +73,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             lit={efis.centered}
             onPress={() => state.toggleNDCenter(side)}
             variant="boeing"
-            className="!h-7 !text-[8px] !min-w-0"
+            className="!h-6 !text-[7px] !min-w-0"
           />
         )}
       </div>

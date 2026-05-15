@@ -1,5 +1,7 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
+import { useAutopilotStore } from '../../../../store/autopilotStore';
+import { useCockpitLayoutStore } from '../../../../store/cockpitLayoutStore';
 import { InstrumentShell } from '../../common/InstrumentShell';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
@@ -12,7 +14,7 @@ interface BoeingMCPProps {
 }
 
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
-  const truth = useFMCStore(s => s.autopilot.truth);
+  const truth = useAutopilotStore(s => s.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   
   return (

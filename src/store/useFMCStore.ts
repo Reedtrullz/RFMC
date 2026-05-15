@@ -8,6 +8,11 @@ import {
   PhaseManager, LegSequencer, PerformanceEngine,
   AutoflightModeManager, AutoflightTruthState, LateralMode, VerticalMode, ThrustMode
 } from '@shared';
+import { useAircraftStore } from './aircraftStore';
+import { useAutopilotStore } from './autopilotStore';
+import { useCockpitLayoutStore } from './cockpitLayoutStore';
+import { useConnectionStore } from './connectionStore';
+import { useTrainingStore } from './trainingStore';
 import { 
   selectFmcPositionSource, 
   calculateANP, 
@@ -98,8 +103,15 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
   };
 }
 
-const defaultState = {
-  aircraft: 'BOEING_737' as AircraftType,
+const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingState & {
+  brightness: number;
+  cockpitLayoutMode: CockpitLayoutMode;
+  hiddenPanels: PanelId[];
+  pinnedPanels: PanelId[];
+  focusedPanel: PanelId | null;
+  instrumentZoom: Record<InstrumentPanelId, number>;
+  highContrast: boolean;
+} = {
   page: 'IDENT' as PageType,
   currentPage: 'IDENT' as PageType,
   pageHistory: [] as PageType[],
@@ -107,21 +119,13 @@ const defaultState = {
   scratchpadError: null as string | null,
   demoMode: false,
   
+  aircraft: 'BOEING_737' as AircraftType,
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'NAV' as IrsState, irsAlignmentProgress: 100, irsTimeRemaining: 0 },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
   takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
-  route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
-  flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
-  
-  pendingRoute: null as RouteData | null,
-  pendingFlightPlan: null as FlightPlan | null,
-  
-  isModified: false,
-  execLit: false,
-  msgLight: false,
-  
+  radios: { vor1: '113.90', vor2: '115.70', adf1: '342' },
   signsOn: false,
   windowsLocked: false,
   
@@ -135,76 +139,6 @@ const defaultState = {
   adapterHealth: null as AdapterHealth | null,
   lastError: null as string | null,
   simVariables: {} as Record<string, number>,
-  failureMessage: null as string | null,
-  externalDisplayData: null as DisplayData | null,
-
-  // FMS Ecosystem state
-  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' } as NavigationPerformance,
-  activeNavSource: 'IRS' as NavSource,
-  sensors: [
-    { source: 'GPS', available: true, positionErrorNm: 0.05 },
-    { source: 'DME_DME', available: false, positionErrorNm: 0.15 },
-    { source: 'IRS', available: true, positionErrorNm: 2.0 },
-  ] as NavSensor[],
-  alerts: [] as FlightDeckAlert[],
-
-  // Tutorial state
-  tutorialActive: false,
-  tutorialScenario: null as string | null,
-  tutorialStepIndex: 0,
-  tutorialCompleted: false,
-  tutorialHighlight: null as string | null,
-  tutorialErrors: 0,
-  tutorialStartTime: null as number | null,
-  tutorialHint: null as string | null,
-  tutorialSkipAvailable: false,
-  tutorialHintLevel: 0,
-  tutorialHintTimer: null as any,
-  tutorialConfidence: null as number | null,
-
-  // New Training state
-  trainingActive: false,
-  trainingScenario: null as TrainingScenario | null,
-  trainingEngine: null as TrainingScenarioEngine | null,
-  trainingMistakes: [] as TrainingMistake[],
-  trainingScore: null as TrainingScore | null,
-  trainingStepIndex: 0,
-  trainingCompleted: false,
-
-  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
-  holdPending: null as any,
-  fix: { refFix: '', radial: 0, distance: 0 },
-  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
-  
-  legsPageIndex: 0,
-  legsPageCount: 1,
-  depArrSubPage: 'DEP' as const,
-  rteSubPage: 0,
-  takeoffRefPageIndex: 0,
-  selectedPlanWaypointIndex: null,
-  flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
-
-  debriefMode: false,
-  activeScenario: null as any | null,
-  isReportVisible: false,
-  atsu: {
-    messages: [] as AcarsMessage[],
-    pendingUplink: null as any,
-  },
-  
-  deleteMode: false,
-  editWaypointIndex: null as number | null,
-
-  aircraftState: null as (AircraftState | null),
-  brightness: 100,
-  cockpitMode: false,
-  latency: 0,
-  sessionStartTime: null as number | null,
-  radios: {
-    vor1: '113.90',
-    vor2: '115.70',
-    adf1: '342',
-  },
 
   autopilot: {
     boeing: {
@@ -267,18 +201,93 @@ const defaultState = {
     },
   },
 
-  efisL: createDefaultEFIS('BOEING_737', 'L'),
-  efisR: createDefaultEFIS('BOEING_737', 'R'),
-
-  // Cockpit Layout
+  cockpitMode: true,
   cockpitLayoutMode: 'fmc-focus' as CockpitLayoutMode,
   hiddenPanels: getRecommendedHiddenPanels('fmc-focus') as PanelId[],
   pinnedPanels: [] as PanelId[],
   focusedPanel: null as PanelId | null,
   instrumentZoom: { ...defaultInstrumentZoom },
   highContrast: false,
+  brightness: 100,
+
+  route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
+  flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
   
+  pendingRoute: null as RouteData | null,
+  pendingFlightPlan: null as FlightPlan | null,
+  
+  isModified: false,
+  execLit: false,
+  msgLight: false,
+  
+  failureMessage: null as string | null,
+  externalDisplayData: null as DisplayData | null,
+
+  // FMS Ecosystem state
+  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' } as NavigationPerformance,
+  activeNavSource: 'IRS' as NavSource,
+  sensors: [
+    { source: 'GPS', available: true, positionErrorNm: 0.05 },
+    { source: 'DME_DME', available: false, positionErrorNm: 0.15 },
+    { source: 'IRS', available: true, positionErrorNm: 2.0 },
+  ] as NavSensor[],
+  alerts: [] as FlightDeckAlert[],
+
+  // Tutorial state
+  tutorialActive: false,
+  tutorialScenario: null as string | null,
+  tutorialStepIndex: 0,
+  tutorialCompleted: false,
+  tutorialHighlight: null as string | null,
+  tutorialErrors: 0,
+  tutorialStartTime: null as number | null,
+  tutorialHint: null as string | null,
+  tutorialSkipAvailable: false,
+  tutorialHintLevel: 0,
+  tutorialHintTimer: null as any,
+  tutorialConfidence: null as number | null,
+
+  // New Training state
+  trainingActive: false,
+  trainingScenario: null as TrainingScenario | null,
+  trainingEngine: null as TrainingScenarioEngine | null,
+  trainingMistakes: [] as TrainingMistake[],
+  trainingScore: null as TrainingScore | null,
+  trainingStepIndex: 0,
+  trainingCompleted: false,
+
+  hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
+  holdPending: null as any,
+  fix: { refFix: '', radial: 0, distance: 0 },
+  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
+  
+  legsPageIndex: 0,
+  legsPageCount: 1,
+  depArrSubPage: 'DEP' as const,
+  rteSubPage: 0,
+  takeoffRefPageIndex: 0,
+  selectedPlanWaypointIndex: null,
+  flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
+
+  debriefMode: false,
+  activeScenario: null as any | null,
+  isReportVisible: false,
+  atsu: {
+    messages: [] as AcarsMessage[],
+    pendingUplink: null as any,
+  },
+  
+  deleteMode: false,
+  editWaypointIndex: null as number | null,
+
+  latency: 0,
+  sessionStartTime: null as number | null,
+
+  efisL: createDefaultEFIS('BOEING_737', 'L'),
+  efisR: createDefaultEFIS('BOEING_737', 'R'),
+
   // New logic systems
+  aircraftState: null as (AircraftState | null),
   flightPhase: 'PREFLIGHT' as FlightPhase,
   scratchpadMessages: [] as FmcMessage[],
   posPageIndex: 0,
@@ -2711,6 +2720,69 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 }));
 
+// Synchronize aircraft changes from AircraftStore to FMCStore
+useAircraftStore.subscribe((state, prevState) => {
+  if (state.aircraft !== prevState.aircraft) {
+    useFMCStore.getState().setAircraft(state.aircraft);
+  }
+});
+
+// Synchronize autopilot truth from AutopilotStore
+useAutopilotStore.subscribe((state) => {
+  useFMCStore.setState({ autopilot: { ...useFMCStore.getState().autopilot, truth: state.truth } });
+});
+
+// Synchronize cockpit layout from CockpitLayoutStore
+useCockpitLayoutStore.subscribe((state) => {
+  useFMCStore.setState({
+    cockpitMode: state.cockpitMode,
+    cockpitLayoutMode: state.cockpitLayoutMode,
+    hiddenPanels: state.hiddenPanels,
+    pinnedPanels: state.pinnedPanels,
+    focusedPanel: state.focusedPanel,
+    instrumentZoom: state.instrumentZoom,
+    highContrast: state.highContrast,
+    brightness: state.brightness,
+  });
+});
+
+// Synchronize connection from ConnectionStore
+useConnectionStore.subscribe((state) => {
+  useFMCStore.setState({
+    connectionStatus: state.connectionStatus,
+    connectionMode: state.connectionMode,
+    connectedAircraft: state.connectedAircraft,
+    connectedAircraftType: state.connectedAircraftType,
+    connectedCapabilities: state.connectedCapabilities,
+    structuredCapabilities: state.structuredCapabilities,
+    adapterHealth: state.adapterHealth,
+    lastError: state.lastError,
+    simVariables: state.simVariables,
+    latency: state.latency,
+    sessionStartTime: state.sessionStartTime,
+  });
+});
+
+// Synchronize training/tutorial from TrainingStore
+useTrainingStore.subscribe((state) => {
+  useFMCStore.setState({
+    tutorialActive: state.tutorialActive,
+    tutorialScenario: state.tutorialScenario,
+    tutorialStepIndex: state.tutorialStepIndex,
+    tutorialCompleted: state.tutorialCompleted,
+    tutorialHighlight: state.tutorialHighlight,
+    tutorialErrors: state.tutorialErrors,
+    tutorialStartTime: state.tutorialStartTime,
+    tutorialHint: state.tutorialHint,
+    tutorialSkipAvailable: state.tutorialSkipAvailable,
+    tutorialHintLevel: state.tutorialHintLevel,
+    trainingActive: state.trainingActive,
+    trainingScenario: state.trainingScenario,
+    trainingStepIndex: state.trainingStepIndex,
+    trainingCompleted: state.trainingCompleted,
+  });
+});
+
 // Start the FMS Ecosystem tick (1Hz)
 if (typeof window !== 'undefined') {
   setInterval(() => {
@@ -2719,4 +2791,8 @@ if (typeof window !== 'undefined') {
 
   // Expose store for E2E testing
   (window as any).useFMCStore = useFMCStore;
+  (window as any).useAircraftStore = useAircraftStore;
+  (window as any).useAutopilotStore = useAutopilotStore;
+  (window as any).useConnectionStore = useConnectionStore;
+  (window as any).useTrainingStore = useTrainingStore;
 }

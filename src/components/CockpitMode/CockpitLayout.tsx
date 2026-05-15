@@ -24,6 +24,8 @@ import { CockpitLayoutGrid } from './CockpitLayoutGrid';
 
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 import { useAircraftStore } from '../../store/aircraftStore';
+import { useAutopilotStore } from '../../store/autopilotStore';
+import { useConnectionStore } from '../../store/connectionStore';
 import { KeyboardHelpOverlay } from './KeyboardHelpOverlay';
 
 type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
@@ -49,6 +51,11 @@ function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPane
 
 export function CockpitLayout() {
   const aircraft = useAircraftStore(s => s.aircraft);
+  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const autopilotTruth = useAutopilotStore(s => s.truth);
+  const connectionStatus = useConnectionStore(s => s.connectionStatus);
+  const connectionMode = useConnectionStore(s => s.connectionMode);
+  
   const layoutMode = useCockpitLayoutStore(s => s.cockpitLayoutMode);
   const setLayoutMode = useCockpitLayoutStore(s => s.setCockpitLayoutMode);
   const focusedPanel = useCockpitLayoutStore(s => s.focusedPanel);

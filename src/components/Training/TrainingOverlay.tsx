@@ -1,5 +1,6 @@
 import React from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 import { StepCard } from './StepCard';
 import { CheckrideSummary } from './CheckrideSummary';
 import { MistakeReview } from './MistakeReview';
@@ -15,8 +16,8 @@ export function TrainingOverlay() {
   const stopTraining = useFMCStore(s => s.stopTraining);
   const startTraining = useFMCStore(s => s.startTraining);
 
-  const isHidden = useFMCStore(s => s.hiddenPanels.includes('instructor'));
-  const cockpitMode = useFMCStore(s => s.cockpitMode);
+  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('instructor'));
+  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
 
   if (!trainingActive && !trainingCompleted) {
     return null;

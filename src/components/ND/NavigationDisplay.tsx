@@ -15,15 +15,16 @@ import { A320ND } from './renderers/A320ND';
 
 export function NavigationDisplay() {
   // Using narrow selectors to prevent unnecessary re-renders
-  const aircraft = useFMCStore(s => s.aircraft);
-  const aircraftState = useFMCStore(s => s.aircraftState);
-  const position = useFMCStore(s => s.position);
-  const activeNavSource = useFMCStore(s => s.activeNavSource);
-  const navPerformance = useFMCStore(s => s.navPerformance);
-  const performance = useFMCStore(s => s.performance);
-  const takeoff = useFMCStore(s => s.takeoff);
-  const landing = useFMCStore(s => s.landing);
-  const ident = useFMCStore(s => s.ident);
+  const aircraft = useAircraftStore(s => s.aircraft);
+  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const position = useAircraftStore(s => s.position);
+  const performance = useAircraftStore(s => s.performance);
+  const takeoff = useAircraftStore(s => s.takeoff);
+  const landing = useAircraftStore(s => s.landing);
+  const ident = useAircraftStore(s => s.ident);
+  const autopilotTruth = useAutopilotStore(s => s.truth);
+  const activeNavSource = useAircraftStore(s => s.activeNavSource);
+  const navPerformance = useAircraftStore(s => s.navPerformance);
   
   // Training and Demo state
   const demoMode = useFMCStore(s => s.demoMode);

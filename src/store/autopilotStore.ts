@@ -7,9 +7,9 @@ export interface AutopilotStore {
   airbus: AirbusFCUState;
   truth: AutopilotState['truth'];
   
-  updateBoeingMCP: (update: Partial<BoeingMCPState>) => void;
-  updateAirbusFCU: (update: Partial<AirbusFCUState>) => void;
-  pressMCPButton: (action: keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE', aircraft: 'BOEING_737' | 'AIRBUS_A320') => void;
+  updateBoeing: (update: Partial<BoeingMCPState>) => void;
+  updateAirbus: (update: Partial<AirbusFCUState>) => void;
+  pressButton: (action: string) => void;
 }
 
 const defaultBoeingMCP: BoeingMCPState = {
@@ -78,16 +78,35 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
   airbus: defaultAirbusFCU,
   truth: defaultTruth,
 
-  updateBoeingMCP: (update) => set(state => ({ boeing: { ...state.boeing, ...update } })),
-  
-  updateAirbusFCU: (update) => set(state => ({ airbus: { ...state.airbus, ...update } })),
+  updateBoeing: (update) => set(state => ({ boeing: { ...state.boeing, ...update } })),
+  updateAirbus: (update) => set(state => ({ airbus: { ...state.airbus, ...update } })),
 
-  pressMCPButton: (action, aircraft) => {
-    if (aircraft === 'BOEING_737') {
-      const newState = processBoeingMCPAction(get().boeing, action as any);
-      set({ boeing: newState as BoeingMCPState });
-    } else {
-      // Airbus FCU action processing placeholder
+  pressButton: (action) => {
+    // We need to know the aircraft type to process the action
+    // In a real refactor, we might want to pass aircraft type or have separate stores
+    // For now, we'll try to infer or just handle both
+    const boeingUpdate = processBoeingMCPAction(get().boeing, action as any);
+    if (Object.keys(boeingUpdate).length > 0) {
+      set(state => ({ boeing: { ...state.boeing, ...boeingUpdate } }));
+      return;
+    }
+
+    // Airbus logic
+    const airbus = get().airbus;
+    const airbusActions: Record<string, Partial<AirbusFCUState>> = {
+      AP1: { ap1: !airbus.ap1 },
+      AP2: { ap2: !airbus.ap2 },
+      ATHR: { athr: !airbus.athr },
+      LOC: { loc: !airbus.loc },
+      APPR: { appr: !airbus.appr },
+      EXPED: { exped: !airbus.exped },
+      FD1: { fd1: !airbus.fd1 },
+      FD2: { fd2: !airbus.fd2 },
+    };
+
+    const update = airbusActions[action];
+    if (update) {
+      set(state => ({ airbus: { ...state.airbus, ...update } }));
     }
   },
 }));
