@@ -145,7 +145,19 @@ describe('FMC Store', () => {
 
   it('stages HOLD edits and commits them only on EXEC', () => {
     const store = useFMCStore.getState();
-    useFMCStore.setState({ currentPage: 'HOLD' });
+    useFMCStore.setState({
+      currentPage: 'HOLD',
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [
+          { ident: 'RBV', discontinuity: false },
+          { ident: 'DIXIE', discontinuity: false },
+        ],
+      },
+    });
 
     for (const key of 'RBV') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 1);

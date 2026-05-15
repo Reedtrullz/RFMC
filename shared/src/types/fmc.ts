@@ -1,5 +1,6 @@
 import type { DisplayColor } from '../fmc/displayColors';
 import type { DisplaySemantic } from '../fmc/displaySemantics';
+export { DisplayColor, DisplaySemantic };
 import type { NDMapMode } from '../fmc/ndTypes';
 import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
 import type { TrainingScenarioEngine } from '../training/scenarioEngine';
@@ -384,6 +385,19 @@ export interface TutorialScenario {
 
 import type { AutopilotState } from '../autopilot/autopilotTypes';
 
+/**
+ * Named type for the hold entry sub-object stored in FMCState.
+ * Exported so fmcStore and other consumers can reference it without
+ * repeating the structural type inline.
+ */
+export interface HoldEntry {
+  fix: string;
+  inboundCourse: number;
+  legTime: number;
+  legDist: number;
+  direction: 'L' | 'R';
+}
+
 export interface FMCState {
   aircraft: AircraftType;
   mode: FMCMode;
@@ -452,20 +466,8 @@ export interface FMCState {
   signsOn: boolean;
   windowsLocked: boolean;
 
-  hold: {
-    fix: string;
-    inboundCourse: number;
-    legTime: number;
-    legDist: number;
-    direction: 'L' | 'R';
-  };
-  holdPending: {
-    fix: string;
-    inboundCourse: number;
-    legTime: number;
-    legDist: number;
-    direction: 'L' | 'R';
-  } | null;
+  hold: HoldEntry;
+  holdPending: HoldEntry | null;
 
   // FIX page state
   fix: {

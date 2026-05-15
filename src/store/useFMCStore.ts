@@ -1351,16 +1351,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           if (entryIndex === 0) updates.fix = fixEntries[0];
         }
         break;
-      case 'set_hold_fix':
-        if (scratchpad) {
-          const ident = scratchpad.toUpperCase();
-          const result = isValidWaypoint(ident);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          if (!isFixInActiveRoute(state, ident)) { set({ scratchpadError: 'NOT IN ROUTE' }); return; }
-          state.setHoldFix(ident);
-          handled = true;
-        }
-        break;
+       case 'set_hold_fix':
+         if (scratchpad) {
+           const ident = scratchpad.toUpperCase();
+           const result = isValidWaypoint(ident);
+           if (!result.valid) { set({ scratchpadError: result.error }); return; }
+           const { flightPlan } = get();
+           const inRoute = flightPlan.waypoints.some(w => w.ident === ident);
+           if (!inRoute) {
+             set({ scratchpadError: 'NOT IN ROUTE' });
+             return;
+           }
+           state.setHoldFix(ident);
+           handled = true;
+         }
+         break;
       case 'set_irs_pos':
         if (scratchpad) {
           const { position, route } = get();

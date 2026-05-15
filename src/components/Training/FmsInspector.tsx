@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useFMCStore } from '../../store/fmcStore';
+import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useTrainingStore } from '../../store/trainingStore';
 import { useAlertStore } from '../../store/alertStore';
+import type { FMCState, FmcMessage } from '@shared';
 import { VerticalProfileEngine } from '@shared';
 import { SCENARIOS } from '@shared/fmc/scenarios';
 import { scenarioEngine } from '@shared/training/scenarioEngine';
@@ -11,18 +12,18 @@ export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
   
   // Using specific store hooks for truth data
-  const aircraftState = useAircraftStore(s => s.aircraftState);
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const flightPhase = useFMCStore(s => s.flightPhase);
-  const activeNavSource = useAircraftStore(s => s.activeNavSource);
-  const navPerformance = useAircraftStore(s => s.navPerformance);
-  const flightPlan = useFMCStore(s => s.flightPlan);
-  const performance = useAircraftStore(s => s.performance);
-  const scratchpadMessages = useFMCStore(s => s.scratchpadMessages);
-  
-  const activeScenario = useTrainingStore(s => s.activeScenario);
-  const debriefMode = useTrainingStore(s => s.debriefMode);
-  const setDebriefMode = useTrainingStore(s => s.setDebriefMode);
+   const aircraftState = useAircraftStore((s: any) => s.aircraftState);
+   const aircraft = useAircraftStore((s: any) => s.aircraft);
+   const flightPhase = useFMCStore((s: any) => s.flightPhase);
+   const activeNavSource = useAircraftStore((s: any) => s.activeNavSource);
+   const navPerformance = useAircraftStore((s: any) => s.navPerformance);
+   const flightPlan = useFMCStore((s: any) => s.flightPlan);
+   const performance = useAircraftStore((s: any) => s.performance);
+   const scratchpadMessages = useFMCStore((s: any) => s.scratchpadMessages);
+   
+   const activeScenario = useTrainingStore((s: any) => s.activeScenario);
+   const debriefMode = useTrainingStore((s: any) => s.debriefMode);
+   const setDebriefMode = useTrainingStore((s: any) => s.setDebriefMode);
   
   const addMessage = useAlertStore(s => s.addMessage);
   const receiveAtsuMessage = useAlertStore(s => s.receiveAtsuMessage);
@@ -131,17 +132,17 @@ export function FmsInspector() {
           <div className="space-y-1.5">
             {scratchpadMessages.length === 0 ? (
               <div className="text-white/10 italic text-center py-2 border border-dashed border-white/5">No active messages</div>
-            ) : (
-              scratchpadMessages.map(msg => (
-                <div key={msg.id} className={`p-2 border-l-2 ${msg.severity === 'ALERT' ? 'border-cdu-error bg-cdu-error/5' : 'border-amber-500 bg-amber-500/5'}`}>
-                  <div className="flex justify-between text-[8px] mb-1">
-                    <span className={msg.severity === 'ALERT' ? 'text-cdu-error font-black' : 'text-amber-500 font-black'}>{msg.severity}</span>
-                    <span className="text-white/20">{new Date(msg.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="text-white/80 leading-tight uppercase font-black tracking-tight">{msg.text}</div>
-                </div>
-              ))
-            )}
+             ) : (
+               scratchpadMessages.map((msg: FMCState['scratchpadMessages'][0]) => (
+                 <div key={msg.id} className={`p-2 border-l-2 ${msg.severity === 'ALERT' ? 'border-cdu-error bg-cdu-error/5' : 'border-amber-500 bg-amber-500/5'}`}>
+                   <div className="flex justify-between text-[8px] mb-1">
+                     <span className={msg.severity === 'ALERT' ? 'text-cdu-error font-black' : 'text-amber-500 font-bold'}>{msg.severity}</span>
+                     <span className="text-white/20">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                   </div>
+                   <div className="text-white/80 leading-tight uppercase font-black tracking-tight">{msg.text}</div>
+                 </div>
+               ))
+             )}
           </div>
         </section>
 

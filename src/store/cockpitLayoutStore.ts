@@ -157,3 +157,10 @@ export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
     [side === 'L' ? 'efisL' : 'efisR']: { ...state[side === 'L' ? 'efisL' : 'efisR'], range }
   } as any)),
 }));
+
+// ─── Dev/test window exposure ─────────────────────────────────────────────────
+// Exposes the store on window in non-production builds so Playwright helpers
+// (dismissWelcome, ensureTrainingMode) can read cockpitMode without races.
+if (typeof window !== 'undefined' && import.meta.env.MODE !== 'production') {
+  (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
+}
