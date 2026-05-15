@@ -1,4 +1,4 @@
-import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState, RadioData } from '@shared';
+import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState, RadioData } from '@virtual-cdu/shared';
 
 /**
  * Generic aircraft adapter interface for reading/writing CDU state.

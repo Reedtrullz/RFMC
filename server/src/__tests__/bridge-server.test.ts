@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
-import type { ServerMessage } from '@shared';
+import type { ServerMessage } from '@virtual-cdu/shared';
 import { createBridgeServer, type BridgeServer } from '../bridge-server';
 import { MockSimConnectAdapter } from '../aircraft-adapters/mock-simconnect';
 

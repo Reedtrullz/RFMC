@@ -14,8 +14,8 @@ import {
 } from 'node-simconnect';
 import type { SimConnectConnection } from 'node-simconnect';
 import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './IAircraftAdapter';
-import type { AircraftType, ConnectionStatus } from '@shared';
-import { devLog, devError } from '@shared';
+import type { AircraftType, ConnectionStatus } from '@virtual-cdu/shared';
+import { devLog, devError } from '@virtual-cdu/shared';
 
 export class FBWA320Adapter implements IAircraftAdapter {
   readonly name = 'FBW A320neo';

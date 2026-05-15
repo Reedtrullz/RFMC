@@ -1,4 +1,4 @@
-import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState } from '@shared';
+import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState } from '@virtual-cdu/shared';
 import type { AdapterAircraftState, CDUDisplayData, IAircraftAdapter } from './IAircraftAdapter';
 
 interface MockSimConnectOptions {

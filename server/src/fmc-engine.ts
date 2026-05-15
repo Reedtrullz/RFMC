@@ -1,10 +1,10 @@
-import type { FMCState, DisplayData, PageType } from '@shared';
-import { getPageRenderer, parseRouteString } from '@shared';
+import type { FMCState, DisplayData, PageType } from '@virtual-cdu/shared';
+import { getPageRenderer, parseRouteString } from '@virtual-cdu/shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
   isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure,
   isValidFrequency, isValidADF, getTutorialScenario
-} from '@shared';
+} from '@virtual-cdu/shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
   const flightPlan = state.pendingFlightPlan ?? state.flightPlan;

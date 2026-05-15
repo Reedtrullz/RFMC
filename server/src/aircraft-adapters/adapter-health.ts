@@ -1,4 +1,4 @@
-import type { AdapterCapabilities, AdapterHealth } from '@shared';
+import type { AdapterCapabilities, AdapterHealth } from '@virtual-cdu/shared';
 import type { IAircraftAdapter } from './IAircraftAdapter';
 
 export function toAdapterCapabilities(adapter: IAircraftAdapter): AdapterCapabilities {

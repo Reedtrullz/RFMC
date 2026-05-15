@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "import-check": "node --import tsx -e \"import('./src/fmc-engine.ts').then(() => console.log('server imports ok'))\""
   },
   "dependencies": {
     "@virtual-cdu/shared": "*",

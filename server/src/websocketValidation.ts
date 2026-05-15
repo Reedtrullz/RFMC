@@ -1,4 +1,4 @@
-import { ClientMessage, CDUKey } from '@shared';
+import { ClientMessage, CDUKey } from '@virtual-cdu/shared';
 
 /**
  * Strict validation for WebSocket messages

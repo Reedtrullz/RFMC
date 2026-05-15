@@ -18,8 +18,8 @@ import {
 } from 'node-simconnect';
 import type { SimConnectConnection } from 'node-simconnect';
 import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './IAircraftAdapter';
-import type { AircraftType, ConnectionStatus } from '@shared';
-import { devLog, devError, devWarn } from '@shared';
+import type { AircraftType, ConnectionStatus } from '@virtual-cdu/shared';
+import { devLog, devError, devWarn } from '@virtual-cdu/shared';
 
 export type PMDGVariant = '737-600' | '737-700' | '737-800' | '737-900';
 
