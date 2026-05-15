@@ -25,7 +25,8 @@ export function useCDUKeyboard() {
       }
 
       // Help toggle (Shift + / = ?)
-      if (e.key === '?' || e.key === 'h' || e.key === 'H') {
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
         toggleKeyboardHelp();
         return;
       }

@@ -5,6 +5,9 @@ test.describe('Autopilot Mode Guards', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
+    // Switch to Automation mode so MCP/FCU is visible
+    await page.getByTestId('layout-mode-automation').click();
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
   });
 
   test('LNAV should be rejected if no route is active', async ({ page }) => {

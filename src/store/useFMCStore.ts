@@ -1676,6 +1676,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   })),
   setAircraftState: (state: FMCState['aircraftState']) => {
     set({ aircraftState: state });
+    // Outward sync to AircraftStore
+    useAircraftStore.getState().setAircraftState(state);
     get().updateFlightPhase();
   },
 
@@ -1892,6 +1894,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   setAircraft: (type: AircraftType) => {
     const state = get();
+    // Outward sync to AircraftStore
+    useAircraftStore.getState().setAircraft(type);
+    
     const startPage = type === 'BOEING_737' ? 'IDENT' as PageType : 'INIT_A' as PageType;
     set({
       ...defaultState,

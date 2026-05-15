@@ -17,39 +17,50 @@ export async function dismissWelcome(page: Page) {
     await skipButton.click();
     // Ensure it's gone
     await expect(skipButton).toBeHidden({ timeout: 5000 });
-    
-    // Explicitly set demoMode via the exposed store to ensure fast IRS alignment and other simulation logic
-    await page.evaluate(() => {
-      if ((window as any).useFMCStore) {
-        (window as any).useFMCStore.getState().setMode('ACTIVE');
-        (window as any).useFMCStore.getState().setDemoMode(true);
-      }
-    });
   } catch {
-    // Modal already dismissed or not present, but ensure demoMode is still set
-    await page.evaluate(() => {
-      if ((window as any).useFMCStore) {
-        (window as any).useFMCStore.getState().setMode('ACTIVE');
-        (window as any).useFMCStore.getState().setDemoMode(true);
-      }
-    });
+    // Modal already dismissed or not present
   }
+  
+  // Explicitly set demoMode via the exposed store to ensure fast IRS alignment and other simulation logic
+  // We do this outside the try/catch but with its own protection
+  await page.waitForFunction(() => (window as any).useFMCStore !== undefined, { timeout: 10000 });
+  await page.evaluate(() => {
+    const fmc = (window as any).useFMCStore?.getState();
+    if (fmc) {
+      fmc.setMode('ACTIVE');
+      fmc.setDemoMode(true);
+    }
+  });
   
   // Ensure the trainer is at least in the DOM and visible
   // We use cdu-panel as it exists in both legacy and all Cockpit Mode layouts
   await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 15000 });
 
-  // Optional: If we are in Cockpit Mode, we might want to ensure a specific layout
-  // for legacy tests that expect certain panels to be visible.
-  const fullDeckBtn = page.getByRole('button', { name: 'Flight Deck Scan' });
+  // If we are in Cockpit Mode, switch to Full Deck for legacy test compatibility
+  const fullDeckSelector = page.getByTestId('layout-mode-full-deck');
   try {
-    if (await fullDeckBtn.isVisible()) {
-      await fullDeckBtn.click();
-      // Wait for any of the main panels to be visible to confirm layout change
-      await page.waitForSelector('[data-testid$="-panel"]', { state: 'visible', timeout: 5000 });
+    // Wait for the layout buttons to definitely be in the DOM and visible
+    await fullDeckSelector.waitFor({ state: 'visible', timeout: 5000 });
+    
+    // Check if we are already in full-deck to avoid redundant clicks
+    const isFullDeck = await page.evaluate(() => {
+      const state = (window as any).useCockpitLayoutStore?.getState();
+      return state?.cockpitLayoutMode === 'full-deck';
+    });
+
+    if (!isFullDeck) {
+      await fullDeckSelector.click();
     }
+    
+    // Wait for the main instruments to be visible to confirm layout
+    await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('pfd-panel')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
+    
+    // Extra stabilization delay to ensure React effects have finished
+    await page.waitForTimeout(500);
   } catch (e) {
-    // Layout switch failed or button disappeared, continue anyway
+    // Already in full view or button not present, continue
   }
 }
 

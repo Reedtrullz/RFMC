@@ -5,18 +5,9 @@ test.describe('Fidelity & Accessibility Audit', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await dismissWelcome(page);
-    // Ensure we are in cockpit mode
-    const enterButton = page.getByRole('button', { name: /ENTER COCKPIT/i });
-    if (await enterButton.isVisible()) {
-      await enterButton.click();
-    }
-
-    // Switch to 'Preflight FMC Setup' to ensure CDU is focused and visible
-    const fmcFocusBtn = page.getByTestId('layout-mode-fmc-focus');
-    if (await fmcFocusBtn.isVisible()) {
-      await fmcFocusBtn.click();
-      await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 10000 });
-    }
+    // Switch to FMC Focus mode to ensure CDU is prominent
+    await page.getByTestId('layout-mode-fmc-focus').click();
+    await expect(page.getByTestId('cdu-panel')).toBeVisible();
   });
 
   test('scratchpad has ARIA live region', async ({ page }) => {
@@ -47,8 +38,8 @@ test.describe('Fidelity & Accessibility Audit', () => {
     // Click background to ensure keyboard focus
     await page.mouse.click(10, 10);
     
-    // Press 'h' to toggle help
-    await page.keyboard.press('h');
+    // Press '?' to toggle help
+    await page.keyboard.press('?');
     
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5000 });
