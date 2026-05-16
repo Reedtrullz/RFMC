@@ -134,8 +134,8 @@ export function applyFmcActionResult(
   }
 
   if (result.success) {
-    if (result.success.patch) set(result.success.patch as any);
     if (result.success.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as any);
+    if (result.success.patch) set(result.success.patch as any);
     return { shouldReturn: false };
   }
 
@@ -169,11 +169,6 @@ export function applyDispatchResult(
 
   const ar = applyFmcActionResult(set, get, result);
   if (ar.shouldReturn) return true;
-
-  if (result.success?.patch) {
-    // Only set MOD/EXEC if the patch explicitly declares them
-    set(result.success.patch as any);
-  }
 
   // Side effects (store-specific, cast through any)
   for (const effect of (result as any).sideEffects || []) {
