@@ -367,6 +367,37 @@ These are documented limitations and scope boundaries, not hidden completed work
 - Airbus MCDU: INIT A/B, F-PLN, PERF TO, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU render correctly; INIT/F-PLN/DEP-ARR/PERF TO are covered by E2E flow tests, while several secondary pages remain static/display-only.
 - SimBrief import: mocked API import is covered by E2E and loads origin/destination/route into the app.
 
-## Conclusion
+## Phase 1 Hardening — Display/Scratchpad/EXEC Canonicalization
 
-VirtualCDU is a functional FMC/CDU training simulator with stronger automated coverage around the documented working flows and an initial ND training visualization layer. All 3 critical blockers from Oracle Round 28 are resolved (WebSocket CONTROL mode, route parsing into LEGS, DEP/ARR terminal procedure selection). All 3 major issues are resolved (assumed temperature entry, DIR INTC direct-to, V-speed cross-validation). The remaining work is mostly higher-fidelity navdata, live simulator integration, visual pixel fidelity, ND polish, and deeper Airbus/CONTROL-mode coverage. Current automated counts and build/audit status live in `docs/STATUS.md`.
+**Commit**: `2010195 feat(fmc): harden display grammar, scratchpad, and EXEC lifecycle`
+**PR**: #4
+**Date**: 2026-05-16
+
+### What changed
+
+| Workstream | Deliverable | Status |
+|-----------|------------|--------|
+| Strict 24x14 display-grid validation | `displayGridValidation.ts` — validates rows, cols, bounds, overflow, cell overlap | **Complete** |
+| Renderer grammar conformance | 18 validation tests + 19 renderer conformance tests (8 Boeing + 11 Airbus pages) | **Complete** |
+| Scratchpad engine expansion | Fixed `PERF/VNAV UNAVAILABLE` spelling; added 5 message factories; added adapter helpers | **Complete** |
+| EXEC lifecycle helpers | `fmcModificationAdapter.ts` — `deriveExecLit`, `deriveIsModified`, `isModificationActive`, `hasPendingChanges` | **Complete** |
+| Grid bug fixes | 6 overflow/overlap bugs in IDENT, POS_INIT, TAKEOFF_REF, F-PLN | **Fixed** |
+
+### What remains transitional
+
+- `scratchpad` and `scratchpadError` fields still exist in `FMCState` / `useFMCStore` — the new engine is exported but not yet the canonical runtime path
+- `pendingRoute`, `pendingFlightPlan`, `isModified`, `execLit` boolean fields still used — not yet derived from `RouteModification`
+- `pressLSK` in `useFMCStore` still contains hundreds of lines of inline action handling
+- The store still directly manages scratchpad state, route changes, and EXEC lifecycle manually
+
+### Known limitations
+
+- Strict grid validation is active in tests only; production/debug-mode enforcement not yet wired
+- Scratchpad engine integration into the store is partial (helpers available, not consumed)
+- No action handler extraction from the monolithic store has been performed yet
+
+### Tests added
+
+- `displayGridValidation.test.ts` — 18 tests (bounds, overflow, overlap, edge cases)
+- `rendererGrammar.test.ts` — 19 tests (8 Boeing + 11 Airbus renderer conformance)
+- Test count: 180 → 499 (from prior baseline through Waves 1-4 and this hardening pass)

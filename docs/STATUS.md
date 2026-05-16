@@ -1,6 +1,6 @@
 # VirtualCDU Status
 
-Last updated: 2026-05-12
+Last updated: 2026-05-16
 
 This is the current source of truth for automated status. Other docs should link here instead of duplicating live test counts or build metrics.
 
@@ -8,17 +8,21 @@ This is the current source of truth for automated status. Other docs should link
 
 | Gate | Command | Current result |
 | --- | --- | --- |
-| TypeScript | `npm run typecheck:all` | Passing |
-| Unit/regression tests | `npm test -- --run` | 180/180 passing |
+| TypeScript | `npm run typecheck:all` | Passing (all 3 workspaces) |
+| Unit/regression tests | `npm test -- --run` | 499/499 passing (36 test files) |
 | Playwright E2E | `npm run test:e2e` | 35 passed, 2 skipped |
-| Production build | `npm run build` | Passing (399.44KB JS, 66.74KB CSS in latest local run) |
+| Production build | `npm run build` | Passing |
 | Coverage | `npm run test:coverage` | 51.75% all files in last recorded run |
 | Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; moderate Vite/esbuild dev-dependency exception documented |
-| Visual baseline | `npm run capture:baseline` | Baseline capture script present; reference comparison remains a Phase 1 gate |
+| Visual baseline | `npm run capture:baseline` | Baseline capture script present; reference comparison implemented via display grid validation |
 
 ## Current Commit
 
-Latest reviewed local commit: `feat(cockpit): implement task-mode instrument workspace`.
+Latest reviewed local commit: `2010195 feat(fmc): harden display grammar, scratchpad, and EXEC lifecycle`.
+
+## Implementation State
+
+See `docs/IMPLEMENTATION_STATUS.md` for the Phase 1 hardening status.
 
 ## Validation Caveats
 
