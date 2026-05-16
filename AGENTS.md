@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-15
-**Commit:** 72bcdd0
+**Generated:** 2026-05-16
+**Commit:** 90a7fcb
 **Branch:** main
 **Project:** VirtualCDU — Boeing 737 NG FMC Trainer
 **Stack:** React 18 + TypeScript + Vite + Zustand (frontend), Node.js + Express + WebSocket (backend), TypeScript shared
@@ -15,8 +15,9 @@ RFMS/
 ├── shared/                  # Types + FMC logic (workspace)
 │   └── src/
 │       ├── types/           # FMCState, DisplayData, WebSocket types
-│       ├── fmc/             # Page functions, parsers, nav data, tutorials
+│       ├── fmc/             # Page functions, parsers, nav data, engines
 │       │   ├── pages/       # Boeing + Airbus page functions
+│       │   ├── actionHandlers/ # Extracted LSK action handlers (14 modules)
 │       │   └── training/    # Tutorial scenarios
 │       └── index.ts
 ├── src/                     # React frontend (workspace)
@@ -42,8 +43,13 @@ RFMS/
 | Task | Location | Notes |
 |------|----------|-------|
 | FMC page logic | `shared/src/fmc/pages/` | Boeing/Airbus page functions |
-| FMC state machine | `src/store/` | Zustand store |
+| LSK action handlers | `shared/src/fmc/actionHandlers/` | Extracted from store (14 modules) |
+| Scratchpad engine | `shared/src/fmc/scratchpadEngine.ts` | 8-level priority queue, message factories |
+| EXEC lifecycle | `shared/src/fmc/routeModification.ts` | MOD/EXEC state machine + adapter |
+| FMC state machine | `src/store/` | Zustand stores (10 modules) |
 | React components | `src/components/CDU/` | CDU display/inputs |
+| Navigation Display | `src/components/ND/` | ND symbology + layers + frame |
+| Cockpit layout | `src/components/CockpitMode/` | CSS grid layout presets |
 | WebSocket bridge | `server/src/` | MSFS integration |
 | Aircraft adapters | `server/src/aircraft-adapters/` | SimConnect adapters |
 | Playwright tests | `e2e/` | Visual regression + e2e |
@@ -77,15 +83,20 @@ npm run dev           # Vite dev server :5173
 npm run server        # Node.js WS bridge :8080
 npm run build         # Vite build to dist/
 npm run typecheck:all # TypeScript check all workspaces
-npm run test          # Vitest unit tests
+npm run test          # Vitest unit tests (720 pass, 51 files)
 npm run test:e2e      # Playwright e2e (all)
-npm run test:e2e:ci   # Playwright CI (no visual)
+npm run test:e2e:ci   # Playwright CI smoke (@smoke)
 npm run test:e2e:visual # Visual regression
+npm run test:visual   # Visual regression (grep filter)
+npm run test:visual:update # Update visual snapshots
+npm run capture:baseline   # Capture Playwright baselines
 ```
 
 ## NOTES
 - `docs/STATUS.md` — current validation status (don't copy test counts to README)
-- `virtualcdu_combined_master_work_plan.md` — large planning doc, reference only
-- 427 total files, 29.6k lines of code, depth 6 max
-- 6 large files (>500 lines)
+- `docs/ARCHITECTURE.md` — system architecture and design decisions
+- `docs/IMPLEMENTATION_STATUS.md` — recent changes and transitional state
+- 520 total files, ~40k lines of code, depth 5 max
+- 7 files >500 lines (useFMCStore.ts is largest at 2,362 lines)
 - Monorepo with npm workspaces, not Turborepo/pnpm
+- `shared/src/fmc/actionHandlers/` — 14 extracted LSK handler modules (store cleanup in progress)
