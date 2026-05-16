@@ -13,11 +13,12 @@ interface LSKButtonProps {
 
 export function LSKButton({ side, index, label, disabled, active, highlighted, hintLevel, onPress }: LSKButtonProps) {
   const displayLabel = label || (side === 'L' ? '◄' : '►');
+  const ariaDescription = label ? `Select ${label}` : 'empty field';
 
   return (
     <AvionicsKey
       label={displayLabel}
-      ariaLabel={`LSK ${side}${index}`}
+      ariaLabel={`LSK ${side}${index}: ${ariaDescription}`}
       variant="lsk"
       active={active || highlighted}
       highlighted={highlighted}

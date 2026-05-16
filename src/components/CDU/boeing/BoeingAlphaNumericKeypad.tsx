@@ -65,11 +65,11 @@ export function BoeingAlphaNumericKeypad({
           </div>
         ))}
         <div className="mt-1 grid grid-cols-[0.7fr_1.3fr_1.3fr_0.7fr_1fr] gap-1">
-          <AvionicsKey label="/" variant="function" hintLevel={highlight === 'SLASH' ? hintLevel : 0} onPress={() => onPress('SLASH')} />
-          <AvionicsKey label="CLR" variant="boeing" hintLevel={highlight === 'CLR' ? hintLevel : 0} onPress={() => onPress('CLR')} />
-          <AvionicsKey label="SP" variant="boeing" hintLevel={highlight === 'SPACE' ? hintLevel : 0} onPress={() => onPress('SPACE')} />
+              <AvionicsKey label="/" variant="function" ariaLabel="Slash" hintLevel={highlight === 'SLASH' ? hintLevel : 0} onPress={() => onPress('SLASH')} />
+          <AvionicsKey label="CLR" variant="boeing" ariaLabel="Clear" hintLevel={highlight === 'CLR' ? hintLevel : 0} onPress={() => onPress('CLR')} />
+          <AvionicsKey label="SP" variant="boeing" ariaLabel="Space" hintLevel={highlight === 'SPACE' ? hintLevel : 0} onPress={() => onPress('SPACE')} />
           <AvionicsKey label="Z" variant="boeing" hintLevel={highlight === 'Z' ? hintLevel : 0} onPress={() => onPress('Z')} />
-          <AvionicsKey label="DEL" variant="function" hintLevel={highlight === 'DEL' ? hintLevel : 0} onPress={() => onPress('DEL')} />
+          <AvionicsKey label="DEL" variant="function" ariaLabel="Delete" hintLevel={highlight === 'DEL' ? hintLevel : 0} onPress={() => onPress('DEL')} />
         </div>
         <BoeingBrightnessExecPanel
           execLit={execLit}

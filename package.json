@@ -21,6 +21,9 @@
     "test:e2e:ci": "playwright test --project=desktop-chromium --grep-invert \"Visual Regression\"",
     "test:e2e:visual": "playwright test e2e/visual-navigation-display.spec.ts --project=desktop-chromium",
     "test:e2e:full": "playwright test",
+    "test:e2e:smoke": "playwright test --project=desktop-chromium --grep=\"@smoke\"",
+    "test:visual": "playwright test --grep=\"Visual Regression\"",
+    "test:visual:update": "playwright test --grep=\"Visual Regression\" --update-snapshots",
     "check:status-docs": "node scripts/check-status-docs.mjs",
     "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=chromium"
   },

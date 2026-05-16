@@ -23,6 +23,7 @@ export function BoeingBrightnessExecPanel({
       <AvionicsKey
         label="EXEC"
         variant="exec"
+        ariaLabel="Execute"
         lit={execLit}
         active={highlightedExec}
         hintLevel={highlightedExec ? hintLevel : 0}
@@ -40,8 +41,8 @@ export function BoeingBrightnessExecPanel({
           className="h-1 w-full appearance-none rounded-full bg-cdu-bezel-light outline-none [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cdu-white"
         />
       </div>
-      <AvionicsKey label="NEXT" variant="boeing" onPress={() => onPress('NEXT_PAGE')} />
-      <AvionicsKey label="PREV" variant="boeing" onPress={() => onPress('PREV_PAGE')} />
+      <AvionicsKey label="NEXT" variant="boeing" ariaLabel="Next page" onPress={() => onPress('NEXT_PAGE')} />
+      <AvionicsKey label="PREV" variant="boeing" ariaLabel="Previous page" onPress={() => onPress('PREV_PAGE')} />
     </div>
   );
 }

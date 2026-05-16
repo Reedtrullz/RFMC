@@ -33,7 +33,7 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
     <div 
       className="relative" 
       data-testid="scratchpad"
-      aria-live="polite"
+      aria-live="assertive"
       aria-atomic="true"
       aria-label={`Scratchpad: ${text}`}
     >

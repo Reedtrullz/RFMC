@@ -50,18 +50,20 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
               key={k}
               label={k}
               variant="airbus"
+              ariaLabel={k === 'SP' ? 'Space' : undefined}
               onPress={() => onPress(k === 'SP' ? 'SPACE' : k)}
               className="h-9"
             />
           ))}
         </div>
         <div className="flex gap-1 mt-1">
-          <AvionicsKey label="/" variant="airbus" onPress={() => onPress('SLASH')} className="flex-1 h-9" />
-          <AvionicsKey label="CLR" variant="airbus" onPress={() => onPress('CLR')} className="flex-[2] h-9" />
-          <AvionicsKey label="DEL" variant="airbus" onPress={() => onPress('DEL')} className="flex-1 h-9" />
+          <AvionicsKey label="/" variant="airbus" ariaLabel="Slash" onPress={() => onPress('SLASH')} className="flex-1 h-9" />
+          <AvionicsKey label="CLR" variant="airbus" ariaLabel="Clear" onPress={() => onPress('CLR')} className="flex-[2] h-9" />
+          <AvionicsKey label="DEL" variant="airbus" ariaLabel="Delete" onPress={() => onPress('DEL')} className="flex-1 h-9" />
           <AvionicsKey
             label="EXEC"
             variant="exec"
+            ariaLabel="Execute"
             lit={execLit}
             active={highlight === 'EXEC'}
             onPress={() => onPress('EXEC')}
