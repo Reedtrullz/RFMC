@@ -26,21 +26,9 @@ import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
 import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult } from '@shared/fmc/fmcScratchpadAdapter';
+import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
-import { resolveLskNavigation } from '@shared';
-import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
-import { handleRadioLskAction } from '@shared/fmc/actionHandlers/radioActions';
-import { handleSetFromTo, handleRouteAction } from '@shared/fmc/actionHandlers/routeActions';
-import { handleLegWpAction } from '@shared/fmc/actionHandlers/legActions';
-import { handlePerformanceAction } from '@shared/fmc/actionHandlers/performanceActions';
-import { handleTakeoffAction } from '@shared/fmc/actionHandlers/takeoffActions';
-import { handleProcedureAction } from '@shared/fmc/actionHandlers/procedureActions';
-import { handleLandingAction } from '@shared/fmc/actionHandlers/landingActions';
-import { handleFixAction } from '@shared/fmc/actionHandlers/fixActions';
-import { handleHoldAction } from '@shared/fmc/actionHandlers/holdActions';
-import { handleIrsAction } from '@shared/fmc/actionHandlers/irsActions';
-import { handleAirbusAction } from '@shared/fmc/actionHandlers/airbusActions';
-import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
+import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
@@ -734,64 +722,46 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     const scratchpad = state.scratchpad.trim();
     let handled = false;
-    let scratchpadMessage = '';
 
-    // Handle page navigation actions via shared handler
-    const navAction = resolveLskNavigation(action);
-    if (navAction) {
-      if (navAction.targetPage) { state.setPage(navAction.targetPage); }
-      else if (navAction.pressKey) { state.pressKey(navAction.pressKey as any); }
-      else if (navAction.setSubPage) { set(navAction.setSubPage); }
-      handled = true;
-    }
+    // Dispatch through typed central LSK dispatcher
+    const dispatchResult = dispatchLskAction({ state, action, scratchpad });
+    if (dispatchResult.handled) {
+      // Apply navigation results
+      if ((dispatchResult.success as any)?.targetPage) {
+        state.setPage((dispatchResult.success as any).targetPage);
+        handled = true;
+      } else if ((dispatchResult.success as any)?.pressKey) {
+        state.pressKey((dispatchResult.success as any).pressKey);
+        handled = true;
+      } else if ((dispatchResult.success as any)?.subPage) {
+        set((dispatchResult.success as any).subPage);
+        handled = true;
+      } else {
+        const ar = applyFmcActionResult(set as any, get as any, dispatchResult as FmcActionResult);
+        if (ar.shouldReturn) {
+          handled = true;
+        } else {
+          if (dispatchResult.success?.patch) {
+            set({ isModified: true, execLit: true, ...dispatchResult.success.patch } as any);
+          }
 
-    // Special actions — delegated to shared handler
-    if (!handled) {
-      const specialResult = handleSpecialLskAction(action, state, scratchpad) as FmcActionResult & { sideEffect?: string; returnEarly?: boolean };
-      if (specialResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, specialResult as FmcActionResult);
-        if (ar.shouldReturn && specialResult.failure) return;
-        if (specialResult.success?.patch) set(specialResult.success.patch as any);
-        if (specialResult.sideEffect === 'step_plan') { get().stepPlanForward(); return; }
-        if (specialResult.sideEffect === 'print_message') {
-          setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+          // Side effects
+          if (dispatchResult.sideEffects?.includes('expand_active_route')) get().expandActiveRoute();
+          if (dispatchResult.sideEffects?.includes('step_plan')) { get().stepPlanForward(); }
+          if (dispatchResult.sideEffects?.includes('print_message')) {
+            setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+          }
+          if (dispatchResult.sideEffects?.includes('atsu_uplink_received')) {
+            get().addMessage('RTE UPLINK', 'IMPORTANT');
+            AuralAlertService.playChime();
+          }
+
+          // Handle scratchpadMessage from success
+          if (dispatchResult.success?.scratchpadMessage) {
+            set({ scratchpadError: dispatchResult.success.scratchpadMessage, scratchpad: '', msgLight: true } as any);
+          }
+          handled = true;
         }
-        handled = true;
-        if (specialResult.returnEarly) return;
-      }
-    }
-
-    // Route actions — delegated to shared handler
-    if (!handled && action === 'set_from_to') {
-      const routeResult = handleSetFromTo(state, scratchpad) as FmcActionResult & { sideEffect?: string };
-      if (routeResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, routeResult as FmcActionResult);
-        if (ar.shouldReturn) return;
-        if (routeResult.success?.patch) set(routeResult.success.patch as any);
-        if ((routeResult as any).sideEffect === 'expand_active_route') get().expandActiveRoute();
-        handled = true;
-      }
-    }
-
-    // Radio tuning actions — delegated to shared handler
-    if (!handled) {
-      const radioResult = handleRadioLskAction(action, state, scratchpad) as FmcActionResult;
-      if (radioResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, radioResult);
-        if (ar.shouldReturn) return;
-        if (radioResult.success?.patch) set(radioResult.success.patch as any);
-        handled = true;
-      }
-    }
-
-    // LEGS waypoint editing — partially delegated to shared handler
-    if (!handled) {
-      const legResult = handleLegWpAction(action, state, scratchpad) as FmcActionResult & { sideEffect?: string };
-      if (legResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, legResult as FmcActionResult);
-        if (ar.shouldReturn) return;
-        if (legResult.success?.patch) set(legResult.success.patch as any);
-        handled = true;
       }
     }
 
@@ -807,249 +777,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else if (wpAction === 'edit_wp' && scratchpad) {
           state.insertWaypoint(wpIdx, scratchpad);
           handled = true;
-        }
-      }
-    }
-
-    // Data entry updates accumulator (used by delegated handlers and switch cases)
-    const updates: Partial<FMCState> = {};
-
-    // Performance actions — delegated to shared handler
-    if (!handled) {
-      const perfResult = handlePerformanceAction(action, state, scratchpad) as FmcActionResult;
-      if (perfResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, perfResult);
-        if (ar.shouldReturn) return;
-        if (perfResult.success?.patch) Object.assign(updates, perfResult.success.patch);
-        handled = true;
-      }
-    }
-
-    // Takeoff actions — delegated to shared handler
-    if (!handled) {
-      const toResult = handleTakeoffAction(action, state, scratchpad) as FmcActionResult & { scratchpadMessage?: string };
-      if (toResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, toResult as FmcActionResult);
-        if (ar.shouldReturn) return;
-        if (toResult.success?.patch) Object.assign(updates, toResult.success.patch);
-        if (toResult.success?.scratchpadMessage || (toResult as any).scratchpadMessage) {
-          const msg = toResult.success?.scratchpadMessage || (toResult as any).scratchpadMessage;
-          scratchpadMessage = msg;
-          (updates as any).scratchpadError = msg;
-          (updates as any).msgLight = true;
-          (updates as any).scratchpad = '';
-        }
-        handled = true;
-      }
-    }
-
-    // Route data actions — delegated to shared handler
-    if (!handled) {
-      const routeResult = handleRouteAction(action, state, scratchpad);
-      if (routeResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, routeResult as FmcActionResult);
-        if (ar.shouldReturn) return;
-        if (routeResult.success?.patch) set(routeResult.success.patch as any);
-        if (routeResult.success?.sideEffect === 'expand_active_route') get().expandActiveRoute();
-        handled = true;
-      }
-    }
-
-    // Procedure actions — delegated to shared handler
-    if (!handled) {
-      const procResult = handleProcedureAction(action, state, scratchpad);
-      if (procResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, procResult as FmcActionResult);
-        if (ar.shouldReturn) return;
-        if (procResult.success?.patch) set(procResult.success.patch as any);
-        if (procResult.success?.sideEffect === 'expand_active_route') get().expandActiveRoute();
-        handled = true;
-      }
-    }
-
-    // Landing/approach actions — delegated to shared handler
-    if (!handled) {
-      const landResult = handleLandingAction(action, state, scratchpad) as FmcActionResult;
-      if (landResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, landResult);
-        if (ar.shouldReturn) return;
-        if (landResult.success?.patch) set(landResult.success.patch as any);
-        handled = true;
-      }
-    }
-
-    // Fix actions — delegated to shared handler
-    if (!handled) {
-      const fixResult = handleFixAction(action, state, scratchpad);
-      if (fixResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, fixResult);
-        if (ar.shouldReturn) return;
-        if (fixResult.success?.patch) Object.assign(updates, fixResult.success.patch);
-        handled = true;
-      }
-    }
-
-    // Hold actions — delegated to shared handler
-    if (!handled) {
-      const holdResult = handleHoldAction(action, state, scratchpad);
-      if (holdResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, holdResult);
-        if (ar.shouldReturn) return;
-        if (holdResult.success?.patch) Object.assign(updates, holdResult.success.patch);
-        handled = true;
-      }
-    }
-
-    // IRS actions — delegated to shared handler
-    if (!handled) {
-      const irsResult = handleIrsAction(action, state, scratchpad);
-      if (irsResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, irsResult);
-        if (ar.shouldReturn) return;
-        if (irsResult.success?.patch) Object.assign(updates, irsResult.success.patch);
-        handled = true;
-      }
-    }
-
-    // Airbus data entry — delegated to shared handler
-    if (!handled) {
-      const airbusResult = handleAirbusAction(action, state, scratchpad);
-      if (airbusResult.handled) {
-        const ar = applyFmcActionResult(set as any, get as any, airbusResult);
-        if (ar.shouldReturn) return;
-        if (airbusResult.success?.patch) Object.assign(updates, airbusResult.success.patch);
-        handled = true;
-      }
-    }
-
-    if (!handled) {
-      switch (action) {
-        case 'set_ref_airport':
-        if (scratchpad) {
-          const result = isValidICAO(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.position = { ...state.position, refAirport: scratchpad.toUpperCase() };
-        }
-        break;
-      case 'set_gate':
-        if (scratchpad) updates.position = { ...state.position, gate: scratchpad.toUpperCase() };
-        break;
-      // set_origin, set_dest, set_flt_no, set_route, set_direct_to — delegated to handleRouteAction
-      case 'set_clb_wind':
-      case 'set_crz_wind':
-      case 'set_des_wind':
-        {
-          const input = scratchpad;
-          const wRes = isValidWind(input);
-          if (!wRes.valid) { set({ scratchpadError: wRes.error }); return; }
-          const [wdir, wspd] = input.split('/');
-          if (action === 'set_clb_wind') {
-            updates.performance = { ...state.performance, clbWindDir: parseInt(wdir) || 0, clbWindSpeed: parseInt(wspd) || 0 };
-          } else if (action === 'set_crz_wind') {
-            updates.performance = { ...state.performance, crzWindDir: parseInt(wdir) || 0, crzWindSpeed: parseInt(wspd) || 0 };
-          } else if (action === 'set_des_wind') {
-            updates.performance = { ...state.performance, desWindDir: parseInt(wdir) || 0, desWindSpeed: parseInt(wspd) || 0 };
-          }
-        }
-        break;
-
-      case 'set_isa_dev':
-        {
-          const input = scratchpad;
-          const isaRes = isValidTemperature(input);
-          if (!isaRes.valid) { set({ scratchpadError: isaRes.error }); return; }
-          updates.performance = { ...state.performance, isaDev: parseInt(input) || 0 };
-        }
-        break;
-      // set_qnh, set_landing_*, set_flaps — delegated to handleLandingAction
-
-      // Airbus data entry
-      case 'set_from_to': {
-        if (scratchpad && scratchpad.includes('/')) {
-          const [from, to] = scratchpad.toUpperCase().split('/');
-          const fromResult = isValidICAO(from);
-          const toResult = isValidICAO(to);
-          if (!fromResult.valid) { set({ scratchpadError: fromResult.error }); return; }
-          if (!toResult.valid) { set({ scratchpadError: toResult.error }); return; }
-          set({ 
-            route: { ...state.route, origin: from, destination: to },
-            flightPlan: { ...state.flightPlan, origin: from, destination: to },
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
+        } else if (wpAction === 'delete_wp' && (dispatchResult as any)?.sideEffects?.includes('delete_waypoint')) {
+          state.deleteWaypoint(wpIdx);
           handled = true;
         }
-        break;
       }
-      // set_crz_fl, set_altn, set_block, set_flt_nbr — delegated to handleAirbusAction
-      // set_sid, set_rwy, set_star, set_appr — delegated to handleProcedureAction
-
-
-      // set_flex, set_cg — delegated to handleAirbusAction
-      case 'set_extra':
-        break;
-      // set_fix_ref, set_fix_radial_distance — delegated to handleFixAction
-      // set_hold_fix, set_inbound_crs, set_leg_time, set_leg_dist, set_hold_direction — delegated to handleHoldAction
-      // set_irs_pos — delegated to handleIrsAction
-      case 'atsu_uplink': {
-        const uplink: FlightPlan = {
-          origin: 'KJFK',
-          destination: 'KLAX',
-          flightNumber: 'AAL777',
-          route: 'PARCH3 ROBER J121 Sieg J121 Jfk',
-          waypoints: [
-            { ident: 'PARCH', lat: 39.43, lon: -74.56, discontinuity: false },
-            { ident: 'ROBER', lat: 39.87, lon: -74.12, discontinuity: false }
-          ]
-        };
-        set({ atsu: { ...state.atsu, pendingUplink: uplink } });
-        get().addMessage('RTE UPLINK', 'IMPORTANT');
-        AuralAlertService.playChime();
-        handled = true;
-        break;
-      }
-
-      case 'atsu':
-        set({ page: 'ATSU' });
-        handled = true;
-        break;
-      case 'atsu_msgs':
-        set({ page: 'ATSU_MSGS', selectedMessageId: null });
-        handled = true;
-        break;
-      case 'atsu_load_route': {
-        const uplink = state.atsu.pendingUplink;
-        if (uplink) {
-          set({
-            pendingFlightPlan: { ...uplink },
-            pendingRoute: { ...state.route, origin: uplink.origin, destination: uplink.destination },
-            isModified: true,
-            execLit: true,
-            scratchpad: '',
-            atsu: { ...state.atsu, pendingUplink: null }
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
-      }
-      default:
-        if (action.startsWith('view_msg_')) {
-          const msgId = action.replace('view_msg_', '');
-          const msgs = state.atsu.messages.map(m => m.id === msgId ? { ...m, read: true } : m);
-          set({ 
-            page: 'ATSU_MSG_DETAIL' as PageType, 
-            selectedMessageId: msgId,
-            atsu: { ...state.atsu, messages: msgs }
-          });
-          handled = true;
-        }
-        break;
-    }
-    } // close if (!handled)
-
-    if (Object.keys(updates).length > 0) {
-      set({ isModified: true, execLit: true, scratchpad: scratchpadMessage, scratchpadError: null, ...updates });
     }
 
     // Tutorial: advance on LSK press (check action matches expectedAction OR validate passes)
@@ -1175,24 +907,29 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const renderer = getPageRenderer(state.currentPage);
     const data = renderer ? renderer(state) : getPageRenderer('MENU')!(state);
 
-    // Inject scratchpad or active message
-    const { scratchpad, scratchpadError, scratchpadMessages } = state;
+    // Inject scratchpad or active message — prefer scratchpadState (new engine)
+    const { scratchpad, scratchpadError, scratchpadMessages, scratchpadState } = state;
     const activeMsg = scratchpadMessages[0];
-    
+
     let scratchpadText = ' ';
     let scratchpadColor = (state.aircraft === 'AIRBUS_A320' ? 'white' : 'green') as any;
     let blink = false;
     let semantic = undefined;
 
-    if (scratchpad) {
+    if (scratchpadState) {
+      scratchpadText = getActiveDisplay(scratchpadState);
+      scratchpadColor = scratchpadState.message ? 'amber' : 'white';
+    } else if (scratchpad) {
       scratchpadText = scratchpad;
       scratchpadColor = state.aircraft === 'AIRBUS_A320' ? 'amber' : 'white';
-    } else if (scratchpadError) {
+    }
+    if (scratchpadText === ' ' && scratchpadError) {
       scratchpadText = scratchpadError;
       scratchpadColor = 'amber';
       blink = true;
       semantic = 'warning';
-    } else if (activeMsg) {
+    }
+    if (scratchpadText === ' ' && activeMsg) {
       scratchpadText = activeMsg.text;
       scratchpadColor = activeMsg.severity === 'ADVISORY' ? 'white' : 'amber';
       blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'IMPORTANT';

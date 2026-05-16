@@ -171,6 +171,7 @@ export * from './fmc/scratchpadEngine';
 export * from './fmc/fmcScratchpadAdapter';
 export * from './fmc/displayGridValidation';
 export * from './fmc/actionHandlers/actionResult';
+export * from './fmc/actionHandlers/lskDispatcher';
 export * from './fmc/actionHandlers/navigationActions';
 export * from './fmc/actionHandlers/routeActions';
 export * from './fmc/actionHandlers/legActions';
@@ -180,6 +181,9 @@ export * from './fmc/actionHandlers/fixActions';
 export * from './fmc/actionHandlers/holdActions';
 export * from './fmc/actionHandlers/irsActions';
 export * from './fmc/actionHandlers/airbusActions';
+export * from './fmc/actionHandlers/positionActions';
+export * from './fmc/actionHandlers/windActions';
+export * from './fmc/actionHandlers/atsuActions';
 
 // New FMC engine modules introduced in feat/canvas-renderer
 export { buildInitialFMCState } from './fmc/initialState';
