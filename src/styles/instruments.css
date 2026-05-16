@@ -167,7 +167,40 @@
   filter: blur(20px);
 }
 
-/* Avionics Keys */
+/* ------------------------------------------------
+   ND Frame Surface Containers
+   ------------------------------------------------ */
+
+.boeing-nd-surface {
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.boeing-nd-scanlines {
+  pointer-events: none;
+}
+
+.boeing-nd-vignette {
+  pointer-events: none;
+}
+
+.airbus-nd-surface {
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.airbus-nd-dot-grid {
+  pointer-events: none;
+}
+
+.airbus-nd-vignette {
+  pointer-events: none;
+}
+
+/* ------------------------------------------------
+   Avionics Keys
+   ------------------------------------------------ */
+
 .avionics-key {
   position: relative;
   min-height: 44px;
