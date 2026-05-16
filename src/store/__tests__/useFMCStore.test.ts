@@ -312,7 +312,7 @@ describe('FMC Store', () => {
       { refFix: 'DIXIE', radial: 270, distance: 35 },
     ]);
     expect(state.fix).toEqual({ refFix: 'RBV', radial: 180, distance: 20 });
-    expect(state.execLit).toBe(true);
+    expect(state.execLit).toBe(false);
   });
 
   it('sets DEP/ARR procedures, DIR INTC, and N1 LIMIT values', () => {
