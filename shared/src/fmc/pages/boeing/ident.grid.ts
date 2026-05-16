@@ -20,7 +20,7 @@ export function renderBoeingIdentGrid(state: FMCState): DisplayData {
     seg(8, 1, state.ident.engRating || '26K SFP', 'green'),
 
     seg(13, 0, '<INDEX', 'white'),
-    seg(13, 16, 'POS INIT>', 'white'),
+    seg(13, 15, 'POS INIT>', 'white'),
   ], {
     L6: 'menu',
     R6: 'pos_init',

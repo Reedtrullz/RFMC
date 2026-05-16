@@ -156,7 +156,7 @@ describe('Message factory functions', () => {
     const msg = perfVnavUnavailableMessage();
 
     it('returns correct text', () => {
-      expect(msg.text).toBe('PERF VNAV UNAVAILABLE');
+      expect(msg.text).toBe('PERF/VNAV UNAVAILABLE');
     });
 
     it('has PERF_UNAVAIL priority', () => {

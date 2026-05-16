@@ -67,7 +67,7 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
     seg(10, 14, 'SEL/24K >', 'white'),
 
     seg(13, 0, '<INDEX', 'white'),
-    seg(13, 16, 'POS INIT>', 'white'),
+    seg(13, 15, 'POS INIT>', 'white'),
   ], {
     L1: 'set_runway',
     L2: 'set_to_mode',
