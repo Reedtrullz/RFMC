@@ -50,10 +50,10 @@
       "task_key": "todo:6",
       "task_label": "6",
       "task_title": "**Extract performance actions** — Move `set_crz_alt`, `set_cost_index`, `set_zfw`, `set_reserve`, wind entries into `shared/src/fmc/actionHandlers/performanceActions.ts`.",
-      "session_id": "ses_1cf2e50e5ffeej5ePYcGwR88Ky",
+      "session_id": "ses_1cf248e7affeQziqQesS8T9DSG",
       "agent": "Sisyphus-Junior",
       "category": "deep",
-      "updated_at": "2026-05-16T12:53:59.292Z"
+      "updated_at": "2026-05-16T13:12:46.823Z"
     }
   }
 }

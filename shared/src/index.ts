@@ -173,6 +173,8 @@ export * from './fmc/displayGridValidation';
 export * from './fmc/actionHandlers/navigationActions';
 export * from './fmc/actionHandlers/routeActions';
 export * from './fmc/actionHandlers/legActions';
+export * from './fmc/actionHandlers/performanceActions';
+export * from './fmc/actionHandlers/takeoffActions';
 
 // New FMC engine modules introduced in feat/canvas-renderer
 export { buildInitialFMCState } from './fmc/initialState';
