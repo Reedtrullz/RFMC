@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Page Snapshots > Airbus F_PLN matches snapshot 1`] = `
-"  F-PLN          ---1/1 
+"  F-PLN  ---- / ----1/1 
   SPD/ALT               
                         
                         
@@ -167,7 +167,7 @@ exports[`Page Snapshots > Boeing IDENT matches snapshot 1`] = `
                         
                         
                         
-<INDEX          POS INIT"
+<INDEX         POS INIT>"
 `;
 
 exports[`Page Snapshots > Boeing LEGS matches snapshot 1`] = `
@@ -218,7 +218,7 @@ exports[`Page Snapshots > Boeing POS_INIT matches snapshot 1`] = `
                         
                         
              SET IRS POS
-<INDEX    □□□□.□ □ROUTE>"
+<INDEX  □□□□.□ □□ ROUTE>"
 `;
 
 exports[`Page Snapshots > Boeing PROGRESS matches snapshot 1`] = `

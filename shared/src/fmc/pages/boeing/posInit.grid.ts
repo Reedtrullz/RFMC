@@ -36,10 +36,10 @@ function renderPosInitPage1(state: FMCState): DisplayData {
 
     seg(12, 13, 'SET IRS POS', 'white', { size: 'small' }),
     state.position.irsState === 'NAV'
-      ? seg(13, 10, lastPos, 'green')
+      ? seg(13, 8, lastPos.slice(0, 10), 'green')
       : state.position.irsAlignmentProgress > 0
-        ? seg(13, 10, `ALIGNING ${state.position.irsAlignmentProgress}%`, 'white', { blink: state.position.irsTimeRemaining < 60 })
-        : seg(13, 10, '□□□□.□ □□□□□.□', 'white'),
+        ? seg(13, 8, `ALIGN ${state.position.irsAlignmentProgress}%`.slice(0, 10), 'white', { blink: state.position.irsTimeRemaining < 60 })
+        : seg(13, 8, '□□□□.□ □□'.slice(0, 10), 'white'),
 
     seg(13, 0, '<INDEX', 'white'),
     seg(13, 18, 'ROUTE>', 'white'),

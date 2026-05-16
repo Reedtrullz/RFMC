@@ -146,7 +146,7 @@ export function insufficientFuelMessage(): ScratchpadMessage {
 }
 
 export function perfVnavUnavailableMessage(): ScratchpadMessage {
-  return createMessage('PERF VNAV UNAVAILABLE', MessagePriority.PERF_UNAVAIL, 'performance', false);
+  return createMessage('PERF/VNAV UNAVAILABLE', MessagePriority.PERF_UNAVAIL, 'performance', false);
 }
 
 export function unableNextAltMessage(): ScratchpadMessage {
@@ -155,4 +155,82 @@ export function unableNextAltMessage(): ScratchpadMessage {
 
 export function dragRequiredMessage(): ScratchpadMessage {
   return createMessage('DRAG REQUIRED', MessagePriority.SAFETY, 'nav', false);
+}
+
+// -- Additional message factories ------------------------------------
+
+export function vSpeedsDeletedMessage(): ScratchpadMessage {
+  return createMessage('V SPEEDS DELETED', MessagePriority.ADVISORY, 'validation', false, true, true);
+}
+
+export function invalidFormatMessage(): ScratchpadMessage {
+  return createMessage('INVALID FORMAT', MessagePriority.INVALID_ENTRY, 'validation', false, true, true);
+}
+
+export function outOfRangeMessage(): ScratchpadMessage {
+  return createMessage('OUT OF RANGE', MessagePriority.INVALID_ENTRY, 'validation', false, true, true);
+}
+
+export function notInRouteMessage(): ScratchpadMessage {
+  return createMessage('NOT IN ROUTE', MessagePriority.DB_ERROR, 'nav', false, true, true);
+}
+
+export function notInAlignModeMessage(): ScratchpadMessage {
+  return createMessage('NOT IN ALIGN MODE', MessagePriority.DB_ERROR, 'nav', false, true, true);
+}
+
+/** Generic factory for ad-hoc scratchpad messages. */
+export function scratchpadMessage(
+  text: string,
+  priority: MessagePriority,
+  source: string,
+  options: Partial<Omit<ScratchpadMessage, 'id' | 'text' | 'priority' | 'source'>> = {},
+): ScratchpadMessage {
+  return createMessage(
+    text,
+    priority,
+    source,
+    options.clearsOnInput ?? false,
+    options.clearsOnExec ?? true,
+    options.clearsOnPageChange ?? true,
+  );
+}
+
+// -- Initial state + adapters ----------------------------------------
+
+export function createInitialScratchpadState(): ScratchpadState {
+  return {
+    buffer: '',
+    message: null,
+    messageQueue: [],
+    history: [],
+  };
+}
+
+export function getScratchpadBuffer(state: ScratchpadState): string {
+  return state.buffer;
+}
+
+export function getScratchpadDisplayText(state: ScratchpadState): string {
+  return getActiveDisplay(state);
+}
+
+export function clearScratchpadForPageChange(state: ScratchpadState): ScratchpadState {
+  const cleared = state.messageQueue.filter(m => m.clearsOnPageChange);
+  const messageQueue = state.messageQueue.filter(m => !m.clearsOnPageChange);
+  const currentMessage =
+    state.message && state.message.clearsOnPageChange
+      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      : state.message;
+  return { ...state, message: currentMessage, messageQueue, history: [...state.history, ...cleared] };
+}
+
+export function clearScratchpadForExec(state: ScratchpadState): ScratchpadState {
+  const cleared = state.messageQueue.filter(m => m.clearsOnExec);
+  const messageQueue = state.messageQueue.filter(m => !m.clearsOnExec);
+  const currentMessage =
+    state.message && state.message.clearsOnExec
+      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      : state.message;
+  return { ...state, message: currentMessage, messageQueue, history: [...state.history, ...cleared] };
 }

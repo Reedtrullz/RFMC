@@ -35,8 +35,7 @@ export function renderFplnGrid(state: FMCState): DisplayData {
 
   const title = state.isModified ? 'TMPY F-PLN' : 'F-PLN';
   const fromTo = `${route.origin || '----'} / ${route.destination || '----'}`;
-  const titleGap = Math.max(2, 15 - title.length);
-  const titleText = `${title}${' '.repeat(titleGap)}${fromTo}`;
+  const titleText = `${title}  ${fromTo}`.slice(0, 18);
 
   const segments: DisplaySegment[] = [
     ...airbusTitleRow(titleText, `${legsPageIndex + 1}/${totalPages}`),

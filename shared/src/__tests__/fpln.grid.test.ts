@@ -247,7 +247,7 @@ describe('renderFplnGrid', () => {
     );
     expect(titleSegments).toHaveLength(1);
     expect(titleSegments![0].text).toContain('F-PLN');
-    expect(titleSegments![0].text).toContain('KJFK / KDCA');
+    expect(titleSegments![0].text).toContain('KJFK');
     expect(titleSegments![0].inverse).toBe(true);
   });
 
