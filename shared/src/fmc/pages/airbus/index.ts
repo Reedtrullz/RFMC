@@ -1,6 +1,18 @@
 import type { FMCState, DisplayData, AirbusPageType, PageType, DisplayLine } from '../../../types/fmc';
 import { inferAirbusSemantic } from '../../pageLineSemantics';
 import { renderAtsuMenu, renderAtsuMessages, renderAtsuMessageDetail } from './atsu';
+import { renderProgGrid } from './prog.grid';
+import { renderRadNavGrid } from './radNav.grid';
+import { renderFuelPredGrid } from './fuelPred.grid';
+import { renderSecFplnGrid } from './secFpln.grid';
+import { renderDataIndexGrid } from './dataIndex.grid';
+import { renderMcduMenuGrid } from './mcduMenu.grid';
+import { renderDepArrA320Grid } from './depArr.grid';
+import { renderFplnGrid } from './fpln.grid';
+import { renderInitAGrid } from './initA.grid';
+import { renderInitBGrid } from './initB.grid';
+import { renderPerfTakeoffGrid } from './perfTakeoff.grid';
+import { renderPerfApprGrid } from './perfAppr.grid';
 
 const W = 24;
 export function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color'], small: boolean = false): DisplayLine {
@@ -16,18 +28,18 @@ const AIRBUS_PAGES: readonly string[] = ['INIT_A', 'INIT_B', 'F_PLN', 'DEP_ARR_A
 export function getAirbusPageRenderer(page: PageType): ((state: FMCState) => DisplayData) | null {
   if (!AIRBUS_PAGES.includes(page)) return null;
   const renderers: Partial<Record<PageType, (state: FMCState) => DisplayData>> = {
-    INIT_A:             renderInitA,
-    INIT_B:             renderInitB,
-    F_PLN:              renderFpln,
-    DEP_ARR_A:          renderDepArrA320,
-    PERF_TAKEOFF:       renderPerfTakeoff,
-    PERF_APPR:          renderPerfAppr,
-    FUEL_PRED:          renderFuelPred,
-    SEC_FPLN:           renderSecFpln,
-    RAD_NAV:            renderRadNav,
-    PROG_A:             renderProgA320,
-    DATA_INDEX:         renderDataIndex,
-    MCDU_MENU:          renderMcduMenu,
+    INIT_A:             renderInitAGrid,
+    INIT_B:             renderInitBGrid,
+    F_PLN:              renderFplnGrid,
+    DEP_ARR_A:          renderDepArrA320Grid,
+    PERF_TAKEOFF:       renderPerfTakeoffGrid,
+    PERF_APPR:          renderPerfApprGrid,
+    FUEL_PRED:          renderFuelPredGrid,
+    SEC_FPLN:           renderSecFplnGrid,
+    RAD_NAV:            renderRadNavGrid,
+    PROG_A:             renderProgGrid,
+    DATA_INDEX:         renderDataIndexGrid,
+    MCDU_MENU:          renderMcduMenuGrid,
     ATSU:               renderAtsuMenu,
     ATSU_MSGS:          renderAtsuMessages,
     ATSU_MSG_DETAIL:    renderAtsuMessageDetail,
@@ -100,73 +112,6 @@ export function renderInitB(state: FMCState): DisplayData {
       R5: null, R6: null,
     },
   };
-}
-
-export function renderFpln(state: FMCState): DisplayData {
-  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
-  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-  const wpts = flightPlan.waypoints;
-  const title = state.isModified ? 'TMPY F-PLN' : 'F-PLN';
-  const { legsPageIndex } = state;
-  const perPage = 4; // Airbus usually shows 4-5 items with sub-headers
-  const start = legsPageIndex * perPage;
-  const pageWaypoints = wpts.slice(start, start + perPage);
-
-  const lines = [inv(`  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'cyan')];
-  
-  for (let i = 0; i < pageWaypoints.length; i++) {
-    const wp = pageWaypoints[i];
-    if (wp.discontinuity) {
-      lines.push(fmt(' ----- F-PLN DISCONTINUITY -----', '', '', 'amber'));
-      lines.push(blank());
-    } else {
-      const alt = wp.altitudeConstraint ? formatAltitude(wp.altitudeConstraint) : ' --- ';
-      const spd = wp.speedConstraint ? String(wp.speedConstraint.speed) : ' --- ';
-      
-      lines.push(fmt(` ${wp.ident}`, '  SPD/ALT', '', 'white'));
-      lines.push(fmt('', `  ${spd}/${alt}`, '', 'green'));
-    }
-  }
-
-  while (lines.length < 14) lines.push(blank());
-  return {
-    title: 'F-PLN',
-    pageIndicator: `${legsPageIndex + 1}/${Math.max(1, Math.ceil(wpts.length / perPage))}`,
-    lines: lines.slice(0, 14),
-    lskActions: buildFplnActions(state),
-  };
-}
-
-import { formatAltitudeConstraint } from '../../../navdata/constraints';
-function formatAltitude(constraint: any): string {
-  return formatAltitudeConstraint(constraint);
-}
-
-function buildFplnActions(state: FMCState): Record<string, string | null> {
-  const actions: Record<string, string | null> = {};
-  for (let i = 1; i <= 6; i++) { actions[`L${i}`] = null; actions[`R${i}`] = null; }
-  actions['L1'] = 'fpln_dep_arr';
-  
-  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-  const wpts = flightPlan.waypoints;
-  const deleteMode = state.deleteMode;
-  
-  // Basic editing: L2-L6 handle waypoints
-  for (let i = 0; i < Math.min(wpts.length, 5); i++) {
-    const action = deleteMode ? `delete_wp_${i}` : `edit_wp_${i}`;
-    actions[`L${i + 2}`] = action;
-  }
-  
-  if (state.isModified) {
-    actions['R6'] = 'erase';
-  }
-
-  const perPage = 5;
-  const totalPages = Math.max(1, Math.ceil(wpts.length / perPage));
-  if (state.legsPageIndex < totalPages - 1) actions['L6'] = 'next_page';
-  if (state.legsPageIndex > 0) actions['R6'] = 'prev_page';
-  
-  return actions;
 }
 
 export function renderDepArrA320(state: FMCState): DisplayData {

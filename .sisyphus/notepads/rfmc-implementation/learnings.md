@@ -114,3 +114,89 @@
 - The `_lskId` and `_fieldId` parameters on `airbusSelectableField` are reserved for future metadata association (prefixed with underscore to satisfy TS no-unused-vars).
 - `airbusPage()` wraps segments + lskActions into `DisplayData` — follows same pattern as `boeingPage()`.
 - Test file `shared/src/__tests__/airbusGridHelpers.test.ts`: 18 tests covering all 7 exported functions with edge cases (right-label clamping, page indicator positioning, option overrides).
+
+## Wave 3 — PERF TAKEOFF / PERF APPR Grid Migration
+
+- Created `shared/src/fmc/pages/airbus/perfTakeoff.grid.ts` — `renderPerfTakeoffGrid()` with 22 segments across 14 rows.
+- Created `shared/src/fmc/pages/airbus/perfAppr.grid.ts` — `renderPerfApprGrid()` with 14 segments across 13 rows (row 13 is empty).
+- Layout conventions from `initB.grid.ts`: `< LABEL` with selectable marker at col 0 (white, semantic='label'), values at col 0 or col 1 (magenta for guidance/placeholder, green for active data, white for labels).
+- V1/VR/V2 are RHS fields: label at col 1, value at col 20 (right-aligned with `padStart(4)` to align `[  ]` placeholders).
+- FLAPS/THS and FLEX TO TEMP are LHS fields: label at col 1, value also at col 1 on the next row (magenta, semantic='guidance').
+- `NEXT PHASE>` indicator at col 13 (11 chars) — verified fits within 24-col grid (13+11=24). Placing at col 14 caused the `>` to overflow (14+11=25>24).
+- When migrating from legacy `fmt()` to grid segments: values that were `rightLabel` in legacy require explicit column positioning. The `rightLabel` text appears as a separate span outside the 24-char grid in legacy mode, but grid segments must fit within the 24 columns.
+- FLEX TO TEMP placeholder is `'---'` (not `'---°'`) when `flexTemp` is undefined to match original legacy output.
+- LSK actions map preserved exactly: L1=set_v1, L2=set_vr, L3=set_v2, L5=set_flaps, L6=set_flex, R6=perf_appr for TO; L1=set_qnh, L5=set_wind, R6=perf_to for APPR.
+- Grid tests follow `initB.grid.test.ts` pattern: `toGridText(displayData)` helper, segment content/color assertions, LSK action assertions, complete plain text layout verification.
+- PERF APPR values are hardcoded (1013, 15°C, ---/---, ----, FULL) — state data is not used for these fields in the current implementation.
+- PERF TAKEOFF snapshot updated via `--update` flag; INIT_A and MCDU_MENU snapshots were also stale (pre-existing) and got updated together.
+- Pre-existing failure: `pageRenderers.test.ts > Airbus Page Renderers > renders INIT A page with alignment prompt` and `renders PROG page with Nav Accuracy` — both check `data.lines` on pages already migrated to grid format (lines=[], segments used instead). These were failing before this task.
+
+## Wave 3 — Airbus INIT A Grid Migration
+
+- Created `shared/src/fmc/pages/airbus/initA.grid.ts` with `renderInitAGrid(state)` using `airbusPage()`, `airbusTitleRow()`, and `airbusDisplaySegment()` — follows exact pattern from `initB.grid.ts`.
+- Registered in `shared/src/fmc/pages/airbus/index.ts` by adding import and changing `INIT_A: renderInitA` → `INIT_A: renderInitAGrid`.
+- Preserved all fields: FROM/TO, ALTN/CO RTE (alternate), FLT NBR, COST INDEX, CRZ FL/TEMP, TROPO, IRS/Nav status
+- Preserved all LSK actions: L1=data_index, L2=set_flt_nbr, L3=set_cost_index, L4=set_crz_fl, L6=align_irs/irs_relay, R1=set_from_to, R2=set_altn, R6=init_b
+- Grid version returns `lines: []` from `airbusPage()` — existing tests that check `data.lines` need updating to check `data.segments` instead (or do dual checks with fallback).
+- Created `shared/src/__tests__/initA.grid.test.ts` with 22 tests covering: title/page indicator, grid format verification (14×24 dimensions), placeholder values, populated values, all data fields (FROM/TO, FLT NBR, ALTN, COST INDEX, CRZ FL, TROPO, IRS states), IRS states (OFF→<IRS INIT, ALIGNING→IN ALIGN X MIN, NAV→IRS RELAY >), LSK actions including IRS-state-dependent L6, color/semantic verification, complete layout, and TMPY INIT rendering.
+- Key pattern: grid pages use `airbusDisplaySegment(row, col, text, color, { semantic })` directly rather than the higher-level helpers (`airbusLineLabel`, `airbusDataField`, `airbusSelectableField`). The higher-level helpers exist but grid page files follow `initB.grid.ts`'s simpler pattern.
+- Existing test regression: `pageRenderers.test.ts` checks `data.lines` for Airbus INIT A — fixed to check `data.segments` with `data.lines` fallback.
+
+## Wave 3 — Airbus INIT B Grid Migration
+
+- Created `shared/src/fmc/pages/airbus/initB.grid.ts` with `renderInitBGrid(state)` — uses `airbusTitleRow('INIT', 'B')`, `airbusDisplaySegment` for labels/values, and `airbusPage()` wrapper.
+- Fields map: ZFW (L1, rows 1-2), BLOCK fuel (L2, rows 3-4), CG (L3, rows 5-6), INIT A navigation (R1).
+- Data values displayed in magenta (selectable fields) — matches `airbusSelectableField` color semantics.
+- Labels in white with `semantic: 'label'`, data in magenta with `semantic: 'activeData'`.
+- LSK actions preserved: L1=set_zfw, L2=set_block, L3=set_cg, R1=init_a.
+- `airbusTitleRow` positions page indicator at `PAGE_WIDTH - len - 1` (col 22 for "B"), which differs from the original legacy string that had it at col 20. This shifted the snapshot by 2 characters — acceptable since it's more consistent.
+- Registered in index.ts via `import { renderInitBGrid } from './initB.grid'` and mapped `INIT_B: renderInitBGrid`.
+- Test file `shared/src/__tests__/initB.grid.test.ts`: 9 tests covering default/placeholder values, formatted values (ZFW/BLOCK/CG), LSK actions, grid format verification, color semantics, and full plain-text layout comparison.
+- Snapshot test `PageSnapshots.test.tsx` required update (2 snapshots) due to the page indicator position shift.
+- Key difference from INIT A: INIT B is simpler (3 fields + navigation), no state-dependent logic (no alignment/IRS checks).
+
+## Wave 3 — Airbus F-PLN Grid Migration
+
+- Created `shared/src/fmc/pages/airbus/fpln.grid.ts` with `renderFplnGrid(state)` — most complex Airbus page migration.
+- Layout: Row 0 = title (`airbusTitleRow` with "F-PLN    origin / dest" + page indicator), Row 1 = " SPD/ALT" header (white), Rows 2-11 = waypoints (2 rows each, 4 per page), Row 12-13 = bottom area.
+- Waypoints display: ident in white at col 2, constraint `spd/alt` in green at col 3 on the next row.
+- Route discontinuities: `----- F-PLN DISCONTINUITY -----` in amber across 2 rows (same visual as legacy).
+- `formatAltitude()` uses `constraint: any` to bridge type mismatch between `fmc.ts`'s `AltitudeConstraint` (`.altitude` field) and `navdataTypes.ts`'s `AltitudeConstraint` (`.value` field) — same pattern as legacy.
+- `buildFplnActions()` preserved identically from legacy: uses perPage=5 for page nav (separate from visual perPage=4), waypoint indices 0-4 always mapped to L2-L6 regardless of current page (legacy quirk).
+- Title gap computed dynamically: `titleGap = Math.max(2, 15 - title.length)` to handle both "F-PLN" (5 chars) and "TMPY F-PLN" (9 chars) with appropriate spacing to origin/dest.
+- Registered in `index.ts` by replacing `renderFpln` with `renderFplnGrid` import and renderer map entry. Removed old `renderFpln`, `formatAltitude`, `buildFplnActions` and unused `formatAltitudeConstraint` import.
+- Test file `shared/src/__tests__/fpln.grid.test.ts`: 15 tests covering title/origin, page indicator, TMPY mode, SPD/ALT header, waypoint colors, discontinuity rendering, empty list, LSK actions (L1=fpln_dep_arr, L2-L6=edit_wp, delete mode, page nav), erase in modified mode, page indicator multi-page, visual pagination (4 per page), and grid format verification.
+- Model state created locally with `makeState()` fixture (not `createBaseState` from `testUtils.ts`) since that helper defaults to Boeing aircraft which would be semantically incorrect for Airbus F-PLN tests.
+- 461/462 tests pass (1 pre-existing PROG page failure), all 3 workspaces typecheck cleanly.
+
+## Wave 3 — Airbus Remaining Pages Grid Migration (FUEL PRED, SEC F-PLN, DATA INDEX, MCDU MENU, DEP/ARR)
+
+- Created 5 grid files in `shared/src/fmc/pages/airbus/`:
+  - `fuelPred.grid.ts` — `renderFuelPredGrid()`: FOB/EXTRA/MIN DEST FOB/ALTN/ALTN FOB/EXTRA-TIME/FINAL-TIME. Right-side values at col 18. All fields preserved. No LSK actions (empty `{}`).
+  - `secFpln.grid.ts` — `renderSecFplnGrid()`: COPY ACTIVE (L1=copy_active), FROM/TO with origin/dest. Uses pendingRoute when isModified. Page indicator "1/1" at col 20.
+  - `dataIndex.grid.ts` — `renderDataIndexGrid()`: 8 menu items (A/C STATUS through ROUTES). L1=ac_status. Page indicator "INDEX" at col 18.
+  - `mcduMenu.grid.ts` — `renderMcduMenuGrid()`: 4 system entries (FMGC, ATSU, AIDS, CFDS) with magenta selectable names and green "SELECT" descriptors. L1=f_pln, L2=atsu. SELECT at col 1 (left-aligned, matching legacy format).
+  - `depArr.grid.ts` — `renderDepArrA320Grid()`: DEPARTURE/ARRIVAL sections with SID/RWY/STAR/APPR selectable fields. LSK arrows (`<`) as separate segments at col 0. L2=set_sid, L3=set_rwy, L5=set_star, L6=set_appr.
+- All registered in `index.ts` with imports and renderer map updates replacing legacy renderers.
+- `createMinimalState()` helper pattern for tests — cast through `as unknown as FMCState` for incomplete mock state. Required `NavigationPerformance` has 8 fields (anpNm, anp, rnpNm, rnp, rnpManual, activeSource, phase, xteNm).
+- Page indicator position in `airbusTitleRow` follows formula: `col = PAGE_WIDTH(24) - indicator.length - 1`. Tests must match this (col 20 for "1/1", col 18 for "INDEX").
+- Pre-existing snapshot failures from earlier grid migrations (INIT_A, PROG_A, PERF_TAKEOFF, RAD_NAV) are not caused by new work.
+
+## Wave 3 — Airbus PROG & RAD NAV Grid Migration
+
+- Created `shared/src/fmc/pages/airbus/prog.grid.ts` with `renderProgGrid(state)`:
+  - Fields: origin/destination (row 1, green), CRZ FL/OPT FL/REC MAX FL/DIST/ETA/EFOB (rows 2-7, labels col 0 'white', values col 17-21 right-aligned 'white'), WIND (row 8 label, row 9 data green), NAV ACCUR (row 10 ACTUAL label 'white', HIGH/LOW at col 8 'green', RNP at col 18 'amber'), REQUIRED label right-aligned via `airbusLineLabel(side='R')`.
+  - RNP/ANP display: `navPerformance.anpNm <= navPerformance.rnpNm ? 'HIGH' : 'LOW'` — RNP value shown in amber (AIRBUS_DEFAULT_COLOR), accuracy indicator in green.
+  - CRZ FL extracts first 3 chars of altitude: `String(performance.crzAlt).slice(0,3)`, prefixed with "FL" — matches legacy `renderProgA320`.
+  - No LSK actions — all null, matching the display-only nature of the PROG page.
+- Created `shared/src/fmc/pages/airbus/radNav.grid.ts` with `renderRadNavGrid(state)`:
+  - Layout: VOR1/FREQ (row 1 label), `< --- / freq` (row 2, magenta selectable), VOR2/FREQ (row 3), `< --- / freq` (row 4), ADF1/FREQ (row 5), `< freq` (row 6).
+  - Selectable `<` markers at col 0 (magenta, `guidance` semantic), frequency text at col 2 — both using `airbusSelectableField` for magenta styling.
+  - LSK actions preserved: L1=set_vor1, L2=set_vor2, L3=set_adf1.
+- Both registered in `index.ts`: imports added, renderer map updated (RAD_NAV: renderRadNavGrid, PROG_A: renderProgGrid), legacy renderRadNav/renderProgA320 kept for backward compat.
+- Grid output tests appended to `airbusGridPages.test.ts` (20 new tests across renderProgGrid + renderRadNavGrid):
+  - Uses existing `createMinimalState()` and `checkSegment()`/`checkPageStructure()` helpers.
+  - PROG: 13 tests covering all fields, accuracy states (HIGH/LOW), missing route fallback, empty LSK actions.
+  - RAD NAV: 7 tests covering all radio labels, frequency display, LSK actions, guidance semantic verification.
+  - Ordered right-labeled values work at col 17-19 (`---- NM`=7 chars at col 17, `----Z`=5 chars at col 19, etc.).
+  - `navPerformance` override in test must include full interface (8 fields) — TypeScript strict mode catches partial objects in `createMinimalState` overrides.

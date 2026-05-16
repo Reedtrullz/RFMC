@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Page Snapshots > Airbus F_PLN matches snapshot 1`] = `
-"  F-PLN     ---- / ---- 
-                        
+"  F-PLN          ---1/1 
+  SPD/ALT               
                         
                         
                         
@@ -18,15 +18,15 @@ exports[`Page Snapshots > Airbus F_PLN matches snapshot 1`] = `
 `;
 
 exports[`Page Snapshots > Airbus INIT_A matches snapshot 1`] = `
-"  INIT              A   
+"  INIT                A 
 CO RTE FROM/TO          
  --------  [  ]/[  ]    
 FLT NBR ALTN/CO RTE     
- -------- ----/-------- 
+ ------------/--------  
 LAT COST INDEX          
-  0.0N ---              
+ 0.0N    ---            
 LONG CRZ FL/TEMP        
- 0.0E -----/--°         
+ 0.0E    -----/--°      
                         
  TROPO                  
  36090                  
@@ -35,7 +35,7 @@ LONG CRZ FL/TEMP
 `;
 
 exports[`Page Snapshots > Airbus INIT_B matches snapshot 1`] = `
-"  INIT              B   
+"  INIT                B 
 < ZFW                   
  ---.-                  
 < BLOCK                 
@@ -54,13 +54,13 @@ exports[`Page Snapshots > Airbus INIT_B matches snapshot 1`] = `
 exports[`Page Snapshots > Airbus MCDU_MENU matches snapshot 1`] = `
 "  MCDU MENU             
 < FMGC                  
- SELECT                 
+  SELECT                
 < ATSU                  
- SELECT                 
+  SELECT                
 < AIDS                  
- SELECT                 
+  SELECT                
 < CFDS                  
- SELECT                 
+  SELECT                
                         
                         
                         
@@ -69,35 +69,35 @@ exports[`Page Snapshots > Airbus MCDU_MENU matches snapshot 1`] = `
 `;
 
 exports[`Page Snapshots > Airbus PERF_TAKEOFF matches snapshot 1`] = `
-"  PERF              TO  
- V1                 [  ]
- VR                 [  ]
- V2                 [  ]
- TRANS ALT              
- 5000                   
- THR RED/ACC            
- 1500/3000              
- FLAPS/THS              
- 1/UP0.0                
- FLEX TO TEMP           
+"  PERF               TO 
+  V1                [  ]
+  VR                [  ]
+  V2                [  ]
+  TRANS ALT             
+  5000                  
+  THR RED/ACC           
+  1500/3000             
+  FLAPS/THS             
+  1/UP0.0               
+  FLEX TO TEMP          
   ---                   
- ENG OUT ACC            
- 1500        NEXT PHASE>"
+  ENG OUT ACC           
+  1500       NEXT PHASE>"
 `;
 
 exports[`Page Snapshots > Airbus PROG_A matches snapshot 1`] = `
 "  PROG                  
  ---- / ----            
- CRZ FL            FL---
- OPT FL              ---
- REC MAX FL          ---
- DIST            ---- NM
- ETA               ----Z
- EFOB              ---.-
- WIND                   
+CRZ FL             ---  
+OPT FL               ---
+REC MAX FL           ---
+DIST             ---- NM
+ETA                ----Z
+EFOB               ---.-
+WIND                    
  ---°/---               
-REQUIRED NAV ACCUR      
-   2.00 HIGH            
+NAV ACCUR       REQUIRED
+ACTUAL  HIGH      2.00  
                         
                         "
 `;
@@ -105,11 +105,11 @@ REQUIRED NAV ACCUR
 exports[`Page Snapshots > Airbus RAD_NAV matches snapshot 1`] = `
 "  RAD NAV               
  VOR1/FREQ              
-< --- / 113.90          
+<  --- / 113.90         
  VOR2/FREQ              
-< --- / 115.70          
+<  --- / 115.70         
  ADF1/FREQ              
-< 342                   
+<  342                  
                         
                         
                         
