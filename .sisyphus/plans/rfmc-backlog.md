@@ -68,13 +68,13 @@ Every extracted handler must have unit tests. Visual changes must have Playwrigh
 
 ## TODOs
 
-- [ ] 1. **Clean up and merge PR #7** — Remove unused `LSKId`/`FMCState` import from `navigationActions.ts`, remove duplicate `atsu_msgs` case in `useFMCStore.ts` (line 827), add 7 unit tests for `resolveLskNavigation()`. Run typecheck+tests. Merge via `gh pr merge 7 --merge --delete-branch`.
+- [x] 1. **Clean up and merge PR #7** — Remove unused `LSKId`/`FMCState` import from `navigationActions.ts`, remove duplicate `atsu_msgs` case in `useFMCStore.ts` (line 827), add 7 unit tests for `resolveLskNavigation()`. Run typecheck+tests. Merge via `gh pr merge 7 --merge --delete-branch`.
 
   **What to do**: Edit 2 files, create 1 test file, verify, commit, merge.
   **References**: `shared/src/fmc/actionHandlers/navigationActions.ts:1`, `src/store/useFMCStore.ts:827`
   **Verification**: `npm run typecheck:all && npm test -- --run`
 
-- [ ] 2. **Extract LSK special actions** — Move `des_now`, `step_plan`, `align_irs`, `erase`, `copy_active`, `print_msg`, `view_msg_*` out of `pressLSK` into `shared/src/fmc/actionHandlers/specialActions.ts`.
+- [x] 2. **Extract LSK special actions** — Move `des_now`, `step_plan`, `align_irs`, `erase`, `copy_active`, `print_msg`, `view_msg_*` out of `pressLSK` into `shared/src/fmc/actionHandlers/specialActions.ts`.
 
   **What to do**: Create `specialActions.ts` with `handleSpecialLskAction(action, state, scratchpad): FmcActionResult`. Replace inline switch cases in `pressLSK`. Write tests.
   **References**: `src/store/useFMCStore.ts:pressLSK` (lines 736-840)

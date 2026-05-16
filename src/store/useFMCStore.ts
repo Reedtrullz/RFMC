@@ -27,6 +27,7 @@ import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
 import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear } from '@shared/fmc/fmcScratchpadAdapter';
 import { resolveLskNavigation } from '@shared';
+import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -732,31 +733,23 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       handled = true;
     }
 
-    // Non-navigation special actions
+    // Special actions — delegated to shared handler
+    if (!handled) {
+      const specialResult = handleSpecialLskAction(action, state, scratchpad);
+      if (specialResult.handled) {
+        if (specialResult.patch) set(specialResult.patch as any);
+        if (specialResult.sideEffect === 'step_plan') { get().stepPlanForward(); return; }
+        if (specialResult.sideEffect === 'print_message') {
+          setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+        }
+        handled = true;
+        if (specialResult.returnEarly) return;
+      }
+    }
+
+    // Remaining inline special actions (to be migrated in follow-up tasks)
     if (!handled) {
     switch (action) {
-      case 'des_now':
-        set({ scratchpad: 'DES NOW ARMED', scratchpadError: null, msgLight: true });
-        handled = true;
-        break;
-      case 'step_plan':
-        get().stepPlanForward();
-        return;
-
-      case 'align_irs':
-        if (state.aircraft === 'AIRBUS_A320' || state.aircraft === 'BOEING_737') {
-          set({ 
-            position: { 
-              ...state.position, 
-              irsState: 'ALIGNING',
-              irsAlignmentProgress: 0,
-              irsTimeRemaining: state.demoMode ? 1 : 420 // 1s in demo, 7m in prod
-            } 
-          });
-          handled = true;
-        }
-        break;
-
       case 'set_from_to':
         if (scratchpad) {
           const [origin, dest] = scratchpad.split('/');
@@ -780,30 +773,6 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
 
-      case 'erase':
-        set({
-          pendingRoute: null,
-          pendingFlightPlan: null,
-          holdPending: null,
-          isModified: false,
-          execLit: false,
-          editWaypointIndex: null,
-          scratchpad: '',
-          scratchpadError: null,
-        });
-        handled = true;
-        break;
-      case 'copy_active':
-        set({
-          pendingFlightPlan: { ...state.flightPlan },
-          pendingRoute: { ...state.route },
-          isModified: true,
-          execLit: true,
-          scratchpad: 'COPIED TO SEC',
-          msgLight: true,
-        });
-        handled = true;
-        break;
       case 'set_vor1':
       case 'set_vor2':
       case 'set_adf1':
@@ -821,23 +790,6 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
             if (!a1.valid) { set({ scratchpadError: a1.error }); return; }
             set({ radios: { ...state.radios, adf1: scratchpad }, scratchpad: '' });
           }
-          handled = true;
-        }
-        break;
-      case 'print_msg':
-        set({ scratchpad: 'PRINTING...', msgLight: true });
-        setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' }), 1500);
-        handled = true;
-        break;
-      default:
-        if (action.startsWith('view_msg_')) {
-          const msgId = action.replace('view_msg_', '');
-          const newMessages = state.atsu.messages.map(m => m.id === msgId ? { ...m, read: true } : m);
-          set({ 
-            selectedMessageId: msgId, 
-            currentPage: 'ATSU_MSG_DETAIL',
-            atsu: { ...state.atsu, messages: newMessages }
-          });
           handled = true;
         }
         break;
