@@ -167,6 +167,9 @@ export function applyDispatchResult(
     if (effect === 'expand_active_route') (get() as any).expandActiveRoute();
     if (effect === 'step_plan') { (get() as any).stepPlanForward(); return true; }
     if (effect === 'print_message') setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+    if (effect === 'atsu_uplink_received') {
+      (get() as any).addMessage?.('RTE UPLINK', 'IMPORTANT');
+    }
   }
 
   // scratchpadMessage in success
