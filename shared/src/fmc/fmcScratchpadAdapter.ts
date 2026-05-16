@@ -13,6 +13,7 @@ import {
 } from './scratchpadEngine';
 import type { FMCState } from '../types/fmc';
 import type { FmcActionResult } from './actionHandlers/actionResult';
+import type { DispatchLskActionResult } from './actionHandlers/lskDispatcher';
 
 type ZustandSet = (partial: Partial<FMCState> | ((state: FMCState) => Partial<FMCState>)) => void;
 type ZustandGet = () => FMCState;
@@ -146,4 +147,32 @@ export function failScratchpad(set: ZustandSet, get: ZustandGet, text: string): 
   msg.text = text;
   fmcPushMessage(set, get, msg);
   set({ scratchpadError: text } as any);
+}
+
+export function applyDispatchResult(
+  set: ZustandSet,
+  get: ZustandGet,
+  result: DispatchLskActionResult
+): boolean {
+  const ar = applyFmcActionResult(set, get, result);
+  if (ar.shouldReturn) return true;
+
+  if (result.success?.patch) {
+    // Only set MOD/EXEC if the patch explicitly declares them
+    set(result.success.patch as any);
+  }
+
+  // Side effects (store-specific, cast through any)
+  for (const effect of (result as any).sideEffects || []) {
+    if (effect === 'expand_active_route') (get() as any).expandActiveRoute();
+    if (effect === 'step_plan') { (get() as any).stepPlanForward(); return true; }
+    if (effect === 'print_message') setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+  }
+
+  // scratchpadMessage in success
+  if ((result.success as any)?.scratchpadMessage) {
+    set({ scratchpadError: (result.success as any).scratchpadMessage, scratchpad: '', msgLight: true } as any);
+  }
+
+  return true;
 }

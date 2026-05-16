@@ -1,0 +1,12 @@
+{
+  "active_plan": "/Users/reidar/Projectos/RFMS/.sisyphus/plans/post-dispatcher-cleanup.md",
+  "started_at": "2026-05-16T20:33:16.130Z",
+  "session_ids": [
+    "ses_1d2f0b369ffe3me03aJdmkXlxe"
+  ],
+  "session_origins": {
+    "ses_1d2f0b369ffe3me03aJdmkXlxe": "direct"
+  },
+  "plan_name": "post-dispatcher-cleanup",
+  "agent": "atlas"
+}

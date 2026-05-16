@@ -25,7 +25,7 @@ import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
-import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult } from '@shared/fmc/fmcScratchpadAdapter';
+import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult, applyDispatchResult } from '@shared/fmc/fmcScratchpadAdapter';
 import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
@@ -737,29 +737,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         set((dispatchResult.success as any).subPage);
         handled = true;
       } else {
-        const ar = applyFmcActionResult(set as any, get as any, dispatchResult as FmcActionResult);
-        if (ar.shouldReturn) {
-          handled = true;
-        } else {
-          if (dispatchResult.success?.patch) {
-            set({ isModified: true, execLit: true, ...dispatchResult.success.patch } as any);
-          }
-
-          // Side effects
-          if (dispatchResult.sideEffects?.includes('expand_active_route')) get().expandActiveRoute();
-          if (dispatchResult.sideEffects?.includes('step_plan')) { get().stepPlanForward(); }
-          if (dispatchResult.sideEffects?.includes('print_message')) {
-            setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
-          }
-          if (dispatchResult.sideEffects?.includes('atsu_uplink_received')) {
-            get().addMessage('RTE UPLINK', 'IMPORTANT');
-            AuralAlertService.playChime();
-          }
-
-          // Handle scratchpadMessage from success
-          if (dispatchResult.success?.scratchpadMessage) {
-            set({ scratchpadError: dispatchResult.success.scratchpadMessage, scratchpad: '', msgLight: true } as any);
-          }
+        // Apply dispatch result through central helper
+        if (applyDispatchResult(set as any, get as any, dispatchResult)) {
           handled = true;
         }
       }

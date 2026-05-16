@@ -401,3 +401,23 @@ These are documented limitations and scope boundaries, not hidden completed work
 - `displayGridValidation.test.ts` — 18 tests (bounds, overflow, overlap, edge cases)
 - `rendererGrammar.test.ts` — 19 tests (8 Boeing + 11 Airbus renderer conformance)
 - Test count: 180 → 499 (from prior baseline through Waves 1-4 and this hardening pass)
+
+## Post-Dispatcher Stabilization
+
+**Commit**: `9e829bc feat(fmc): introduce typed LSK dispatcher and complete store extraction (#17)`
+**Date**: 2026-05-16
+
+### What changed
+
+| Cleanup | Detail | Status |
+|---------|--------|--------|
+| Blind MOD/EXEC removed | Store-level `set({ isModified: true, execLit: true, ...patch })` eliminated; handlers now explicitly declare MOD/EXEC in their patches | **Complete** |
+| Result application centralized | `applyDispatchResult()` added to `fmcScratchpadAdapter.ts`; side effects (`expand_active_route`, `step_plan`, `print_message`) and `scratchpadMessage` handling moved from store into shared module | **Complete** |
+| Handler MOD/EXEC audit | Verified `routeActions` (set_origin, set_dest, set_flt_no, set_route), `procedureActions` (set_sid, set_rwy, set_star, set_appr), and `takeoffActions` (set_v1, set_vr, set_v2, set_runway) explicitly set `isModified: true, execLit: true` in their patches | **Complete** |
+| Docs updated | `STATUS.md` and `IMPLEMENTATION_STATUS.md` updated to reflect dispatcher milestone and post-stabilization state | **Complete** |
+
+### Rationale
+
+Before the dispatcher merge, the store blindly set `isModified: true, execLit: true` on every successful patch, regardless of whether the action actually modified route data. This meant non-modifying actions (e.g., radio tuning, page navigation sub-state changes) would incorrectly light the EXEC indicator.
+
+With the dispatcher extraction complete, each handler is responsible for declaring its own modification intent. The store now applies patches without adding MOD/EXEC flags, letting the handlers control this behavior explicitly.
