@@ -90,7 +90,7 @@ Every extracted handler must have unit tests. Visual changes must have Playwrigh
   **Must NOT do**: Do not mutate active route before EXEC.
   **References**: `src/store/useFMCStore.ts` route-related cases
 
-- [ ] 5. **Canonicalize EXEC lifecycle** — Stop scattering `isModified`/`execLit`/`pendingRoute`/`pendingFlightPlan`. Use `fmcModificationAdapter.ts` helpers.
+- [x] 5. **Canonicalize EXEC lifecycle** — Stop scattering `isModified`/`execLit`/`pendingRoute`/`pendingFlightPlan`. Use `fmcModificationAdapter.ts` helpers.
 
   **What to do**: Add `beginModification()`, `queueRouteChange()`, `executeModification()`, `cancelModification()` helpers. Update `pressEXEC()`. Add tests for EXEC lifecycle.
   **References**: `shared/src/fmc/fmcModificationAdapter.ts`, `src/store/fmcStore.ts:pressExec()`

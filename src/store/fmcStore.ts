@@ -7,10 +7,9 @@ import { buildDisplayData }      from '@shared/fmc/displayBuilder';
 // ─────────────────────────────────────────────────────────────────────────────
 // fmcStore – thin Zustand shell around the shared FMC engine
 //
-// HOLD EXEC promotion (Step 4 of CI-heal plan):
-//   When pressExec is called and holdPending.fix is truthy, promote
-//   holdPending → hold and clear holdPending so the ND model can find
-//   state.hold.fix and render nd-hold-overlay.
+// EXEC lifecycle: pressExec promotes all pending changes (hold, route,
+// flightPlan) into active state and clears isModified/execLit in a single
+// atomic update so the display and ND model see consistent state.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface FMCStoreActions {
@@ -33,22 +32,27 @@ export const fmcStore = create<FMCStore>((set, get) => ({
 
   pressExec: () => {
     const state = get() as FMCState;
+    const updates: Partial<FMCState> = {};
 
-    // Promote pending hold into committed hold so ND can render the overlay.
     if (state.holdPending?.fix) {
-      const updates: Partial<FMCState> = {
-        hold:        state.holdPending as HoldEntry,
-        holdPending: null,
-        isModified:  false,
-        execLit:     false,
-      };
-      set(updates as Partial<FMCStore>);
-      return;
+      updates.hold = state.holdPending as HoldEntry;
+      updates.holdPending = null;
+    }
+    if (state.pendingRoute) {
+      updates.route = { ...state.pendingRoute };
+      updates.pendingRoute = null;
+    }
+    if (state.pendingFlightPlan) {
+      updates.flightPlan = { ...state.pendingFlightPlan };
+      updates.pendingFlightPlan = null;
+    }
+    if (state.isModified) {
+      updates.isModified = false;
+      updates.execLit = false;
     }
 
-    // General modification commit path
-    if (state.isModified) {
-      set({ isModified: false, execLit: false } as Partial<FMCStore>);
+    if (Object.keys(updates).length > 0) {
+      set(updates as Partial<FMCStore>);
     }
   },
 
