@@ -129,7 +129,9 @@ export function CockpitLayout() {
       <main className="cockpit-main">
         <FirstRunGuidance />
         {layoutMode !== 'full-deck' && (
-          <ModeHelpCard mode={layoutMode} onResetLayout={restoreRecommendedLayout} />
+          <div className="mode-help-sidebar">
+            <ModeHelpCard mode={layoutMode} onResetLayout={restoreRecommendedLayout} />
+          </div>
         )}
         <div className="cockpit-main__stage">
           {focusedPanel && isInstrumentPanelId(focusedPanel) ? (
@@ -152,7 +154,9 @@ export function CockpitLayout() {
             </>
           )}
         </div>
-        <PanelTray hiddenPanels={hiddenPanels} onShow={togglePanelHidden} />
+        <div className="panel-tray-dock">
+          <PanelTray hiddenPanels={hiddenPanels} onShow={togglePanelHidden} />
+        </div>
       </main>
       <KeyboardHelpOverlay />
     </div>
