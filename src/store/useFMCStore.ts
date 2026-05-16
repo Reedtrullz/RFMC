@@ -25,6 +25,7 @@ import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
+import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear } from '@shared/fmc/fmcScratchpadAdapter';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -521,6 +522,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       pageHistory: [...pageHistory, currentPage],
       scratchpad: '',
       scratchpadError: null,
+      scratchpadState: { buffer: '', message: null, messageQueue: [], history: [] },
       takeoffRefPageIndex: page === 'TAKEOFF_REF' ? 0 : get().takeoffRefPageIndex,
     });
   },
@@ -572,7 +574,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Clear
     else if (key === 'CLR') {
       if (scratchpad.length > 0) {
-        set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
+        fmcClrKey(set, get);
       } else if (get().isModified) {
         set({
           pendingRoute: null,
@@ -580,16 +582,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           holdPending: null,
           isModified: false,
           execLit: false,
-          scratchpad: '',
-          scratchpadError: null,
         });
+        fmcClearBuffer(set, get);
       }
       handled = true;
     }
 
     else if (key === 'DEL') {
       if (scratchpad.length > 0) {
-        set({ scratchpad: scratchpad.slice(0, -1), scratchpadError: null });
+        fmcDelKey(set, get);
       } else if (currentPage === 'LEGS') {
         set({ deleteMode: !get().deleteMode, scratchpadError: null });
       }
@@ -666,7 +667,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         DOT: '.', PLUS_MINUS: '+/-', SLASH: '/', SPACE: ' ',
       };
       const char = charMap[key] || key;
-      set({ scratchpad: scratchpad + char, scratchpadError: null });
+      fmcTypeChar(set, get, char);
       handled = true;
     }
 

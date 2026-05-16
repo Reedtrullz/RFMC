@@ -4,6 +4,7 @@ export { DisplayColor, DisplaySemantic };
 import type { NDMapMode } from '../fmc/ndTypes';
 import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
 import type { TrainingScenarioEngine } from '../training/scenarioEngine';
+import type { ScratchpadState } from '../fmc/scratchpadEngine';
 
 export interface TCASTarget {
   id: string;
@@ -412,6 +413,7 @@ export interface FMCState {
   pageHistory: PageType[];
   scratchpad: string;
   scratchpadError: string | null;
+  scratchpadState?: ScratchpadState;     // canonical scratchpad engine state (transitional — will become required)
   demoMode: boolean;
   
   ident: IdentData;

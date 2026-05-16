@@ -168,6 +168,7 @@ export * from './fmc/routeModel';
 export * from './fmc/routeModification';
 export * from './fmc/fmcModificationAdapter';
 export * from './fmc/scratchpadEngine';
+export * from './fmc/fmcScratchpadAdapter';
 export * from './fmc/displayGridValidation';
 
 // New FMC engine modules introduced in feat/canvas-renderer
