@@ -1,0 +1,23 @@
+{
+  "active_plan": "/Users/reidar/Projectos/RFMS/.sisyphus/plans/rfmc-backlog.md",
+  "started_at": "2026-05-16T12:08:28.498Z",
+  "session_ids": [
+    "ses_1d2f0b369ffe3me03aJdmkXlxe"
+  ],
+  "session_origins": {
+    "ses_1d2f0b369ffe3me03aJdmkXlxe": "direct"
+  },
+  "plan_name": "rfmc-backlog",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "**Clean up and merge PR #7** — Remove unused `LSKId`/`FMCState` import from `navigationActions.ts`, remove duplicate `atsu_msgs` case in `useFMCStore.ts` (line 827), add 7 unit tests for `resolveLskNavigation()`. Run typecheck+tests. Merge via `gh pr merge 7 --merge --delete-branch`.",
+      "session_id": "ses_1cf4ec913ffegUgEIy5w0kKv1R",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-16T12:10:35.581Z"
+    }
+  }
+}
