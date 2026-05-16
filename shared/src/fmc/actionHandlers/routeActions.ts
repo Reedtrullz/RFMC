@@ -1,6 +1,26 @@
 import type { FMCState } from '../../types/fmc';
-import { isValidICAO } from '../validation';
+import { isValidICAO, isValidFlightNumber, isValidWaypoint } from '../validation';
+import { parseRouteString } from '../flightPlanParser';
 import type { FmcActionResult } from './actionResult';
+
+// ── Dispatcher ──────────────────────────────────────────────────────────────
+
+export function handleRouteAction(
+  action: string,
+  state: FMCState,
+  scratchpad: string
+): FmcActionResult & { sideEffect?: string } {
+  switch (action) {
+    case 'set_origin':     return handleSetOrigin(state, scratchpad);
+    case 'set_dest':       return handleSetDest(state, scratchpad);
+    case 'set_flt_no':     return handleSetFltNo(state, scratchpad);
+    case 'set_route':      return handleSetRoute(state, scratchpad);
+    case 'set_direct_to':  return handleSetDirectTo(state, scratchpad);
+    default:               return { handled: false };
+  }
+}
+
+// ── Existing ────────────────────────────────────────────────────────────────
 
 export function handleSetFromTo(
   state: FMCState,
@@ -51,6 +71,122 @@ export function handleSetFromTo(
         },
       },
       sideEffect: 'expand_active_route',
+    },
+  };
+}
+
+// ── Individual handlers ─────────────────────────────────────────────────────
+
+function handleSetOrigin(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const result = isValidICAO(scratchpad.toUpperCase());
+  if (!result.valid) return {
+    handled: true,
+    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_origin' },
+  };
+  const route = state.pendingRoute ?? state.route;
+  const fp = state.pendingFlightPlan ?? state.flightPlan;
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      sideEffect: 'expand_active_route',
+      patch: {
+        pendingRoute: { ...route, origin: scratchpad.toUpperCase() },
+        pendingFlightPlan: { ...fp, origin: scratchpad.toUpperCase() },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetDest(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const result = isValidICAO(scratchpad.toUpperCase());
+  if (!result.valid) return {
+    handled: true,
+    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_dest' },
+  };
+  const route = state.pendingRoute ?? state.route;
+  const fp = state.pendingFlightPlan ?? state.flightPlan;
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      sideEffect: 'expand_active_route',
+      patch: {
+        pendingRoute: { ...route, destination: scratchpad.toUpperCase() },
+        pendingFlightPlan: { ...fp, destination: scratchpad.toUpperCase() },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetFltNo(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const result = isValidFlightNumber(scratchpad);
+  if (!result.valid) return {
+    handled: true,
+    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_flt_no' },
+  };
+  const route = state.pendingRoute ?? state.route;
+  const fp = state.pendingFlightPlan ?? state.flightPlan;
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        pendingRoute: { ...route, flightNumber: scratchpad.toUpperCase() },
+        pendingFlightPlan: { ...fp, flightNumber: scratchpad.toUpperCase() },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetRoute(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const routeStr = scratchpad.toUpperCase();
+  const parsed = parseRouteString(routeStr);
+  const route = state.pendingRoute ?? state.route;
+  const fp = state.pendingFlightPlan ?? state.flightPlan;
+  const waypoints = parsed.waypoints.length > 0
+    ? parsed.waypoints
+    : [
+        { ident: parsed.origin, discontinuity: false },
+        { ident: parsed.destination, discontinuity: false },
+      ].filter(w => w.ident);
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        pendingRoute: { ...route, routeString: routeStr },
+        pendingFlightPlan: { ...fp, waypoints, route: routeStr },
+        legsPageCount: Math.max(1, Math.ceil(waypoints.length / 5)),
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetDirectTo(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const result = isValidWaypoint(scratchpad.toUpperCase());
+  if (!result.valid) return {
+    handled: true,
+    failure: { code: 'NOT_IN_DATABASE' as const, text: result.error || 'NOT IN DATABASE', source: 'routeActions.set_direct_to' },
+  };
+  const route = state.pendingRoute ?? state.route;
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        pendingRoute: { ...route, directTo: scratchpad.toUpperCase() },
+        isModified: true, execLit: true,
+      } as any,
     },
   };
 }
