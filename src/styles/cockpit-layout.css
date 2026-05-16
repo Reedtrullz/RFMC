@@ -99,31 +99,13 @@
   grid-template-rows: 1fr;
 }
 
-/* ── Slot placement ── */
+/* ── Slot placement (explicit classes, not child-order hacks) ── */
 
-.cockpit-stage--fmc-focus .cockpit-instrument { grid-area: cduslot; }
-.cockpit-stage--cdc-ops .cockpit-instrument { grid-area: cduslot; }
-
-.cockpit-stage--navigation .cockpit-instrument:first-child { grid-area: ndslot; }
-.cockpit-stage--navigation .cockpit-instrument:last-child { grid-area: cduslot; }
-
-.cockpit-stage--automation .cockpit-mcp-slot { grid-area: mcpslot; align-self: center; }
-.cockpit-stage--approach .cockpit-mcp-slot { grid-area: mcpslot; align-self: center; }
-.cockpit-stage--full-deck .cockpit-mcp-slot { grid-area: mcpslot; align-self: center; }
-
-.cockpit-stage--automation .cockpit-pfd-nd-displays,
-.cockpit-stage--approach .cockpit-pfd-nd-displays,
-.cockpit-stage--full-deck .cockpit-pfd-nd-displays {
-  display: contents;
-}
-.cockpit-stage--automation .cockpit-pfd-nd-displays > :first-child { grid-area: pfdslot; }
-.cockpit-stage--automation .cockpit-pfd-nd-displays > :last-child { grid-area: ndslot; }
-.cockpit-stage--approach .cockpit-pfd-nd-displays > :first-child { grid-area: pfdslot; }
-.cockpit-stage--approach .cockpit-pfd-nd-displays > :last-child { grid-area: ndslot; }
-.cockpit-stage--full-deck .cockpit-pfd-nd-displays > :first-child { grid-area: pfdslot; }
-.cockpit-stage--full-deck .cockpit-pfd-nd-displays > :last-child { grid-area: ndslot; }
-
-.cockpit-stage--full-deck > .cockpit-instrument:last-child { grid-area: cduslot; }
+.cockpit-slot--cdu { grid-area: cduslot; }
+.cockpit-slot--nd { grid-area: ndslot; }
+.cockpit-slot--pfd { grid-area: pfdslot; }
+.cockpit-slot--mcp,
+.cockpit-mcp-slot { grid-area: mcpslot; align-self: center; }
 
 /* ── Instrument container ── */
 
@@ -234,4 +216,19 @@
 @media (max-width: 768px) {
   .cockpit-main { grid-template-columns: 1fr; }
   .panel-tray-dock { display: none; }
+}
+
+/* ── Help card: static when in sidebar ── */
+.mode-help-sidebar .mode-help-card {
+  position: static;
+  left: auto;
+  top: auto;
+  width: 100%;
+  max-height: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 0;
+  padding: 4px 0;
 }

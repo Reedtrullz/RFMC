@@ -181,54 +181,46 @@ function renderLayout(
   }
 
   switch (mode) {
-    case 'fmc-focus':
+      case 'fmc-focus':
       return (
         <CockpitLayoutGrid preset="singleInstrumentFocus" modeClass="cockpit-stage--fmc-focus">
-          {renderInstrumentPanel('cdu', controls)}
+          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
         </CockpitLayoutGrid>
       );
     
-    case 'navigation':
+      case 'navigation':
       return (
         <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--navigation">
-          {renderInstrumentPanel('nd', controls)}
-          {renderInstrumentPanel('cdu', controls)}
+          {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
         </CockpitLayoutGrid>
       );
 
     case 'automation':
       return (
         <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--automation">
-          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-automation__mcp' })}
-          <div className="cockpit-pfd-nd-displays cockpit-automation__displays">
-            {renderInstrumentPanel('pfd', controls)}
-            {renderInstrumentPanel('nd', controls)}
-          </div>
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
+          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
+          {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
         </CockpitLayoutGrid>
       );
 
     case 'approach':
       return (
         <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--approach">
-          <div className="cockpit-pfd-nd-displays cockpit-approach__displays">
-            {renderInstrumentPanel('pfd', controls)}
-            {renderInstrumentPanel('nd', controls)}
-          </div>
-          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-approach__mcp' })}
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
+          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
+          {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
         </CockpitLayoutGrid>
       );
 
     case 'full-deck':
       return (
         <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
-          {renderInstrumentPanel('autoflight', controls, { 
-            className: 'cockpit-mcp-slot cockpit-full-deck__mcp'
-          })}
-          <div className="cockpit-full-deck__instruments">
-            {renderInstrumentPanel('pfd', controls)}
-            {renderInstrumentPanel('nd', controls)}
-            {renderInstrumentPanel('cdu', controls)}
-          </div>
+          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
+          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
+          {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
         </CockpitLayoutGrid>
       );
 
