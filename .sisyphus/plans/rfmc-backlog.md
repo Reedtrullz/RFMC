@@ -79,7 +79,7 @@ Every extracted handler must have unit tests. Visual changes must have Playwrigh
   **What to do**: Create `specialActions.ts` with `handleSpecialLskAction(action, state, scratchpad): FmcActionResult`. Replace inline switch cases in `pressLSK`. Write tests.
   **References**: `src/store/useFMCStore.ts:pressLSK` (lines 736-840)
 
-- [ ] 3. **Extract radio tuning actions** — Move `set_vor1`, `set_vor2`, `set_adf1` into `shared/src/fmc/actionHandlers/radioActions.ts`.
+- [x] 3. **Extract radio tuning actions** — Move `set_vor1`, `set_vor2`, `set_adf1` into `shared/src/fmc/actionHandlers/radioActions.ts`.
 
   **What to do**: Create `radioActions.ts` with pure frequency validation. Use scratchpad engine for errors. Replace inline cases.
   **References**: `src/store/useFMCStore.ts` radio cases

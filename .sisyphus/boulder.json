@@ -27,6 +27,15 @@
       "agent": "Sisyphus-Junior",
       "category": "deep",
       "updated_at": "2026-05-16T12:22:05.891Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "**Extract route modification actions** — Move `set_from_to`, `set_origin`, `set_dest`, `set_flt_no`, `set_route`, `set_runway`, `set_direct_to` into `shared/src/fmc/actionHandlers/routeActions.ts`. LEGS waypoint edits into separate handler.",
+      "session_id": "ses_1cf413a06ffeQWre2QMWd15HYV",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-16T12:32:17.838Z"
     }
   }
 }

@@ -25,9 +25,10 @@ import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
-import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear } from '@shared/fmc/fmcScratchpadAdapter';
+import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage } from '@shared/fmc/fmcScratchpadAdapter';
 import { resolveLskNavigation } from '@shared';
 import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
+import { handleRadioLskAction } from '@shared/fmc/actionHandlers/radioActions';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -749,8 +750,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Remaining inline special actions (to be migrated in follow-up tasks)
     if (!handled) {
-    switch (action) {
-      case 'set_from_to':
+      if (action === 'set_from_to') {
         if (scratchpad) {
           const [origin, dest] = scratchpad.split('/');
           if (origin && dest) {
@@ -771,29 +771,18 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
             return;
           }
         }
-        break;
-
-      case 'set_vor1':
-      case 'set_vor2':
-      case 'set_adf1':
-        if (scratchpad) {
-          if (action === 'set_vor1') {
-            const v1 = isValidFrequency(scratchpad);
-            if (!v1.valid) { set({ scratchpadError: v1.error }); return; }
-            set({ radios: { ...state.radios, vor1: parseFloat(scratchpad).toFixed(2) }, scratchpad: '' });
-          } else if (action === 'set_vor2') {
-            const v2 = isValidFrequency(scratchpad);
-            if (!v2.valid) { set({ scratchpadError: v2.error }); return; }
-            set({ radios: { ...state.radios, vor2: parseFloat(scratchpad).toFixed(2) }, scratchpad: '' });
-          } else if (action === 'set_adf1') {
-            const a1 = isValidADF(scratchpad);
-            if (!a1.valid) { set({ scratchpadError: a1.error }); return; }
-            set({ radios: { ...state.radios, adf1: scratchpad }, scratchpad: '' });
-          }
-          handled = true;
-        }
-        break;
+      }
     }
+
+    // Radio tuning actions — delegated to shared handler
+    if (!handled) {
+      const radioResult = handleRadioLskAction(action, state, scratchpad);
+      if (radioResult.handled) {
+        if (radioResult.patch) set(radioResult.patch as any);
+        if (radioResult.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as any);
+        if (radioResult.message) fmcPushMessage(set as any, get as any, radioResult.message);
+        handled = true;
+      }
     }
 
     if (!handled && state.currentPage === 'LEGS') {
