@@ -809,7 +809,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (!handled) {
       const perfResult = handlePerformanceAction(action, state, scratchpad);
       if (perfResult.handled) {
-        if (perfResult.scratchpadError) { set({ scratchpadError: perfResult.scratchpadError }); handled = true; }
+        if (perfResult.scratchpadError) { fmcPushMessage(set as any, get as any, { id: 'auto', text: perfResult.scratchpadError, priority: 5, source: 'validation', clearsOnInput: false, clearsOnExec: true, clearsOnPageChange: true, createdAt: Date.now() }); set({ scratchpadError: perfResult.scratchpadError }); handled = true; }
         else {
           if (perfResult.patch) Object.assign(updates, perfResult.patch);
           handled = true;
