@@ -206,9 +206,11 @@ describe('FMC Store', () => {
   });
 
   it('rejects V-speeds that violate V1 < VR < V2', () => {
-    const store = useFMCStore.getState();
+    useFMCStore.getState().resetState();
     useFMCStore.setState({
       currentPage: 'TAKEOFF_REF',
+      scratchpadError: null,
+      scratchpadState: { buffer: '', message: null, messageQueue: [], history: [] },
       takeoff: {
         runway: '',
         toMode: 'TO',
@@ -222,8 +224,9 @@ describe('FMC Store', () => {
         windSpeed: 0,
         qnh: 0,
       },
-    });
+    } as any);
 
+    const store = useFMCStore.getState();
     for (const key of '150') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('R', 1);
 
