@@ -26,6 +26,7 @@ import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
 import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear } from '@shared/fmc/fmcScratchpadAdapter';
+import { resolveLskNavigation } from '@shared';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -722,42 +723,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     let handled = false;
     let scratchpadMessage = '';
 
-    // Handle page navigation actions
+    // Handle page navigation actions via shared handler
+    const navAction = resolveLskNavigation(action);
+    if (navAction) {
+      if (navAction.targetPage) { state.setPage(navAction.targetPage); }
+      else if (navAction.pressKey) { state.pressKey(navAction.pressKey as any); }
+      else if (navAction.setSubPage) { set(navAction.setSubPage); }
+      handled = true;
+    }
+
+    // Non-navigation special actions
+    if (!handled) {
     switch (action) {
-      case 'pos_init': state.setPage('POS_INIT'); handled = true; break;
-      case 'perf_init': state.setPage('PERF_INIT'); handled = true; break;
-      case 'rte': state.setPage('RTE'); handled = true; break;
-      case 'dep_arr': state.setPage('DEP_ARR'); handled = true; break;
-      case 'legs': state.setPage('LEGS'); handled = true; break;
-      case 'thrust_lim': state.setPage('THRUST_LIM'); handled = true; break;
-      case 'takeoff_ref': state.setPage('TAKEOFF_REF'); handled = true; break;
-      case 'menu': state.setPage('MENU'); handled = true; break;
-      case 'ident': state.setPage('IDENT'); handled = true; break;
-      case 'nav_data': state.setPage('NAV_DATA'); handled = true; break;
-      case 'next_page': state.pressKey('NEXT_PAGE'); handled = true; break;
-      case 'prev_page': state.pressKey('PREV_PAGE'); handled = true; break;
-      case 'dep_page': set({ depArrSubPage: 'DEP' }); handled = true; break;
-      case 'arr_page': set({ depArrSubPage: 'ARR' }); handled = true; break;
-      case 'atc': handled = true; break;
       case 'des_now':
         set({ scratchpad: 'DES NOW ARMED', scratchpadError: null, msgLight: true });
         handled = true;
         break;
-      // Airbus LSK navigation
-      case 'init_a': state.setPage('INIT_A'); handled = true; break;
-      case 'init_b': state.setPage('INIT_B'); handled = true; break;
-      case 'perf_to': state.setPage('PERF_TAKEOFF'); handled = true; break;
-      case 'perf_appr': state.setPage('PERF_APPR'); handled = true; break;
-      case 'f_pln': state.setPage('F_PLN'); handled = true; break;
-      case 'fuel_pred': state.setPage('FUEL_PRED'); handled = true; break;
-      case 'sec_fpln': state.setPage('SEC_FPLN'); handled = true; break;
-      case 'rad_nav': state.setPage('RAD_NAV'); handled = true; break;
-      case 'data_index': state.setPage('DATA_INDEX'); handled = true; break;
-      case 'mcdu_menu': state.setPage('MCDU_MENU'); handled = true; break;
-      case 'atsu': state.setPage('ATSU'); handled = true; break;
-      case 'fpln_dep_arr': state.setPage('DEP_ARR_A'); handled = true; break;
-      case 'fpln_next': state.pressKey('NEXT_PAGE'); handled = true; break;
-      case 'fpln_prev': state.pressKey('PREV_PAGE'); handled = true; break;
       case 'step_plan':
         get().stepPlanForward();
         return;
@@ -861,6 +842,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           handled = true;
         }
         break;
+    }
     }
 
     if (!handled && state.currentPage === 'LEGS') {
