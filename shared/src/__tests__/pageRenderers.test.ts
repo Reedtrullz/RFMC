@@ -241,7 +241,14 @@ describe('Airbus Page Renderers', () => {
   it('renders PROG page with Nav Accuracy', () => {
     const renderer = getAirbusPageRenderer('PROG_A');
     const data = renderer!(airbusState);
-    expect(data.lines.some(l => l.text.includes('NAV ACCUR'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('HIGH'))).toBe(true);
+    const segments = (data as any).segments || data.lines;
+    const hasNavAccur = Array.isArray(segments) 
+      ? segments.some((s: any) => (s.text || '').includes('NAV ACCUR'))
+      : segments.some((l: any) => (l.text || '').includes('NAV ACCUR'));
+    const hasHigh = Array.isArray(segments)
+      ? segments.some((s: any) => (s.text || '').includes('HIGH'))
+      : segments.some((l: any) => (l.text || '').includes('HIGH'));
+    expect(hasNavAccur).toBe(true);
+    expect(hasHigh).toBe(true);
   });
 });
