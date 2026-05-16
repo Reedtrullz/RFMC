@@ -30,10 +30,12 @@ import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { resolveLskNavigation } from '@shared';
 import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
 import { handleRadioLskAction } from '@shared/fmc/actionHandlers/radioActions';
-import { handleSetFromTo } from '@shared/fmc/actionHandlers/routeActions';
+import { handleSetFromTo, handleRouteAction } from '@shared/fmc/actionHandlers/routeActions';
 import { handleLegWpAction } from '@shared/fmc/actionHandlers/legActions';
 import { handlePerformanceAction } from '@shared/fmc/actionHandlers/performanceActions';
 import { handleTakeoffAction } from '@shared/fmc/actionHandlers/takeoffActions';
+import { handleProcedureAction } from '@shared/fmc/actionHandlers/procedureActions';
+import { handleLandingAction } from '@shared/fmc/actionHandlers/landingActions';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -837,6 +839,41 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
+    // Route data actions — delegated to shared handler
+    if (!handled) {
+      const routeResult = handleRouteAction(action, state, scratchpad);
+      if (routeResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, routeResult as FmcActionResult);
+        if (ar.shouldReturn) return;
+        if (routeResult.success?.patch) set(routeResult.success.patch as any);
+        if (routeResult.success?.sideEffect === 'expand_active_route') get().expandActiveRoute();
+        handled = true;
+      }
+    }
+
+    // Procedure actions — delegated to shared handler
+    if (!handled) {
+      const procResult = handleProcedureAction(action, state, scratchpad);
+      if (procResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, procResult as FmcActionResult);
+        if (ar.shouldReturn) return;
+        if (procResult.success?.patch) set(procResult.success.patch as any);
+        if (procResult.success?.sideEffect === 'expand_active_route') get().expandActiveRoute();
+        handled = true;
+      }
+    }
+
+    // Landing/approach actions — delegated to shared handler
+    if (!handled) {
+      const landResult = handleLandingAction(action, state, scratchpad) as FmcActionResult;
+      if (landResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, landResult);
+        if (ar.shouldReturn) return;
+        if (landResult.success?.patch) set(landResult.success.patch as any);
+        handled = true;
+      }
+    }
+
     if (!handled) {
       switch (action) {
         case 'set_ref_airport':
@@ -849,72 +886,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       case 'set_gate':
         if (scratchpad) updates.position = { ...state.position, gate: scratchpad.toUpperCase() };
         break;
-      case 'set_origin':
-        if (scratchpad) {
-          const result = isValidICAO(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const route = state.pendingRoute ?? state.route;
-          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          set({ 
-            pendingRoute: { ...route, origin: scratchpad.toUpperCase() },
-            pendingFlightPlan: { ...flightPlan, origin: scratchpad.toUpperCase() },
-            isModified: true,
-            execLit: true,
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
-      case 'set_dest':
-        if (scratchpad) {
-          const result = isValidICAO(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const route = state.pendingRoute ?? state.route;
-          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          set({ 
-            pendingRoute: { ...route, destination: scratchpad.toUpperCase() },
-            pendingFlightPlan: { ...flightPlan, destination: scratchpad.toUpperCase() },
-            isModified: true,
-            execLit: true,
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
-      case 'set_flt_no':
-        if (scratchpad) {
-          const result = isValidFlightNumber(scratchpad);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const route = state.pendingRoute ?? state.route;
-          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          updates.pendingRoute = { ...route, flightNumber: scratchpad.toUpperCase() };
-          updates.pendingFlightPlan = { ...flightPlan, flightNumber: scratchpad.toUpperCase() };
-        }
-        break;
-      case 'set_route': {
-        if (scratchpad) {
-          const routeStr = scratchpad.toUpperCase();
-          const parsed = parseRouteString(routeStr);
-          const route = state.pendingRoute ?? state.route;
-          const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-          const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
-          updates.pendingRoute = { ...route, routeString: routeStr };
-          updates.pendingFlightPlan = { ...flightPlan, waypoints, route: routeStr };
-          updates.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
-        }
-        break;
-      }
-      case 'set_direct_to': {
-        if (scratchpad) {
-          const result = isValidWaypoint(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          const route = state.pendingRoute ?? state.route;
-          updates.pendingRoute = { ...route, directTo: scratchpad.toUpperCase() };
-        }
-        break;
-      }
+      // set_origin, set_dest, set_flt_no, set_route, set_direct_to — delegated to handleRouteAction
       case 'set_clb_wind':
       case 'set_crz_wind':
       case 'set_des_wind':
@@ -941,69 +913,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           updates.performance = { ...state.performance, isaDev: parseInt(input) || 0 };
         }
         break;
-      case 'set_qnh': {
-        if (scratchpad) {
-          const qnh = parseFloat(scratchpad);
-          if (isNaN(qnh) || qnh < 900 || qnh > 1100) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, qnh: qnh * 100 };
-        }
-        break;
-      }
-      case 'set_landing_runway': {
-        if (scratchpad) {
-          if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          const runway = scratchpad.toUpperCase();
-          updates.landing = { ...state.landing, runway };
-          updates.route = { ...state.route, runway };
-        }
-        break;
-      }
-      case 'set_landing_flaps': {
-        if (scratchpad) {
-          const flaps = scratchpad.toUpperCase();
-          if (!['15', '30', '40'].includes(flaps)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.landing = { ...state.landing, flaps };
-        }
-        break;
-      }
-
-      case 'set_landing_vref': {
-        if (scratchpad) {
-          const vref = parseInt(scratchpad, 10);
-          if (isNaN(vref) || vref < 80 || vref > 200) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.landing = { ...state.landing, vref };
-        }
-        break;
-      }
-      case 'set_ils_frequency': {
-        if (scratchpad) {
-          const frequency = parseFloat(scratchpad);
-          if (isNaN(frequency) || frequency < 108.1 || frequency > 111.95) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.landing = { ...state.landing, ilsFrequency: frequency.toFixed(2) };
-        }
-        break;
-      }
-      case 'set_ils_course': {
-        if (scratchpad) {
-          const course = parseInt(scratchpad, 10);
-          if (isNaN(course) || course < 1 || course > 360) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
-          updates.landing = { ...state.landing, course };
-        }
-        break;
-      }
-      case 'set_flaps': {
-        if (scratchpad) {
-          const flaps = scratchpad.toUpperCase();
-          const takeoff = { ...state.takeoff, flaps };
-          // Trigger speed recalc
-          const speeds = PerformanceEngine.calculateTakeoffSpeeds(state.performance.grossWeight || 140000, flaps);
-          takeoff.suggestedV1 = speeds.v1;
-          takeoff.suggestedVr = speeds.vr;
-          takeoff.suggestedV2 = speeds.v2;
-          updates.takeoff = takeoff;
-        }
-        break;
-      }
+      // set_qnh, set_landing_*, set_flaps — delegated to handleLandingAction
 
       // Airbus data entry
       case 'set_from_to': {
@@ -1056,53 +966,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_sid':
-        if (scratchpad) {
-          const route = state.pendingRoute ?? state.route;
-          set({ 
-            pendingRoute: { ...route, sid: scratchpad.toUpperCase() },
-            isModified: true,
-            execLit: true,
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
-      case 'set_rwy': {
-        if (scratchpad) {
-          if (scratchpad.length < 2) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          const route = state.pendingRoute ?? state.route;
-          updates.pendingRoute = { ...route, runway: scratchpad.toUpperCase() };
-        }
-        break;
-      }
-      case 'set_star':
-        if (scratchpad) {
-          const route = state.pendingRoute ?? state.route;
-          set({ 
-            pendingRoute: { ...route, star: scratchpad.toUpperCase() },
-            isModified: true,
-            execLit: true,
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
-      case 'set_appr':
-        if (scratchpad) {
-          const route = state.pendingRoute ?? state.route;
-          set({ 
-            pendingRoute: { ...route, approach: scratchpad.toUpperCase() },
-            isModified: true,
-            execLit: true,
-            scratchpad: ''
-          });
-          get().expandActiveRoute();
-          handled = true;
-        }
-        break;
+      // set_sid, set_rwy, set_star, set_appr — delegated to handleProcedureAction
+
 
       case 'set_flex': {
         if (scratchpad) {
