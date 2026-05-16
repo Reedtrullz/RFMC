@@ -29,6 +29,8 @@ import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcEx
 import { resolveLskNavigation } from '@shared';
 import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
 import { handleRadioLskAction } from '@shared/fmc/actionHandlers/radioActions';
+import { handleSetFromTo } from '@shared/fmc/actionHandlers/routeActions';
+import { handleLegWpAction } from '@shared/fmc/actionHandlers/legActions';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -748,29 +750,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-    // Remaining inline special actions (to be migrated in follow-up tasks)
-    if (!handled) {
-      if (action === 'set_from_to') {
-        if (scratchpad) {
-          const [origin, dest] = scratchpad.split('/');
-          if (origin && dest) {
-            const oRes = isValidICAO(origin.toUpperCase());
-            const dRes = isValidICAO(dest.toUpperCase());
-            if (!oRes.valid || !dRes.valid) { set({ scratchpadError: 'INVALID FORMAT' }); return; }
-            set({
-              pendingRoute: { ...state.route, origin: origin.toUpperCase(), destination: dest.toUpperCase() },
-              pendingFlightPlan: { ...state.flightPlan, origin: origin.toUpperCase(), destination: dest.toUpperCase() },
-              isModified: true,
-              execLit: true,
-              scratchpad: ''
-            });
-            get().expandActiveRoute();
-            handled = true;
-          } else {
-            set({ scratchpadError: 'INVALID FORMAT' });
-            return;
-          }
+    // Route actions — delegated to shared handler
+    if (!handled && action === 'set_from_to') {
+      const routeResult = handleSetFromTo(state, scratchpad);
+      if (routeResult.handled) {
+        if (routeResult.scratchpadError) {
+          set({ scratchpadError: routeResult.scratchpadError });
+          return;
         }
+        if (routeResult.patch) set(routeResult.patch as any);
+        if (routeResult.sideEffect === 'expand_active_route') get().expandActiveRoute();
+        handled = true;
       }
     }
 
@@ -785,20 +775,26 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-    if (!handled && state.currentPage === 'LEGS') {
+    // LEGS waypoint editing — partially delegated to shared handler
+    if (!handled) {
+      const legResult = handleLegWpAction(action, state, scratchpad);
+      if (legResult.handled) {
+        if (legResult.patch) set(legResult.patch as any);
+        handled = true;
+      }
+    }
+
+    // LEGS waypoint side effects — array mutations must stay in store
+    if (state.currentPage === 'LEGS') {
       const wpMatch = action.match(/^(edit_wp|delete_wp|insert_wp)_(\d+)$/);
       if (wpMatch) {
         const wpAction = wpMatch[1];
-        const wpIndex = parseInt(wpMatch[2], 10);
+        const wpIdx = parseInt(wpMatch[2], 10);
         if (wpAction === 'delete_wp' && state.deleteMode) {
-          state.deleteWaypoint(wpIndex);
+          state.deleteWaypoint(wpIdx);
           handled = true;
-        } else if (wpAction === 'edit_wp') {
-          if (scratchpad) {
-            state.insertWaypoint(wpIndex, scratchpad);
-          } else {
-            set({ editWaypointIndex: wpIndex, scratchpad: '', scratchpadError: null });
-          }
+        } else if (wpAction === 'edit_wp' && scratchpad) {
+          state.insertWaypoint(wpIdx, scratchpad);
           handled = true;
         }
       }

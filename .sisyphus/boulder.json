@@ -36,6 +36,15 @@
       "agent": "Sisyphus-Junior",
       "category": "deep",
       "updated_at": "2026-05-16T12:32:17.838Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "**Canonicalize EXEC lifecycle** — Stop scattering `isModified`/`execLit`/`pendingRoute`/`pendingFlightPlan`. Use `fmcModificationAdapter.ts` helpers.",
+      "session_id": "ses_1cf38176bffeIQaInEo50AV1JX",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-16T12:42:58.674Z"
     }
   }
 }

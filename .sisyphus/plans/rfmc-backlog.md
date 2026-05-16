@@ -84,7 +84,7 @@ Every extracted handler must have unit tests. Visual changes must have Playwrigh
   **What to do**: Create `radioActions.ts` with pure frequency validation. Use scratchpad engine for errors. Replace inline cases.
   **References**: `src/store/useFMCStore.ts` radio cases
 
-- [ ] 4. **Extract route modification actions** — Move `set_from_to`, `set_origin`, `set_dest`, `set_flt_no`, `set_route`, `set_runway`, `set_direct_to` into `shared/src/fmc/actionHandlers/routeActions.ts`. LEGS waypoint edits into separate handler.
+- [x] 4. **Extract route modification actions** — Move `set_from_to`, `set_origin`, `set_dest`, `set_flt_no`, `set_route`, `set_runway`, `set_direct_to` into `shared/src/fmc/actionHandlers/routeActions.ts`. LEGS waypoint edits into separate handler.
 
   **What to do**: Create `routeActions.ts`. Route modifications must use pendingRoute/pendingFlightPlan pattern. Write TDD tests.
   **Must NOT do**: Do not mutate active route before EXEC.
