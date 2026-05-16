@@ -176,6 +176,10 @@ export * from './fmc/actionHandlers/routeActions';
 export * from './fmc/actionHandlers/legActions';
 export * from './fmc/actionHandlers/performanceActions';
 export * from './fmc/actionHandlers/takeoffActions';
+export * from './fmc/actionHandlers/fixActions';
+export * from './fmc/actionHandlers/holdActions';
+export * from './fmc/actionHandlers/irsActions';
+export * from './fmc/actionHandlers/airbusActions';
 
 // New FMC engine modules introduced in feat/canvas-renderer
 export { buildInitialFMCState } from './fmc/initialState';
