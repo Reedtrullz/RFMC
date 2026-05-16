@@ -9,7 +9,7 @@ This is the current source of truth for automated status. Other docs should link
 | Gate | Command | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing (all 3 workspaces) |
-| Unit/regression tests | `npm test -- --run` | 752/752 passing (52 test files) |
+| Unit/regression tests | `npm test -- --run` | 752/752 passing (55 test files) |
 | Playwright E2E | `npm run test:e2e` | 35 passed, 2 skipped |
 | Production build | `npm run build` | Passing |
 | Coverage | `npm run test:coverage` | 51.75% all files in last recorded run |
@@ -18,7 +18,7 @@ This is the current source of truth for automated status. Other docs should link
 
 ## Current Commit
 
-Latest reviewed local commit: `9e829bc feat(fmc): introduce typed LSK dispatcher and complete store extraction (#17)`. Post-dispatcher stabilization applied.
+Latest reviewed local commit: `ca0c7cb`. PRs #1–#21 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher).
 
 ## Implementation State
 
