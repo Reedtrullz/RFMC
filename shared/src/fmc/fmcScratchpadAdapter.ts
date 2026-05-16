@@ -154,6 +154,19 @@ export function applyDispatchResult(
   get: ZustandGet,
   result: DispatchLskActionResult
 ): boolean {
+  if ((result.success as any)?.targetPage) {
+    (get() as any).setPage((result.success as any).targetPage);
+    return true;
+  }
+  if ((result.success as any)?.pressKey) {
+    (get() as any).pressKey((result.success as any).pressKey);
+    return true;
+  }
+  if ((result.success as any)?.subPage) {
+    set((result.success as any).subPage);
+    return true;
+  }
+
   const ar = applyFmcActionResult(set, get, result);
   if (ar.shouldReturn) return true;
 

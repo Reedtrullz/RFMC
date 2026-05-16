@@ -25,7 +25,7 @@ import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
-import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult, applyDispatchResult } from '@shared/fmc/fmcScratchpadAdapter';
+import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult, applyDispatchResult, failScratchpad } from '@shared/fmc/fmcScratchpadAdapter';
 import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
@@ -525,6 +525,16 @@ function stageHoldField(state: FMCState, field: string, value: any): Partial<FMC
     scratchpadError: null,
   };
 }
+
+function stageFlightPlanChange(state: FMCState, waypoints: FlightPlanWaypoint[]): Partial<FMCState> {
+  return {
+    pendingFlightPlan: { ...state.flightPlan, waypoints },
+    isModified: true,
+    execLit: true,
+    scratchpad: '',
+    scratchpadError: null,
+  };
+}
 export const useFMCStore = create<FMCStore>((set, get) => ({
   ...defaultState,
 
@@ -737,22 +747,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Dispatch through typed central LSK dispatcher
     const dispatchResult = dispatchLskAction({ state, action, scratchpad });
     if (dispatchResult.handled) {
-      // Apply navigation results
-      if ((dispatchResult.success as any)?.targetPage) {
-        state.setPage((dispatchResult.success as any).targetPage);
-        handled = true;
-      } else if ((dispatchResult.success as any)?.pressKey) {
-        state.pressKey((dispatchResult.success as any).pressKey);
-        handled = true;
-      } else if ((dispatchResult.success as any)?.subPage) {
-        set((dispatchResult.success as any).subPage);
-        handled = true;
-      } else {
-        // Apply dispatch result through central helper
-        if (applyDispatchResult(set as any, get as any, dispatchResult)) {
-          handled = true;
-        }
-      }
+      handled = applyDispatchResult(set as any, get as any, dispatchResult);
     }
 
     // LEGS waypoint side effects — array mutations must stay in store
@@ -822,7 +817,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         const alt = parseInt(altMatch[1], 10);
         altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
       } else {
-        set({ scratchpadError: 'INVALID FORMAT' });
+        failScratchpad(set as any, get as any, 'INVALID FORMAT');
         return;
       }
 
@@ -1118,7 +1113,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       // 2. Standard database lookup
       const dbPoint = getWaypoint(id) || getAirport(id);
       if (!dbPoint) {
-        set({ scratchpadError: 'NOT IN DATABASE' });
+        failScratchpad(set as any, get as any, 'NOT IN DATABASE');
         return;
       }
       nextWaypoint = {
@@ -1136,13 +1131,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     } else {
       waypoints.splice(index, 0, nextWaypoint);
     }
-    set({
-      pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
-      isModified: true,
-      execLit: true,
-      scratchpad: '',
-      scratchpadError: null,
-    });
+    set(stageFlightPlanChange(state, waypoints));
   },
 
   deleteWaypoint: (index: number) => {
@@ -1150,14 +1139,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
     if (index >= 0 && index < waypoints.length) {
       waypoints.splice(index, 1);
-      set({
-        pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
-        isModified: true,
-        execLit: true,
-        deleteMode: false,
-        scratchpad: '',
-        scratchpadError: null,
-      });
+      set({ ...stageFlightPlanChange(state, waypoints), deleteMode: false });
     }
   },
 
@@ -1166,14 +1148,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const waypoints = [...(state.pendingFlightPlan?.waypoints ?? state.flightPlan.waypoints)];
     if (index >= 0 && index < waypoints.length) {
       waypoints[index] = { ...waypoints[index], altitudeConstraint: altitude, speedConstraint: speed };
-      set({
-        pendingFlightPlan: { ...(state.pendingFlightPlan ?? state.flightPlan), waypoints },
-        isModified: true,
-        execLit: true,
-        editWaypointIndex: null,
-        scratchpad: '',
-        scratchpadError: null,
-      });
+      set({ ...stageFlightPlanChange(state, waypoints), editWaypointIndex: null });
     }
   },
 
