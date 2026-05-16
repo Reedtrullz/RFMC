@@ -36,6 +36,10 @@ import { handlePerformanceAction } from '@shared/fmc/actionHandlers/performanceA
 import { handleTakeoffAction } from '@shared/fmc/actionHandlers/takeoffActions';
 import { handleProcedureAction } from '@shared/fmc/actionHandlers/procedureActions';
 import { handleLandingAction } from '@shared/fmc/actionHandlers/landingActions';
+import { handleFixAction } from '@shared/fmc/actionHandlers/fixActions';
+import { handleHoldAction } from '@shared/fmc/actionHandlers/holdActions';
+import { handleIrsAction } from '@shared/fmc/actionHandlers/irsActions';
+import { handleAirbusAction } from '@shared/fmc/actionHandlers/airbusActions';
 import { isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind, isValidWaypoint, isValidFlightNumber, isValidFrequency, isValidADF } from '@shared';
 import { devLog, devError } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
@@ -874,6 +878,50 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
+    // Fix actions — delegated to shared handler
+    if (!handled) {
+      const fixResult = handleFixAction(action, state, scratchpad);
+      if (fixResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, fixResult);
+        if (ar.shouldReturn) return;
+        if (fixResult.success?.patch) Object.assign(updates, fixResult.success.patch);
+        handled = true;
+      }
+    }
+
+    // Hold actions — delegated to shared handler
+    if (!handled) {
+      const holdResult = handleHoldAction(action, state, scratchpad);
+      if (holdResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, holdResult);
+        if (ar.shouldReturn) return;
+        if (holdResult.success?.patch) Object.assign(updates, holdResult.success.patch);
+        handled = true;
+      }
+    }
+
+    // IRS actions — delegated to shared handler
+    if (!handled) {
+      const irsResult = handleIrsAction(action, state, scratchpad);
+      if (irsResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, irsResult);
+        if (ar.shouldReturn) return;
+        if (irsResult.success?.patch) Object.assign(updates, irsResult.success.patch);
+        handled = true;
+      }
+    }
+
+    // Airbus data entry — delegated to shared handler
+    if (!handled) {
+      const airbusResult = handleAirbusAction(action, state, scratchpad);
+      if (airbusResult.handled) {
+        const ar = applyFmcActionResult(set as any, get as any, airbusResult);
+        if (ar.shouldReturn) return;
+        if (airbusResult.success?.patch) Object.assign(updates, airbusResult.success.patch);
+        handled = true;
+      }
+    }
+
     if (!handled) {
       switch (action) {
         case 'set_ref_airport':
@@ -933,153 +981,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_crz_fl': {
-        if (scratchpad) {
-          const result = isValidAltitude(scratchpad);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.performance = { ...state.performance, crzAlt: parseInt(scratchpad) * 100 || parseInt(scratchpad) || 0 };
-        }
-        break;
-      }
-      case 'set_altn': {
-        if (scratchpad) {
-          const result = isValidICAO(scratchpad.toUpperCase());
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, alternate: scratchpad.toUpperCase() };
-        }
-        break;
-      }
-      case 'set_block': {
-        if (scratchpad) {
-          const fuel = parseFloat(scratchpad);
-          if (isNaN(fuel) || fuel <= 0) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, fuel: fuel * 1000 };
-        }
-        break;
-      }
-      case 'set_flt_nbr': {
-        if (scratchpad) {
-          const result = isValidFlightNumber(scratchpad);
-          if (!result.valid) { set({ scratchpadError: result.error }); return; }
-          updates.route = { ...state.route, flightNumber: scratchpad.toUpperCase() };
-          updates.flightPlan = { ...state.flightPlan, flightNumber: scratchpad.toUpperCase() };
-        }
-        break;
-      }
+      // set_crz_fl, set_altn, set_block, set_flt_nbr — delegated to handleAirbusAction
       // set_sid, set_rwy, set_star, set_appr — delegated to handleProcedureAction
 
 
-      case 'set_flex': {
-        if (scratchpad) {
-          const temp = parseInt(scratchpad);
-          if (isNaN(temp)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.takeoff = { ...state.takeoff, flexTemp: temp };
-        }
-        break;
-      }
-      case 'set_cg': {
-        if (scratchpad) {
-          const cg = parseFloat(scratchpad);
-          if (isNaN(cg)) { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          updates.performance = { ...state.performance, cg };
-        }
-        break;
-      }
+      // set_flex, set_cg — delegated to handleAirbusAction
       case 'set_extra':
         break;
-      case 'set_fix_ref':
-      case 'set_fix_ref_0':
-      case 'set_fix_ref_1':
-        if (scratchpad) {
-          const result = isValidWaypoint(scratchpad.toUpperCase());
-          if (!result.valid) { 
-            set({ scratchpadError: result.error }); return; 
-          }
-          const entryIndex = action.endsWith('_1') ? 1 : 0;
-          const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
-          fixEntries[entryIndex] = { ...fixEntries[entryIndex], refFix: scratchpad.toUpperCase() };
-          updates.fixEntries = fixEntries;
-          if (entryIndex === 0) updates.fix = fixEntries[0];
-        }
-        break;
-      case 'set_fix_radial_distance':
-      case 'set_fix_radial_distance_0':
-      case 'set_fix_radial_distance_1':
-        if (scratchpad) {
-          const parts = scratchpad.split('/');
-          if (parts.length !== 2) { 
-            set({ scratchpadError: 'INVALID FORMAT' }); return; 
-          }
-          const radial = parseInt(parts[0], 10);
-          const distance = parseInt(parts[1], 10);
-          if (isNaN(radial) || radial < 1 || radial > 360) { 
-            set({ scratchpadError: 'INVALID RADIAL' }); return; 
-          }
-          if (isNaN(distance) || distance < 0 || distance > 999) { 
-            set({ scratchpadError: 'INVALID DISTANCE' }); return; 
-          }
-          const entryIndex = action.endsWith('_1') ? 1 : 0;
-          const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
-          fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
-          updates.fixEntries = fixEntries;
-          if (entryIndex === 0) updates.fix = fixEntries[0];
-        }
-        break;
-       case 'set_hold_fix':
-         if (scratchpad) {
-           const ident = scratchpad.toUpperCase();
-           const result = isValidWaypoint(ident);
-           if (!result.valid) { set({ scratchpadError: result.error }); return; }
-           const { flightPlan } = get();
-           const inRoute = flightPlan.waypoints.some(w => w.ident === ident);
-           if (!inRoute) {
-             set({ scratchpadError: 'NOT IN ROUTE' });
-             return;
-           }
-           state.setHoldFix(ident);
-           handled = true;
-         }
-         break;
-      case 'set_irs_pos':
-        if (scratchpad) {
-          const { position, route } = get();
-          
-          if (position.irsState !== 'ALIGNING' && position.irsState !== 'FAST_ALIGNING') {
-            set({ scratchpadError: 'NOT IN ALIGN MODE' });
-            return;
-          }
-
-          const parsed = parseWaypointInput(scratchpad, (id) => getWaypoint(id));
-          if (!parsed || parsed.type !== 'LAT_LONG') {
-             set({ scratchpadError: 'INVALID ENTRY' });
-             return;
-          }
-
-          if (route.origin) {
-            const origin = getAirport(route.origin);
-            if (origin) {
-              const dist = distanceNm({ lat: parsed.lat, lon: parsed.lon }, { lat: origin.lat, lon: origin.lon });
-              if (dist > 50) {
-                set({ scratchpadError: 'VERIFY POSITION' });
-                return;
-              }
-            }
-          }
-
-          set({ 
-            position: { 
-              ...state.position, 
-              lat: parsed.lat, 
-              lon: parsed.lon,
-              irsAlignmentProgress: 0,
-              irsTimeRemaining: state.position.irsState === 'FAST_ALIGNING' ? 30 : 600
-            },
-            scratchpad: ''
-          });
-          
-          handled = true;
-        }
-        break;
+      // set_fix_ref, set_fix_radial_distance — delegated to handleFixAction
+      // set_hold_fix, set_inbound_crs, set_leg_time, set_leg_dist, set_hold_direction — delegated to handleHoldAction
+      // set_irs_pos — delegated to handleIrsAction
       case 'atsu_uplink': {
         const uplink: FlightPlan = {
           origin: 'KJFK',
@@ -1122,38 +1033,6 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
         break;
       }
-      case 'set_inbound_crs':
-        if (scratchpad) {
-          const crs = parseInt(scratchpad, 10);
-          if (isNaN(crs) || crs < 1 || crs > 360) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
-          state.setInboundCourse(crs);
-          handled = true;
-        }
-        break;
-      case 'set_leg_time':
-        if (scratchpad) {
-          const time = parseFloat(scratchpad);
-          if (isNaN(time) || time <= 0 || time > 9.9) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
-          state.setLegTime(time);
-          handled = true;
-        }
-        break;
-      case 'set_leg_dist':
-        if (scratchpad) {
-          const dist = parseFloat(scratchpad);
-          if (isNaN(dist) || dist < 0 || dist > 999) { set({ scratchpadError: 'OUT OF RANGE' }); return; }
-          state.setLegDist(dist);
-          handled = true;
-        }
-        break;
-      case 'set_hold_direction':
-        if (scratchpad) {
-          const dir = scratchpad.toUpperCase();
-          if (dir !== 'L' && dir !== 'R') { set({ scratchpadError: 'INVALID ENTRY' }); return; }
-          state.setHoldDirection(dir as 'L' | 'R');
-          handled = true;
-        }
-        break;
       default:
         if (action.startsWith('view_msg_')) {
           const msgId = action.replace('view_msg_', '');
