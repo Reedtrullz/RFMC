@@ -170,6 +170,7 @@ export * from './fmc/fmcModificationAdapter';
 export * from './fmc/scratchpadEngine';
 export * from './fmc/fmcScratchpadAdapter';
 export * from './fmc/displayGridValidation';
+export * from './fmc/actionHandlers/actionResult';
 export * from './fmc/actionHandlers/navigationActions';
 export * from './fmc/actionHandlers/routeActions';
 export * from './fmc/actionHandlers/legActions';

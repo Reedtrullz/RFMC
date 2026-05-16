@@ -13,25 +13,22 @@ describe('handleRadioLskAction', () => {
     const result = handleRadioLskAction('set_vor1', state, '110.50');
 
     expect(result.handled).toBe(true);
-    expect(result.clearScratchpad).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.clearScratchpad).toBe(true);
+    expect(result.success?.patch).toEqual({
       radios: { vor1: '110.50', vor2: '', adf1: '' },
     });
   });
 
-  it('set_vor1 with invalid frequency returns message', () => {
+  it('set_vor1 with invalid frequency returns failure', () => {
     const state = makeState();
     const result = handleRadioLskAction('set_vor1', state, 'abc');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toBeUndefined();
-    expect(result.message).toMatchObject({
+    expect(result.success).toBeUndefined();
+    expect(result.failure).toMatchObject({
+      code: 'INVALID_FORMAT',
       text: 'INVALID FORMAT',
-      priority: 5,
-      source: 'validation',
-      clearsOnInput: false,
-      clearsOnExec: true,
-      clearsOnPageChange: true,
+      source: 'radioActions',
     });
   });
 
@@ -40,8 +37,8 @@ describe('handleRadioLskAction', () => {
     const result = handleRadioLskAction('set_vor1', state, '');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
-    expect(result.message).toBeUndefined();
+    expect(result.success).toBeUndefined();
+    expect(result.failure).toBeUndefined();
   });
 
   // ── set_vor2 ──────────────────────────────────────────────
@@ -50,8 +47,8 @@ describe('handleRadioLskAction', () => {
     const result = handleRadioLskAction('set_vor2', state, '117.95');
 
     expect(result.handled).toBe(true);
-    expect(result.clearScratchpad).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.clearScratchpad).toBe(true);
+    expect(result.success?.patch).toEqual({
       radios: { vor1: '', vor2: '117.95', adf1: '' },
     });
   });
@@ -62,25 +59,22 @@ describe('handleRadioLskAction', () => {
     const result = handleRadioLskAction('set_adf1', state, '350');
 
     expect(result.handled).toBe(true);
-    expect(result.clearScratchpad).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.clearScratchpad).toBe(true);
+    expect(result.success?.patch).toEqual({
       radios: { vor1: '', vor2: '', adf1: '350' },
     });
   });
 
-  it('set_adf1 with invalid ADF returns message', () => {
+  it('set_adf1 with invalid ADF returns failure', () => {
     const state = makeState();
     const result = handleRadioLskAction('set_adf1', state, '1800');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toBeUndefined();
-    expect(result.message).toMatchObject({
+    expect(result.success).toBeUndefined();
+    expect(result.failure).toMatchObject({
+      code: 'OUT_OF_RANGE',
       text: 'OUT OF RANGE',
-      priority: 5,
-      source: 'validation',
-      clearsOnInput: false,
-      clearsOnExec: true,
-      clearsOnPageChange: true,
+      source: 'radioActions',
     });
   });
 
@@ -90,7 +84,7 @@ describe('handleRadioLskAction', () => {
     const result = handleRadioLskAction('unknown', state, '110.50');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
-    expect(result.message).toBeUndefined();
+    expect(result.success).toBeUndefined();
+    expect(result.failure).toBeUndefined();
   });
 });

@@ -12,7 +12,7 @@ describe('handleLegWpAction', () => {
     const result = handleLegWpAction('edit_wp_3', state, 'DCT');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 
   it('handles edit_wp without scratchpad — sets editWaypointIndex', () => {
@@ -20,7 +20,7 @@ describe('handleLegWpAction', () => {
     const result = handleLegWpAction('edit_wp_3', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.patch).toEqual({
       editWaypointIndex: 3,
       scratchpad: '',
       scratchpadError: null,
@@ -32,7 +32,7 @@ describe('handleLegWpAction', () => {
     const result = handleLegWpAction('delete_wp_5', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 
   it('returns handled: false for non-matching action', () => {
@@ -40,6 +40,6 @@ describe('handleLegWpAction', () => {
     const result = handleLegWpAction('set_gate', state, '');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 });

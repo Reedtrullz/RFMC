@@ -12,9 +12,9 @@ describe('handleSetFromTo', () => {
     const result = handleSetFromTo(state, 'KJFK/KDCA');
 
     expect(result.handled).toBe(true);
-    expect(result.scratchpadError).toBeUndefined();
-    expect(result.sideEffect).toBe('expand_active_route');
-    expect(result.patch).toMatchObject({
+    expect(result.failure).toBeUndefined();
+    expect(result.success?.sideEffect).toBe('expand_active_route');
+    expect(result.success?.patch).toMatchObject({
       isModified: true,
       execLit: true,
       scratchpad: '',
@@ -23,22 +23,30 @@ describe('handleSetFromTo', () => {
     });
   });
 
-  it('returns error when destination is missing (KJFK/)', () => {
+  it('returns failure when destination is missing (KJFK/)', () => {
     const state = makeState();
     const result = handleSetFromTo(state, 'KJFK/');
 
     expect(result.handled).toBe(true);
-    expect(result.scratchpadError).toBe('INVALID FORMAT');
-    expect(result.patch).toBeUndefined();
+    expect(result.failure).toMatchObject({
+      code: 'INVALID_FORMAT',
+      text: 'INVALID FORMAT',
+      source: 'routeActions',
+    });
+    expect(result.success).toBeUndefined();
   });
 
-  it('returns error for invalid ICAO codes (X12/YYYY)', () => {
+  it('returns failure for invalid ICAO codes (X12/YYYY)', () => {
     const state = makeState();
     const result = handleSetFromTo(state, 'X12/YYYY');
 
     expect(result.handled).toBe(true);
-    expect(result.scratchpadError).toBe('INVALID FORMAT');
-    expect(result.patch).toBeUndefined();
+    expect(result.failure).toMatchObject({
+      code: 'INVALID_FORMAT',
+      text: 'INVALID FORMAT',
+      source: 'routeActions',
+    });
+    expect(result.success).toBeUndefined();
   });
 
   it('returns handled: false for empty scratchpad', () => {
@@ -46,7 +54,7 @@ describe('handleSetFromTo', () => {
     const result = handleSetFromTo(state, '');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 
   it('accepts valid ICAOs with mixed case (kjfk/kdca)', () => {
@@ -54,8 +62,8 @@ describe('handleSetFromTo', () => {
     const result = handleSetFromTo(state, 'kjfk/kdca');
 
     expect(result.handled).toBe(true);
-    expect(result.scratchpadError).toBeUndefined();
-    expect(result.patch).toMatchObject({
+    expect(result.failure).toBeUndefined();
+    expect(result.success?.patch).toMatchObject({
       pendingRoute: { origin: 'KJFK', destination: 'KDCA' },
       pendingFlightPlan: { origin: 'KJFK', destination: 'KDCA' },
     });

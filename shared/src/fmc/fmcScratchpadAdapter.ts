@@ -9,8 +9,10 @@ import {
   getActiveDisplay,
   clearScratchpadForPageChange,
   clearScratchpadForExec,
+  invalidEntryMessage,
 } from './scratchpadEngine';
 import type { FMCState } from '../types/fmc';
+import type { FmcActionResult } from './actionHandlers/actionResult';
 
 type ZustandSet = (partial: Partial<FMCState> | ((state: FMCState) => Partial<FMCState>)) => void;
 type ZustandGet = () => FMCState;
@@ -107,4 +109,41 @@ export function fmcClrKey(set: ZustandSet, get: ZustandGet): void {
 
 export function fmcDelKey(set: ZustandSet, get: ZustandGet): void {
   fmcDeleteChar(set, get);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// applyFmcActionResult — canonical bridge between handler results and store
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Transitional: scratchpadError is display compatibility only.
+ *  New code must use scratchpadState / scratchpadEngine. */
+export function applyFmcActionResult(
+  set: ZustandSet,
+  get: ZustandGet,
+  result: FmcActionResult
+): { shouldReturn: boolean } {
+  if (!result.handled) return { shouldReturn: false };
+
+  if (result.failure) {
+    const msg = invalidEntryMessage();
+    msg.text = result.failure.text;
+    fmcPushMessage(set, get, msg);
+    set({ scratchpadError: result.failure.text } as any);
+    return { shouldReturn: true };
+  }
+
+  if (result.success) {
+    if (result.success.patch) set(result.success.patch as any);
+    if (result.success.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as any);
+    return { shouldReturn: false };
+  }
+
+  return { shouldReturn: false };
+}
+
+export function failScratchpad(set: ZustandSet, get: ZustandGet, text: string): void {
+  const msg = invalidEntryMessage();
+  msg.text = text;
+  fmcPushMessage(set, get, msg);
+  set({ scratchpadError: text } as any);
 }

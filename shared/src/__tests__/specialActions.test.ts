@@ -12,7 +12,7 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('des_now', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.patch).toEqual({
       scratchpad: 'DES NOW ARMED',
       scratchpadError: null,
       msgLight: true,
@@ -24,9 +24,9 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('step_plan', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.sideEffect).toBe('step_plan');
-    expect(result.returnEarly).toBe(true);
-    expect(result.patch).toBeUndefined();
+    expect((result as any).sideEffect).toBe('step_plan');
+    expect((result as any).returnEarly).toBe(true);
+    expect(result.success).toBeUndefined();
   });
 
   it('align_irs returns ALIGNING state for Boeing 737', () => {
@@ -34,7 +34,7 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('align_irs', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toMatchObject({
+    expect(result.success?.patch).toMatchObject({
       position: {
         irsState: 'ALIGNING',
         irsAlignmentProgress: 0,
@@ -47,7 +47,7 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('align_irs', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toMatchObject({
+    expect(result.success?.patch).toMatchObject({
       position: {
         irsState: 'ALIGNING',
         irsAlignmentProgress: 0,
@@ -61,7 +61,7 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('align_irs', unsupportedState, '');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 
   it('erase returns full cleanup patch', () => {
@@ -77,7 +77,7 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('erase', state, state.scratchpad);
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toEqual({
+    expect(result.success?.patch).toEqual({
       pendingRoute: null,
       pendingFlightPlan: null,
       holdPending: null,
@@ -95,14 +95,14 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('copy_active', state, '');
 
     expect(result.handled).toBe(true);
-    expect(result.patch).toMatchObject({
+    expect(result.success?.patch).toMatchObject({
       isModified: true,
       execLit: true,
       scratchpad: 'COPIED TO SEC',
       msgLight: true,
     });
-    expect(result.patch!.pendingFlightPlan).toEqual(state.flightPlan);
-    expect(result.patch!.pendingRoute).toEqual(state.route);
+    expect(result.success?.patch!.pendingFlightPlan).toEqual(state.flightPlan);
+    expect(result.success?.patch!.pendingRoute).toEqual(state.route);
   });
 
   it('unknown action returns { handled: false }', () => {
@@ -110,6 +110,6 @@ describe('handleSpecialLskAction', () => {
     const result = handleSpecialLskAction('unknown', state, '');
 
     expect(result.handled).toBe(false);
-    expect(result.patch).toBeUndefined();
+    expect(result.success).toBeUndefined();
   });
 });
