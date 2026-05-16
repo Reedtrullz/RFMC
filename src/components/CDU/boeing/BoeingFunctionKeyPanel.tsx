@@ -4,26 +4,27 @@ interface FunctionKey {
   label: string;
   key: string;
   highlight: string;
+  ariaLabel: string;
 }
 
 const row1: FunctionKey[] = [
-  { label: 'INIT REF', key: 'INIT_REF', highlight: 'POS_INIT' },
-  { label: 'RTE', key: 'RTE', highlight: 'RTE' },
-  { label: 'CLB', key: 'CLB', highlight: 'CLB' },
-  { label: 'CRZ', key: 'CRZ', highlight: 'CRZ' },
-  { label: 'DES', key: 'DES', highlight: 'DES' },
-  { label: 'DIR INTC', key: 'DIR_INTC', highlight: 'DIR_INTC' },
-  { label: 'LEGS', key: 'LEGS', highlight: 'LEGS' },
+  { label: 'INIT REF', key: 'INIT_REF', highlight: 'POS_INIT', ariaLabel: 'Init Ref page' },
+  { label: 'RTE', key: 'RTE', highlight: 'RTE', ariaLabel: 'Route page' },
+  { label: 'CLB', key: 'CLB', highlight: 'CLB', ariaLabel: 'Climb page' },
+  { label: 'CRZ', key: 'CRZ', highlight: 'CRZ', ariaLabel: 'Cruise page' },
+  { label: 'DES', key: 'DES', highlight: 'DES', ariaLabel: 'Descent page' },
+  { label: 'DIR INTC', key: 'DIR_INTC', highlight: 'DIR_INTC', ariaLabel: 'Direct Intercept page' },
+  { label: 'LEGS', key: 'LEGS', highlight: 'LEGS', ariaLabel: 'Legs page' },
 ];
 
 const row2: FunctionKey[] = [
-  { label: 'DEP ARR', key: 'DEP_ARR', highlight: 'DEP_ARR' },
-  { label: 'HOLD', key: 'HOLD', highlight: 'HOLD' },
-  { label: 'PERF', key: 'PERF', highlight: 'PERF_INIT' },
-  { label: 'PROG', key: 'PROG', highlight: 'PROGRESS' },
-  { label: 'N1 LIMIT', key: 'N1_LIMIT', highlight: 'N1_LIMIT' },
-  { label: 'FIX', key: 'FIX', highlight: 'FIX' },
-  { label: 'MENU', key: 'MENU', highlight: 'MENU' },
+  { label: 'DEP ARR', key: 'DEP_ARR', highlight: 'DEP_ARR', ariaLabel: 'Departure Arrivals page' },
+  { label: 'HOLD', key: 'HOLD', highlight: 'HOLD', ariaLabel: 'Hold page' },
+  { label: 'PERF', key: 'PERF', highlight: 'PERF_INIT', ariaLabel: 'Performance page' },
+  { label: 'PROG', key: 'PROG', highlight: 'PROGRESS', ariaLabel: 'Progress page' },
+  { label: 'N1 LIMIT', key: 'N1_LIMIT', highlight: 'N1_LIMIT', ariaLabel: 'N1 Limit page' },
+  { label: 'FIX', key: 'FIX', highlight: 'FIX', ariaLabel: 'Fix page' },
+  { label: 'MENU', key: 'MENU', highlight: 'MENU', ariaLabel: 'Menu page' },
 ];
 
 interface BoeingFunctionKeyPanelProps {
@@ -41,6 +42,7 @@ export function BoeingFunctionKeyPanel({ onPress, isHighlighted, hintLevel }: Bo
             <AvionicsKey
               key={item.key}
               label={item.label}
+              ariaLabel={item.ariaLabel}
               variant="function"
               active={isHighlighted(item.highlight)}
               hintLevel={isHighlighted(item.highlight) ? hintLevel : 0}

@@ -40,27 +40,58 @@ export interface ScratchpadState {
 // ============================================================
 
 export function pushMessage(state: ScratchpadState, message: ScratchpadMessage): ScratchpadState {
-  throw new Error('Not implemented');
+  const history = [...state.history, message];
+  const messageQueue = [...state.messageQueue, message].sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.createdAt - b.createdAt;
+  });
+  const currentMessage = messageQueue[0];
+  return { ...state, message: currentMessage, messageQueue, history };
 }
 
 export function clearMessage(state: ScratchpadState, messageId: string): ScratchpadState {
-  throw new Error('Not implemented');
+  const target = state.messageQueue.find(m => m.id === messageId);
+  if (!target) return state;
+
+  const messageQueue = state.messageQueue.filter(m => m.id !== messageId);
+  const history = [...state.history, target];
+
+  const currentMessage =
+    state.message?.id === messageId
+      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      : state.message;
+
+  return { ...state, message: currentMessage, messageQueue, history };
 }
 
 export function typeChar(state: ScratchpadState, char: string): ScratchpadState {
-  throw new Error('Not implemented');
+  const buffer = state.buffer + char;
+
+  const cleared = state.messageQueue.filter(m => m.priority > MessagePriority.PERF_UNAVAIL);
+  const messageQueue = state.messageQueue.filter(m => m.priority <= MessagePriority.PERF_UNAVAIL);
+  const history = [...state.history, ...cleared];
+
+  const currentMessage =
+    state.message && state.message.priority > MessagePriority.PERF_UNAVAIL
+      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      : state.message;
+
+  return { ...state, buffer, message: currentMessage, messageQueue, history };
 }
 
 export function deleteChar(state: ScratchpadState): ScratchpadState {
-  throw new Error('Not implemented');
+  if (state.buffer.length === 0) return state;
+  return { ...state, buffer: state.buffer.slice(0, -1) };
 }
 
 export function clearBuffer(state: ScratchpadState): ScratchpadState {
-  throw new Error('Not implemented');
+  return { ...state, buffer: '' };
 }
 
 export function getActiveDisplay(state: ScratchpadState): string {
-  throw new Error('Not implemented');
+  if (state.message) return state.message.text;
+  if (state.buffer.length > 0) return state.buffer;
+  return '';
 }
 
 // ============================================================

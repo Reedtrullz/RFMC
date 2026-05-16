@@ -3,6 +3,12 @@ import {
   MessagePriority,
   ScratchpadMessage,
   ScratchpadState,
+  pushMessage,
+  clearMessage,
+  typeChar,
+  deleteChar,
+  clearBuffer,
+  getActiveDisplay,
   invalidEntryMessage,
   notInDatabaseMessage,
   routeDiscontinuityMessage,
@@ -296,5 +302,279 @@ describe('ScratchpadState type', () => {
     expect(state.message?.text).toBe('INVALID ENTRY');
     expect(state.messageQueue).toHaveLength(1);
     expect(state.history).toHaveLength(1);
+  });
+});
+
+// ============================================================
+// Priority Engine — pushMessage
+// ============================================================
+
+function createEmptyState(): ScratchpadState {
+  return { buffer: '', message: null, messageQueue: [], history: [] };
+}
+
+function makeMsg(
+  id: string,
+  text: string,
+  priority: MessagePriority,
+  createdAt: number,
+): ScratchpadMessage {
+  return {
+    id,
+    text,
+    priority,
+    source: 'test',
+    clearsOnInput: priority > MessagePriority.PERF_UNAVAIL,
+    clearsOnExec: true,
+    clearsOnPageChange: true,
+    createdAt,
+  };
+}
+
+describe('pushMessage', () => {
+  it('inserts message into queue sorted by priority (ascending)', () => {
+    const low = makeMsg('low', 'LOW', MessagePriority.INFO, 300);
+    const high = makeMsg('high', 'HIGH', MessagePriority.SAFETY, 100);
+    const mid = makeMsg('mid', 'MID', MessagePriority.PERF_UNAVAIL, 200);
+
+    let s = pushMessage(createEmptyState(), low);
+    s = pushMessage(s, high);
+    s = pushMessage(s, mid);
+
+    expect(s.messageQueue[0].id).toBe('high');
+    expect(s.messageQueue[1].id).toBe('mid');
+    expect(s.messageQueue[2].id).toBe('low');
+  });
+
+  it('sets message to the highest priority in queue', () => {
+    const msg = makeMsg('m1', 'SOME MSG', MessagePriority.DB_ERROR, 100);
+    const result = pushMessage(createEmptyState(), msg);
+    expect(result.message?.id).toBe('m1');
+  });
+
+  it('promotes higher priority over already-queued messages', () => {
+    const low = makeMsg('low', 'LOW', MessagePriority.INFO, 200);
+    const high = makeMsg('high', 'HIGH', MessagePriority.SAFETY, 100);
+
+    const r1 = pushMessage(createEmptyState(), low);
+    expect(r1.message?.id).toBe('low');
+
+    const r2 = pushMessage(r1, high);
+    expect(r2.message?.id).toBe('high');
+  });
+
+  it('maintains insertion order for same-priority messages', () => {
+    const first = makeMsg('first', 'FIRST', MessagePriority.ADVISORY, 100);
+    const second = makeMsg('second', 'SECOND', MessagePriority.ADVISORY, 200);
+    const third = makeMsg('third', 'THIRD', MessagePriority.ADVISORY, 300);
+
+    let s = pushMessage(createEmptyState(), first);
+    s = pushMessage(s, second);
+    s = pushMessage(s, third);
+
+    expect(s.messageQueue[0].id).toBe('first');
+    expect(s.messageQueue[1].id).toBe('second');
+    expect(s.messageQueue[2].id).toBe('third');
+  });
+
+  it('adds message to history', () => {
+    const msg = makeMsg('m', 'MSG', MessagePriority.ADVISORY, 100);
+    const result = pushMessage(createEmptyState(), msg);
+    expect(result.history).toHaveLength(1);
+    expect(result.history[0].id).toBe('m');
+  });
+});
+
+// ============================================================
+// Priority Engine — clearMessage
+// ============================================================
+
+describe('clearMessage', () => {
+  it('removes message from queue', () => {
+    const msg = makeMsg('m1', 'MSG', MessagePriority.DB_ERROR, 100);
+    const state = pushMessage(createEmptyState(), msg);
+    const result = clearMessage(state, 'm1');
+    expect(result.messageQueue).toHaveLength(0);
+  });
+
+  it('promotes next highest message after clearing current', () => {
+    const high = makeMsg('h', 'HIGH', MessagePriority.SAFETY, 100);
+    const mid = makeMsg('m', 'MID', MessagePriority.PERF_UNAVAIL, 200);
+    const state = pushMessage(pushMessage(createEmptyState(), high), mid);
+
+    expect(state.message?.id).toBe('h');
+
+    const result = clearMessage(state, 'h');
+    expect(result.message?.id).toBe('m');
+    expect(result.messageQueue).toHaveLength(1);
+  });
+
+  it('sets message to null when clearing the only queued message', () => {
+    const msg = makeMsg('m1', 'MSG', MessagePriority.ADVISORY, 100);
+    const state = pushMessage(createEmptyState(), msg);
+    const result = clearMessage(state, 'm1');
+    expect(result.message).toBeNull();
+  });
+
+  it('does nothing when messageId is not found', () => {
+    const msg = makeMsg('m1', 'MSG', MessagePriority.ADVISORY, 100);
+    const state = pushMessage(createEmptyState(), msg);
+    const result = clearMessage(state, 'nonexistent');
+    expect(result.messageQueue).toHaveLength(1);
+    expect(result.message?.id).toBe('m1');
+  });
+
+  it('keeps lower priority message when clearing a non-current message', () => {
+    const high = makeMsg('h', 'HIGH', MessagePriority.SAFETY, 100);
+    const low = makeMsg('l', 'LOW', MessagePriority.INFO, 200);
+    const state = pushMessage(pushMessage(createEmptyState(), high), low);
+
+    // Clear the lower priority message — current (high) stays
+    const result = clearMessage(state, 'l');
+    expect(result.message?.id).toBe('h');
+    expect(result.messageQueue).toHaveLength(1);
+  });
+});
+
+// ============================================================
+// Priority Engine — typeChar
+// ============================================================
+
+describe('typeChar', () => {
+  it('appends char to buffer', () => {
+    const result = typeChar(createEmptyState(), 'A');
+    expect(result.buffer).toBe('A');
+  });
+
+  it('preserves safety-band message (priority <= PERF_UNAVAIL) when typing', () => {
+    const safetyMsg = makeMsg('s', 'UNABLE NEXT ALT', MessagePriority.SAFETY, 100);
+    const state = pushMessage(createEmptyState(), safetyMsg);
+    const result = typeChar(state, 'A');
+
+    expect(result.message?.text).toBe('UNABLE NEXT ALT');
+    expect(result.buffer).toBe('A');
+  });
+
+  it('clears advisory message (priority > PERF_UNAVAIL) when typing', () => {
+    const advisoryMsg = makeMsg('a', 'ADVISORY', MessagePriority.ADVISORY, 100);
+    const state = pushMessage(createEmptyState(), advisoryMsg);
+    const result = typeChar(state, 'A');
+
+    expect(result.message).toBeNull();
+    expect(result.buffer).toBe('A');
+  });
+
+  it('clears user input message when typing', () => {
+    const userMsg = makeMsg('u', 'USER INPUT', MessagePriority.USER_INPUT, 100);
+    const state = pushMessage(createEmptyState(), userMsg);
+    const result = typeChar(state, 'K');
+
+    expect(result.message).toBeNull();
+    expect(result.buffer).toBe('K');
+  });
+
+  it('promotes lower-priority safety message after clearing advisory', () => {
+    const safetyMsg = makeMsg('s', 'VERIFY POSITION', MessagePriority.NAV_IMPOSSIBLE, 100);
+    const advisoryMsg = makeMsg('a', 'ADVISORY', MessagePriority.ADVISORY, 200);
+    const state = pushMessage(pushMessage(createEmptyState(), safetyMsg), advisoryMsg);
+
+    expect(state.message?.id).toBe('s'); // safety is highest
+
+    // Type to clear advisory from queue
+    const result = typeChar(state, 'A');
+
+    expect(result.message?.id).toBe('s');
+    expect(result.messageQueue).toHaveLength(1);
+    expect(result.messageQueue[0].id).toBe('s');
+  });
+
+  it('handles typing with empty message and empty buffer', () => {
+    const result = typeChar(createEmptyState(), 'X');
+    expect(result.buffer).toBe('X');
+    expect(result.message).toBeNull();
+  });
+});
+
+// ============================================================
+// Priority Engine — deleteChar
+// ============================================================
+
+describe('deleteChar', () => {
+  it('removes last character from buffer', () => {
+    const state: ScratchpadState = { ...createEmptyState(), buffer: 'ABC' };
+    const result = deleteChar(state);
+    expect(result.buffer).toBe('AB');
+  });
+
+  it('does nothing when buffer is empty', () => {
+    const result = deleteChar(createEmptyState());
+    expect(result.buffer).toBe('');
+  });
+
+  it('does not affect message or queue', () => {
+    const msg = makeMsg('m', 'MSG', MessagePriority.SAFETY, 100);
+    const state = { ...pushMessage(createEmptyState(), msg), buffer: 'HELLO' };
+    const result = deleteChar(state);
+    expect(result.buffer).toBe('HELL');
+    expect(result.message?.id).toBe('m');
+    expect(result.messageQueue).toHaveLength(1);
+  });
+});
+
+// ============================================================
+// Priority Engine — clearBuffer
+// ============================================================
+
+describe('clearBuffer', () => {
+  it('empties an existing buffer', () => {
+    const state: ScratchpadState = { ...createEmptyState(), buffer: 'KJFK' };
+    const result = clearBuffer(state);
+    expect(result.buffer).toBe('');
+  });
+
+  it('does nothing when buffer already empty', () => {
+    const result = clearBuffer(createEmptyState());
+    expect(result.buffer).toBe('');
+  });
+
+  it('does not affect messages', () => {
+    const msg = makeMsg('m', 'MSG', MessagePriority.SAFETY, 100);
+    const state = { ...pushMessage(createEmptyState(), msg), buffer: 'TEST' };
+    const result = clearBuffer(state);
+    expect(result.buffer).toBe('');
+    expect(result.message?.id).toBe('m');
+    expect(result.messageQueue).toHaveLength(1);
+  });
+});
+
+// ============================================================
+// Priority Engine — getActiveDisplay
+// ============================================================
+
+describe('getActiveDisplay', () => {
+  it('returns message text when message exists', () => {
+    const msg = makeMsg('m', 'INVALID ENTRY', MessagePriority.INVALID_ENTRY, 100);
+    const state: ScratchpadState = { ...createEmptyState(), message: msg, messageQueue: [msg] };
+    expect(getActiveDisplay(state)).toBe('INVALID ENTRY');
+  });
+
+  it('returns buffer when no message but buffer exists', () => {
+    const state: ScratchpadState = { ...createEmptyState(), buffer: 'KJFK' };
+    expect(getActiveDisplay(state)).toBe('KJFK');
+  });
+
+  it('returns empty string when no message and no buffer', () => {
+    expect(getActiveDisplay(createEmptyState())).toBe('');
+  });
+
+  it('prioritizes message over buffer when both exist', () => {
+    const msg = makeMsg('m', 'DRAG REQUIRED', MessagePriority.SAFETY, 100);
+    const state: ScratchpadState = {
+      ...createEmptyState(),
+      buffer: 'KJFK',
+      message: msg,
+      messageQueue: [msg],
+    };
+    expect(getActiveDisplay(state)).toBe('DRAG REQUIRED');
   });
 });

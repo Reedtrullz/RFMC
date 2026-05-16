@@ -7,6 +7,7 @@ import {
   insertDiscontinuity,
   clearDiscontinuity,
   hasActiveDiscontinuity,
+  resolveDiscontinuity,
   _resetIdCounter,
 } from '../fmc/routeModel';
 
@@ -215,6 +216,152 @@ describe('RouteDiscontinuity', () => {
 
     it('returns false for an empty route', () => {
       expect(hasActiveDiscontinuity([])).toBe(false);
+    });
+  });
+
+  describe('resolveDiscontinuity', () => {
+    it('replaces a cleared discontinuity with a connecting leg waypoint', () => {
+      const route = insertDiscontinuity(sampleRoute(), 'sid_star_mismatch', 2);
+      const disc = route[2] as RouteDiscontinuity;
+      const cleared = clearDiscontinuity(route, disc.id);
+
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = {
+        ident: 'CONN',
+        lat: 40.0,
+        lon: -75.0,
+        legType: 'TF',
+      };
+
+      const resolved = resolveDiscontinuity(cleared, connectingLeg);
+
+      // Length stays 5 — the discontinuity slot is replaced, not removed
+      expect(resolved).toHaveLength(5);
+      expect(resolved[0]).toMatchObject({ ident: 'KJFK' });
+      expect(resolved[1]).toMatchObject({ ident: 'RBV' });
+      expect(resolved[2]).toMatchObject({
+        ident: 'CONN',
+        lat: 40.0,
+        lon: -75.0,
+        legType: 'TF',
+        discontinuity: false,
+      });
+      expect(resolved[3]).toMatchObject({ ident: 'LENDY' });
+      expect(resolved[4]).toMatchObject({ ident: 'KDCA' });
+    });
+
+    it('throws when trying to resolve an uncleared discontinuity', () => {
+      const route = insertDiscontinuity(sampleRoute(), 'manual', 1);
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
+
+      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow(
+        'No cleared discontinuity found in route',
+      );
+    });
+
+    it('throws when no discontinuity exists in the route', () => {
+      const route = sampleRoute();
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
+
+      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow(
+        'No cleared discontinuity found in route',
+      );
+    });
+
+    it('replaces the first cleared discontinuity when multiple exist', () => {
+      const r1 = insertDiscontinuity(sampleRoute(), 'manual', 0);
+      const r2 = insertDiscontinuity(r1, 'deleted_leg', 3);
+      const disc0 = r2[0] as RouteDiscontinuity;
+      const disc3 = r2[3] as RouteDiscontinuity;
+
+      // Clear both discontinuities
+      const cleared1 = clearDiscontinuity(r2, disc0.id);
+      const cleared2 = clearDiscontinuity(cleared1, disc3.id);
+
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'WAYPOINT' };
+      const resolved = resolveDiscontinuity(cleared2, connectingLeg);
+
+      // First cleared discontinuity (index 0) should be replaced
+      expect(isRouteDiscontinuity(resolved[0])).toBe(false);
+      expect(resolved[0]).toMatchObject({ ident: 'WAYPOINT', discontinuity: false });
+      // Second discontinuity (index 3 → now index 3 since we replaced at 0) still present
+      expect(isRouteDiscontinuity(resolved[3])).toBe(true);
+      expect((resolved[3] as RouteDiscontinuity).cleared).toBe(true);
+    });
+
+    it('does not mutate the original route array', () => {
+      const route = insertDiscontinuity(sampleRoute(), 'manual', 2);
+      const disc = route[2] as RouteDiscontinuity;
+      const cleared = clearDiscontinuity(route, disc.id);
+      const snapshot = [...cleared];
+
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
+      resolveDiscontinuity(cleared, connectingLeg);
+
+      expect(cleared).toEqual(snapshot);
+    });
+
+    it('preserves all waypoint fields on the connecting leg', () => {
+      const route = insertDiscontinuity(sampleRoute(), 'sid_star_mismatch', 2);
+      const disc = route[2] as RouteDiscontinuity;
+      const cleared = clearDiscontinuity(route, disc.id);
+
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = {
+        ident: 'CONN',
+        lat: 42.0,
+        lon: -71.0,
+        coordinateSource: 'synthetic',
+        altitudeConstraint: { type: 'AT', altitude: 10000 },
+        speedConstraint: { type: 'AT', speed: 250 },
+        airway: 'J42',
+        legType: 'TF',
+      };
+
+      const resolved = resolveDiscontinuity(cleared, connectingLeg);
+      const wp = resolved[2] as FlightPlanWaypoint;
+
+      expect(wp.ident).toBe('CONN');
+      expect(wp.lat).toBe(42.0);
+      expect(wp.lon).toBe(-71.0);
+      expect(wp.coordinateSource).toBe('synthetic');
+      expect(wp.altitudeConstraint).toEqual({ type: 'AT', altitude: 10000 });
+      expect(wp.speedConstraint).toEqual({ type: 'AT', speed: 250 });
+      expect(wp.airway).toBe('J42');
+      expect(wp.legType).toBe('TF');
+      expect(wp.discontinuity).toBe(false);
+    });
+
+    it('throws for an empty route', () => {
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
+
+      expect(() => resolveDiscontinuity([], connectingLeg)).toThrow(
+        'No cleared discontinuity found in route',
+      );
+    });
+
+    it('completes the full insert → clear → resolve lifecycle', () => {
+      // Simulate: SID waypoints → airway gap → STAR waypoints
+      const routeWithDisc = insertDiscontinuity(sampleRoute(), 'airway_gap', 2);
+
+      // Active discontinuity present
+      expect(hasActiveDiscontinuity(routeWithDisc)).toBe(true);
+      const disc = routeWithDisc[2] as RouteDiscontinuity;
+      expect(disc.cleared).toBe(false);
+
+      // Clear the discontinuity
+      const cleared = clearDiscontinuity(routeWithDisc, disc.id);
+      expect(hasActiveDiscontinuity(cleared)).toBe(false);
+
+      // Resolve — fill the gap with a connecting leg
+      const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = {
+        ident: 'CONNECT',
+        legType: 'TF',
+      };
+      const resolved = resolveDiscontinuity(cleared, connectingLeg);
+
+      // Length stays 5 — discontinuity slot is replaced, not removed
+      expect(resolved).toHaveLength(5);
+      expect(resolved[2]).toMatchObject({ ident: 'CONNECT', discontinuity: false });
+      expect(hasActiveDiscontinuity(resolved)).toBe(false);
     });
   });
 });

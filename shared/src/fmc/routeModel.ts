@@ -119,3 +119,44 @@ export function hasActiveDiscontinuity(route: RouteEntry[]): boolean {
     (entry) => isRouteDiscontinuity(entry) && !entry.cleared,
   );
 }
+
+/**
+ * Finds a **cleared** discontinuity marker in the route array and replaces it
+ * with the provided `connectingLeg` waypoint.
+ *
+ * The discontinuity entry is removed from the array and replaced in-place with
+ * a proper `FlightPlanWaypoint` (with `discontinuity: false`).
+ *
+ * Only the **first** cleared discontinuity is resolved — subsequent cleared
+ * discontinuities are left untouched.
+ *
+ * @param route         Current route entries.
+ * @param connectingLeg Waypoint data to insert in place of the cleared
+ *                      discontinuity. The `discontinuity` field is automatically
+ *                      set to `false` on the resulting entry.
+ * @returns A new route array with the first cleared discontinuity replaced by
+ *          the connecting leg.
+ * @throws If the route contains no cleared discontinuity.
+ */
+export function resolveDiscontinuity(
+  route: RouteEntry[],
+  connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'>,
+): RouteEntry[] {
+  const targetIndex = route.findIndex(
+    (entry) => isRouteDiscontinuity(entry) && entry.cleared,
+  );
+
+  if (targetIndex === -1) {
+    throw new Error('No cleared discontinuity found in route');
+  }
+
+  const waypoint: FlightPlanWaypoint = {
+    ...connectingLeg,
+    discontinuity: false,
+  };
+
+  const result = [...route];
+  result.splice(targetIndex, 1, waypoint);
+
+  return result;
+}
