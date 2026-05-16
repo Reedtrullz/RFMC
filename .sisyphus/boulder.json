@@ -18,6 +18,15 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-05-16T12:10:35.581Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "**Extract LSK special actions** — Move `des_now`, `step_plan`, `align_irs`, `erase`, `copy_active`, `print_msg`, `view_msg_*` out of `pressLSK` into `shared/src/fmc/actionHandlers/specialActions.ts`.",
+      "session_id": "ses_1cf4a0dadffez4Xrj8hsAo3KvL",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-16T12:22:05.891Z"
     }
   }
 }
