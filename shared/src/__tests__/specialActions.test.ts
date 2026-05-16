@@ -84,8 +84,6 @@ describe('handleSpecialLskAction', () => {
       isModified: false,
       execLit: false,
       editWaypointIndex: null,
-      scratchpad: '',
-      scratchpadError: null,
     });
   });
 
