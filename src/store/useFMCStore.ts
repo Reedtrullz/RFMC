@@ -514,6 +514,17 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
   }
 }
 
+
+function stageHoldField(state: FMCState, field: string, value: any): Partial<FMCState> {
+  const base = state.holdPending ?? state.hold;
+  return {
+    holdPending: { ...base, [field]: value },
+    isModified: true,
+    execLit: true,
+    scratchpad: '',
+    scratchpadError: null,
+  };
+}
 export const useFMCStore = create<FMCStore>((set, get) => ({
   ...defaultState,
 
@@ -1205,32 +1216,23 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   setHoldFix: (ident: string) => {
     const state = get();
-    const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, fix: ident.toUpperCase() }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
+    set({ ...stageHoldField(state, 'fix', ident.toUpperCase()) });
   },
 
   setInboundCourse: (crs: number) => {
-    const state = get();
-    const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, inboundCourse: crs }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
+    set(stageHoldField(get(), 'inboundCourse', crs));
   },
 
   setLegTime: (time: number) => {
-    const state = get();
-    const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, legTime: time }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
+    set(stageHoldField(get(), 'legTime', time));
   },
 
   setLegDist: (dist: number) => {
-    const state = get();
-    const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, legDist: dist }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
+    set(stageHoldField(get(), 'legDist', dist));
   },
 
   setHoldDirection: (dir: 'L' | 'R') => {
-    const state = get();
-    const base = state.holdPending ?? state.hold;
-    set({ holdPending: { ...base, direction: dir }, isModified: true, execLit: true, scratchpad: '', scratchpadError: null });
+    set(stageHoldField(get(), 'direction', dir));
   },
 
   // ---- Tutorial ----
@@ -2060,6 +2062,7 @@ useTrainingStore.subscribe((state) => {
     trainingStepIndex: state.trainingStepIndex,
     trainingCompleted: state.trainingCompleted,
   });
+
 });
 
 // Start the FMS Ecosystem tick (1Hz)
