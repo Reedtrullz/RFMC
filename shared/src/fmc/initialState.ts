@@ -1,4 +1,5 @@
 import type { FMCState } from '../types/fmc';
+import { createInitialScratchpadState } from './scratchpadEngine';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildInitialFMCState
@@ -16,6 +17,7 @@ export function buildInitialFMCState(): FMCState {
     pageHistory: [],
     scratchpad: '',
     scratchpadError: null,
+    scratchpadState: createInitialScratchpadState(),
     demoMode: false,
 
     autopilot: {
