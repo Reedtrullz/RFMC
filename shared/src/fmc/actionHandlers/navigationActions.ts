@@ -1,4 +1,4 @@
-import type { PageType, FMCState, LSKId } from '../../types/fmc';
+import type { PageType, FMCState } from '../../types/fmc';
 
 /**
  * LSK page navigation action definitions.

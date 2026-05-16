@@ -824,7 +824,6 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           handled = true;
         }
         break;
-      case 'atsu_msgs': state.setPage('ATSU_MSGS'); handled = true; break;
       case 'print_msg':
         set({ scratchpad: 'PRINTING...', msgLight: true });
         setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' }), 1500);
