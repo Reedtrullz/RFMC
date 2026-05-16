@@ -198,6 +198,8 @@ export interface DisplayData {
   lskLabels?: Record<string, string>;
   /** Error message for the scratchpad (e.g., "NOT SUPPORTED") */
   scratchpadError?: string | null;
+  /** Legacy push message — prefixed scratchpad display string */
+  fmcPushMessage?: string | null;
 }
 
 /** A Line Select Key identifier */
@@ -413,6 +415,7 @@ export interface FMCState {
   pageHistory: PageType[];
   scratchpad: string;
   scratchpadError: string | null;
+  fmcPushMessage?: string | null;       // transitional — display compat, use scratchpadState instead
   scratchpadState?: ScratchpadState;     // canonical scratchpad engine state (transitional — will become required)
   demoMode: boolean;
   

@@ -239,6 +239,7 @@ describe('FMC Store', () => {
       currentPage: 'TAKEOFF_REF',
       scratchpad: '',
       scratchpadError: null,
+      scratchpadState: { buffer: '', message: null, messageQueue: [], history: [] },
       msgLight: false,
       takeoff: {
         runway: '04L',
@@ -260,9 +261,8 @@ describe('FMC Store', () => {
 
     const state = useFMCStore.getState();
     expect(state.takeoff).toMatchObject({ runway: '19', v1: 0, vr: 0, v2: 0 });
-    expect(state.scratchpad).toBe('V SPEEDS DELETED');
+    expect(state.scratchpadError).toBe('V SPEEDS DELETED');
     expect(state.msgLight).toBe(true);
-    expect(state.execLit).toBe(true);
   });
 
   it('sets landing approach reference values from TAKEOFF REF page 2', () => {

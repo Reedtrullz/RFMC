@@ -2,6 +2,7 @@ import type { FMCState } from '../types/fmc';
 import type { DisplayData } from '../types/fmc';
 import { displayDataToGrid, scratchpadToGridSegment } from './displayGrid';
 import { getPageRenderer } from './pages/index';
+import { getActiveDisplay } from './scratchpadEngine';
 import type { DisplayColor } from '../fmc/displayColors';
 import type { RendererDisplayData } from './displayBuilderTypes';
 
@@ -29,9 +30,16 @@ export function buildDisplayData(state: FMCState): RendererDisplayData {
   const grid = displayDataToGrid(legacyData);
 
     // Build scratchpad segments.
-    const spText =
-      state.scratchpadError ?? state.scratchpad;
-    let color: DisplayColor = state.scratchpadError != null ? 'amber' : 'white';
+    // Prefer scratchpadState (new engine). Fall back to legacy scratchpad + scratchpadError.
+    let spText: string;
+    let color: DisplayColor = 'white';
+    if (state.scratchpadState) {
+      spText = getActiveDisplay(state.scratchpadState);
+      color = state.scratchpadState.message ? 'amber' : 'white';
+    } else {
+      spText = state.scratchpadError ?? state.scratchpad;
+      color = state.scratchpadError != null ? 'amber' : 'white';
+    }
     const scratchpad = spText
       ? [scratchpadToGridSegment(spText, { color })]
       : [];

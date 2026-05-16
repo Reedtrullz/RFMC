@@ -1,47 +1,56 @@
 import type { FMCState } from '../../types/fmc';
 import { isValidICAO } from '../validation';
-
-export type RouteActionResult = {
-  handled: boolean;
-  patch?: Partial<FMCState>;
-  scratchpadError?: string;
-  sideEffect?: 'expand_active_route' | null;
-};
+import type { FmcActionResult } from './actionResult';
 
 export function handleSetFromTo(
   state: FMCState,
   scratchpad: string
-): RouteActionResult {
+): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
-  const [origin, dest] = scratchpad.split('/');
-  if (!origin || !dest) {
-    return { handled: true, scratchpadError: 'INVALID FORMAT' };
+  const parts = scratchpad.split('/');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_FORMAT' as const, text: 'INVALID FORMAT', source: 'routeActions' },
+    };
   }
 
-  const oRes = isValidICAO(origin.toUpperCase());
-  const dRes = isValidICAO(dest.toUpperCase());
-  if (!oRes.valid || !dRes.valid) {
-    return { handled: true, scratchpadError: 'INVALID FORMAT' };
+  const from = parts[0].toUpperCase();
+  const to = parts[1].toUpperCase();
+
+  const fromResult = isValidICAO(from);
+  const toResult = isValidICAO(to);
+  if (!fromResult.valid || !toResult.valid) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_FORMAT' as const, text: 'INVALID FORMAT', source: 'routeActions' },
+    };
   }
 
   return {
     handled: true,
-    sideEffect: 'expand_active_route',
-    patch: {
-      pendingRoute: {
-        ...state.route,
-        origin: origin.toUpperCase(),
-        destination: dest.toUpperCase(),
+    success: {
+      clearScratchpad: true,
+      patch: {
+        isModified: true,
+        execLit: true,
+        scratchpad: '' as any,
+        scratchpadError: null as any,
+        pendingRoute: {
+          origin: from,
+          destination: to,
+          flightNumber: (state.pendingRoute ?? state.route)?.flightNumber ?? null as any,
+        },
+        pendingFlightPlan: {
+          origin: from,
+          destination: to,
+          flightNumber: (state.pendingFlightPlan ?? state.flightPlan)?.flightNumber ?? '',
+          route: '',
+          waypoints: [],
+        },
       },
-      pendingFlightPlan: {
-        ...state.flightPlan,
-        origin: origin.toUpperCase(),
-        destination: dest.toUpperCase(),
-      },
-      isModified: true,
-      execLit: true,
-      scratchpad: '',
+      sideEffect: 'expand_active_route',
     },
   };
 }

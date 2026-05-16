@@ -1,276 +1,286 @@
 import type { FMCState } from '../../types/fmc';
-import { isValidSpeed, isValidTemperature, isValidVSpeeds, isValidWind } from '../validation';
+import { isValidTemperature, isValidWind } from '../validation';
+import type { FmcActionResult } from './actionResult';
 
-export interface TakeoffActionResult {
-  handled: boolean;
-  patch?: Partial<FMCState>;
-  scratchpadError?: string;
-  scratchpadMessage?: string;
-}
+const VALID_TO_MODES = ['TO', 'TO 1', 'TO 2'];
 
-export function handleSelectTo(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
-  const toMode = scratchpad ? scratchpad.toUpperCase() : 'TO';
+export function handleSelectTo(state: FMCState, scratchpad: string): FmcActionResult {
+  const mode = scratchpad || 'TO';
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, toMode } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, toMode: mode } } },
   };
 }
 
-export function handleSelectTo1(
-  state: FMCState
-): TakeoffActionResult {
+export function handleSelectTo1(state: FMCState): FmcActionResult {
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, toMode: 'TO 1' } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, toMode: 'TO 1' } } },
   };
 }
 
-export function handleSelectTo2(
-  state: FMCState
-): TakeoffActionResult {
+export function handleSelectTo2(state: FMCState): FmcActionResult {
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, toMode: 'TO 2' } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, toMode: 'TO 2' } } },
   };
 }
 
-export function handleSetRunway(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleSetRunway(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   if (scratchpad.length < 2) {
-    return { handled: true, scratchpadError: 'INVALID ENTRY' };
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'takeoffActions' },
+    };
   }
 
   const runway = scratchpad.toUpperCase();
-  const runwayChanged = !!(state.takeoff.runway && state.takeoff.runway !== runway);
-  const speedsEntered = state.takeoff.v1 > 0 || state.takeoff.vr > 0 || state.takeoff.v2 > 0;
+  const prevRunway = state.takeoff.runway;
 
-  if (runwayChanged && speedsEntered) {
+  if (prevRunway && prevRunway !== runway && (state.takeoff.v1 || state.takeoff.vr || state.takeoff.v2)) {
     return {
       handled: true,
-      patch: {
-        takeoff: { ...state.takeoff, runway, v1: 0, vr: 0, v2: 0 },
-        msgLight: true,
+      success: {
+        clearScratchpad: true,
+        scratchpadMessage: 'V SPEEDS DELETED',
+        patch: {
+          takeoff: { ...state.takeoff, runway, v1: 0, vr: 0, v2: 0 },
+          msgLight: true,
+        } as any,
       },
-      scratchpadMessage: 'V SPEEDS DELETED',
     };
   }
 
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, runway } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, runway } } },
   };
 }
 
-export function handleSetToMode(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleSetToMode(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
-  const mode = scratchpad.toUpperCase();
-  if (!['TO', 'TO 1', 'TO 2'].includes(mode)) {
-    return { handled: true, scratchpadError: 'INVALID ENTRY' };
+  if (!VALID_TO_MODES.includes(scratchpad.toUpperCase())) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'takeoffActions' },
+    };
   }
 
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, toMode: mode } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, toMode: scratchpad.toUpperCase() } } },
   };
 }
 
-function buildV1Patch(state: FMCState, scratchpad: string): TakeoffActionResult {
-  if (scratchpad) {
-    const v1 = parseInt(scratchpad, 10);
-    const result = isValidSpeed(scratchpad);
-    if (!result.valid) {
-      return { handled: true, scratchpadError: result.error };
+export function handleSetV1(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) {
+    if (state.takeoff.suggestedV1) {
+      return {
+        handled: true,
+        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v1: state.takeoff.suggestedV1 } } },
+      };
     }
-    const newTakeoff = { ...state.takeoff, v1 };
-    const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-    if (!vsResult.valid) {
-      return { handled: true, scratchpadError: vsResult.error };
-    }
-    return { handled: true, patch: { takeoff: newTakeoff } };
+    return { handled: false };
   }
-  if (state.takeoff.suggestedV1) {
+
+  const v1 = parseInt(scratchpad, 10);
+  if (isNaN(v1) || v1 < 0 || v1 > 400) {
     return {
       handled: true,
-      patch: { takeoff: { ...state.takeoff, v1: state.takeoff.suggestedV1 } },
+      failure: { code: 'OUT_OF_RANGE' as const, text: 'OUT OF RANGE', source: 'takeoffActions' },
     };
   }
-  return { handled: false };
-}
 
-export function handleSetV1(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
-  return buildV1Patch(state, scratchpad);
-}
-
-function buildVrPatch(state: FMCState, scratchpad: string): TakeoffActionResult {
-  if (scratchpad) {
-    const vr = parseInt(scratchpad, 10);
-    const result = isValidSpeed(scratchpad);
-    if (!result.valid) {
-      return { handled: true, scratchpadError: result.error };
-    }
-    const newTakeoff = { ...state.takeoff, vr };
-    const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-    if (!vsResult.valid) {
-      return { handled: true, scratchpadError: vsResult.error };
-    }
-    return { handled: true, patch: { takeoff: newTakeoff } };
-  }
-  if (state.takeoff.suggestedVr) {
+  if (state.takeoff.vr && v1 >= state.takeoff.vr) {
     return {
       handled: true,
-      patch: { takeoff: { ...state.takeoff, vr: state.takeoff.suggestedVr } },
+      failure: { code: 'V_SPEEDS_DELETED' as const, text: 'V1 MUST BE < VR', source: 'takeoffActions' },
     };
   }
-  return { handled: false };
+
+  return {
+    handled: true,
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v1 } } },
+  };
 }
 
-export function handleSetVr(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
-  return buildVrPatch(state, scratchpad);
-}
-
-function buildV2Patch(state: FMCState, scratchpad: string): TakeoffActionResult {
-  if (scratchpad) {
-    const v2 = parseInt(scratchpad, 10);
-    const result = isValidSpeed(scratchpad);
-    if (!result.valid) {
-      return { handled: true, scratchpadError: result.error };
+export function handleSetVr(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) {
+    if (state.takeoff.suggestedVr) {
+      return {
+        handled: true,
+        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, vr: state.takeoff.suggestedVr } } },
+      };
     }
-    const newTakeoff = { ...state.takeoff, v2 };
-    const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-    if (!vsResult.valid) {
-      return { handled: true, scratchpadError: vsResult.error };
-    }
-    return { handled: true, patch: { takeoff: newTakeoff } };
+    return { handled: false };
   }
-  if (state.takeoff.suggestedV2) {
+
+  const vr = parseInt(scratchpad, 10);
+  if (isNaN(vr) || vr < 0 || vr > 400) {
     return {
       handled: true,
-      patch: { takeoff: { ...state.takeoff, v2: state.takeoff.suggestedV2 } },
+      failure: { code: 'OUT_OF_RANGE' as const, text: 'OUT OF RANGE', source: 'takeoffActions' },
     };
   }
-  return { handled: false };
+
+  if (state.takeoff.v1 && vr <= state.takeoff.v1) {
+    return {
+      handled: true,
+      failure: { code: 'V_SPEEDS_DELETED' as const, text: 'V1 MUST BE < VR', source: 'takeoffActions' },
+    };
+  }
+
+  return {
+    handled: true,
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, vr } } },
+  };
 }
 
-export function handleSetV2(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
-  return buildV2Patch(state, scratchpad);
+export function handleSetV2(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) {
+    if (state.takeoff.suggestedV2) {
+      return {
+        handled: true,
+        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v2: state.takeoff.suggestedV2 } } },
+      };
+    }
+    return { handled: false };
+  }
+
+  const v2 = parseInt(scratchpad, 10);
+  if (isNaN(v2) || v2 < 0 || v2 > 400) {
+    return {
+      handled: true,
+      failure: { code: 'OUT_OF_RANGE' as const, text: 'OUT OF RANGE', source: 'takeoffActions' },
+    };
+  }
+
+  if (state.takeoff.vr && v2 <= state.takeoff.vr) {
+    return {
+      handled: true,
+      failure: { code: 'V_SPEEDS_DELETED' as const, text: 'VR MUST BE < V2', source: 'takeoffActions' },
+    };
+  }
+
+  return {
+    handled: true,
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v2 } } },
+  };
 }
 
-export function handleSetTrim(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleSetTrim(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const trim = parseFloat(scratchpad);
   if (isNaN(trim)) {
-    return { handled: true, scratchpadError: 'INVALID ENTRY' };
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'takeoffActions' },
+    };
   }
 
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, trim } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, trim } } },
   };
 }
 
-export function handleSetOat(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleSetOat(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const result = isValidTemperature(scratchpad);
   if (!result.valid) {
-    return { handled: true, scratchpadError: result.error };
+    return {
+      handled: true,
+      failure: { code: 'OUT_OF_RANGE' as const, text: 'OUT OF RANGE', source: 'takeoffActions' },
+    };
   }
 
+  const oat = parseInt(scratchpad, 10) || 0;
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, oat: parseInt(scratchpad) || 0 } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, oat } } },
   };
 }
 
-export function handleSetAssumedTemp(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleSetAssumedTemp(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
-  const temp = parseInt(scratchpad);
+  const temp = parseInt(scratchpad, 10);
   if (isNaN(temp)) {
-    return { handled: true, scratchpadError: 'INVALID ENTRY' };
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'takeoffActions' },
+    };
   }
 
   return {
     handled: true,
-    patch: { takeoff: { ...state.takeoff, assumedTemp: temp } },
+    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, assumedTemp: temp } } },
   };
 }
 
-export function handleTakeoffWind(
-  state: FMCState,
-  scratchpad: string
-): TakeoffActionResult {
+export function handleTakeoffWind(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const wRes = isValidWind(scratchpad);
   if (!wRes.valid) {
-    return { handled: true, scratchpadError: wRes.error };
+    return {
+      handled: true,
+      failure: { code: 'INVALID_FORMAT' as const, text: 'INVALID FORMAT', source: 'takeoffActions' },
+    };
   }
 
   const [wdir, wspd] = scratchpad.split('/');
   return {
     handled: true,
-    patch: {
-      takeoff: {
-        ...state.takeoff,
-        windDir: parseInt(wdir) || 0,
-        windSpeed: parseInt(wspd) || 0,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        takeoff: {
+          ...state.takeoff,
+          windDir: parseInt(wdir) || 0,
+          windSpeed: parseInt(wspd) || 0,
+        },
       },
     },
   };
 }
 
-const selectToIdent: Record<string, (state: FMCState, scratchpad: string) => TakeoffActionResult> = {
-  select_to: handleSelectTo,
-  select_to1: (_state, _scratchpad) => handleSelectTo1(_state),
-  select_to2: (_state, _scratchpad) => handleSelectTo2(_state),
-  set_runway: handleSetRunway,
-  set_to_mode: handleSetToMode,
-  set_v1: handleSetV1,
-  set_vr: handleSetVr,
-  set_v2: handleSetV2,
-  set_trim: handleSetTrim,
-  set_oat: handleSetOat,
-  set_assumed_temp: handleSetAssumedTemp,
-  set_wind: handleTakeoffWind,
-};
-
 export function handleTakeoffAction(
   action: string,
   state: FMCState,
   scratchpad: string
-): TakeoffActionResult {
-  const handler = selectToIdent[action];
-  if (!handler) return { handled: false };
-  return handler(state, scratchpad) as TakeoffActionResult;
+): FmcActionResult {
+  switch (action) {
+    case 'select_to':
+      return handleSelectTo(state, scratchpad);
+    case 'select_to_1':
+      return handleSelectTo1(state);
+    case 'select_to_2':
+      return handleSelectTo2(state);
+    case 'set_runway':
+      return handleSetRunway(state, scratchpad);
+    case 'set_to_mode':
+      return handleSetToMode(state, scratchpad);
+    case 'set_v1':
+      return handleSetV1(state, scratchpad);
+    case 'set_vr':
+      return handleSetVr(state, scratchpad);
+    case 'set_v2':
+      return handleSetV2(state, scratchpad);
+    case 'set_trim':
+      return handleSetTrim(state, scratchpad);
+    case 'set_oat':
+      return handleSetOat(state, scratchpad);
+    case 'set_assumed_temp':
+      return handleSetAssumedTemp(state, scratchpad);
+    case 'set_wind':
+      return handleTakeoffWind(state, scratchpad);
+    default:
+      return { handled: false };
+  }
 }

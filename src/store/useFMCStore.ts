@@ -25,7 +25,8 @@ import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
-import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage } from '@shared/fmc/fmcScratchpadAdapter';
+import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult } from '@shared/fmc/fmcScratchpadAdapter';
+import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { resolveLskNavigation } from '@shared';
 import { handleSpecialLskAction } from '@shared/fmc/actionHandlers/specialActions';
 import { handleRadioLskAction } from '@shared/fmc/actionHandlers/radioActions';
@@ -740,9 +741,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Special actions — delegated to shared handler
     if (!handled) {
-      const specialResult = handleSpecialLskAction(action, state, scratchpad);
+      const specialResult = handleSpecialLskAction(action, state, scratchpad) as FmcActionResult & { sideEffect?: string; returnEarly?: boolean };
       if (specialResult.handled) {
-        if (specialResult.patch) set(specialResult.patch as any);
+        const ar = applyFmcActionResult(set as any, get as any, specialResult as FmcActionResult);
+        if (ar.shouldReturn && specialResult.failure) return;
+        if (specialResult.success?.patch) set(specialResult.success.patch as any);
         if (specialResult.sideEffect === 'step_plan') { get().stepPlanForward(); return; }
         if (specialResult.sideEffect === 'print_message') {
           setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
@@ -754,34 +757,34 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Route actions — delegated to shared handler
     if (!handled && action === 'set_from_to') {
-      const routeResult = handleSetFromTo(state, scratchpad);
+      const routeResult = handleSetFromTo(state, scratchpad) as FmcActionResult & { sideEffect?: string };
       if (routeResult.handled) {
-        if (routeResult.scratchpadError) {
-          set({ scratchpadError: routeResult.scratchpadError });
-          return;
-        }
-        if (routeResult.patch) set(routeResult.patch as any);
-        if (routeResult.sideEffect === 'expand_active_route') get().expandActiveRoute();
+        const ar = applyFmcActionResult(set as any, get as any, routeResult as FmcActionResult);
+        if (ar.shouldReturn) return;
+        if (routeResult.success?.patch) set(routeResult.success.patch as any);
+        if ((routeResult as any).sideEffect === 'expand_active_route') get().expandActiveRoute();
         handled = true;
       }
     }
 
     // Radio tuning actions — delegated to shared handler
     if (!handled) {
-      const radioResult = handleRadioLskAction(action, state, scratchpad);
+      const radioResult = handleRadioLskAction(action, state, scratchpad) as FmcActionResult;
       if (radioResult.handled) {
-        if (radioResult.patch) set(radioResult.patch as any);
-        if (radioResult.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as any);
-        if (radioResult.message) fmcPushMessage(set as any, get as any, radioResult.message);
+        const ar = applyFmcActionResult(set as any, get as any, radioResult);
+        if (ar.shouldReturn) return;
+        if (radioResult.success?.patch) set(radioResult.success.patch as any);
         handled = true;
       }
     }
 
     // LEGS waypoint editing — partially delegated to shared handler
     if (!handled) {
-      const legResult = handleLegWpAction(action, state, scratchpad);
+      const legResult = handleLegWpAction(action, state, scratchpad) as FmcActionResult & { sideEffect?: string };
       if (legResult.handled) {
-        if (legResult.patch) set(legResult.patch as any);
+        const ar = applyFmcActionResult(set as any, get as any, legResult as FmcActionResult);
+        if (ar.shouldReturn) return;
+        if (legResult.success?.patch) set(legResult.success.patch as any);
         handled = true;
       }
     }
@@ -807,26 +810,30 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Performance actions — delegated to shared handler
     if (!handled) {
-      const perfResult = handlePerformanceAction(action, state, scratchpad);
+      const perfResult = handlePerformanceAction(action, state, scratchpad) as FmcActionResult;
       if (perfResult.handled) {
-        if (perfResult.scratchpadError) { fmcPushMessage(set as any, get as any, { id: 'auto', text: perfResult.scratchpadError, priority: 5, source: 'validation', clearsOnInput: false, clearsOnExec: true, clearsOnPageChange: true, createdAt: Date.now() }); set({ scratchpadError: perfResult.scratchpadError }); handled = true; }
-        else {
-          if (perfResult.patch) Object.assign(updates, perfResult.patch);
-          handled = true;
-        }
+        const ar = applyFmcActionResult(set as any, get as any, perfResult);
+        if (ar.shouldReturn) return;
+        if (perfResult.success?.patch) Object.assign(updates, perfResult.success.patch);
+        handled = true;
       }
     }
 
     // Takeoff actions — delegated to shared handler
     if (!handled) {
-      const toResult = handleTakeoffAction(action, state, scratchpad);
+      const toResult = handleTakeoffAction(action, state, scratchpad) as FmcActionResult & { scratchpadMessage?: string };
       if (toResult.handled) {
-        if (toResult.scratchpadError) { set({ scratchpadError: toResult.scratchpadError }); handled = true; }
-        else {
-          if (toResult.patch) Object.assign(updates, toResult.patch);
-          if (toResult.scratchpadMessage) scratchpadMessage = toResult.scratchpadMessage;
-          handled = true;
+        const ar = applyFmcActionResult(set as any, get as any, toResult as FmcActionResult);
+        if (ar.shouldReturn) return;
+        if (toResult.success?.patch) Object.assign(updates, toResult.success.patch);
+        if (toResult.success?.scratchpadMessage || (toResult as any).scratchpadMessage) {
+          const msg = toResult.success?.scratchpadMessage || (toResult as any).scratchpadMessage;
+          scratchpadMessage = msg;
+          (updates as any).scratchpadError = msg;
+          (updates as any).msgLight = true;
+          (updates as any).scratchpad = '';
         }
+        handled = true;
       }
     }
 
