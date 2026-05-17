@@ -29,25 +29,23 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
         </g>
       )}
       
-      {/* Range (Top Right) */}
-      <g transform="translate(96 6)" fontSize="3.5" fill={colors.active} fontWeight="bold" textAnchor="end">
-        <text>{model.range}</text>
-      </g>
-
-      {/* Active Waypoint Info (Top Right) */}
-      {model.anchorZones.waypointBlock && (
-        <g transform="translate(96 15)" textAnchor="end" fontSize="3.2" fontWeight="bold">
-          <text fill={colors.magenta}>{model.anchorZones.waypointBlock.ident}</text>
-          <text y="4" fill={colors.text}>{model.anchorZones.waypointBlock.dist} NM</text>
-          <text y="8" fill={colors.text}>{model.anchorZones.waypointBlock.ete}</text>
+      {/* Range (Top Right) - Airbus only */}
+      {isAirbus && (
+        <g transform="translate(96 6)" fontSize="3.5" fill={colors.active} fontWeight="bold" textAnchor="end">
+          <text>{model.range}</text>
         </g>
       )}
-
-      {/* GS / TAS (Top Left) */}
-      <g transform="translate(4 17)" fontSize="3" fill={colors.text} fontWeight="bold">
-        <text>GS 450</text>
-        <text y="4">TAS 462</text>
-      </g>
+ 
+      {/* Active Waypoint Info (Top Right) - Aligned to top row for Boeing */}
+      {model.anchorZones.waypointBlock && (
+        <g transform="translate(96 6)" textAnchor="end" fontSize="3.2" fontWeight="bold">
+          <text fill={colors.magenta} filter="url(#boeing-glow)">{model.anchorZones.waypointBlock.ident}</text>
+          <text y="4.6" fill={colors.text}>
+            {model.anchorZones.waypointBlock.eta.replace(':', '').replace('z', '')}.8z
+          </text>
+          <text y="9.2" fill={colors.text}>{model.anchorZones.waypointBlock.dist.toFixed(1)} NM</text>
+        </g>
+      )}
     </g>
   );
 }

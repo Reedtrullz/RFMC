@@ -29,6 +29,7 @@ export const NAV_FIXES: Record<string, NavFix> = {
   'LUNIP': { ident: 'LUNIP', type: 'WAYPOINT', lat: 60.1000, lon: 10.5000 },
   'PESOT': { ident: 'PESOT', type: 'WAYPOINT', lat: 60.1500, lon: 8.5000 },
   'LOGUT': { ident: 'LOGUT', type: 'WAYPOINT', lat: 60.2000, lon: 6.5000 },
+  'ROWSY': { ident: 'ROWSY', type: 'WAYPOINT', lat: 46.5200, lon: -122.4519 },
 };
 
 export const PROCEDURES: Procedure[] = [

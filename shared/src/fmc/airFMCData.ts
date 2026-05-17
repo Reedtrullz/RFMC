@@ -238,6 +238,8 @@ export const WAYPOINTS: Record<string, { lat: number; lon: number }> = {
   PHX: { lat: 33.433, lon: -112.017 },
   SAN: { lat: 32.7336, lon: -117.190 },
   SNA: { lat: 33.6757, lon: -117.867 },
+  ROWSY: { lat: 46.5200, lon: -122.4519 },
+
 
   // --- Procedure waypoints for major hubs ---
   SMKEY: { lat: 33.364, lon: -83.921 },

@@ -9,6 +9,18 @@ import type {
   NavigationDisplayModel 
 } from './ndTypes';
 
+export function getAircraftPositionWithFallback(state: FMCState): { lat: number; lon: number } {
+  if (state.aircraftState?.lat !== undefined && state.aircraftState?.lon !== undefined) {
+    return { lat: state.aircraftState.lat, lon: state.aircraftState.lon };
+  }
+  const fallbackIcao = state.position.refAirport || state.flightPlan.origin || state.route.origin || state.flightPlan.destination || state.route.destination || '';
+  const fallbackCoords = fallbackIcao ? getAirportCoordinates(fallbackIcao) : null;
+  if (fallbackCoords) {
+    return { lat: fallbackCoords.lat, lon: fallbackCoords.lon };
+  }
+  return { lat: 52.3, lon: 4.7 };
+}
+
 export function buildNavigationDisplayModel(
   state: FMCState,
   efis?: EFISState
@@ -29,9 +41,7 @@ export function buildNavigationDisplayModel(
   // Projection based on mode
   const isPlanMode = resolvedEfis.mode === 'PLAN' || resolvedEfis.mode === 'PLN';
   
-  const aircraftPos = (state.aircraftState?.lat !== undefined && state.aircraftState?.lon !== undefined)
-    ? { lat: state.aircraftState.lat, lon: state.aircraftState.lon }
-    : { lat: 52.3, lon: 4.7 };
+  const aircraftPos = getAircraftPositionWithFallback(state);
   const heading = state.aircraftState?.heading || 0;
 
   // For PLAN mode, we center on the active waypoint or a selected one
@@ -103,6 +113,7 @@ export function buildNavigationDisplayModel(
     navSource: state.activeNavSource,
     anpNm: state.navPerformance.anpNm,
     rnpNm: state.navPerformance.rnpNm,
+    radios: state.radios,
   };
 }
 
@@ -463,9 +474,7 @@ function buildHoldOverlay(state: FMCState, routePoints: NDRoutePoint[], activePo
 
 function buildAnchorZones(state: FMCState, efis: EFISState, activeIndex: number, routeItems: RouteItem[]): NDAnchorZones {
   const aircraftState = state.aircraftState;
-  const aircraftPos = (aircraftState?.lat !== undefined && aircraftState?.lon !== undefined)
-    ? { lat: aircraftState.lat, lon: aircraftState.lon }
-    : { lat: 52.3, lon: 4.7 };
+  const aircraftPos = getAircraftPositionWithFallback(state);
   const activeWP = routeItems[activeIndex];
   const gs = aircraftState?.gs ?? 0;
 

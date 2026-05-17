@@ -16,10 +16,9 @@ export function RangeRings({ model, color = '#003344' }: RangeRingsProps) {
         const radius = factor * maxR;
         const rangeLabel = Math.round(model.range * factor);
         
-        // 45 degree position for Boeing-style labels
-        const labelRad = (Math.PI * -45) / 180;
-        const labelX = 50 + Math.cos(labelRad) * radius;
-        const labelY = cy + Math.sin(labelRad) * radius;
+        // Center position for high-fidelity Boeing range labels
+        const labelX = 50;
+        const labelY = cy - radius + 1.0;
 
         return (
           <g key={i}>
@@ -47,17 +46,32 @@ export function RangeRings({ model, color = '#003344' }: RangeRingsProps) {
             
             {/* Intermediate Range Labels */}
             {i > 0 && i < 3 && (
-              <text
-                x={labelX}
-                y={labelY}
-                fill={color}
-                fontSize="2.4"
-                textAnchor="middle"
-                className="font-avionics"
-                opacity="0.7"
-              >
-                {rangeLabel}
-              </text>
+              <g>
+                <text
+                  x={labelX}
+                  y={labelY}
+                  fill="black"
+                  fontSize="2.5"
+                  textAnchor="middle"
+                  className="font-avionics"
+                  opacity="0.9"
+                  stroke="black"
+                  strokeWidth="0.6"
+                >
+                  {rangeLabel}
+                </text>
+                <text
+                  x={labelX}
+                  y={labelY}
+                  fill="#ffffff"
+                  fontSize="2.5"
+                  textAnchor="middle"
+                  className="font-avionics"
+                  opacity="0.75"
+                >
+                  {rangeLabel}
+                </text>
+              </g>
             )}
           </g>
         );

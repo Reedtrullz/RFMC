@@ -98,13 +98,36 @@ export function B737ND({ model }: B737NDProps) {
         <text>FMC L</text>
       </g>
 
+      {/* Active Overlay List (Bottom Left) */}
+      <g transform="translate(4 64)" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95">
+        <text fill={model.overlays.arpt ? '#00ccff' : '#445566'}>ARPT</text>
+        <text y="3.4" fill={model.overlays.wpt ? '#00ccff' : '#445566'}>WPT</text>
+        <text y="6.8" fill={model.overlays.sta ? '#00ccff' : '#445566'}>STA</text>
+        <text y="10.2" fill={model.overlays.terr ? '#00ccff' : '#445566'}>TERR</text>
+        <text y="13.6" fill={model.overlays.tfc ? '#00ccff' : '#445566'}>TFC</text>
+      </g>
+
+      {/* VOR 1 / ADF 2 Blocks */}
+      <g transform="translate(4 81)" fontSize="2.8" fontWeight="bold" fill="#00ff66" opacity="0.95">
+        <text>VOR 1</text>
+        <text y="3.4" fill="#00ff66">{model.radios?.vor1 || '111.50'}</text>
+        <text y="6.8" fill="#00ff66">DME ----</text>
+      </g>
+
+      <g transform="translate(96 81)" textAnchor="end" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95">
+        <text>ADF 2</text>
+        <text y="3.4" fill="#00ccff">
+          {model.radios?.adf1 ? parseFloat(model.radios.adf1).toFixed(1) : '210.0'}
+        </text>
+      </g>
+
       {/* Aircraft Symbol */}
       <AircraftSymbol centered={model.centered} color={colors.active} style="boeing" />
 
       {/* Track Line (Boeing style) */}
       {!model.centered && model.mode !== 'PLN' && (
         <g transform={`rotate(${model.track - model.heading} 50 ${cy})`}>
-          <line x1="50" y1={cy} x2="50" y2={cy - 45} stroke="#ffffff" strokeWidth="0.5" strokeDasharray="2 2" opacity="0.6" />
+          <line x1="50" y1={cy} x2="50" y2={cy - 45} stroke="#ffffff" strokeWidth="0.5" opacity="0.75" />
         </g>
       )}
 

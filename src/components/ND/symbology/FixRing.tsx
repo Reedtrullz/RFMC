@@ -23,7 +23,7 @@ export function FixRing({ model }: FixRingProps) {
       {fixes.map((fix, i) => {
         const refX = fix.refX ?? fix.x;
         const refY = fix.refY ?? fix.y;
-        if (refX === undefined || refY === undefined) return null;
+        if (refX === undefined || refY === undefined || isNaN(refX) || isNaN(refY)) return null;
         
         // Scale distance to pixels
         const distPx = fix.distance * (45 / model.range);

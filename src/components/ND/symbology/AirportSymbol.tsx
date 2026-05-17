@@ -10,7 +10,7 @@ export function AirportSymbol({ model }: AirportSymbolProps) {
 
   return (
     <g>
-      {model.backgroundAirports.map(point => (
+      {model.backgroundAirports.filter(p => !isNaN(p.x) && !isNaN(p.y)).map(point => (
         <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.7">
           {/* Airport Icon */}
           {isAirbus ? (

@@ -126,4 +126,9 @@ export interface NavigationDisplayModel {
   navSource: string;
   anpNm: number;
   rnpNm: number;
+  radios?: {
+    vor1: string;
+    vor2: string;
+    adf1: string;
+  };
 }

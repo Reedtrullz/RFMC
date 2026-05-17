@@ -6,7 +6,7 @@ interface HoldPatternProps {
 
 export function HoldPattern({ model }: HoldPatternProps) {
   const hold = model.holdOverlay;
-  if (!hold) return null;
+  if (!hold || isNaN(hold.x) || isNaN(hold.y)) return null;
 
   const isAirbus = model.style === 'airbus';
   const color = isAirbus ? '#00ff00' : '#ff00ff';

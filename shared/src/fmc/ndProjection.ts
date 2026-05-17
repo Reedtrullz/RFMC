@@ -32,6 +32,16 @@ export function projectGeoPointToND(
   const isPlan = mode === 'PLAN' || mode === 'PLN';
   
   const reference = isPlan && planCenter ? planCenter : aircraftPosition;
+  if (
+    !reference || 
+    reference.lat === undefined || reference.lon === undefined ||
+    isNaN(reference.lat) || isNaN(reference.lon) ||
+    !target || 
+    target.lat === undefined || target.lon === undefined ||
+    isNaN(target.lat) || isNaN(target.lon)
+  ) {
+    return null;
+  }
   const dist = distanceNm(reference, target);
   const brg = bearingDeg(reference, target);
   
