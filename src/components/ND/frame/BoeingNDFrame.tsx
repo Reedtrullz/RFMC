@@ -51,7 +51,11 @@ export function BoeingNDFrame({ model: _model, children }: BoeingNDFrameProps) {
 
           <rect width={screenRect.width} height={screenRect.height} fill="#020505" />
 
-          <g filter="url(#boeing-glow)">{children}</g>
+          <g filter="url(#boeing-glow)">
+            <g transform="scale(1.54)">
+              {children}
+            </g>
+          </g>
 
           <rect
             width={screenRect.width}

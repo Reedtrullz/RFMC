@@ -50,7 +50,9 @@ export function AirbusNDFrame({ model: _model, children }: AirbusNDFrameProps) {
             <rect width={screenRect.width} height={screenRect.height} fill="#020403" />
             
             <g filter="url(#airbus-bloom)">
-              {children}
+              <g transform="scale(1.58)">
+                {children}
+              </g>
             </g>
 
             <rect
