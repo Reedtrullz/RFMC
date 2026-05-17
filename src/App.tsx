@@ -125,6 +125,9 @@ export default function App() {
 
   useEffect(() => {
     const path = window.location.pathname;
+    if (path.startsWith('/visual/')) {
+      useFMCStore.setState({ mode: 'ACTIVE' });
+    }
     const setVisualPfdBase = (aircraftType: 'BOEING_737' | 'AIRBUS_A320') => {
       setCockpitMode(true);
       setAircraft(aircraftType);
