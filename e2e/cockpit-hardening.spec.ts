@@ -62,20 +62,37 @@ test.describe('Cockpit Hardening & Automation', () => {
     // Success if no crash and element was focused
   });
 
+  test('Boeing MCP heading and mode changes reach the PFD FMA', async ({ page }) => {
+    await page.getByTestId('layout-mode-automation').click();
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
+    await expect(page.getByTestId('pfd-panel')).toBeVisible();
+
+    await page.getByTestId('mcp-heading-knob').dispatchEvent('wheel', { deltaY: -100 });
+    await page.getByRole('button', { name: 'HDG SEL', exact: true }).click();
+
+    await expect(page.getByTestId('pfd-panel').getByText('HDG SEL')).toBeVisible();
+    await expect(page.getByTestId('pfd-panel').getByText('HDG SEL 001')).toBeVisible();
+  });
+
   test('Airbus FCU Managed Mode dots', async ({ page }) => {
-    // Switch to Airbus
-    await page.goto('/app');
-    // (Actual app would have a way to switch aircraft, e.g. via settings or route)
-    // Assuming there's a route for Airbus testing
-    await page.goto('/visual/airbus/init-a');
-    
-    // Go to cockpit mode
     await page.evaluate(() => {
-       // Mock switching aircraft and entering cockpit mode if needed
-       // But better to use the UI
+      (window as any).useAircraftStore.getState().setAircraft('AIRBUS_A320');
+      (window as any).useCockpitLayoutStore.getState().setCockpitLayoutMode('automation');
     });
-    
-    // For now, let's just use the visual route for FCU if it exists
-    // Or we rely on the existing visual-airbus-mcdu.spec.ts
+    await expect(page.getByTestId('autoflight-panel')).toBeVisible();
+    await expect(page.getByTestId('pfd-panel')).toBeVisible();
+
+    const headingKnob = page.getByTestId('push-pull-heading');
+    const box = await headingKnob.boundingBox();
+    expect(box).not.toBeNull();
+
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(700);
+    await page.mouse.up();
+    await expect(page.getByTestId('pfd-panel').getByText('HDG SEL 000')).toBeVisible();
+
+    await headingKnob.click();
+    await expect(page.getByTestId('pfd-panel').getByText('HDG MANAGED')).toBeVisible();
   });
 });

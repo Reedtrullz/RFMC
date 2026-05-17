@@ -6,11 +6,8 @@ Current automated baseline, build/audit state, latest reviewed commit, and valid
 
 ## Current Continuation Focus
 
-The dispatcher/store cleanup phase is complete enough for the next milestone. The active public-demo track is visible realism, workflow completion, and release hardening:
+The dispatcher/store cleanup and visible-polish cockpit slice are complete enough for the next milestone. The active public-demo track is now workflow completion, state-aware training, and release hardening:
 
-- Boeing MCP and Airbus FCU realism, with autoflight state reflected on PFD/ND.
-- Focused-panel and tablet visual regression coverage.
-- PFD follow-up states for approach, focused-panel, and failure/unavailable coverage.
 - State-driven training scenario guidance.
 - Boeing preflight workflow completion and Airbus workflow parity.
 - Richer deterministic navdata, LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
@@ -488,13 +485,13 @@ With the dispatcher extraction complete, each handler is responsible for declari
 
 ### Next visible gaps
 
-- PFDs now have an initial aircraft-family-specific realism pass; remaining PFD work is approach/failure/focused-panel coverage and deeper flight-director/approach cue behavior.
-- MCP/FCU needs to stop reading as generic web controls and become distinct Boeing/Airbus glareshield hardware.
-- Focused panels and tablet layouts need first-class visual coverage beyond the initial cockpit/ND slices.
+- Training cards still need to become state-aware and react to real FMC/autoflight progress.
+- Deeper flight-director, LNAV/VNAV, and approach cue behavior remains deferred until the guidance models are richer.
+- Mobile/portrait PWA layouts still need stable local browser coverage before they can be treated as protected.
 
-## Primary Flight Display Realism (Working Tree)
+## Primary Flight Display And Autoflight Visual Polish
 
-**Base commit**: `4c87e84`
+**Base commit**: `4268f7d`
 **Date**: 2026-05-17
 
 | Deliverable | Detail | Status |
@@ -502,12 +499,13 @@ With the dispatcher extraction complete, each handler is responsible for declari
 | Shared PFD model | Added selected heading, selected vertical speed, managed cues, and failure flags to the shared PFD state | **Implemented** |
 | Boeing PFD | Added brighter attitude sphere, pitch ladder, bank scale, flight-director cue, speed/altitude tapes, VSI, selected heading/speed/altitude bugs, and Boeing-style bottom row | **Implemented** |
 | Airbus PFD | Wired Airbus PFD to `useAutopilotStore` FCU state, added Airbus colors, managed cue dots, cyan FD, speed/altitude tapes, VSI, and Airbus-style bottom row | **Implemented** |
-| Visual baselines | Added deterministic Boeing/Airbus automation PFD routes and Playwright snapshots | **Captured** |
-| Unit coverage | Added PFD model tests for selected targets, IRS failure flags, managed Airbus targets, and FMA status mapping | **Covered** |
+| PFD follow-up baselines | Added deterministic Boeing/Airbus focused, approach, and failure/unavailable PFD routes and snapshots | **Captured** |
+| MCP/FCU hardware pass | Refined Boeing MCP and Airbus FCU with distinct panel surfaces, display windows, annunciators, knobs, and push/pull affordances | **Implemented** |
+| Autoflight coupling | Standalone cockpit MCP/FCU button presses now update the autoflight truth state that feeds the PFD FMA | **Covered** |
+| Focused/tablet baselines | Added focused-panel baselines for CDU/MCDU, ND, PFD, MCP/FCU plus tablet-landscape full-deck and automation layouts | **Captured** |
+| Unit/E2E coverage | Added PFD/FMA model tests and cockpit behavior checks for selected heading and Airbus managed/selected state | **Covered** |
 
 ### Remaining PFD scope
 
-- Focused PFD baselines for Boeing and Airbus.
-- Approach-mode PFD cue coverage.
-- Fail/unavailable PFD visual baselines.
 - Deeper flight-director command behavior once the LNAV/VNAV/autoflight model is richer.
+- Measured hardware-reference comparison for PFD/MCP/FCU dimensions, colors, and typography.

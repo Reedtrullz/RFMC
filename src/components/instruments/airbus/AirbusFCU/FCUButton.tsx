@@ -10,15 +10,16 @@ export function FCUButton({ label, active, onPress, highlighted = false }: FCUBu
     <button
       onClick={onPress}
       className={`
-        relative h-10 w-14 rounded-sm border-b-2 border-black/80 flex items-center justify-center
-        font-bold text-[10px] uppercase tracking-tighter transition-all
+        relative flex h-11 w-16 items-center justify-center rounded-[3px] border border-black/60 border-b-[4px]
+        font-bold text-[10px] uppercase tracking-normal transition-all active:translate-y-[2px] active:border-b
         ${highlighted ? 'ring-2 ring-cdu-amber shadow-[0_0_18px_rgba(255,184,77,0.65)]' : ''}
-        ${active ? 'bg-[#5a5d5d] text-white' : 'bg-[#3a3d3d] text-white/60 hover:bg-[#454848]'}
+        ${active ? 'bg-[#697273] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]' : 'bg-[#333a3b] text-white/62 hover:bg-[#424a4b]'}
       `}
     >
+      <div className="pointer-events-none absolute inset-0 rounded-[3px] bg-gradient-to-b from-white/12 to-black/22" />
       <span>{label}</span>
       {active && (
-        <div className="absolute bottom-1 w-6 h-0.5 bg-[#39ff14] shadow-[0_0_5px_#39ff14]" />
+        <div className="absolute bottom-1 h-1 w-7 rounded-sm bg-[#39ff14] shadow-[0_0_7px_#39ff14]" />
       )}
     </button>
   );

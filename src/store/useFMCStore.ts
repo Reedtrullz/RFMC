@@ -1983,9 +1983,9 @@ useAircraftStore.subscribe((state, prevState) => {
   }
 });
 
-// Synchronize autopilot truth from AutopilotStore
+// Synchronize standalone cockpit autoflight state from AutopilotStore.
 useAutopilotStore.subscribe((state) => {
-  useFMCStore.setState({ autopilot: { ...useFMCStore.getState().autopilot, truth: state.truth } });
+  useFMCStore.setState({ autopilot: { boeing: state.boeing, airbus: state.airbus, truth: state.truth } });
 });
 
 // Synchronize cockpit layout from CockpitLayoutStore

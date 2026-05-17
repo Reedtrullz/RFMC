@@ -15,6 +15,8 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
   let rollMode: BoeingFMAState['rollMode'] = '';
   if (truth.lateralActive === 'HDG_SEL') rollMode = 'HDG SEL';
   else if (truth.lateralActive === 'VOR_LOC') rollMode = 'VOR/LOC';
+  else if (truth.lateralActive === 'LOC') rollMode = 'VOR/LOC';
+  else if (truth.lateralActive === 'APP') rollMode = 'VOR/LOC';
   else if (truth.lateralActive === 'LNAV') rollMode = 'LNAV';
 
   let pitchMode: BoeingFMAState['pitchMode'] = '';
@@ -36,7 +38,7 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
     autothrottleMode,
     rollMode,
     pitchMode,
-    armedRollMode: truth.lateralArmed === 'VOR_LOC' ? 'VOR/LOC' : (truth.lateralArmed === 'LOC' ? 'VOR/LOC' : ''),
+    armedRollMode: truth.lateralArmed === 'VOR_LOC' ? 'VOR/LOC' : (truth.lateralArmed === 'LOC' ? 'VOR/LOC' : (truth.lateralArmed === 'APP' ? 'APP' : '')),
     armedPitchMode: truth.verticalArmed === 'G_S' ? 'G/S' : (truth.verticalArmed === 'VNAV_PTH' ? 'VNAV' : ''),
     apStatus
   };

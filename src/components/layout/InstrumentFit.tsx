@@ -104,6 +104,7 @@ export function InstrumentFit({
             height: useFixedHeight ? dimensions.idealHeight : undefined,
             minHeight: dimensions.idealHeight,
             transform: `scale(${scale})`,
+            transformOrigin: 'top left',
           }}
         >
           {children}

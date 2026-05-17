@@ -17,6 +17,8 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
     verticalMode = 'ALT';
   } else if (truth.verticalActive === 'VS') {
     verticalMode = 'V/S';
+  } else if (truth.verticalActive === 'G_S') {
+    verticalMode = 'G/S';
   } else if (truth.verticalActive === 'OP_CLB') {
     verticalMode = 'OP CLB';
   } else if (truth.verticalActive === 'OP_DES') {
@@ -31,12 +33,17 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
   if (truth.lateralActive === 'NAV') lateralMode = 'NAV';
   else if (truth.lateralActive === 'HDG_SEL') lateralMode = 'HDG';
   else if (truth.lateralActive === 'LOC') lateralMode = 'LOC';
+  else if (truth.lateralActive === 'APP') lateralMode = 'APP NAV';
   else if (truth.lateralActive !== 'OFF') lateralMode = truth.lateralActive as any;
   else lateralMode = 'HDG';
 
   const armedModes: string[] = [];
-  if (truth.lateralArmed) armedModes.push(truth.lateralArmed);
-  if (truth.verticalArmed) armedModes.push(truth.verticalArmed);
+  if (truth.lateralArmed && truth.lateralArmed !== 'OFF') {
+    armedModes.push(truth.lateralArmed === 'HDG_SEL' ? 'HDG' : truth.lateralArmed);
+  }
+  if (truth.verticalArmed && truth.verticalArmed !== 'OFF') {
+    armedModes.push(truth.verticalArmed === 'G_S' ? 'G/S' : truth.verticalArmed);
+  }
 
   return {
     autothrustMode,

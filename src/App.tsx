@@ -47,6 +47,46 @@ const visualAircraftState = {
   accelerationKtS: 0.35,
 };
 
+const visualApproachAircraftState = {
+  ...visualAircraftState,
+  altitude: 2140,
+  altitudeFt: 2140,
+  indicatedAirspeedKt: 142,
+  ias: 142,
+  tas: 146,
+  groundSpeedKt: 151,
+  gs: 151,
+  heading: 273,
+  headingDeg: 273,
+  track: 272,
+  trackDeg: 272,
+  verticalSpeedFpm: -650,
+  vs: -650,
+  pitchDeg: -2,
+  bankDeg: 3,
+  accelerationKtS: -0.08,
+};
+
+const visualFailureAircraftState = {
+  ...visualAircraftState,
+  altitude: 0,
+  altitudeFt: 0,
+  indicatedAirspeedKt: 0,
+  ias: 0,
+  tas: 0,
+  groundSpeedKt: 0,
+  gs: 0,
+  heading: 0,
+  headingDeg: 0,
+  track: 0,
+  trackDeg: 0,
+  verticalSpeedFpm: 0,
+  vs: 0,
+  pitchDeg: 0,
+  bankDeg: 0,
+  accelerationKtS: 0,
+};
+
 export default function App() {
   const isKiosk = useKioskMode();
   const [showNd, setShowNd] = useState(true);
@@ -84,6 +124,76 @@ export default function App() {
 
   useEffect(() => {
     const path = window.location.pathname;
+    const setVisualPfdBase = (aircraftType: 'BOEING_737' | 'AIRBUS_A320') => {
+      setCockpitMode(true);
+      setAircraft(aircraftType);
+      setShowNd(false);
+      useFMCStore.setState({
+        mode: 'ACTIVE',
+        gpwsAlert: 'NONE',
+        tcasAlert: false,
+        position: { ...useFMCStore.getState().position, irsState: 'NAV', irsAlignmentProgress: 100, irsTimeRemaining: 0 },
+      });
+      useCockpitLayoutStore.setState({
+        cockpitLayoutMode: 'automation',
+        hiddenPanels: [],
+        focusedPanel: null,
+      });
+      useAircraftStore.setState({ aircraftState: visualAircraftState });
+    };
+
+    const setBoeingPfdAutomation = () => {
+      setVisualPfdBase('BOEING_737');
+      useAutopilotStore.setState(state => ({
+        boeing: {
+          ...state.boeing,
+          speed: 240,
+          heading: 290,
+          altitude: 7000,
+          verticalSpeed: 1000,
+          fdLeft: true,
+          autothrottleArm: true,
+        },
+        truth: {
+          ...state.truth,
+          thrustActive: 'SPEED',
+          lateralActive: 'HDG_SEL',
+          lateralArmed: 'LNAV',
+          verticalActive: 'VS',
+          verticalArmed: 'VNAV_PTH',
+          autopilotStatus: 'CMD_A',
+        },
+      }));
+    };
+
+    const setAirbusPfdAutomation = () => {
+      setVisualPfdBase('AIRBUS_A320');
+      useAutopilotStore.setState(state => ({
+        airbus: {
+          ...state.airbus,
+          speed: 240,
+          speedManaged: false,
+          heading: 290,
+          headingManaged: false,
+          altitude: 7000,
+          altitudeManaged: true,
+          verticalSpeed: 1000,
+          fd1: true,
+          athr: true,
+          ap1: true,
+        },
+        truth: {
+          ...state.truth,
+          thrustActive: 'THR_CLB',
+          lateralActive: 'HDG_SEL',
+          lateralArmed: 'NAV',
+          verticalActive: 'OP_CLB',
+          verticalArmed: 'VNAV_PTH',
+          autopilotStatus: 'AP1',
+        },
+      }));
+    };
+
     if (path === '/visual/boeing/pos-init') {
       setAircraft('BOEING_737');
       setPage('POS_INIT');
@@ -144,58 +254,88 @@ export default function App() {
       setShowNd(true);
       useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'ALIGNING' } });
     } else if (path === '/visual/pfd/boeing-automation') {
-      setCockpitMode(true);
-      setAircraft('BOEING_737');
-      setShowNd(false);
-      useFMCStore.setState({ mode: 'ACTIVE', position: { ...useFMCStore.getState().position, irsState: 'NAV', irsAlignmentProgress: 100, irsTimeRemaining: 0 } });
-      useCockpitLayoutStore.setState({ cockpitLayoutMode: 'automation', hiddenPanels: [], focusedPanel: null });
-      useAircraftStore.setState({ aircraftState: visualAircraftState });
+      setBoeingPfdAutomation();
+    } else if (path === '/visual/pfd/boeing-focused') {
+      setBoeingPfdAutomation();
+      useCockpitLayoutStore.setState({ focusedPanel: 'pfd', instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 } });
+    } else if (path === '/visual/pfd/boeing-approach') {
+      setVisualPfdBase('BOEING_737');
+      useAircraftStore.setState({ aircraftState: visualApproachAircraftState });
+      useCockpitLayoutStore.setState({ cockpitLayoutMode: 'approach', hiddenPanels: [], focusedPanel: null });
       useAutopilotStore.setState(state => ({
         boeing: {
           ...state.boeing,
-          speed: 240,
-          heading: 290,
-          altitude: 7000,
-          verticalSpeed: 1000,
+          speed: 142,
+          heading: 273,
+          altitude: 3000,
+          verticalSpeed: -700,
           fdLeft: true,
+          fdRight: true,
           autothrottleArm: true,
+          courseL: 273,
+          courseR: 273,
         },
         truth: {
           ...state.truth,
           thrustActive: 'SPEED',
-          lateralActive: 'HDG_SEL',
-          verticalActive: 'VS',
+          lateralActive: 'VOR_LOC',
+          lateralArmed: 'APP',
+          verticalActive: 'G_S',
+          verticalArmed: 'G_S',
           autopilotStatus: 'CMD_A',
         },
       }));
+    } else if (path === '/visual/pfd/boeing-failure') {
+      setVisualPfdBase('BOEING_737');
+      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 } });
+      useAircraftStore.setState({ aircraftState: visualFailureAircraftState });
+      useAutopilotStore.setState(state => ({
+        boeing: { ...state.boeing, speed: null, verticalSpeed: null, fdLeft: false, fdRight: false },
+        truth: { ...state.truth, thrustActive: 'OFF', lateralActive: 'OFF', verticalActive: 'OFF', autopilotStatus: 'OFF' },
+      }));
     } else if (path === '/visual/pfd/airbus-automation') {
-      setCockpitMode(true);
-      setAircraft('AIRBUS_A320');
-      setShowNd(false);
-      useFMCStore.setState({ mode: 'ACTIVE', position: { ...useFMCStore.getState().position, irsState: 'NAV', irsAlignmentProgress: 100, irsTimeRemaining: 0 } });
-      useCockpitLayoutStore.setState({ cockpitLayoutMode: 'automation', hiddenPanels: [], focusedPanel: null });
-      useAircraftStore.setState({ aircraftState: visualAircraftState });
+      setAirbusPfdAutomation();
+    } else if (path === '/visual/pfd/airbus-focused') {
+      setAirbusPfdAutomation();
+      useCockpitLayoutStore.setState({ focusedPanel: 'pfd', instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 } });
+    } else if (path === '/visual/pfd/airbus-approach') {
+      setVisualPfdBase('AIRBUS_A320');
+      useAircraftStore.setState({ aircraftState: visualApproachAircraftState });
+      useCockpitLayoutStore.setState({ cockpitLayoutMode: 'approach', hiddenPanels: [], focusedPanel: null });
       useAutopilotStore.setState(state => ({
         airbus: {
           ...state.airbus,
-          speed: 240,
+          speed: 142,
           speedManaged: false,
-          heading: 290,
+          heading: 273,
           headingManaged: false,
-          altitude: 7000,
-          altitudeManaged: true,
-          verticalSpeed: 1000,
+          altitude: 3000,
+          altitudeManaged: false,
+          verticalSpeed: -700,
           fd1: true,
+          fd2: true,
           athr: true,
           ap1: true,
+          loc: true,
+          appr: true,
         },
         truth: {
           ...state.truth,
-          thrustActive: 'THR_CLB',
-          lateralActive: 'HDG_SEL',
-          verticalActive: 'OP_CLB',
+          thrustActive: 'SPEED',
+          lateralActive: 'LOC',
+          lateralArmed: 'NAV',
+          verticalActive: 'G_S',
+          verticalArmed: 'G_S',
           autopilotStatus: 'AP1',
         },
+      }));
+    } else if (path === '/visual/pfd/airbus-failure') {
+      setVisualPfdBase('AIRBUS_A320');
+      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 } });
+      useAircraftStore.setState({ aircraftState: visualFailureAircraftState });
+      useAutopilotStore.setState(state => ({
+        airbus: { ...state.airbus, speed: null, heading: null, verticalSpeed: null, fd1: false, fd2: false, athr: false, ap1: false, ap2: false },
+        truth: { ...state.truth, thrustActive: 'OFF', lateralActive: 'OFF', verticalActive: 'OFF', autopilotStatus: 'OFF' },
       }));
     } else if (path === '/visual/boeing/scratchpad-caution') {
       setAircraft('BOEING_737');

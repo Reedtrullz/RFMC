@@ -255,7 +255,9 @@ Visual regression tests capture screenshots of key pages and states, then compar
 - Invalid scratchpad message state
 - Boeing/Airbus cockpit task-mode layouts from PR #23
 - Boeing/Airbus ND MAP/ARC/failure/aligning states from PR #24
-- Boeing/Airbus automation PFDs
+- Boeing/Airbus automation, focused, approach, and failure PFDs
+- Focused Boeing/Airbus CDU/MCDU, ND, PFD, and MCP/FCU panels
+- Tablet-landscape Boeing/Airbus full-deck and automation layouts
 
 ### Snapshot storage
 
@@ -267,6 +269,7 @@ e2e/visual-boeing-cdu.spec.ts-snapshots/
 e2e/visual-airbus-mcdu.spec.ts-snapshots/
 e2e/visual-regression.spec.ts-snapshots/
 e2e/visual-navigation-display.spec.ts-snapshots/
+e2e/visual/cockpit-layouts.spec.ts-snapshots/
 ```
 
 ### Baseline update workflow
@@ -279,6 +282,12 @@ npm run test:visual:update
 
 # Update baselines for a specific file
 npx playwright test e2e/visual-boeing-cdu.spec.ts --update-snapshots --project=desktop-chromium
+
+# Update PFD follow-up baselines
+npx playwright test e2e/visual-pfd.spec.ts --update-snapshots --project=desktop-chromium
+
+# Update cockpit layout/focused-panel/tablet-landscape baselines
+npx playwright test e2e/visual/cockpit-layouts.spec.ts --update-snapshots --project=desktop-chromium
 
 # Capture fresh baselines for the baseline-screenshots spec
 npm run capture:baseline

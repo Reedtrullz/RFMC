@@ -1,7 +1,6 @@
 import { BoeingMCPState } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
 import { useAutopilotStore } from '../../../../store/autopilotStore';
-import { useCockpitLayoutStore } from '../../../../store/cockpitLayoutStore';
 import { InstrumentShell } from '../../common/InstrumentShell';
 import { MCPSwitch } from './MCPSwitch';
 import { MCPKnob } from './MCPKnob';
@@ -16,19 +15,20 @@ interface BoeingMCPProps {
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   const truth = useAutopilotStore(s => s.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const sectionClass = 'relative flex flex-col items-center gap-3 rounded-[6px] border border-black/45 bg-[#2f3434] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-10px_18px_rgba(0,0,0,0.34)]';
   
   return (
     <InstrumentShell variant="boeing-mcp" className="w-full">
-      <div className="flex min-w-0 w-full items-start justify-between gap-4 overflow-visible pb-4 pt-2">
+      <div className="flex min-w-0 w-full items-stretch justify-between gap-3 overflow-visible rounded-md border border-black/50 bg-gradient-to-b from-[#454a4a] via-[#303535] to-[#202424] px-4 py-3 shadow-[inset_0_10px_24px_rgba(255,255,255,0.05),inset_0_-16px_28px_rgba(0,0,0,0.42)]">
         
         {/* FD LEFT */}
-        <div className="flex flex-col gap-4 pr-4 border-r border-black/20">
+        <div className="flex min-w-[86px] flex-col justify-center gap-4 rounded-[6px] border border-black/45 bg-[#252a2a] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
           <MCPSwitch label="F/D" active={state.fdLeft} onPress={() => updateState({ fdLeft: !state.fdLeft })} small showAnnunciator={false} highlighted={tutorialHighlight === 'FD_LEFT'} />
           <MCPSwitch label="A/T ARM" active={state.autothrottleArm} onPress={() => updateState({ autothrottleArm: !state.autothrottleArm })} small highlighted={tutorialHighlight === 'AT_ARM'} />
         </div>
 
         {/* COURSE L */}
-        <div className="flex flex-col items-center gap-2">
+        <div className={`${sectionClass} min-w-[126px]`}>
           <MCPDisplayWindow 
             label="COURSE" 
             value={state.courseL.toString().padStart(3, '0')} 
@@ -44,14 +44,14 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* SPEED Section */}
-        <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
+        <div className={`${sectionClass} min-w-[220px]`}>
           <div className="flex gap-4">
             <MCPSwitch label="N1" active={truth.thrustActive === 'N1'} onPress={() => pressButton('N1')} small highlighted={tutorialHighlight === 'N1'} />
             <MCPSwitch label="SPEED" active={truth.thrustActive === 'SPEED'} onPress={() => pressButton('SPEED')} small highlighted={tutorialHighlight === 'SPEED_MODE'} />
           </div>
           <div className="flex items-center gap-2">
             <button 
-              className="h-4 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-[8px] text-white/60 hover:text-white"
+              className="h-8 w-12 rounded-[3px] border border-black/70 border-b-[3px] border-b-black bg-[#202424] text-[7px] font-black leading-tight text-white/68 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:text-white active:translate-y-[1px] active:border-b"
               onClick={() => pressButton('SPD_MACH_TOGGLE')}
             >SPD/MACH</button>
             <MCPDisplayWindow 
@@ -78,7 +78,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* HEADING Section */}
-        <div className="flex flex-col items-center gap-4 px-4">
+        <div className={`${sectionClass} min-w-[180px]`}>
           <div className="flex gap-4">
             <MCPSwitch label="LNAV" active={truth.lateralActive === 'LNAV' || truth.lateralArmed === 'LNAV'} onPress={() => pressButton('LNAV')} highlighted={tutorialHighlight === 'LNAV'} />
             <MCPSwitch label="VNAV" active={truth.verticalActive === 'VNAV_PTH' || truth.verticalArmed === 'VNAV_PTH'} onPress={() => pressButton('VNAV')} highlighted={tutorialHighlight === 'VNAV'} />
@@ -99,7 +99,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* ALTITUDE Section */}
-        <div className="flex flex-col items-center gap-4 border-l border-r border-black/20 px-4">
+        <div className={`${sectionClass} min-w-[150px]`}>
           <MCPDisplayWindow 
             label="ALTITUDE" 
             value={state.altitude.toString().padStart(5, '0')} 
@@ -116,7 +116,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* V/S Section */}
-        <div className="flex flex-col items-center gap-4 px-4">
+        <div className={`${sectionClass} min-w-[150px]`}>
           <MCPDisplayWindow 
             label="VERT SPEED" 
             value={truth.verticalActive !== 'VS' ? '' : (state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed.toString()) : '0000')} 
@@ -125,11 +125,11 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
           />
           <div className="flex flex-col gap-1">
             <button 
-              className="h-6 w-8 bg-[#1a1a1a] text-white text-[9px] rounded-t-sm border-b border-white/10 hover:bg-[#2a2a2a]"
+              className="h-7 w-11 rounded-t-sm border border-black/60 bg-[#1a1a1a] text-[9px] font-bold text-white hover:bg-[#2a2a2a]"
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) + 100 })}
             >UP</button>
             <button 
-              className="h-6 w-8 bg-[#1a1a1a] text-white text-[9px] rounded-b-sm hover:bg-[#2a2a2a]"
+              className="h-7 w-11 rounded-b-sm border border-black/60 bg-[#1a1a1a] text-[9px] font-bold text-white hover:bg-[#2a2a2a]"
               onClick={() => updateState({ verticalSpeed: (state.verticalSpeed || 0) - 100 })}
             >DN</button>
           </div>
@@ -137,7 +137,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* AP ENGAGE Section */}
-        <div className="flex flex-col gap-4 pl-4 border-l border-black/20">
+        <div className="flex min-w-[230px] flex-col justify-center gap-4 rounded-[6px] border border-black/45 bg-[#252a2a] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
           <div className="flex gap-4">
              <MCPSwitch label="F/D" active={state.fdRight} onPress={() => updateState({ fdRight: !state.fdRight })} small showAnnunciator={false} />
              <div className="flex flex-col gap-2">
@@ -158,7 +158,7 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         </div>
 
         {/* COURSE R */}
-        <div className="flex flex-col items-center gap-2 border-l border-black/20 pl-4">
+        <div className={`${sectionClass} min-w-[126px]`}>
           <MCPDisplayWindow 
             label="COURSE" 
             value={state.courseR.toString().padStart(3, '0')} 

@@ -107,4 +107,44 @@ describe('PFD display models', () => {
     expect(airbus.status.fd1).toBe(true);
     expect(airbus.status.athr).toBe(true);
   });
+
+  it('maps Boeing approach armed and active modes into the FMA', () => {
+    const state = createBaseState();
+    state.autopilot.truth.thrustActive = 'SPEED';
+    state.autopilot.truth.lateralActive = 'VOR_LOC';
+    state.autopilot.truth.lateralArmed = 'APP';
+    state.autopilot.truth.verticalActive = 'G_S';
+    state.autopilot.truth.verticalArmed = 'G_S';
+    state.autopilot.truth.autopilotStatus = 'CMD_A';
+
+    const fma = buildBoeingFMAState(state.autopilot, state);
+
+    expect(fma.autothrottleMode).toBe('MCP SPD');
+    expect(fma.rollMode).toBe('VOR/LOC');
+    expect(fma.armedRollMode).toBe('APP');
+    expect(fma.pitchMode).toBe('G/S');
+    expect(fma.armedPitchMode).toBe('G/S');
+  });
+
+  it('maps Airbus approach modes into Airbus FMA terminology', () => {
+    const state = createBaseState({ aircraft: 'AIRBUS_A320' });
+    state.autopilot.airbus.ap1 = true;
+    state.autopilot.airbus.fd1 = true;
+    state.autopilot.airbus.athr = true;
+    state.autopilot.truth.thrustActive = 'SPEED';
+    state.autopilot.truth.lateralActive = 'LOC';
+    state.autopilot.truth.lateralArmed = 'NAV';
+    state.autopilot.truth.verticalActive = 'G_S';
+    state.autopilot.truth.verticalArmed = 'G_S';
+    state.autopilot.truth.autopilotStatus = 'AP1';
+
+    const fma = buildAirbusFMAState(state.autopilot, state);
+
+    expect(fma.autothrustMode).toBe('SPEED');
+    expect(fma.lateralMode).toBe('LOC');
+    expect(fma.verticalMode).toBe('G/S');
+    expect(fma.armedModes).toContain('NAV');
+    expect(fma.armedModes).toContain('G/S');
+    expect(fma.status.ap1).toBe(true);
+  });
 });

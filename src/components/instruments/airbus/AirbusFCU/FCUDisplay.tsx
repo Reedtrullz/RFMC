@@ -7,13 +7,17 @@ interface FCUDisplayProps {
 
 export function FCUDisplay({ value, label, managed, highlighted = false }: FCUDisplayProps) {
   return (
-    <div className={`relative flex h-10 w-24 items-center justify-center rounded-sm bg-black/80 border border-white/10 shadow-inner overflow-hidden font-mono ${highlighted ? 'ring-2 ring-cdu-amber shadow-[0_0_18px_rgba(255,184,77,0.55)]' : ''}`}>
-      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-      <span className="text-xl text-[#00f0ff] tracking-tighter drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">
+    <div className={`relative flex h-11 w-28 items-center justify-center overflow-hidden rounded-[2px] border border-[#5e7477]/55 bg-[#03090a] font-mono shadow-[inset_0_2px_12px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.08)] ${highlighted ? 'ring-2 ring-cdu-amber shadow-[0_0_18px_rgba(255,184,77,0.55)]' : ''}`}>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#a8ffff]/10 via-transparent to-black/35" />
+      <div className="pointer-events-none absolute inset-x-1 top-1 h-px bg-white/15" />
+      <span className="text-[24px] font-black tabular-nums text-[#39ffef] drop-shadow-[0_0_9px_rgba(57,255,239,0.55)]">
         {label || value}
       </span>
       {managed && (
-        <div className="absolute top-1/2 -translate-y-1/2 right-2 w-2 h-2 rounded-full bg-[#ffb84d] shadow-[0_0_8px_rgba(255,184,77,0.8)]" />
+        <>
+          <div className="absolute left-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#ffb84d] shadow-[0_0_8px_rgba(255,184,77,0.8)]" />
+          <div className="absolute right-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#ffb84d] shadow-[0_0_8px_rgba(255,184,77,0.8)]" />
+        </>
       )}
     </div>
   );

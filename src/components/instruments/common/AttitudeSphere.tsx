@@ -21,11 +21,28 @@ export function AttitudeSphere({ pitch, bank, variant = 'boeing', fd, failed = f
   const referenceColor = variant === 'airbus' ? '#ffd400' : '#101010';
 
   if (failed) {
+    const isAirbus = variant === 'airbus';
+    const flagColor = isAirbus ? '#ff3131' : '#ffcc00';
+    const secondaryColor = isAirbus ? '#ff9a9a' : '#00ff44';
+
     return (
       <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(120,0,0,0.24),rgba(0,0,0,0.95)_62%)]" />
-        <div className="z-10 border border-red-600/80 bg-black px-4 py-2 font-mono text-xl font-black tracking-[0.18em] text-red-500 shadow-[0_0_18px_rgba(255,0,0,0.45)]">
-          ATT
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isAirbus
+              ? 'radial-gradient(circle at center, rgba(120,0,0,0.28), rgba(0,0,0,0.96) 64%)'
+              : 'radial-gradient(circle at center, rgba(80,64,0,0.18), rgba(0,0,0,0.96) 64%)',
+          }}
+        />
+        <div
+          className="z-10 grid min-w-36 gap-1 border bg-black px-5 py-3 text-center font-mono shadow-[0_0_18px_rgba(0,0,0,0.7)]"
+          style={{ borderColor: flagColor, color: flagColor }}
+        >
+          <div className="text-2xl font-black tracking-[0.18em]">ATT</div>
+          <div className="text-[10px] font-bold tracking-[0.14em]" style={{ color: secondaryColor }}>
+            {isAirbus ? 'ADR/IR' : 'IRS NAV'}
+          </div>
         </div>
       </div>
     );

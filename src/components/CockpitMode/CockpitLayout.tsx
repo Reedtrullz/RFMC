@@ -272,11 +272,14 @@ function renderInstrumentPanel(
 }
 
 function renderFocusedPanel(panelId: InstrumentPanelId, controls: LayoutControls) {
+  const focusedScale = panelId === 'autoflight'
+    ? (controls.aircraft === 'BOEING_737' ? 0.58 : 0.72)
+    : Math.max(controls.instrumentZoom[panelId] ?? 1, 1);
+
   return (
     <InstrumentFit
       target={targetForPanel(panelId, controls.aircraft)}
-      preferredScale={Math.max(controls.instrumentZoom[panelId] ?? 1, 1)}
-      allowOverflowZoom
+      preferredScale={focusedScale}
       dataTestId={`focused-${panelId}-panel`}
     >
       {renderPanel(panelId)}

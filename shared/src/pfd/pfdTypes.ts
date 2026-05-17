@@ -9,7 +9,7 @@ export type BoeingFMAState = {
 
 export type AirbusFMAState = {
   autothrustMode: 'SPEED' | 'MACH' | 'THR CLB' | 'THR IDLE' | 'RETARD' | '';
-  verticalMode: 'CLB' | 'DES' | 'ALT' | 'ALT*' | 'OP CLB' | 'OP DES' | 'V/S' | 'FPA' | '';
+  verticalMode: 'CLB' | 'DES' | 'ALT' | 'ALT*' | 'OP CLB' | 'OP DES' | 'V/S' | 'FPA' | 'G/S' | '';
   lateralMode: 'NAV' | 'HDG' | 'LOC' | 'APP NAV' | '';
   armedModes: string[];
   status: {
