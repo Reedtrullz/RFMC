@@ -1,10 +1,10 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-16
+**Generated:** 2026-05-17
 **Area:** shared/src/fmc/actionHandlers/
 
 ## OVERVIEW
-Extracted LSK action handlers — pure functions mapping LSK actions to typed `FmcActionResult`. Isolated from store for testability. 14 modules, ~2,500 lines.
+Extracted LSK action handlers — pure functions mapping LSK actions to typed `FmcActionResult`. Isolated from store for testability. 18 modules, ~2,500 lines.
 
 ## STRUCTURE
 ```
@@ -22,7 +22,11 @@ actionHandlers/
 ├── fixActions.ts           # FIX page entries (ref fix, radial/distance)
 ├── holdActions.ts          # HOLD page entries (fix, course, leg time, leg dist, direction)
 ├── irsActions.ts           # IRS position entry
-└── airbusActions.ts        # 6 Airbus INIT/F-PLN fields (CRZ FL, ALTN, BLOCK, FLT NBR, FLEX, CG)
+├── airbusActions.ts        # 6 Airbus INIT/F-PLN fields (CRZ FL, ALTN, BLOCK, FLT NBR, FLEX, CG)
+├── lskDispatcher.ts        # dispatchLskAction() → 16 handler families
+├── positionActions.ts      # POS INIT gate/lat/lon
+├── windActions.ts          # CLB/CRZ/DES wind data
+├── atsuActions.ts          # Airbus ATSU uplink messages
 ```
 
 ## WHERE TO LOOK
@@ -34,6 +38,11 @@ actionHandlers/
 | Airbus-specific handlers | `airbusActions.ts` | |
 | Common validation | Import from `../validation.ts` | |
 | Scratchpad integration | Import from `../fmcScratchpadAdapter.ts` | `applyFmcActionResult()` |
+|
+| LSK dispatcher | `lskDispatcher.ts` | dispatchLskAction() routes to 16 handler families |
+| Position entry | `positionActions.ts` | POS INIT gate/lat/lon |
+| Wind entry | `windActions.ts` | CLB/CRZ/DES wind data |
+| ATSU messaging | `atsuActions.ts` | Airbus ATSU uplink messages |
 
 ## CONVENTIONS
 - **Pure functions**: Every handler is `(action: string, state: FMCState, scratchpad: string) => FmcActionResult`
@@ -41,14 +50,13 @@ actionHandlers/
 - **No side effects**: Handlers return patches/messages; store applies them via `applyFmcActionResult()`
 - **Export pattern**: One `handle*Action()` dispatcher per module + private handler functions
 - **Test coverage**: Every handler has unit tests in `shared/src/__tests__/`
+-
+- **Dispatcher**: dispatchLskAction() is the single entry point → routes to handler families by priority
 
 ## ANTI-PATTERNS
 - **No direct `scratchpadError` writes** — return `failure` with typed code instead
 - **No direct store mutations** — return patches to be applied by store wrapper
 - **No inline validation** — delegate to shared validation modules (`validation.ts`)
 - **No Boeing/Airbus crossover** — aircraft-specific handlers must not mix
-
-## UNIQUE STYLES
-- **sideEffect field**: Handlers signal store-side effects (`expand_active_route`) without executing them
-- **clearScratchpad flag**: Success results indicate whether store should clear scratchpad after applying
-- **scratchpadMessage field**: Messages like `V SPEEDS DELETED` set on success (not failure)
+-
+- **No bypassing dispatcher** — always dispatch via dispatchLskAction, never call handlers directly from store

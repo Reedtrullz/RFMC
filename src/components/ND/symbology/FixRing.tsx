@@ -35,8 +35,8 @@ export function FixRing({ model }: FixRingProps) {
               <line
                 x1={refX}
                 y1={refY}
-                x2={refX + Math.sin(fix.radial * Math.PI / 180) * 100}
-                y2={refY - Math.cos(fix.radial * Math.PI / 180) * 100}
+                x2={refX + Math.sin(fix.radial * Math.PI / 180) * (distPx + 3)}
+                y2={refY - Math.cos(fix.radial * Math.PI / 180) * (distPx + 3)}
                 stroke={color}
                 strokeWidth="0.4"
                 strokeDasharray="2 4"

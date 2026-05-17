@@ -62,10 +62,16 @@ export function A320ND({ model }: A320NDProps) {
         </g>
       ) : (
         <g transform="translate(50 50)" textAnchor="middle">
-           <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
-          <text y="2" fill="#ffcc00" fontSize="5" fontWeight="bold">
+          {/* Background dimming */}
+          <rect x="-45" y="-22" width="90" height="44" fill="black" opacity="0.6" />
+          {/* Failure text box */}
+          <rect x="-38" y="-14" width="76" height="28" fill="black" stroke={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} strokeWidth="0.8" rx="2" />
+          <text y="-3" fill={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} fontSize="6" fontWeight="bold" textAnchor="middle" letterSpacing="1.5">
             {model.irsState === 'OFF' ? 'MAP NOT AVAIL' : 'IRS ALIGN'}
           </text>
+          {model.irsState === 'ALIGNING' && (
+            <text y="5" fill="#ffcc00" fontSize="3" textAnchor="middle" opacity="0.8">ALIGNING...</text>
+          )}
         </g>
       )}
 
@@ -94,6 +100,11 @@ export function A320ND({ model }: A320NDProps) {
 
       {/* Aircraft Symbol */}
       <AircraftSymbol centered={model.centered} color={colors.active} style="airbus" />
+
+      {/* TMPY Annunciation (Airbus MOD equivalent) */}
+      {model.isModified && model.irsState === 'NAV' && (
+        <text x="50" y="92" textAnchor="middle" fill="#ffcc00" fontSize="4" fontWeight="bold">TMPY</text>
+      )}
     </g>
   );
 }

@@ -15,11 +15,16 @@ Playwright E2E + visual regression tests.
 | `visual-regression.spec.ts` | General visual tests |
 | `autopilot_guards.spec.ts` | Autopilot logic tests |
 | `baseline-screenshots.spec.ts` | Baseline capture |
+| `cockpit-layouts.spec.ts` | Cockpit mode visual regression (Boeing + Airbus) |
+| `cockpit-hardening.spec.ts` | Cockpit layout hardening assertions |
+| `helpers.ts` | Shared test utilities (dismissWelcome, pressCdu, lsk, enterText) |
 
 ## CONVENTIONS
 - `desktop-chromium` project
 - Snapshots in `*/snapshots/`
-- Visual diff tolerance: 0.1%
+- Visual diff tolerance: 2% (maxDiffPixelRatio: 0.02)
+- `@Visual Regression` test tag for grep-filtered visual tests
+- `npm run test:visual` / `npm run test:visual:update` scripts
 
 ## ANTI-PATTERNS
 - Modifying snapshots manually

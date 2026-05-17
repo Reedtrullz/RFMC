@@ -11,11 +11,10 @@ export function HoldPattern({ model }: HoldPatternProps) {
   const isAirbus = model.style === 'airbus';
   const color = isAirbus ? '#00ff00' : '#ff00ff';
   
-  // Racetrack geometry
-  // A typical hold is 1 minute inbound. 
-  // For visualization, we'll use a fixed scale based on the ND range.
-  const legLen = 8; 
-  const radius = 3;
+  // Dynamic racetrack sizing: scale leg distance by ND range
+  const pixelsPerNm = 45 / model.range;
+  const legLen = Math.max(hold.legDist ? hold.legDist * pixelsPerNm : 8, 3);
+  const radius = Math.max(legLen * 0.3, 1.5);
 
   return (
     <g data-testid="nd-hold-overlay" transform={`translate(${hold.x} ${hold.y}) rotate(${hold.inboundCourse})`}>
