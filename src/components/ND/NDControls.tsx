@@ -17,7 +17,7 @@ export function NDControls({ model, side }: NDControlsProps) {
   const modes = model.style === 'airbus' ? AIRBUS_MODES : BOEING_MODES;
 
   return (
-    <div className="mt-1 flex flex-col gap-1 bg-[#1a1c1c] p-2 rounded border-t border-[#2a2d2d] shadow-[inset_0_1px_5px_rgba(0,0,0,0.8)]">
+    <div className="mt-1 flex flex-col gap-1 bg-[#1a1c1c] p-2 rounded border-t border-[#3a3d3d] border-x border-b border-black/50 shadow-[inset_0_1px_6px_rgba(0,0,0,0.9)]">
       {/* Upper Panel: Knobs */}
       <div className="flex items-start justify-between">
         {/* Mode Selector Knob Look */}

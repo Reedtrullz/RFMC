@@ -71,7 +71,9 @@ export function B737ND({ model }: B737NDProps) {
       <BoeingHeadingArc model={model} />
       
       {/* Information Blocks */}
-      <WindVector model={model} />
+      <g transform="translate(0, 9.5)">
+        <WindVector model={model} />
+      </g>
       <ModeAnnunciations model={model} />
 
       {/* IRS Status Flags */}
@@ -101,24 +103,24 @@ export function B737ND({ model }: B737NDProps) {
       </g>
 
       {/* Active Overlay List (Bottom Left) */}
-      <g transform="translate(4 64)" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95">
-        <text fill={model.overlays.arpt ? '#00ccff' : '#445566'}>ARPT</text>
-        <text y="3.4" fill={model.overlays.wpt ? '#00ccff' : '#445566'}>WPT</text>
-        <text y="6.8" fill={model.overlays.sta ? '#00ccff' : '#445566'}>STA</text>
-        <text y="10.2" fill={model.overlays.terr ? '#00ccff' : '#445566'}>TERR</text>
-        <text y="13.6" fill={model.overlays.tfc ? '#00ccff' : '#445566'}>TFC</text>
+      <g transform="translate(4 64)" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95" className="font-mono">
+        <text fill={model.overlays.arpt ? '#00ccff' : '#3a4d5c'}>ARPT</text>
+        <text y="3.4" fill={model.overlays.wpt ? '#00ccff' : '#3a4d5c'}>WPT</text>
+        <text y="6.8" fill={model.overlays.sta ? '#00ccff' : '#3a4d5c'}>STA</text>
+        <text y="10.2" fill={model.overlays.terr ? '#00ccff' : '#3a4d5c'}>TERR</text>
+        <text y="13.6" fill={model.overlays.tfc ? '#00ccff' : '#3a4d5c'}>TFC</text>
       </g>
 
       {/* VOR 1 / ADF 2 Blocks */}
-      <g transform="translate(4 81)" fontSize="2.8" fontWeight="bold" fill="#00ff66" opacity="0.95">
+      <g transform="translate(4 82)" fontSize="2.8" fontWeight="bold" fill="#00ff66" opacity="0.95" className="font-mono">
         <text>VOR 1</text>
-        <text y="3.4" fill="#00ff66">{model.radios?.vor1 || '111.50'}</text>
-        <text y="6.8" fill="#00ff66">DME ----</text>
+        <text y="4.2" fill="#00ff66">{model.radios?.vor1 || '111.50'}</text>
+        <text y="8.4" fill="#00ff66">DME ----</text>
       </g>
 
-      <g transform="translate(96 81)" textAnchor="end" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95">
+      <g transform="translate(96 82)" textAnchor="end" fontSize="2.8" fontWeight="bold" fill="#00ccff" opacity="0.95" className="font-mono">
         <text>ADF 2</text>
-        <text y="3.4" fill="#00ccff">
+        <text y="4.2" fill="#00ccff">
           {model.radios?.adf1 ? parseFloat(model.radios.adf1).toFixed(1) : '210.0'}
         </text>
       </g>

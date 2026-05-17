@@ -18,17 +18,17 @@ export function WindVector({ model }: WindVectorProps) {
   const rotation = displayWindDir - model.heading;
 
   return (
-    <g transform="translate(4 6)" className="font-avionics select-none" filter="url(#boeing-glow)">
+    <g transform="translate(4 6)" className="select-none" filter="url(#boeing-glow)">
       {/* Speed Block on a single row */}
-      <text fill="#ffffff" fontSize="3.4" fontWeight="bold" letterSpacing="0.1">
-        GS <tspan fill="#ffffff" fontWeight="black">{displayGs}</tspan>
+      <text fill="#ffffff" fontSize="3.4" letterSpacing="0.1" className="font-mono font-bold">
+        GS <tspan fill="#ffffff" className="font-mono font-black">{displayGs}</tspan>
         {"   "}
-        TAS <tspan fill="#ffffff" fontWeight="black">{displayTas}</tspan>
+        TAS <tspan fill="#ffffff" className="font-mono font-black">{displayTas}</tspan>
       </text>
 
       {/* Wind Block */}
       <g transform="translate(0 4.6)">
-        <text fill="#ffffff" fontSize="3.3" fontWeight="bold" letterSpacing="0.1">
+        <text fill="#ffffff" fontSize="3.3" fontWeight="bold" letterSpacing="0.1" className="font-avionics">
           {displayWindDir.toString().padStart(3, '0')}° / {displayWindSpeed}
         </text>
 

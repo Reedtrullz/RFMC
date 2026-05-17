@@ -38,12 +38,38 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
  
       {/* Active Waypoint Info (Top Right) - Aligned to top row for Boeing */}
       {model.anchorZones.waypointBlock && (
-        <g transform="translate(96 6)" textAnchor="end" fontSize="3.2" fontWeight="bold">
-          <text fill={colors.magenta} filter="url(#boeing-glow)">{model.anchorZones.waypointBlock.ident}</text>
-          <text y="4.6" fill={colors.text}>
+        <g transform="translate(96 6)" textAnchor="end" fontSize="3.2" fontWeight="900">
+          <text 
+            fill={colors.magenta} 
+            filter="url(#boeing-glow)" 
+            fontSize="3.2"
+            letterSpacing="0.15em"
+            fontWeight="900"
+          >
+            {model.anchorZones.waypointBlock.ident}
+          </text>
+          <text 
+            y="4.6" 
+            fill={colors.text}
+            className="font-mono"
+            fontFamily="'B612 Mono', monospace"
+            fontSize="3.2"
+            letterSpacing="0.05em"
+            fontWeight="900"
+          >
             {model.anchorZones.waypointBlock.eta.replace(':', '').replace('z', '')}.8z
           </text>
-          <text y="9.2" fill={colors.text}>{model.anchorZones.waypointBlock.dist.toFixed(1)} NM</text>
+          <text 
+            y="9.2" 
+            fill={colors.text}
+            className="font-mono"
+            fontFamily="'B612 Mono', monospace"
+            fontSize="3.2"
+            letterSpacing="0.05em"
+            fontWeight="900"
+          >
+            {model.anchorZones.waypointBlock.dist.toFixed(1)} NM
+          </text>
         </g>
       )}
     </g>
