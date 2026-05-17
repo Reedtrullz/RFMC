@@ -51,6 +51,12 @@ export type {
   SimBriefRouteFixture,
 } from './fmc/navdataSchema';
 export { airbusTutorialScenarios } from './fmc/tutorials/airbus-tutorials';
+export { buildTrainingProgress } from './training/trainingProgress';
+export type {
+  BuildTrainingProgressInput,
+  TrainingProgress,
+  TrainingProgressStep,
+} from './training/trainingProgress';
 export { AIRBUS_KEYS, AIRBUS_FUNCTION_KEYS } from './fmc/airbusKeys';
 export {
   getColorClass,
@@ -119,7 +125,9 @@ export type {
 export { devLog, devWarn, devError } from './logger';
 export * from './autopilot/autopilotTypes';
 export * from './autopilot/boeingMcpLogic';
+export * from './autopilot/autoflightDisplayModel';
 export * from './pfd/pfdTypes';
+export * from './pfd/pfdDisplayModel';
 export * from './pfd/boeingPfdModel';
 export * from './pfd/airbusPfdModel';
 export type {
@@ -147,6 +155,9 @@ export * from './training/boeingLessons';
 export * from './training/airbusLessons';
 export * from './fmc/waypointParser';
 export * from './fmc/fmsNavigation';
+export * from './fmc/lnavState';
+export * from './fmc/performancePrediction';
+export * from './fmc/vnavPrediction';
 export * from './fmc/pageRenderer';
 export * from './fmc/ScenarioEngine';
 export { FmsRuntimeEngine } from './fmc/FmsRuntimeEngine';

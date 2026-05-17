@@ -295,6 +295,9 @@ npx playwright test e2e/visual/cockpit-layouts.spec.ts --update-snapshots --proj
 npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=desktop-3456x2234
 npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=retina-1728x1117-dsf2
 
+# Rebuild the visual-fidelity manifest/report after visual baseline changes
+npm run measure:visual
+
 # Capture fresh baselines for the baseline-screenshots spec
 npm run capture:baseline
 ```
@@ -305,8 +308,9 @@ npm run capture:baseline
 2. Run `npm run test:visual` to see which snapshots fail
 3. Review the diff artifacts in the Playwright HTML report (`playwright-report/`)
 4. If the changes are correct, run `npm run test:visual:update` to update baselines
-5. Commit the updated snapshot files alongside your code changes
-6. In CI, visual tests use the committed baselines for comparison
+5. Run `npm run measure:visual` so `docs/VISUAL_FIDELITY_REPORT.md` reflects the protected surfaces
+6. Commit the updated snapshot files alongside your code changes
+7. In CI, visual tests use the committed baselines for comparison
 
 High-resolution cockpit screenshots are intentionally run as serial tests because 3456x2234 PNG capture is expensive. Run those projects explicitly instead of mixing them with mobile/WebKit projects.
 

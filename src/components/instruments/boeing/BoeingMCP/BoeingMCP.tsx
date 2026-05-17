@@ -1,4 +1,4 @@
-import { BoeingMCPState } from '@shared';
+import { BoeingMCPState, buildBoeingMcpDisplayModel } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
 import { useAutopilotStore } from '../../../../store/autopilotStore';
 import { InstrumentShell } from '../../common/InstrumentShell';
@@ -15,6 +15,7 @@ interface BoeingMCPProps {
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   const truth = useAutopilotStore(s => s.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const display = buildBoeingMcpDisplayModel(state, truth);
   const sectionClass = 'relative flex flex-col items-center gap-3 rounded-[6px] border border-black/45 bg-[#2f3434] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-10px_18px_rgba(0,0,0,0.34)]';
   
   return (
@@ -31,8 +32,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         <div className={`${sectionClass} min-w-[126px]`}>
           <MCPDisplayWindow 
             label="COURSE" 
-            value={state.courseL.toString().padStart(3, '0')} 
-            active={true}
+            value={display.windows.courseL.text}
+            active={display.windows.courseL.active}
             highlighted={tutorialHighlight === 'COURSE_L'}
           />
           <MCPKnob 
@@ -56,10 +57,10 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
             >SPD/MACH</button>
             <MCPDisplayWindow 
               label="IAS/MACH" 
-              value={state.speed === null && state.mach === null ? '' : (state.mach !== null ? `.${Math.round(state.mach * 100)}` : (state.speed?.toString() ?? '').padStart(3, ' '))} 
-              active={state.speed !== null || state.mach !== null}
+              value={display.windows.iasMach.text}
+              active={display.windows.iasMach.active}
               highlighted={tutorialHighlight === 'IAS_SEL'}
-              unit={state.mach !== null ? 'MACH' : 'SPD'}
+              unit={display.windows.iasMach.unit}
             />
           </div>
           <MCPKnob 
@@ -85,8 +86,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
           </div>
           <MCPDisplayWindow 
             label="HEADING" 
-            value={state.heading.toString().padStart(3, '0')} 
-            active={true}
+            value={display.windows.heading.text}
+            active={display.windows.heading.active}
             highlighted={tutorialHighlight === 'HDG_SEL'}
           />
           <MCPKnob 
@@ -102,8 +103,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         <div className={`${sectionClass} min-w-[150px]`}>
           <MCPDisplayWindow 
             label="ALTITUDE" 
-            value={state.altitude.toString().padStart(5, '0')} 
-            active={true}
+            value={display.windows.altitude.text}
+            active={display.windows.altitude.active}
             highlighted={tutorialHighlight === 'ALT_SEL'}
           />
           <MCPKnob 
@@ -119,8 +120,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         <div className={`${sectionClass} min-w-[150px]`}>
           <MCPDisplayWindow 
             label="VERT SPEED" 
-            value={truth.verticalActive !== 'VS' ? '' : (state.verticalSpeed !== null ? (state.verticalSpeed > 0 ? `+${state.verticalSpeed}` : state.verticalSpeed.toString()) : '0000')} 
-            active={truth.verticalActive === 'VS'}
+            value={display.windows.verticalSpeed.text}
+            active={display.windows.verticalSpeed.active}
             highlighted={tutorialHighlight === 'VS_MODE'}
           />
           <div className="flex flex-col gap-1">
@@ -161,8 +162,8 @@ export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
         <div className={`${sectionClass} min-w-[126px]`}>
           <MCPDisplayWindow 
             label="COURSE" 
-            value={state.courseR.toString().padStart(3, '0')} 
-            active={true}
+            value={display.windows.courseR.text}
+            active={display.windows.courseR.active}
           />
           <MCPKnob 
             value={state.courseR} 

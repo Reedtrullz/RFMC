@@ -42,6 +42,89 @@
   text-transform: uppercase;
 }
 
+.mode-help-card__progress {
+  display: grid;
+  gap: 0.35rem;
+  border: 1px solid rgba(0, 215, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 18, 24, 0.45);
+  padding: 0.65rem;
+}
+
+.mode-help-card__list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mode-help-card__list > div,
+.mode-help-card__stats > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.22rem;
+}
+
+.mode-help-card__list > div {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.5rem;
+}
+
+.mode-help-card__stats {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mode-help-card__stats > div {
+  align-items: start;
+  border: 1px solid rgba(0, 215, 255, 0.14);
+  border-radius: 7px;
+  background: rgba(0, 18, 24, 0.55);
+  padding: 0.38rem 0.48rem;
+}
+
+.mode-help-card__progress span,
+.mode-help-card__list span,
+.mode-help-card__stats span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.mode-help-card__progress strong,
+.mode-help-card__list strong,
+.mode-help-card__stats strong {
+  color: #f7fbff;
+  font-size: 12px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mode-help-card__stats strong {
+  color: #ffffff;
+  font-size: 11px;
+  font-family: var(--font-avionics);
+  white-space: normal;
+}
+
+.mode-help-card__stats span::after {
+  content: ':';
+}
+
+.mode-help-card__progress p {
+  margin: 0;
+  color: rgba(226, 244, 255, 0.76);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.mode-help-card__progress em {
+  color: #ffb347;
+  font-size: 11px;
+  font-style: normal;
+}
+
 .focus-overlay {
   position: fixed;
   inset: 0;

@@ -1,4 +1,4 @@
-import type { AirbusFCUState } from '@shared';
+import { buildAirbusFcuDisplayModel, type AirbusFCUState } from '@shared';
 import { InstrumentShell } from '../../common/InstrumentShell';
 import { FCUDisplay } from './FCUDisplay';
 import { FCUButton } from './FCUButton';
@@ -16,20 +16,7 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
   const truth = useAutopilotStore(s => s.truth);
   const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   const highlighted = (controlId: string) => tutorialHighlight === controlId;
-
-  const formatWindow = (field: 'speed' | 'heading' | 'altitude' | 'vs', val: number | null, managed: boolean) => {
-    if ((field === 'speed' || field === 'heading') && managed) return { text: '---', dots: true };
-    if (field === 'altitude') return { text: val?.toString().padStart(5, '0') ?? '00000', dots: managed };
-    if (field === 'vs') return { text: val === null ? '-----' : (val > 0 ? `+${val}` : val.toString()), dots: false };
-    return { text: val?.toString() ?? '', dots: managed };
-  };
-
-  const isManaged = (field: 'speed' | 'heading' | 'altitude') => {
-    if (field === 'speed') return truth.thrustActive === 'SPEED' || truth.thrustActive === 'THR_CLB';
-    if (field === 'heading') return truth.lateralActive === 'NAV' || truth.lateralArmed === 'NAV';
-    if (field === 'altitude') return truth.verticalActive === 'CLB' || truth.verticalActive === 'DES' || truth.verticalArmed === 'VNAV_PTH';
-    return false;
-  };
+  const display = buildAirbusFcuDisplayModel(state, truth);
 
   const sectionClass = 'relative flex min-w-[136px] flex-col items-center gap-4 rounded-[6px] border border-black/55 bg-[#404849] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-8px_18px_rgba(0,0,0,0.26)]';
   const labelClass = 'text-[9px] font-black uppercase tracking-[0.16em] text-[#d7e2e3]/60';
@@ -47,8 +34,8 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.speed || 0} 
-            {...formatWindow('speed', state.speed, isManaged('speed'))}
-            label={formatWindow('speed', state.speed, isManaged('speed')).text}
+            label={display.windows.speed.text}
+            managed={display.windows.speed.managed}
             highlighted={highlighted('A320_SPEED')}
           />
           <PushPullRotary 
@@ -74,8 +61,8 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.heading || 0} 
-            {...formatWindow('heading', state.heading, isManaged('heading'))}
-            label={formatWindow('heading', state.heading, isManaged('heading')).text}
+            label={display.windows.heading.text}
+            managed={display.windows.heading.managed}
             highlighted={highlighted('A320_HDG')}
           />
           <PushPullRotary 
@@ -112,8 +99,8 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           </div>
           <FCUDisplay 
             value={state.altitude} 
-            {...formatWindow('altitude', state.altitude, isManaged('altitude'))}
-            label={formatWindow('altitude', state.altitude, isManaged('altitude')).text}
+            label={display.windows.altitude.text}
+            managed={display.windows.altitude.managed}
             highlighted={highlighted('A320_ALT')}
           />
           <PushPullRotary 
@@ -131,8 +118,8 @@ export function AirbusFCU({ state, updateState, pressButton }: AirbusFCUProps) {
           <span className={labelClass}>{state.hdgTrkMode === 'HDG_VS' ? 'V/S' : 'FPA'}</span>
           <FCUDisplay 
             value={state.verticalSpeed || 0} 
-            {...formatWindow('vs', state.verticalSpeed, false)}
-            label={formatWindow('vs', state.verticalSpeed, false).text}
+            label={display.windows.verticalSpeed.text}
+            managed={display.windows.verticalSpeed.managed}
           />
           <div className="flex flex-col gap-1">
             <button 

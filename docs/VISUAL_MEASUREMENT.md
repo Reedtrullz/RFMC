@@ -12,6 +12,18 @@ Playwright writes screenshots under `test-results/`. These are generated artifac
 
 Each capture test also attaches a `baseline-manifest` JSON payload with screenshot name, output path, viewport, detected aircraft label, and first display row. Use that manifest when importing screenshots into a reference comparison run.
 
+## Fidelity Manifest Gate
+
+Run:
+
+```bash
+npm run measure:visual
+```
+
+This checks the reference manifest, measurement profile files, and committed app-owned Playwright baselines. It writes `docs/VISUAL_FIDELITY_REPORT.md`, which classifies each cockpit surface as snapshot-protected, measured against references, pilot-reviewed, and live-validated.
+
+The current gate is intentionally conservative: it warns when no rights-cleared hardware reference crops are approved for pixel measurement and must not be used as a hardware-accuracy claim.
+
 ## Reference Intake
 
 Use `reference-library/references.json` for source metadata. Before a reference image is used for measurement, record:

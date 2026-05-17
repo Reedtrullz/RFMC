@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { buildAirbusFMAState, buildAirbusPFDState, buildBoeingFMAState, buildBoeingPFDState } from '../index';
+import {
+  buildAirbusFMAState,
+  buildAirbusPFDState,
+  buildBoeingFMAState,
+  buildBoeingPFDState,
+  buildPfdDisplayModel,
+} from '../index';
 import { createBaseState } from './testUtils';
 
 describe('PFD display models', () => {
+  it('routes the unified PFD display model to the active aircraft family', () => {
+    const boeing = buildPfdDisplayModel({ fmcState: createBaseState() });
+    expect(boeing.aircraft).toBe('BOEING_737');
+    expect(boeing.boeingFma).toBeDefined();
+    expect(boeing.airbusFma).toBeUndefined();
+
+    const airbus = buildPfdDisplayModel({ fmcState: createBaseState({ aircraft: 'AIRBUS_A320' }) });
+    expect(airbus.aircraft).toBe('AIRBUS_A320');
+    expect(airbus.airbusFma).toBeDefined();
+    expect(airbus.boeingFma).toBeUndefined();
+  });
+
   it('projects Boeing MCP selected values into the PFD model', () => {
     const state = createBaseState();
     state.aircraftState = {

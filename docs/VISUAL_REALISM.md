@@ -6,6 +6,13 @@ This document tracks visual realism measurements, design tokens, rendering effec
 
 ## Reference Measurements
 
+Current executable visual-fidelity manifest/report:
+
+- `npm run measure:visual`
+- `docs/VISUAL_FIDELITY_REPORT.md`
+
+The report separates app-owned snapshot protection from measured reference fidelity, pilot review, and live validation. It currently records hardware pixel accuracy as not measured because no rights-cleared hardware reference crops have been approved for measurement.
+
 Full token-derived measurements are documented in:
 - `docs/reference-library/boeing-737-cdu/measurements.md`
 - `docs/reference-library/airbus-a320-mcdu/measurements.md`
@@ -109,6 +116,7 @@ Currently identified gaps between rendered output and reference hardware:
 | PFD realism | Protected follow-up states | Boeing/Airbus PFDs now have distinct attitude, tapes, FMA, VSI, selected bugs, and automation/focused/approach/failure baselines |
 | MCP/FCU realism | Initial hardware pass implemented | Boeing MCP and Airbus FCU now have distinct panel geometry, display windows, button/knob treatment, and autoflight/FMA coupling |
 | Focused/tablet baselines | Expanded | Focused CDU/MCDU, ND, PFD, MCP/FCU, and tablet-landscape cockpit modes are covered |
+| Visual-fidelity manifest | Implemented | `npm run measure:visual` checks reference metadata, measurement profile presence, and app-owned baseline coverage |
 
 ## Current Instrument Baseline Coverage
 
@@ -128,7 +136,7 @@ The source of truth for the latest command results is `docs/STATUS.md`.
 
 1. Workflow integration: training cards should agree with selected values, active/armed modes, route state, and workflow progress.
 2. Deeper guidance cues: LNAV/VNAV and approach guidance should eventually drive flight-director command behavior instead of static trainer cues.
-3. Hardware measurement: cockpit screenshots prove render stability but still need measured reference comparison before claiming hardware accuracy.
+3. Hardware measurement: cockpit screenshots and `npm run measure:visual` prove render stability and manifest completeness, but still need measured rights-cleared reference comparison before claiming hardware accuracy.
 4. Tablet/portrait hardening: iPad portrait and mobile Safari still need stable local browser coverage before they can be claimed as protected.
 
 ## How to Measure and Improve Fidelity
@@ -137,8 +145,9 @@ The source of truth for the latest command results is `docs/STATUS.md`.
 2. **Extract measurements** from reference images (pixel measurements against known dimensions)
 3. **Update token files** with refined values
 4. **Capture visual baselines** before and after changes: `npm run capture:baseline`
-5. **Review diffs**: Compare Playwright screenshot diffs between baseline and updated renders
-6. **Run visual regression tests**: `npm run test:visual`
+5. **Run the fidelity manifest**: `npm run measure:visual`
+6. **Review diffs**: Compare Playwright screenshot diffs between baseline and updated renders
+7. **Run visual regression tests**: `npm run test:visual`
 
 ## Visual Baseline Snapshots
 

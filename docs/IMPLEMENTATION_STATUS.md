@@ -6,12 +6,12 @@ Current automated baseline, build/audit state, latest reviewed commit, and valid
 
 ## Current Continuation Focus
 
-The dispatcher/store cleanup and visible-polish cockpit slice are complete enough for the next milestone. The desktop Chromium broad visual gate has been repaired, and 3456x2234 plus Retina-equivalent cockpit baselines now protect the large-desktop target. The active public-demo track is now measured visual fidelity, workflow completion, state-aware training, and release hardening:
+The dispatcher/store cleanup and visible-polish cockpit slice are complete enough for the next milestone. The desktop Chromium broad visual gate has been repaired, 3456x2234 plus Retina-equivalent cockpit baselines now protect the large-desktop target, and a visual-fidelity manifest gate now separates snapshot protection from unproven hardware accuracy. The active public-demo track is now measured visual fidelity, workflow completion, state-aware training, and release hardening:
 
-- Measured visual-fidelity tooling against curated reference captures.
-- State-driven training scenario guidance.
+- Rights-cleared reference intake and measured geometry/color comparisons.
+- Expand state-driven cockpit guidance into lesson packs, scoring, debrief, and highlighted expected controls.
 - Boeing preflight workflow completion and Airbus workflow parity.
-- Richer deterministic navdata, LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
+- Richer deterministic navdata, integration of the shared LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
 
 ## Large-Desktop Visual Gate Update
 
@@ -20,6 +20,34 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Added serial high-resolution cockpit visual coverage for Boeing and Airbus task modes plus focused CDU/MCDU, ND, PFD, and MCP/FCU panels.
 - Added reusable cockpit layout assertions for stage usage, visible-panel group size, clipping, PFD/ND pairing, MCP/FCU placement, help-sidebar docking, tray docking, and focused-panel centering.
 - Tuned large-desktop cockpit grid sizing so the 3456x2234 full-deck composition uses the available canvas instead of rendering as a small centered cluster.
+
+## Visual-Fidelity Manifest Gate
+
+- Added `npm run measure:visual`, backed by `scripts/measure-visual-fidelity.mjs`.
+- The gate validates `reference-library/references.json`, required measurement profile files, and the committed app-owned visual baseline directories.
+- The generated `docs/VISUAL_FIDELITY_REPORT.md` classifies CDU/MCDU, ND, PFD, MCP/FCU, and high-resolution cockpit layouts as snapshot-protected, measured against references, pilot-reviewed, and live-validated.
+- The report intentionally keeps hardware pixel accuracy at "not measured" until rights-cleared hardware reference crops are approved and measured.
+
+## State-Aware Cockpit Guidance
+
+- Added shared `buildTrainingProgress()` in `shared/src/training/trainingProgress.ts`.
+- The selector derives current step, completed steps, next action, expected page/key/LSK/panel, missing fields, warnings, hints, and aircraft-family terminology from the current FMC and autoflight state.
+- Mode help cards now use the shared selector so preflight setup, route verification, automation, approach, and flight-deck scan modes react to actual state instead of showing only static descriptions.
+- Added unit coverage for Boeing position/route progression, discontinuity detection, Boeing automation completion, Airbus terminology separation, and Airbus approach completion.
+- Updated affected cockpit layout and high-resolution visual baselines because the help card now displays live next-step guidance.
+
+## Shared Autoflight And LNAV Display Models
+
+- Added shared `buildPfdDisplayModel()` as the aircraft-family router over the existing Boeing and Airbus PFD/FMA model builders.
+- Added unit coverage proving the unified PFD model returns Boeing-only and Airbus-only FMA branches for the active aircraft.
+- Added shared `buildBoeingMcpDisplayModel()` and `buildAirbusFcuDisplayModel()` so MCP/FCU display-window formatting is no longer embedded only in React JSX.
+- Boeing MCP and Airbus FCU components now consume the shared display models while preserving the existing hardware styling and handlers.
+- Added shared `buildLnavState()` for trainer-grade LNAV active-leg truth: active waypoint, next waypoint, destination, direct-to state, discontinuity stop, bearing, and distance-to-go.
+- Added unit coverage for Boeing IAS/MACH, heading, altitude, V/S formatting, Airbus managed-window formatting, direct-to LNAV behavior, discontinuity blocking, and empty-route behavior.
+- Added shared `buildPerformancePrediction()` for trainer-grade performance availability, V-speed prediction, fuel-to-destination estimate, runway-length warning, and explicit non-operational notes.
+- Added unit coverage for plausible trainer V-speeds, missing-performance VNAV unavailability, insufficient fuel, and a deliberately short runway warning.
+- Added shared `buildVnavPrediction()` for trainer-grade VNAV availability, climb/descent phase, next altitude-constraint feasibility, T/C and T/D distance estimates, `UNABLE NEXT ALT`, `DRAG REQUIRED`, and route-discontinuity interruption messages.
+- Added unit coverage for missing-performance VNAV unavailability, feasible climb constraints, impossible climb constraints, excessive descent path, and discontinuity interruption.
 
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.
