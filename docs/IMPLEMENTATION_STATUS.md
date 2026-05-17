@@ -48,6 +48,8 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Added unit coverage for plausible trainer V-speeds, missing-performance VNAV unavailability, insufficient fuel, and a deliberately short runway warning.
 - Added shared `buildVnavPrediction()` for trainer-grade VNAV availability, climb/descent phase, next altitude-constraint feasibility, T/C and T/D distance estimates, `UNABLE NEXT ALT`, `DRAG REQUIRED`, and route-discontinuity interruption messages.
 - Added unit coverage for missing-performance VNAV unavailability, feasible climb constraints, impossible climb constraints, excessive descent path, and discontinuity interruption.
+- Wired the Boeing PROGRESS page and grid renderer to shared LNAV/VNAV/performance predictions so TO/NEXT/DEST, fuel-at-destination, VNAV status, next constraint, and T/D data come from the same trainer-grade truth used by tests.
+- Updated the instructor console VNAV and performance sections to use shared LNAV/VNAV/performance predictions instead of local placeholder top-of-descent math.
 
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.

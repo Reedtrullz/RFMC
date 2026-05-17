@@ -3,22 +3,22 @@ import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useTrainingStore } from '../../store/trainingStore';
 import { useAlertStore } from '../../store/alertStore';
-import type { FMCState, FmcMessage } from '@shared';
-import { VerticalProfileEngine } from '@shared';
+import type { FMCState } from '@shared';
+import { buildLnavState, buildPerformancePrediction, buildVnavPrediction } from '@shared';
 import { SCENARIOS } from '@shared/fmc/scenarios';
 import { scenarioEngine } from '@shared/training/scenarioEngine';
 
 export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
   
+  const fmcState = useFMCStore((s) => s as unknown as FMCState);
+
   // Using specific store hooks for truth data
    const aircraftState = useAircraftStore((s: any) => s.aircraftState);
    const aircraft = useAircraftStore((s: any) => s.aircraft);
    const flightPhase = useFMCStore((s: any) => s.flightPhase);
    const activeNavSource = useAircraftStore((s: any) => s.activeNavSource);
    const navPerformance = useAircraftStore((s: any) => s.navPerformance);
-   const flightPlan = useFMCStore((s: any) => s.flightPlan);
-   const performance = useAircraftStore((s: any) => s.performance);
    const scratchpadMessages = useFMCStore((s: any) => s.scratchpadMessages);
    
    const activeScenario = useTrainingStore((s: any) => s.activeScenario);
@@ -40,13 +40,16 @@ export function FmsInspector() {
     );
   }
 
-  const currentAlt = aircraftState?.altitude || 0;
-  const gs = aircraftState?.gs || 0;
-  
-  // Calculate VNAV path data
-  const destAlt = 3000;
-  const distToTd = VerticalProfileEngine.computeTopOfDescent(currentAlt, destAlt);
-  const requiredVs = VerticalProfileEngine.calculateRequiredVs(gs);
+  const modelState: FMCState = {
+    ...fmcState,
+    aircraft,
+    aircraftState: aircraftState ?? fmcState.aircraftState,
+    activeNavSource,
+    navPerformance: navPerformance ?? fmcState.navPerformance,
+  };
+  const lnav = buildLnavState(modelState);
+  const vnav = buildVnavPrediction(modelState);
+  const performancePrediction = buildPerformancePrediction(modelState);
 
   return (
     <div className="fixed top-12 right-4 w-[340px] bg-[#0c0d0d] border border-white/10 rounded-sm shadow-[0_0_40px_rgba(0,0,0,0.8)] z-50 text-white font-mono text-[10px] overflow-hidden flex flex-col max-h-[85vh] outline outline-4 outline-black/20">
@@ -97,7 +100,19 @@ export function FmsInspector() {
             <div className="flex justify-between py-1">
               <span className="text-white/40 uppercase">Active Leg</span>
               <span className="text-cdu-cyan font-black">
-                {flightPlan.waypoints[0]?.ident || 'NONE'}
+                {lnav.activeWaypoint?.ident || 'NONE'}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-white/5 py-1">
+              <span className="text-white/40 uppercase">Next / Dest</span>
+              <span className="text-white/80">
+                {lnav.nextWaypoint?.ident || '----'} / {lnav.destination?.ident || '----'}
+              </span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span className="text-white/40 uppercase">DTG</span>
+              <span className="text-cdu-cyan font-black">
+                {lnav.distanceToDestinationNm !== null ? `${lnav.distanceToDestinationNm.toFixed(1)} NM` : '----'}
               </span>
             </div>
           </div>
@@ -113,12 +128,68 @@ export function FmsInspector() {
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
               <div className="text-[8px] text-white/20 uppercase mb-1">Dist to T/D</div>
-              <div className="text-amber-500 font-black text-xs">{distToTd.toFixed(1)} <span className="text-[8px]">NM</span></div>
+              <div className="text-amber-500 font-black text-xs">
+                {vnav.topOfDescentDistanceNm !== null ? vnav.topOfDescentDistanceNm.toFixed(1) : '---'} <span className="text-[8px]">NM</span>
+              </div>
             </div>
             <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
               <div className="text-[8px] text-white/20 uppercase mb-1">Req V/S</div>
-              <div className="text-white/80 font-black text-xs">{Math.round(requiredVs)} <span className="text-[8px]">FPM</span></div>
+              <div className="text-white/80 font-black text-xs">
+                {vnav.nextConstraint?.requiredVerticalSpeedFpm ?? '---'} <span className="text-[8px]">FPM</span>
+              </div>
             </div>
+          </div>
+          <div className="mt-2 space-y-1 text-[9px]">
+            <div className="flex justify-between border-b border-white/5 pb-1">
+              <span className="text-white/40 uppercase">Phase</span>
+              <span className={vnav.available ? 'text-cdu-exec' : 'text-amber-500'}>{vnav.phase.toUpperCase()}</span>
+            </div>
+            <div className="flex justify-between border-b border-white/5 py-1">
+              <span className="text-white/40 uppercase">Next Constraint</span>
+              <span className="text-white/80">
+                {vnav.nextConstraint ? `${vnav.nextConstraint.ident} ${vnav.nextConstraint.altitudeFt}` : 'NONE'}
+              </span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span className="text-white/40 uppercase">Messages</span>
+              <span className={vnav.pathMessages.length > 0 ? 'text-amber-500' : 'text-cdu-exec'}>
+                {vnav.pathMessages[0] || 'PATH OK'}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Performance Prediction */}
+        <section>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-[1px] flex-1 bg-white/5" />
+            <h4 className="text-white/30 uppercase tracking-widest text-[9px] font-black">Performance</h4>
+            <div className="h-[1px] flex-1 bg-white/5" />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
+              <div className="text-[8px] text-white/20 uppercase mb-1">V1</div>
+              <div className="text-white/80 font-black text-xs">{performancePrediction.vSpeeds.v1 ?? '---'}</div>
+            </div>
+            <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
+              <div className="text-[8px] text-white/20 uppercase mb-1">VR</div>
+              <div className="text-white/80 font-black text-xs">{performancePrediction.vSpeeds.vr ?? '---'}</div>
+            </div>
+            <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
+              <div className="text-[8px] text-white/20 uppercase mb-1">V2</div>
+              <div className="text-white/80 font-black text-xs">{performancePrediction.vSpeeds.v2 ?? '---'}</div>
+            </div>
+          </div>
+          <div className="mt-2 flex justify-between border-b border-white/5 pb-1 text-[9px]">
+            <span className="text-white/40 uppercase">Fuel at Dest</span>
+            <span className={performancePrediction.warnings.includes('INSUFFICIENT FUEL') ? 'text-cdu-error' : 'text-cdu-exec'}>
+              {performancePrediction.estimatedFuelAtDestination !== null
+                ? `${Math.round(performancePrediction.estimatedFuelAtDestination)} LB`
+                : '----'}
+            </span>
+          </div>
+          <div className="mt-1 text-[8px] uppercase leading-snug text-white/35">
+            {performancePrediction.warnings[0] || performancePrediction.notes[0]}
           </div>
         </section>
 

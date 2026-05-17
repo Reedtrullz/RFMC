@@ -232,8 +232,8 @@ exports[`Page Snapshots > Boeing PROGRESS matches snapshot 1`] = `
  DEST          ETA  DTG 
  ----         ----  ----
                         
- FUEL USE               
- 0.0                    
+ FUEL DEST     VNAV  T/D
+ ----         VNAV N/---
                         
 <POS REF        INDEX>  "
 `;

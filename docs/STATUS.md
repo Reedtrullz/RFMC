@@ -9,7 +9,7 @@ This is the current source of truth for automated status. Other docs should link
 | Gate | Command | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing (all 3 workspaces) |
-| Unit/regression tests | `npm test -- --run` | 783/783 passing (61 test files) |
+| Unit/regression tests | `npm test -- --run` | 784/784 passing (61 test files) |
 | Playwright smoke E2E | `npm run test:e2e:ci` | 3/3 passing (desktop Chromium smoke gate) |
 | Playwright full E2E | `npm run test:e2e` | Not currently green on this macOS checkout; see caveats |
 | Production build | `npm run build` | Passing |

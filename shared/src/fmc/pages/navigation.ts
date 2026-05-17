@@ -2,6 +2,9 @@ import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { greatCircleDistance } from '../flightPlanParser';
 import { inferBoeingSemantic } from '../pageLineSemantics';
+import { buildLnavState } from '../lnavState';
+import { buildPerformancePrediction } from '../performancePrediction';
+import { buildVnavPrediction } from '../vnavPrediction';
 
 function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"], semantic?: DisplayLine['semantic']): DisplayLine {
   return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: semantic ?? inferBoeingSemantic(color) };
@@ -164,23 +167,41 @@ export function renderProgressPage(state: FMCState): DisplayData {
   const { flightPlan, aircraftState, performance } = state;
   const isLive = aircraftState !== null;
   const title = isLive ? '►PROGRESS' : 'PROGRESS';
+  const lnav = buildLnavState(state);
+  const perf = buildPerformancePrediction(state);
+  const vnav = buildVnavPrediction(state);
 
   // Extract variables
   const origin = flightPlan.origin || '----';
-  const dest = flightPlan.destination || '----';
+  const dest = lnav.destination?.ident || flightPlan.destination || state.route.destination || '----';
   
   // Calculate DTG
-  let toWpt = '----';
-  let nextWpt = '----';
+  let toWpt = lnav.activeWaypoint?.ident || '----';
+  let nextWpt = lnav.nextWaypoint?.ident || '----';
   
-  let dtgTo = 0;
+  let dtgTo = lnav.distanceToActiveNm ?? 0;
   let dtgNext = 0;
-  let dtgDest = 0;
+  let dtgDest = lnav.distanceToDestinationNm ?? 0;
 
-  let hasTo = false;
-  let hasNext = false;
+  let hasTo = lnav.activeWaypoint !== null && lnav.distanceToActiveNm !== null;
+  let hasNext = lnav.nextWaypoint !== null;
 
-  if (aircraftState && flightPlan.waypoints.length > 0) {
+  if (
+    hasTo &&
+    lnav.activeWaypoint?.lat !== undefined &&
+    lnav.activeWaypoint.lon !== undefined &&
+    lnav.nextWaypoint?.lat !== undefined &&
+    lnav.nextWaypoint.lon !== undefined
+  ) {
+    dtgNext = dtgTo + greatCircleDistance(
+      lnav.activeWaypoint.lat,
+      lnav.activeWaypoint.lon,
+      lnav.nextWaypoint.lat,
+      lnav.nextWaypoint.lon,
+    );
+  }
+
+  if (!hasTo && aircraftState && flightPlan.waypoints.length > 0) {
     const w0 = flightPlan.waypoints[0];
     if (w0.lat && w0.lon) {
       toWpt = w0.ident;
@@ -221,7 +242,15 @@ export function renderProgressPage(state: FMCState): DisplayData {
   
   const toDtgStr = formatDtg(dtgTo, hasTo);
   const nextDtgStr = formatDtg(dtgNext, hasNext);
-  const destDtgStr = formatDtg(dtgDest, hasTo); // If we have TO, we have a partial route to dest
+  const destDtgStr = formatDtg(dtgDest, hasTo && dtgDest > 0); // If we have TO, we have a partial route to dest
+  const destFuel = perf.estimatedFuelAtDestination !== null
+    ? `${(perf.estimatedFuelAtDestination / 1000).toFixed(1)}`
+    : '----';
+  const vnavStatus = formatProgressVnavStatus(vnav.pathMessages[0], vnav.available, vnav.phase);
+  const tod = vnav.topOfDescentDistanceNm !== null ? `${Math.round(vnav.topOfDescentDistanceNm)}NM` : '----';
+  const constraint = vnav.nextConstraint
+    ? `${vnav.nextConstraint.ident}/${Math.round(vnav.nextConstraint.altitudeFt)}`
+    : '--------';
 
   // Command speed
   let cmdSpd = '---';
@@ -246,17 +275,29 @@ export function renderProgressPage(state: FMCState): DisplayData {
       fmt(' NEXT             ETA   DTG', '', '', 'white'),
       fmt(` ${nextStr}           -----${nextDtgStr}`, '', '', 'green'),
       fmt(' DEST             ETA  FUEL', '', '', 'white'),
-      fmt(` ${destStr}           ----- ----`, '', '', 'green'),
-      fmt(' CMD SPD', '', '', 'white'),
-      fmt(` ${cmdSpd}`, '', '', 'green'),
-      blank(),
-      blank(),
+      fmt(` ${destStr}       ${destDtgStr}${destFuel.padStart(5, ' ')}`, '', '', 'green'),
+      fmt(' CMD SPD          VNAV', '', '', 'white'),
+      fmt(` ${cmdSpd.padEnd(7, ' ')}        ${vnavStatus.slice(0, 8)}`, '', '', vnav.pathMessages.length > 0 ? 'amber' : 'green'),
+      fmt(' NEXT ALT         T/D', '', '', 'white'),
+      fmt(` ${constraint.padEnd(10, ' ')}      ${tod.padStart(5, ' ')}`, '', '', vnav.pathMessages.length > 0 ? 'amber' : 'green'),
     ],
     lskActions: {
       L1: null, L2: null, L3: null, L4: null, L5: null, L6: null,
       R1: null, R2: null, R3: null, R4: null, R5: null, R6: null,
     },
   };
+}
+
+function formatProgressVnavStatus(
+  message: string | undefined,
+  available: boolean,
+  phase: string,
+): string {
+  if (message === 'PERF/VNAV UNAVAILABLE') return 'VNAV N/A';
+  if (message === 'UNABLE NEXT ALT') return 'UNABLE';
+  if (message === 'DRAG REQUIRED') return 'DRAG REQ';
+  if (message === 'VNAV PATH INTERRUPTED BY DISCONTINUITY') return 'DISCO';
+  return available ? phase.toUpperCase() : 'VNAV N/A';
 }
 
 export function renderHoldPage(state: FMCState): DisplayData {

@@ -7,7 +7,7 @@ import { AltitudeTape } from '../common/AltitudeTape';
 import { AttitudeSphere } from '../common/AttitudeSphere';
 import { PfdAlerts } from '../common/PfdAlerts';
 import { VerticalSpeedIndicator } from '../common/VerticalSpeedIndicator';
-import { buildBoeingPFDState } from '@shared';
+import { buildPfdDisplayModel } from '@shared';
 
 export function BoeingPFD() {
   const aircraftState = useAircraftStore(s => s.aircraftState);
@@ -21,7 +21,7 @@ export function BoeingPFD() {
     autopilot
   };
 
-  const pfd = buildBoeingPFDState(aggregatedState as any);
+  const pfd = buildPfdDisplayModel({ fmcState: aggregatedState as any }).pfd;
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-black font-mono" data-testid="boeing-pfd">

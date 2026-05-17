@@ -8,6 +8,7 @@ import { renderDesPage } from '../fmc/pages/descent';
 import { renderDirIntcPage } from '../fmc/pages/direct';
 import { renderN1LimitPage } from '../fmc/pages/n1limit';
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
+import { renderBoeingProgressGrid } from '../fmc/pages/boeing/progress.grid';
 import { createBaseState } from './testUtils';
 
 const baseState = createBaseState({
@@ -123,6 +124,71 @@ describe('Page Renderers', () => {
     expect(data.lines.some(l => l.text.includes('CMD SPD'))).toBe(true);
     expect(data.lines.some(l => l.text.includes('KJFK'))).toBe(true);
     expect(data.lines.some(l => l.text.includes('KDCA'))).toBe(true);
+  });
+
+  it('renders Boeing PROGRESS from shared LNAV VNAV and performance truth', () => {
+    const state = createBaseState({
+      flightPlan: {
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: 'AA123',
+        route: 'FIX1 KDCA',
+        waypoints: [
+          { ident: 'KJFK', lat: 40.6413, lon: -73.7781, discontinuity: false },
+          {
+            ident: 'FIX1',
+            lat: 39.9,
+            lon: -74.4,
+            discontinuity: false,
+            altitudeConstraint: { type: 'AT_OR_ABOVE', altitude: 8000 },
+          },
+          { ident: 'KDCA', lat: 38.8512, lon: -77.0402, discontinuity: false },
+        ],
+      },
+      route: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'AA123', routeString: 'FIX1' },
+      performance: {
+        crzAlt: 18000,
+        costIndex: 30,
+        zfw: 126000,
+        fuel: 18000,
+        cg: 24,
+        reserve: 3000,
+        grossWeight: 144000,
+      },
+      takeoff: {
+        ...baseState.takeoff,
+        runway: '04L',
+        flaps: '5',
+      },
+      aircraftState: {
+        lat: 40.6413,
+        lon: -73.7781,
+        altitude: 2000,
+        altitudeFt: 2000,
+        heading: 220,
+        headingDeg: 220,
+        track: 220,
+        trackDeg: 220,
+        ias: 230,
+        indicatedAirspeedKt: 230,
+        tas: 260,
+        gs: 280,
+        verticalSpeedFpm: 1200,
+        vs: 1200,
+        fuelTotal: 18000,
+        gw: 144000,
+      },
+    });
+
+    const lineData = renderProgressPage(state);
+    expect(lineData.lines.some(l => l.text.includes('FIX1'))).toBe(true);
+    expect(lineData.lines.some(l => l.text.includes('VNAV'))).toBe(true);
+    expect(lineData.lines.some(l => l.text.includes('8000'))).toBe(true);
+
+    const gridData = renderBoeingProgressGrid(state);
+    expect(gridData.segments?.some(s => s.text === 'FIX1')).toBe(true);
+    expect(gridData.segments?.some(s => s.text === 'FUEL DEST')).toBe(true);
+    expect(gridData.segments?.some(s => s.text === 'VNAV')).toBe(true);
   });
 
   it('renders HOLD page', () => {
