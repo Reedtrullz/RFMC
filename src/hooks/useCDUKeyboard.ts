@@ -20,7 +20,7 @@ export function useCDUKeyboard() {
       const key = e.key.toUpperCase();
       
       // Prevent browser shortcuts
-      if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6'].includes(e.key)) {
+      if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'].includes(e.key)) {
         e.preventDefault(); 
       }
 
@@ -75,12 +75,14 @@ export function useCDUKeyboard() {
           break;
         
 
-        // LSK Mapping (F1-F6)
+        // LSK Mapping: F1-F6 left side, Shift+F1-F6 or F7-F12 right side.
         case 'F1': case 'F2': case 'F3': case 'F4': case 'F5': case 'F6':
           e.preventDefault();
-          const index = parseInt(e.key.substring(1)) - 1;
-          const side = e.shiftKey ? 'R' : 'L';
-          pressLSK(side, index);
+          pressLSK(e.shiftKey ? 'R' : 'L', parseInt(e.key.substring(1), 10));
+          break;
+        case 'F7': case 'F8': case 'F9': case 'F10': case 'F11': case 'F12':
+          e.preventDefault();
+          pressLSK('R', parseInt(e.key.substring(1), 10) - 6);
           break;
       }
     };

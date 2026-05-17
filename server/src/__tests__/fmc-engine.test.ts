@@ -79,6 +79,7 @@ describe('FMCEngine', () => {
       { ident: 'LENDY', discontinuity: false },
       { ident: 'DIXIE', discontinuity: false },
     ]);
+    expect(state.flightPlan.waypoints[1]).toEqual({ ident: 'DISCONTINUITY', discontinuity: true });
     expect(state.execLit).toBe(true);
     expect(state.scratchpad).toBe('');
 

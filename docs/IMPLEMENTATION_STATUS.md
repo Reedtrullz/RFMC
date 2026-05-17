@@ -21,6 +21,14 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Tightened release and limitation docs around status evidence, approved visual references, PMDG/MSFS live validation, and public-demo readiness.
 - Extended the visual measurement gate to classify measurement profiles by reference approval state; derived profiles remain internal consistency checks until their sources are approved for pixel measurement.
 
+## Boeing LEGS Staging And Keyboard Accessibility Hardening
+
+- Confirmed Boeing LEGS insert/delete/discontinuity replacement already stage through `pendingFlightPlan` and commit only on EXEC in both frontend standalone mode and backend CONTROL mode.
+- Added explicit regressions proving active route waypoints remain unchanged until EXEC for LEGS insert/delete and discontinuity resolution paths.
+- Fixed physical keyboard LSK handling: `F1` through `F6` now target left LSK 1-6 instead of the invalid L0-L5 range, and `F7` through `F12` now target right LSK 1-6.
+- Kept `Shift+F1` through `Shift+F6` as an alternate right-LSK mapping and updated the keyboard help overlay.
+- Added Playwright coverage proving physical function keys can operate left and right LSK actions.
+
 ## Large-Desktop Visual Gate Update
 
 - Repaired the legacy Boeing CDU selector contract so broad desktop visual specs can find `data-testid="boeing-cdu"` again while cockpit layout wrappers keep using `cdu-panel`.

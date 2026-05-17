@@ -95,6 +95,7 @@ describe('FMC Store', () => {
     for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 2);
     expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
     expect(useFMCStore.getState().execLit).toBe(true);
 
     store.pressEXEC();
@@ -103,6 +104,7 @@ describe('FMC Store', () => {
     store.pressKey('DEL');
     store.pressLSK('L', 2);
     expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
     
     store.pressEXEC();
     const state = useFMCStore.getState();
@@ -136,6 +138,7 @@ describe('FMC Store', () => {
       { ident: 'LENDY', discontinuity: false },
       { ident: 'DIXIE', discontinuity: false },
     ]);
+    expect(state.flightPlan.waypoints[1]).toMatchObject({ ident: 'DISCONTINUITY', discontinuity: true });
     expect(state.execLit).toBe(true);
     expect(state.scratchpad).toBe('');
 

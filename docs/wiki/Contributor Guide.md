@@ -10,5 +10,6 @@ Contribution rules:
 - Update visual baselines for visual/layout changes.
 - Update docs when behavior, scope, validation, or release claims change.
 - Keep live command results in `docs/STATUS.md`.
+- Physical keyboard access should keep `F1-F6` mapped to left LSKs and `F7-F12` mapped to right LSKs.
 
 Avoid unrelated refactors during roadmap slices.

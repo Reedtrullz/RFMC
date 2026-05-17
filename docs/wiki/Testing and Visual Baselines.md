@@ -10,6 +10,13 @@ npm run test:e2e:ci
 npm run check:status-docs
 ```
 
+Focused accessibility/workflow checks:
+
+```bash
+npx playwright test e2e/fidelity-audit.spec.ts --project=desktop-chromium
+npm test -- --run src/store/__tests__/useFMCStore.test.ts server/src/__tests__/fmc-engine.test.ts
+```
+
 Visual commands:
 
 ```bash

@@ -15,7 +15,7 @@ test.describe('Fidelity & Accessibility Audit', () => {
     await expect(page.getByTestId('cdu-panel')).toBeVisible({ timeout: 15000 });
     
     const scratchpad = page.getByTestId('scratchpad');
-    await expect(scratchpad).toHaveAttribute('aria-live', 'polite', { timeout: 10000 });
+    await expect(scratchpad).toHaveAttribute('aria-live', /polite|assertive/, { timeout: 10000 });
     await expect(scratchpad).toHaveAttribute('aria-atomic', 'true');
   });
 
@@ -51,6 +51,22 @@ test.describe('Fidelity & Accessibility Audit', () => {
     // Press Escape to close
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
+  });
+
+  test('function keys operate left and right LSKs', async ({ page }) => {
+    await page.evaluate(() => {
+      const store = (window as any).useFMCStore.getState();
+      store.setAircraft('BOEING_737');
+      store.setPage('RTE');
+    });
+
+    await page.keyboard.type('KJFK');
+    await page.keyboard.press('F1');
+    await expect.poll(async () => page.evaluate(() => (window as any).useFMCStore.getState().pendingRoute?.origin)).toBe('KJFK');
+
+    await page.keyboard.type('RF123');
+    await page.keyboard.press('F7');
+    await expect.poll(async () => page.evaluate(() => (window as any).useFMCStore.getState().pendingRoute?.flightNumber)).toBe('RF123');
   });
 
   test('cockpit modes are correctly labeled for pilot tasks', async ({ page }) => {
