@@ -11,5 +11,6 @@ Contribution rules:
 - Update docs when behavior, scope, validation, or release claims change.
 - Keep live command results in `docs/STATUS.md`.
 - Physical keyboard access should keep `F1-F6` mapped to left LSKs and `F7-F12` mapped to right LSKs.
+- Do not reserve normal CDU letters for app shortcuts; use non-character shortcuts such as `?` for overlays.
 
 Avoid unrelated refactors during roadmap slices.

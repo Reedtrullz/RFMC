@@ -245,3 +245,62 @@
   50% { opacity: 0.7; filter: brightness(1.4); }
   100% { opacity: 1; filter: brightness(1); }
 }
+
+.cockpit-high-contrast {
+  color: #ffffff;
+  --boeing-green: #7cff7c;
+  --boeing-cyan: #58eaff;
+  --cdu-amber: #ffd166;
+  --screen-brightness: 115%;
+  --scanline-opacity: 0.03;
+  --reflection-opacity: 0.16;
+}
+
+.cockpit-high-contrast .mode-help-card,
+.cockpit-high-contrast .cockpit-first-run,
+.cockpit-high-contrast .cockpit-empty-state,
+.cockpit-high-contrast .panel-tray button,
+.cockpit-high-contrast .instrument-header {
+  border-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(0, 0, 0, 0.88);
+}
+
+.cockpit-high-contrast .mode-help-card__progress,
+.cockpit-high-contrast .mode-help-card__list > div,
+.cockpit-high-contrast .mode-help-card__stats > div {
+  border-color: rgba(88, 234, 255, 0.44);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.cockpit-high-contrast .mode-help-card__progress span,
+.cockpit-high-contrast .mode-help-card__list span,
+.cockpit-high-contrast .mode-help-card__stats span {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.cockpit-high-contrast .mode-help-card__progress p,
+.cockpit-high-contrast .cockpit-first-run span {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cockpit-high-contrast .avionics-key:focus-visible,
+.cockpit-high-contrast .cdu-button:focus-visible,
+.cockpit-high-contrast button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .avionics-key--highlighted {
+    animation: none !important;
+  }
+}

@@ -69,6 +69,23 @@ test.describe('Fidelity & Accessibility Audit', () => {
     await expect.poll(async () => page.evaluate(() => (window as any).useFMCStore.getState().pendingRoute?.flightNumber)).toBe('RF123');
   });
 
+  test('documented help shortcut does not consume CDU H input', async ({ page }) => {
+    await page.keyboard.press('H');
+    await expect.poll(async () => page.evaluate(() => (window as any).useFMCStore.getState().scratchpad)).toBe('H');
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).toBeVisible();
+  });
+
+  test('high contrast and reduced motion accessibility hooks apply', async ({ page }) => {
+    await page.getByRole('button', { name: 'CONTRAST' }).click();
+    await expect(page.locator('.cockpit-grid')).toHaveClass(/cockpit-high-contrast/);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const firstKey = page.locator('.avionics-key').first();
+    await firstKey.evaluate((element) => element.classList.add('avionics-key--highlighted'));
+    await expect.poll(async () => firstKey.evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
+  });
+
   test('cockpit modes are correctly labeled for pilot tasks', async ({ page }) => {
     // The DisplaySelector contains the mode buttons
     const modes = [

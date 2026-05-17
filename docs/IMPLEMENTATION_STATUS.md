@@ -28,6 +28,15 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Fixed physical keyboard LSK handling: `F1` through `F6` now target left LSK 1-6 instead of the invalid L0-L5 range, and `F7` through `F12` now target right LSK 1-6.
 - Kept `Shift+F1` through `Shift+F6` as an alternate right-LSK mapping and updated the keyboard help overlay.
 - Added Playwright coverage proving physical function keys can operate left and right LSK actions.
+- Preserved `H` as normal CDU character input and narrowed the documented help shortcut to `?`.
+- Added CSS/test coverage for cockpit high-contrast mode and reduced-motion behavior.
+
+## PWA Prompt Testability
+
+- Extracted the offline-ready/update prompt into `PwaUpdatePrompt` so the installed-app update UI can be tested without depending on a production service worker inside the dev-server E2E environment.
+- Added unit coverage for hidden, offline-ready, update-available, reload, and close prompt states.
+- Made the portrait orientation prompt genuinely dismissible, added dialog semantics, and added Playwright coverage that verifies the portrait mobile fallback layout remains usable after dismissal.
+- Kept real service-worker/offline startup validation as a production/iPad manual gate because the dev server does not exercise the generated production service worker.
 
 ## Large-Desktop Visual Gate Update
 

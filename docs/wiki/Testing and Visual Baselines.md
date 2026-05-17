@@ -14,8 +14,12 @@ Focused accessibility/workflow checks:
 
 ```bash
 npx playwright test e2e/fidelity-audit.spec.ts --project=desktop-chromium
+npx playwright test e2e/pwa-ipad.spec.ts --project=desktop-chromium
 npm test -- --run src/store/__tests__/useFMCStore.test.ts server/src/__tests__/fmc-engine.test.ts
+npm test -- --run src/components/PWA/__tests__/PwaUpdatePrompt.test.tsx
 ```
+
+The fidelity audit covers scratchpad ARIA behavior, touch target size, keyboard help, function-key LSK access, high-contrast mode, reduced-motion behavior, task-mode labels, and hardware annunciators. The PWA unit test covers the offline-ready/update prompt UI without claiming production service-worker offline validation.
 
 Visual commands:
 

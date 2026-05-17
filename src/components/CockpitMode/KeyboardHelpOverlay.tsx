@@ -17,7 +17,7 @@ export const KeyboardHelpOverlay: React.FC = () => {
   if (!show) return null;
 
   const shortcuts = [
-    { key: 'H or ?', action: 'Toggle this help' },
+    { key: '?', action: 'Toggle this help' },
     { key: 'A–Z, 0–9', action: 'CDU/MCDU Keypad' },
     { key: 'F1–F6', action: 'Left LSK 1–6' },
     { key: 'F7–F12', action: 'Right LSK 1–6' },

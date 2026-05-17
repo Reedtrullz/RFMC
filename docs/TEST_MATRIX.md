@@ -34,7 +34,7 @@ Status source: `docs/STATUS.md`.
 | SimBrief import | Mocked import loads origin/destination/route | Yes | Required with real plans | Expand to 20 fixtures |
 | CONTROL mode | Backend-authoritative page/input parity | Mock WebSocket bridge test | Live PMDG required | Mock adapter verifies connect/input/display/key forwarding |
 | MSFS PMDG | Keypress -> CDU update -> display readback | No | Required on Windows/MSFS/PMDG | Cannot be validated on this macOS workspace |
-| PWA/iPad | Offline refresh, mounted cockpit layout, safe areas | Partial | Required on iPad | PWA/safe-area foundations exist; add offline startup/update-flow tests |
+| PWA/iPad | Offline refresh, mounted cockpit layout, safe areas | Partial | Required on iPad | Update prompt and portrait fallback are automated; real offline startup remains production/iPad validation |
 | Visual baseline | Snapshot suites, high-res layouts, and baseline capture | Scripted | Reference comparison required | `npm run capture:baseline` plus `npm run measure:visual` |
 
 ## Coverage Targets
