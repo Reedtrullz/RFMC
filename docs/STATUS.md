@@ -9,7 +9,7 @@ This is the current source of truth for automated status. Other docs should link
 | Gate | Command | Current result |
 | --- | --- | --- |
 | TypeScript | `npm run typecheck:all` | Passing (all 3 workspaces) |
-| Unit/regression tests | `npm test -- --run` | 784/784 passing (61 test files) |
+| Unit/regression tests | `npm test -- --run` | 789/789 passing (61 test files) |
 | Playwright smoke E2E | `npm run test:e2e:ci` | 3/3 passing (desktop Chromium smoke gate) |
 | Playwright full E2E | `npm run test:e2e` | Not currently green on this macOS checkout; see caveats |
 | Production build | `npm run build` | Passing |
@@ -25,7 +25,7 @@ This is the current source of truth for automated status. Other docs should link
 
 ## Current Commit
 
-Latest reviewed base commit: `8b4e5c2`. PRs #1–#24 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher). Cockpit visual regression baselines added (#23). ND symbology realism pass merged (#24) with Boeing/Airbus ND visual baselines captured and verified. PFD focused/approach/failure states, Boeing MCP and Airbus FCU hardware styling, and focused/tablet cockpit visual baselines are present. The current working tree repairs the desktop Chromium broad visual gate, adds explicit 3456x2234 plus Retina-equivalent cockpit visual protection, adds a visual-fidelity manifest/report gate, wires cockpit help to a shared state-aware training progress selector, and starts shared PFD/autoflight/LNAV/VNAV/performance derived-state models.
+Latest reviewed base commit: `2142103`. PRs #1–#24 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher). Cockpit visual regression baselines added (#23). ND symbology realism pass merged (#24) with Boeing/Airbus ND visual baselines captured and verified. PFD focused/approach/failure states, Boeing MCP and Airbus FCU hardware styling, and focused/tablet cockpit visual baselines are present. The current working tree repairs the desktop Chromium broad visual gate, adds explicit 3456x2234 plus Retina-equivalent cockpit visual protection, adds a visual-fidelity manifest/report gate, wires cockpit help to a shared state-aware training progress selector, adds shared PFD/autoflight/LNAV/VNAV/performance derived-state models, wires Airbus PROG/FUEL PRED plus backend CONTROL-mode Airbus display rendering to shared LNAV/performance truth, and now routes blocking performance warnings into training guidance.
 
 ## Implementation State
 
@@ -35,7 +35,7 @@ See `docs/IMPLEMENTATION_STATUS.md` for the dispatcher milestone, cockpit visual
 
 - Rights-cleared hardware reference intake and actual pixel/geometry measurements against those references.
 - Expand state-aware training from cockpit help into lesson packs, scoring, debrief, and highlighted expected controls.
-- Integrate shared LNAV/VNAV truth into PROG, ND active segment/vertical cues, direct-to workflows, and backend CONTROL-mode parity.
+- Continue integrating shared LNAV/VNAV truth into ND active segment/vertical cues, direct-to workflows, and backend CONTROL-mode parity beyond the current Boeing/Airbus PROG slices.
 - Integrate trainer-grade performance prediction into PERF, scratchpad messages, and training guidance.
 - Boeing workflow completion, Airbus workflow parity, navdata/LNAV/VNAV/performance realism, accessibility, PWA, and public-demo release hardening.
 

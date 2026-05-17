@@ -13,6 +13,8 @@ import { renderInitAGrid } from './initA.grid';
 import { renderInitBGrid } from './initB.grid';
 import { renderPerfTakeoffGrid } from './perfTakeoff.grid';
 import { renderPerfApprGrid } from './perfAppr.grid';
+import { buildLnavState } from '../../lnavState';
+import { buildPerformancePrediction } from '../../performancePrediction';
 
 const W = 24;
 export function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color'], small: boolean = false): DisplayLine {
@@ -205,24 +207,37 @@ export function renderPerfAppr(state: FMCState): DisplayData {
 }
 
 export function renderFuelPred(state: FMCState): DisplayData {
-  const { route, performance } = state;
+  const { route, performance, flightPlan } = state;
+  const prediction = buildPerformancePrediction(state);
+  const origin = flightPlan.origin || route.origin || '----';
+  const destination = flightPlan.destination || route.destination || '----';
+  const reserveFuel = performance.reserve ?? 0;
+  const fallbackExtra = performance.fuel > 0 ? Math.max(0, performance.fuel - 5000) : 0;
+  const extraFuel = prediction.estimatedFuelAtDestination !== null && reserveFuel > 0
+    ? Math.max(0, prediction.estimatedFuelAtDestination - reserveFuel)
+    : fallbackExtra;
+  const extra = (extraFuel / 1000).toFixed(1);
+  const alternateFuel = prediction.estimatedFuelAtDestination !== null
+    ? Math.max(0, prediction.estimatedFuelAtDestination - reserveFuel)
+    : 0;
+  const fuelColor = prediction.warnings.includes('INSUFFICIENT FUEL') ? 'amber' : 'green';
   return {
     title: 'FUEL PRED',
     pageIndicator: '',
     lines: [
       inv('  FUEL PRED', '', '', 'cyan'),
-       fmt(` ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'green'),
+       fmt(` ${origin} / ${destination}`, '', '', 'green'),
        fmt(' FOB', '', `${performance.fuel ? (performance.fuel/1000).toFixed(1) : '---.-'} T`, 'white'),
        fmt(' EXTRA', '', '', 'white'),
-       fmt(` ${(performance.fuel > 0 ? (performance.fuel - 5000)/1000 : 0).toFixed(1)}`, '', '', 'magenta'),
+       fmt(` ${extra}`, '', '', prediction.estimatedFuelAtDestination !== null ? fuelColor : 'magenta'),
        fmt(' MIN DEST FOB', '', '', 'white'),
-       fmt(' 2.5', '', '', 'green'),
+       fmt(` ${reserveFuel ? (reserveFuel / 1000).toFixed(1) : '2.5'}`, '', '', fuelColor),
        fmt(' ALTN', '', '', 'white'),
        fmt(`   ${route.alternate || '----'}`, '', '', 'green'),
        fmt('  ALTN FOB', '', '', 'white'),
-       fmt(`   0.0`, '', `${performance.reserve ? (performance.reserve/1000).toFixed(1) : '--.-'}`, 'green'),
+       fmt(`   ${(alternateFuel / 1000).toFixed(1)}`, '', `${reserveFuel ? (reserveFuel/1000).toFixed(1) : '--.-'}`, fuelColor),
        fmt(' EXTRA/TIME', '', '', 'white'),
-       fmt(` ${(performance.fuel > 0 ? (performance.fuel - 5000)/1000 : 0).toFixed(1)}    00:45`, '', '', 'green'),
+       fmt(` ${extra}    00:45`, '', '', fuelColor),
        fmt(' FINAL/TIME', '', '', 'white'),
     ],
     lskActions: {
@@ -295,18 +310,29 @@ export function renderRadNav(state: FMCState): DisplayData {
 
 export function renderProgA320(state: FMCState): DisplayData {
   const { route, performance } = state;
+  const lnav = buildLnavState(state);
+  const prediction = buildPerformancePrediction(state);
+  const origin = state.flightPlan.origin || route.origin || '----';
+  const destination = lnav.destination?.ident || state.flightPlan.destination || route.destination || '----';
+  const distanceStr = lnav.distanceToDestinationNm !== null
+    ? `${String(Math.round(lnav.distanceToDestinationNm)).padStart(4, ' ')} NM`
+    : '---- NM';
+  const efobStr = prediction.estimatedFuelAtDestination !== null
+    ? `${(prediction.estimatedFuelAtDestination / 1000).toFixed(1)}`
+    : '---.-';
+  const efobColor = prediction.warnings.includes('INSUFFICIENT FUEL') ? 'amber' : 'white';
   return {
     title: 'PROG',
     pageIndicator: '',
     lines: [
       inv('  PROG', '', '', 'cyan'),
-      fmt(` ${route.origin || '----'} / ${route.destination || '----'}`, '', '', 'green'),
+      fmt(` ${origin} / ${destination}`, '', '', 'green'),
       fmt(' CRZ FL', '', `FL${performance.crzAlt ? String(performance.crzAlt).slice(0,3) : '---'}`, 'white'),
       fmt(' OPT FL', '', '---', 'white'),
       fmt(' REC MAX FL', '', '---', 'white'),
-      fmt(' DIST', '', '---- NM', 'white'),
+      fmt(' DIST', '', distanceStr, 'white'),
       fmt(' ETA', '', '----Z', 'white'),
-      fmt(' EFOB', '', '---.-', 'white'),
+      fmt(' EFOB', '', efobStr, efobColor),
       fmt(' WIND', '', '', 'white'),
       fmt(' ---°/---', '', '', 'green'),
       fmt(' NAV ACCUR', 'REQUIRED', '', 'white'),

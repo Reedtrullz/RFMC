@@ -49,7 +49,12 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Added shared `buildVnavPrediction()` for trainer-grade VNAV availability, climb/descent phase, next altitude-constraint feasibility, T/C and T/D distance estimates, `UNABLE NEXT ALT`, `DRAG REQUIRED`, and route-discontinuity interruption messages.
 - Added unit coverage for missing-performance VNAV unavailability, feasible climb constraints, impossible climb constraints, excessive descent path, and discontinuity interruption.
 - Wired the Boeing PROGRESS page and grid renderer to shared LNAV/VNAV/performance predictions so TO/NEXT/DEST, fuel-at-destination, VNAV status, next constraint, and T/D data come from the same trainer-grade truth used by tests.
+- Wired the Airbus PROG grid renderer to shared LNAV/performance predictions so origin/destination, distance-to-go, and EFOB use the same trainer-grade route/fuel truth instead of static placeholders.
+- Wired the Airbus FUEL PRED grid renderer to shared performance predictions so route-based extra fuel, minimum destination fuel, alternate fuel, and insufficient-fuel color state are derived from the trainer-grade fuel model.
+- Aligned the legacy exported Airbus PROG and FUEL PRED line renderers with the same shared LNAV/performance model to avoid parallel placeholder behavior in semantic tests and compatibility callers.
+- Added backend `FMCEngine` coverage proving Airbus PROG and FUEL PRED render shared LNAV/performance-derived values through CONTROL-mode display generation.
 - Updated the instructor console VNAV and performance sections to use shared LNAV/VNAV/performance predictions instead of local placeholder top-of-descent math.
+- Updated `buildTrainingProgress()` so blocking shared performance predictions such as `INSUFFICIENT FUEL` and `RUNWAY TOO SHORT` send the user back to performance review before takeoff setup can be treated as complete.
 
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.

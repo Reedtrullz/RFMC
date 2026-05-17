@@ -131,6 +131,62 @@ describe('Airbus Grid Pages', () => {
       checkSegment(result, 4, 1, ' 0.0', 'magenta');
       checkSegment(result, 10, 18, '--.-');
     });
+
+    it('uses shared performance prediction for route-based extra fuel', () => {
+      const state = createMinimalState({
+        route: {
+          ...createMinimalState().route,
+          origin: 'EHAM',
+          destination: 'EGLL',
+          alternate: 'EGKK',
+        },
+        performance: {
+          ...createMinimalState().performance,
+          fuel: 12500,
+          reserve: 2500,
+          zfw: 55000,
+          grossWeight: 67500,
+          crzAlt: 35000,
+          costIndex: 35,
+        },
+        flightPlan: {
+          origin: 'EHAM',
+          destination: 'EGLL',
+          route: 'LON',
+          flightNumber: 'BA123',
+          waypoints: [
+            { ident: 'EHAM', lat: 52.3086, lon: 4.7639, discontinuity: false },
+            { ident: 'LON', lat: 51.487, lon: -0.466, discontinuity: false },
+            { ident: 'EGLL', lat: 51.47, lon: -0.4543, discontinuity: false },
+          ],
+        },
+        aircraftState: {
+          lat: 52.3086,
+          lon: 4.7639,
+          altitude: 0,
+          altitudeFt: 0,
+          heading: 240,
+          headingDeg: 240,
+          track: 240,
+          trackDeg: 240,
+          ias: 0,
+          indicatedAirspeedKt: 0,
+          tas: 0,
+          gs: 0,
+          verticalSpeedFpm: 0,
+          vs: 0,
+          fuelTotal: 12500,
+          gw: 67500,
+        },
+      });
+
+      const result = renderFuelPredGrid(state);
+
+      checkSegment(result, 1, 1, 'EHAM / EGLL', 'green');
+      checkSegment(result, 4, 1, /^ \d+\.\d$/, 'green');
+      checkSegment(result, 6, 1, ' 2.5', 'green');
+      checkSegment(result, 10, 18, '2.5', 'green');
+    });
   });
 
   describe('renderSecFplnGrid', () => {
@@ -372,6 +428,61 @@ describe('Airbus Grid Pages', () => {
       checkSegment(result, 6, 19, '----Z', 'white');
       checkSegment(result, 7, 0, 'EFOB', 'white');
       checkSegment(result, 7, 19, '---.-', 'white');
+    });
+
+    it('displays DIST and EFOB from shared LNAV and performance predictions when route data is available', () => {
+      const state = createMinimalState({
+        flightPlan: {
+          origin: 'EHAM',
+          destination: 'EGLL',
+          flightNumber: 'BA123',
+          route: 'LON',
+          waypoints: [
+            { ident: 'EHAM', lat: 52.3086, lon: 4.7639, discontinuity: false },
+            { ident: 'LON', lat: 51.4872, lon: -0.4667, discontinuity: false },
+            { ident: 'EGLL', lat: 51.47, lon: -0.4543, discontinuity: false },
+          ],
+        },
+        route: {
+          origin: 'EHAM',
+          destination: 'EGLL',
+          flightNumber: 'BA123',
+          routeString: 'LON',
+        } as any,
+        performance: {
+          crzAlt: 35000,
+          costIndex: 35,
+          zfw: 55000,
+          fuel: 12500,
+          cg: 25,
+          reserve: 2500,
+          grossWeight: 67500,
+        } as any,
+        aircraftState: {
+          lat: 52.3086,
+          lon: 4.7639,
+          altitude: 0,
+          altitudeFt: 0,
+          heading: 240,
+          headingDeg: 240,
+          track: 240,
+          trackDeg: 240,
+          ias: 0,
+          indicatedAirspeedKt: 0,
+          tas: 0,
+          gs: 0,
+          verticalSpeedFpm: 0,
+          vs: 0,
+          fuelTotal: 12500,
+          gw: 67500,
+        },
+      });
+
+      const result = renderProgGrid(state);
+
+      checkSegment(result, 1, 1, 'EHAM / EGLL');
+      expect(result.segments!.find((s) => s.row === 5 && s.col === 17)?.text).toMatch(/\d+ NM/);
+      expect(result.segments!.find((s) => s.row === 7 && s.col === 19)?.text).toMatch(/\d+\.\d/);
     });
 
     it('displays WIND label and wind data placeholder', () => {

@@ -336,4 +336,130 @@ describe('FMCEngine', () => {
     expect(engine.getState().execLit).toBe(false);
     expect(engine.getState().route.routeString).toBe('');
   });
+
+  it('renders Airbus PROG with shared LNAV and performance truth in backend CONTROL mode', () => {
+    const engine = new FMCEngine();
+    const state = engine.getState();
+    state.aircraft = 'AIRBUS_A320';
+    state.currentPage = 'PROG_A';
+    state.route = {
+      ...state.route,
+      origin: 'EHAM',
+      destination: 'EGLL',
+      flightNumber: 'BA123',
+      routeString: 'LON',
+    };
+    state.flightPlan = {
+      origin: 'EHAM',
+      destination: 'EGLL',
+      flightNumber: 'BA123',
+      route: 'LON',
+      waypoints: [
+        { ident: 'EHAM', lat: 52.3086, lon: 4.7639, discontinuity: false },
+        { ident: 'LON', lat: 51.487, lon: -0.466, discontinuity: false },
+        { ident: 'EGLL', lat: 51.47, lon: -0.4543, discontinuity: false },
+      ],
+    };
+    state.performance = {
+      ...state.performance,
+      crzAlt: 35000,
+      costIndex: 35,
+      zfw: 55000,
+      fuel: 12500,
+      reserve: 2500,
+      grossWeight: 67500,
+    };
+    state.aircraftState = {
+      lat: 52.3086,
+      lon: 4.7639,
+      altitude: 0,
+      altitudeFt: 0,
+      heading: 240,
+      headingDeg: 240,
+      track: 240,
+      trackDeg: 240,
+      ias: 0,
+      indicatedAirspeedKt: 0,
+      tas: 0,
+      gs: 0,
+      verticalSpeedFpm: 0,
+      vs: 0,
+      fuelTotal: 12500,
+      gw: 67500,
+    };
+
+    const display = engine.getDisplayData();
+    const originDestination = display.segments?.find(segment => segment.text === 'EHAM / EGLL');
+    const distance = display.segments?.find(segment => segment.row === 5 && segment.col === 17);
+    const efob = display.segments?.find(segment => segment.row === 7 && segment.col === 19);
+
+    expect(originDestination).toBeDefined();
+    expect(distance?.text).toMatch(/\d+ NM/);
+    expect(efob?.text).toMatch(/\d+\.\d/);
+  });
+
+  it('renders Airbus FUEL PRED with shared performance truth in backend CONTROL mode', () => {
+    const engine = new FMCEngine();
+    const state = engine.getState();
+    state.aircraft = 'AIRBUS_A320';
+    state.currentPage = 'FUEL_PRED';
+    state.route = {
+      ...state.route,
+      origin: 'EHAM',
+      destination: 'EGLL',
+      alternate: 'EGKK',
+      flightNumber: 'BA123',
+      routeString: 'LON',
+    };
+    state.flightPlan = {
+      origin: 'EHAM',
+      destination: 'EGLL',
+      flightNumber: 'BA123',
+      route: 'LON',
+      waypoints: [
+        { ident: 'EHAM', lat: 52.3086, lon: 4.7639, discontinuity: false },
+        { ident: 'LON', lat: 51.487, lon: -0.466, discontinuity: false },
+        { ident: 'EGLL', lat: 51.47, lon: -0.4543, discontinuity: false },
+      ],
+    };
+    state.performance = {
+      ...state.performance,
+      crzAlt: 35000,
+      costIndex: 35,
+      zfw: 55000,
+      fuel: 12500,
+      reserve: 2500,
+      grossWeight: 67500,
+    };
+    state.aircraftState = {
+      lat: 52.3086,
+      lon: 4.7639,
+      altitude: 0,
+      altitudeFt: 0,
+      heading: 240,
+      headingDeg: 240,
+      track: 240,
+      trackDeg: 240,
+      ias: 0,
+      indicatedAirspeedKt: 0,
+      tas: 0,
+      gs: 0,
+      verticalSpeedFpm: 0,
+      vs: 0,
+      fuelTotal: 12500,
+      gw: 67500,
+    };
+
+    const display = engine.getDisplayData();
+    const originDestination = display.segments?.find(segment => segment.text === 'EHAM / EGLL');
+    const extra = display.segments?.find(segment => segment.row === 4 && segment.col === 1);
+    const minDestinationFuel = display.segments?.find(segment => segment.row === 6 && segment.col === 1);
+    const reserve = display.segments?.find(segment => segment.row === 10 && segment.col === 18);
+
+    expect(originDestination).toBeDefined();
+    expect(extra?.text).toMatch(/^ \d+\.\d$/);
+    expect(extra?.color).toBe('green');
+    expect(minDestinationFuel?.text).toBe(' 2.5');
+    expect(reserve?.text).toBe('2.5');
+  });
 });

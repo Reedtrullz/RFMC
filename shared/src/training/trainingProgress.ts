@@ -7,6 +7,7 @@ import type {
 } from '../types/fmc';
 import type { CockpitLayoutMode, PanelId } from '../types/cockpit';
 import type { AutopilotState } from '../autopilot/autopilotTypes';
+import { buildPerformancePrediction } from '../fmc/performancePrediction';
 
 export type TrainingProgressStep =
   | 'initialize-position'
@@ -117,6 +118,10 @@ function buildFmcSetupProgress(
   const completedSteps = collectCompletedPreflightSteps(state);
   const missingFields = preflightMissingFields(state);
   const hasDiscontinuity = routeHasDiscontinuity(state);
+  const performancePrediction = buildPerformancePrediction(state);
+  const blockingPerformanceWarning = performancePrediction.warnings.find((warning) =>
+    warning === 'INSUFFICIENT FUEL' || warning === 'RUNWAY TOO SHORT',
+  );
 
   if (!isPositionInitialized(state)) {
     return {
@@ -197,6 +202,24 @@ function buildFmcSetupProgress(
       expectedPanel: 'cdu',
       missingFields,
       hint: 'Performance data is required before meaningful VNAV and takeoff guidance.',
+    };
+  }
+
+  if (blockingPerformanceWarning) {
+    return {
+      ...baseProgress(terms),
+      currentTrainingStep: 'enter-performance',
+      completedSteps,
+      nextAction: aircraft === 'AIRBUS_A320'
+        ? 'Review fuel prediction and performance data before continuing.'
+        : 'Review PERF INIT fuel, reserves, runway, and takeoff assumptions before continuing.',
+      expectedPage: aircraft === 'AIRBUS_A320' ? 'FUEL_PRED' : 'PERF_INIT',
+      expectedKey: aircraft === 'AIRBUS_A320' ? null : 'PERF',
+      expectedLSK: null,
+      expectedPanel: 'cdu',
+      missingFields: [blockingPerformanceWarning.toLowerCase()],
+      warning: blockingPerformanceWarning,
+      hint: `${blockingPerformanceWarning} comes from the shared trainer-grade performance model; correct the setup before takeoff data is considered complete.`,
     };
   }
 

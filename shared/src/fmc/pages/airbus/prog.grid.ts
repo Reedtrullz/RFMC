@@ -6,6 +6,8 @@ import {
   airbusDisplaySegment,
 } from './airbusGridHelpers';
 import { AIRBUS_DEFAULT_COLOR } from '../../displayColors';
+import { buildLnavState } from '../../lnavState';
+import { buildPerformancePrediction } from '../../performancePrediction';
 
 /**
  * Render the Airbus PROG page as a DisplaySegment grid.
@@ -15,6 +17,8 @@ import { AIRBUS_DEFAULT_COLOR } from '../../displayColors';
  */
 export function renderProgGrid(state: FMCState): DisplayData {
   const { route, performance, navPerformance } = state;
+  const lnav = buildLnavState(state);
+  const prediction = buildPerformancePrediction(state);
 
   const crzAltStr = performance.crzAlt
     ? `FL${String(performance.crzAlt).slice(0, 3)}`
@@ -23,6 +27,15 @@ export function renderProgGrid(state: FMCState): DisplayData {
   const accuracyHigh = navPerformance.anpNm <= navPerformance.rnpNm;
   const accuracyLabel = accuracyHigh ? 'HIGH' : 'LOW';
   const rnpStr = navPerformance.rnpNm.toFixed(2);
+  const origin = state.flightPlan.origin || route.origin || '----';
+  const destination = lnav.destination?.ident || state.flightPlan.destination || route.destination || '----';
+  const distanceStr = lnav.distanceToDestinationNm !== null
+    ? `${String(Math.round(lnav.distanceToDestinationNm)).padStart(4, ' ')} NM`
+    : '---- NM';
+  const efobStr = prediction.estimatedFuelAtDestination !== null
+    ? `${(prediction.estimatedFuelAtDestination / 1000).toFixed(1)}`
+    : '---.-';
+  const efobColor = prediction.warnings.includes('INSUFFICIENT FUEL') ? 'amber' : 'white';
 
   return airbusPage(
     [
@@ -30,7 +43,7 @@ export function renderProgGrid(state: FMCState): DisplayData {
       ...airbusTitleRow('PROG'),
 
       // Row 1: Origin / Destination
-      airbusDisplaySegment(1, 1, `${route.origin || '----'} / ${route.destination || '----'}`, 'green', { semantic: 'activeData' }),
+      airbusDisplaySegment(1, 1, `${origin} / ${destination}`, 'green', { semantic: 'activeData' }),
 
       // Row 2: CRZ FL
       airbusLineLabel('CRZ FL', 2, 'L'),
@@ -46,7 +59,7 @@ export function renderProgGrid(state: FMCState): DisplayData {
 
       // Row 5: DIST
       airbusLineLabel('DIST', 5, 'L'),
-      airbusDisplaySegment(5, 17, '---- NM', 'white', { semantic: 'activeData' }),
+      airbusDisplaySegment(5, 17, distanceStr, 'white', { semantic: 'activeData' }),
 
       // Row 6: ETA
       airbusLineLabel('ETA', 6, 'L'),
@@ -54,7 +67,7 @@ export function renderProgGrid(state: FMCState): DisplayData {
 
       // Row 7: EFOB
       airbusLineLabel('EFOB', 7, 'L'),
-      airbusDisplaySegment(7, 19, '---.-', 'white', { semantic: 'activeData' }),
+      airbusDisplaySegment(7, 19, efobStr, efobColor, { semantic: 'activeData' }),
 
       // Row 8: WIND label
       airbusLineLabel('WIND', 8, 'L'),
