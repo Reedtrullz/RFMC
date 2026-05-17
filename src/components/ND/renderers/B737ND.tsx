@@ -55,7 +55,7 @@ export function B737ND({ model }: B737NDProps) {
           <FixRing model={model} />
           
           {/* Advanced Overlays */}
-          <WXROverlay data={model.wxrData} />
+          <WXROverlay model={model} />
           <VerticalProfileOverlay points={model.verticalProfilePoints} />
           <RnpContainmentOverlay model={model} />
           <DebriefOverlay model={model} />

@@ -56,7 +56,7 @@ export function A320ND({ model }: A320NDProps) {
           <FixRing model={model} />
           
           {/* Advanced Overlays */}
-          <WXROverlay data={model.wxrData} />
+          <WXROverlay model={model} />
           <VerticalProfileOverlay points={model.verticalProfilePoints} />
           <RnpContainmentOverlay model={model} />
           <DebriefOverlay model={model} />

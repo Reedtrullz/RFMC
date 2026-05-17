@@ -96,7 +96,7 @@ export function buildNavigationDisplayModel(
     fixOverlays,
     holdOverlay: buildHoldOverlay(state, primaryPointsForOverlays, activePointForOverlays),
     tcasTargets: buildTCASTargets(state, resolvedEfis, isCentered),
-    wxrData: buildWXRData(state, resolvedEfis, isCentered),
+    wxrData: buildWXRData(state, resolvedEfis, isCentered, projectionContext),
     verticalProfilePoints: buildVerticalProfilePoints(state, primaryPointsForOverlays, primaryActiveIndex),
     anchorZones,
     overlays: visibleOverlays,
@@ -151,17 +151,46 @@ function buildTCASTargets(state: FMCState, efis: EFISState, isCentered: boolean)
   }));
 }
 
-function buildWXRData(state: FMCState, efis: EFISState, isCentered: boolean): WXRData | null {
-  if (!state.demoMode && !state.tutorialActive) return null;
+function buildWXRData(
+  state: FMCState,
+  efis: EFISState,
+  isCentered: boolean,
+  projectionContext: NDProjectionContext
+): WXRData | null {
   if (!efis.overlays.wxr) return null;
-  const cy = isCentered ? 50 : 84;
+
+  const acPos = projectionContext.aircraftPosition;
+  const rangeNm = projectionContext.rangeNm;
+
+  // Proportional weather cell cluster placed relative to range and heading
+  const cells = [
+    { dist: rangeNm * 0.38, angleOffset: 12, intensity: 'light', r: 5 },
+    { dist: rangeNm * 0.46, angleOffset: 18, intensity: 'medium', r: 8 },
+    { dist: rangeNm * 0.43, angleOffset: 15, intensity: 'heavy', r: 4 },
+    { dist: rangeNm * 0.54, angleOffset: 24, intensity: 'medium', r: 6 },
+  ];
+
+  const points: Array<{ x: number; y: number; r: number; intensity: 'light' | 'medium' | 'heavy' }> = [];
+
+  for (const c of cells) {
+    const bearingRad = ((projectionContext.heading + c.angleOffset) * Math.PI) / 180;
+    const lat = acPos.lat + (c.dist * Math.cos(bearingRad)) / 60;
+    const lon = acPos.lon + (c.dist * Math.sin(bearingRad)) / (60 * Math.cos((acPos.lat * Math.PI) / 180));
+
+    const p = projectGeoPointToND({ lat, lon }, projectionContext);
+    if (p) {
+      points.push({
+        x: p.x,
+        y: p.y,
+        r: c.r,
+        intensity: c.intensity as any
+      });
+    }
+  }
+
   return {
     intensity: 'medium',
-    points: [
-      { x: 30, y: cy - 40, r: 8 },
-      { x: 35, y: cy - 45, r: 10 },
-      { x: 40, y: cy - 38, r: 6 },
-    ]
+    points: points as any
   };
 }
 
