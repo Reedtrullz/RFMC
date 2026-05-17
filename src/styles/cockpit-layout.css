@@ -232,3 +232,66 @@
   border-radius: 0;
   padding: 4px 0;
 }
+
+@media (min-width: 2200px) and (min-height: 1200px) {
+  .cockpit-main__stage {
+    padding: clamp(24px, 2vw, 64px);
+  }
+
+  .mode-help-sidebar {
+    width: clamp(220px, 8vw, 300px);
+    padding: 24px 16px;
+  }
+
+  .panel-tray-dock {
+    width: 72px;
+    min-width: 64px;
+    padding: 16px 8px;
+  }
+
+  .cockpit-stage {
+    gap: clamp(24px, 1.6vw, 54px);
+  }
+
+  .cockpit-stage--fmc-focus {
+    grid-template-columns: minmax(760px, 980px);
+    max-width: min(72vw, 1200px);
+  }
+
+  .cockpit-stage--navigation {
+    grid-template-columns: minmax(980px, 1.35fr) minmax(650px, 780px);
+    max-width: min(82vw, 2600px);
+  }
+
+  .cockpit-stage--automation,
+  .cockpit-stage--approach {
+    grid-template-rows: 360px minmax(880px, 1fr);
+    max-width: min(82vw, 2700px);
+  }
+
+  .cockpit-stage--full-deck {
+    grid-template-rows: 340px minmax(760px, 1fr) 850px;
+    max-width: min(84vw, 2850px);
+  }
+
+  .cockpit-mcp-slot {
+    padding-inline: clamp(24px, 2vw, 64px);
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 2199px) and (min-height: 1000px) {
+  .cockpit-stage--automation,
+  .cockpit-stage--approach {
+    grid-template-rows: 190px minmax(600px, 1fr);
+    max-width: 1900px;
+  }
+
+  .cockpit-stage--full-deck {
+    grid-template-rows: 160px minmax(400px, 1fr) 330px;
+    max-width: 1900px;
+  }
+
+  .cockpit-stage--navigation {
+    max-width: 1800px;
+  }
+}

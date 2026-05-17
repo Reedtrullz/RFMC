@@ -6,11 +6,20 @@ Current automated baseline, build/audit state, latest reviewed commit, and valid
 
 ## Current Continuation Focus
 
-The dispatcher/store cleanup and visible-polish cockpit slice are complete enough for the next milestone. The active public-demo track is now workflow completion, state-aware training, and release hardening:
+The dispatcher/store cleanup and visible-polish cockpit slice are complete enough for the next milestone. The desktop Chromium broad visual gate has been repaired, and 3456x2234 plus Retina-equivalent cockpit baselines now protect the large-desktop target. The active public-demo track is now measured visual fidelity, workflow completion, state-aware training, and release hardening:
 
+- Measured visual-fidelity tooling against curated reference captures.
 - State-driven training scenario guidance.
 - Boeing preflight workflow completion and Airbus workflow parity.
 - Richer deterministic navdata, LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
+
+## Large-Desktop Visual Gate Update
+
+- Repaired the legacy Boeing CDU selector contract so broad desktop visual specs can find `data-testid="boeing-cdu"` again while cockpit layout wrappers keep using `cdu-panel`.
+- Added Playwright projects for the 3456x2234 physical-pixel target and the 1728x1117 deviceScaleFactor 2 Retina-equivalent viewport.
+- Added serial high-resolution cockpit visual coverage for Boeing and Airbus task modes plus focused CDU/MCDU, ND, PFD, and MCP/FCU panels.
+- Added reusable cockpit layout assertions for stage usage, visible-panel group size, clipping, PFD/ND pairing, MCP/FCU placement, help-sidebar docking, tray docking, and focused-panel centering.
+- Tuned large-desktop cockpit grid sizing so the 3456x2234 full-deck composition uses the available canvas instead of rendering as a small centered cluster.
 
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.

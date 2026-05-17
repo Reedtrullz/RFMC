@@ -258,6 +258,7 @@ Visual regression tests capture screenshots of key pages and states, then compar
 - Boeing/Airbus automation, focused, approach, and failure PFDs
 - Focused Boeing/Airbus CDU/MCDU, ND, PFD, and MCP/FCU panels
 - Tablet-landscape Boeing/Airbus full-deck and automation layouts
+- High-resolution Boeing/Airbus cockpit layouts at 3456x2234 and Retina-equivalent 1728x1117 @2x
 
 ### Snapshot storage
 
@@ -270,6 +271,7 @@ e2e/visual-airbus-mcdu.spec.ts-snapshots/
 e2e/visual-regression.spec.ts-snapshots/
 e2e/visual-navigation-display.spec.ts-snapshots/
 e2e/visual/cockpit-layouts.spec.ts-snapshots/
+e2e/visual/cockpit-highres.spec.ts-snapshots/
 ```
 
 ### Baseline update workflow
@@ -289,6 +291,10 @@ npx playwright test e2e/visual-pfd.spec.ts --update-snapshots --project=desktop-
 # Update cockpit layout/focused-panel/tablet-landscape baselines
 npx playwright test e2e/visual/cockpit-layouts.spec.ts --update-snapshots --project=desktop-chromium
 
+# Update high-resolution cockpit baselines
+npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=desktop-3456x2234
+npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=retina-1728x1117-dsf2
+
 # Capture fresh baselines for the baseline-screenshots spec
 npm run capture:baseline
 ```
@@ -301,6 +307,8 @@ npm run capture:baseline
 4. If the changes are correct, run `npm run test:visual:update` to update baselines
 5. Commit the updated snapshot files alongside your code changes
 6. In CI, visual tests use the committed baselines for comparison
+
+High-resolution cockpit screenshots are intentionally run as serial tests because 3456x2234 PNG capture is expensive. Run those projects explicitly instead of mixing them with mobile/WebKit projects.
 
 **Important rules:**
 

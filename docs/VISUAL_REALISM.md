@@ -102,7 +102,8 @@ Currently identified gaps between rendered output and reference hardware:
 | Weak screen glass/reflection | Addressed | ScreenGlass reflection overlay |
 | Weak night glow | Addressed | Brightness-responsive glow system |
 | LSK-to-row alignment | Addressed | BoeingDisplayBay/AirbusDisplayBay grid layout |
-| Mobile/tablet scaling | In progress | Desktop and tablet-landscape cockpit baselines now protect major layouts; portrait/mobile remain caveated |
+| Large-desktop scaling | Protected | 3456x2234 and Retina-equivalent cockpit baselines now protect major Boeing/Airbus modes |
+| Mobile/tablet scaling | In progress | Desktop, Retina, 3456x2234, and tablet-landscape cockpit baselines now protect major layouts; portrait/mobile remain caveated |
 | CRT scanline density | Needs tuning | Scanline frequency vs pixel density |
 | ND aircraft-family separation | Addressed in PR #24 | Boeing MAP and Airbus ARC baselines now verify distinct visual treatment |
 | PFD realism | Protected follow-up states | Boeing/Airbus PFDs now have distinct attitude, tapes, FMA, VSI, selected bugs, and automation/focused/approach/failure baselines |
@@ -119,6 +120,7 @@ Current visual coverage includes:
 - PFD baselines for Boeing/Airbus automation, focused, approach, and failure/unavailable states.
 - Focused-panel baselines for Boeing/Airbus CDU/MCDU, ND, PFD, and MCP/FCU.
 - Tablet-landscape baselines for Boeing/Airbus full-deck and automation modes.
+- High-resolution cockpit baselines for Boeing/Airbus task modes and focused panels at 3456x2234 and 1728x1117 deviceScaleFactor 2.
 
 The source of truth for the latest command results is `docs/STATUS.md`.
 
@@ -126,8 +128,8 @@ The source of truth for the latest command results is `docs/STATUS.md`.
 
 1. Workflow integration: training cards should agree with selected values, active/armed modes, route state, and workflow progress.
 2. Deeper guidance cues: LNAV/VNAV and approach guidance should eventually drive flight-director command behavior instead of static trainer cues.
-3. Tablet/portrait hardening: iPad portrait and mobile Safari still need stable local browser coverage before they can be claimed as protected.
-4. Hardware measurement: MCP/FCU/PFD visuals still need measured reference comparison before claiming hardware accuracy.
+3. Hardware measurement: cockpit screenshots prove render stability but still need measured reference comparison before claiming hardware accuracy.
+4. Tablet/portrait hardening: iPad portrait and mobile Safari still need stable local browser coverage before they can be claimed as protected.
 
 ## How to Measure and Improve Fidelity
 
@@ -152,6 +154,7 @@ Required baselines for fidelity tracking:
 - Boeing and Airbus automation, focused, approach, and failure PFDs
 - Focused Boeing/Airbus CDU/MCDU, ND, PFD, and MCP/FCU panels
 - Tablet-landscape Boeing/Airbus full-deck and automation layouts
+- 3456x2234 and Retina-equivalent Boeing/Airbus cockpit task modes and focused panels
 - Mobile/portrait layouts (still caveated until local browser coverage is stable)
 
 These are captured using Playwright: `CAPTURE_BASELINE=1 npx playwright test e2e/baseline-screenshots.spec.ts`

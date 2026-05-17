@@ -4,7 +4,7 @@ VirtualCDU is a web-based procedure trainer. It is not certified, approved, or s
 
 ## Current Technical Limits
 
-- Visual fidelity is not yet measured against a curated real-hardware reference set. Current Playwright screenshots, focused-panel baselines, and tablet-landscape baselines prove render stability, not hardware accuracy.
+- Visual fidelity is not yet measured against a curated real-hardware reference set. Current Playwright screenshots, focused-panel baselines, tablet-landscape baselines, and 3456x2234/Retina baselines prove render stability, not hardware accuracy.
 - The Boeing display uses color-capable render data, but font metrics, character cell geometry, color Delta E, and bezel/key spacing still need Phase 0/1 measurement.
 - The app uses an expanded mock navigation dataset, typed route fixtures, and lightweight route parser. It does not yet provide global AIRAC coverage, full ARINC 424 behavior, or real navdata update cycles.
 - PMDG integration code exists, but the full keypress -> PMDG CDU update -> display readback loop still requires live validation on Windows with MSFS and PMDG installed.

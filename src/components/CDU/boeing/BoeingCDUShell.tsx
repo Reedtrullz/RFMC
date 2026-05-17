@@ -14,7 +14,7 @@ export function BoeingCDUShell({ annunciators, children }: BoeingCDUShellProps) 
     <InstrumentShell
       variant="boeing-cdu"
       className="boeing-cdu-shell"
-      data-testid="boeing-cdu cdu-panel"
+      data-testid="boeing-cdu"
     >
 
       <div className="mb-2 flex w-full items-center justify-between px-5 h-8">

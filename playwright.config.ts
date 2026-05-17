@@ -18,6 +18,22 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'desktop-3456x2234',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 3456, height: 2234 },
+        deviceScaleFactor: 1,
+      },
+    },
+    {
+      name: 'retina-1728x1117-dsf2',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1728, height: 1117 },
+        deviceScaleFactor: 2,
+      },
+    },
+    {
       name: 'ipad-landscape',
       use: { ...devices['iPad Pro 11 landscape'] },
     },
