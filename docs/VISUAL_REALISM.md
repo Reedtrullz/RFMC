@@ -1,8 +1,8 @@
 # Visual Realism
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-17
 
-This document tracks visual realism measurements, design tokens, rendering effects, and known gaps for the Boeing CDU and Airbus MCDU hardware shells.
+This document tracks visual realism measurements, design tokens, rendering effects, visual regression coverage, and known gaps for the Boeing/Airbus cockpit trainer displays.
 
 ## Reference Measurements
 
@@ -104,6 +104,28 @@ Currently identified gaps between rendered output and reference hardware:
 | LSK-to-row alignment | Addressed | BoeingDisplayBay/AirbusDisplayBay grid layout |
 | Mobile/tablet scaling | In progress | Responsive CSS + viewport-based scaling |
 | CRT scanline density | Needs tuning | Scanline frequency vs pixel density |
+| ND aircraft-family separation | Addressed in PR #24 | Boeing MAP and Airbus ARC baselines now verify distinct visual treatment |
+| PFD realism | Initial pass implemented | Boeing/Airbus PFDs now have distinct attitude, tapes, FMA, VSI, selected bugs, and automation baselines |
+| MCP/FCU realism | Next major gap | Needs hardware-like Boeing MCP and Airbus FCU panels tied to autoflight state |
+| Focused/tablet baselines | Needed | Current visual suite does not yet protect every focused panel and tablet layout |
+
+## Current Instrument Baseline Coverage
+
+Current visual coverage includes:
+
+- CDU/MCDU page baselines for core Boeing and Airbus pages.
+- Cockpit layout baselines from PR #23 for Boeing/Airbus task modes.
+- ND baselines from PR #24 for Boeing MAP, Boeing MAP failure, Airbus ARC, and Airbus ARC aligning.
+- PFD baselines for Boeing automation and Airbus automation.
+
+The source of truth for the latest command results is `docs/STATUS.md`.
+
+## Next Realism Priorities
+
+1. MCP/FCU realism: distinct Boeing MCP and Airbus FCU hardware treatment, seven-segment windows, annunciators, knobs, and managed/selected mode cues.
+2. PFD follow-up states: approach cues, focused-panel baselines, and fail/unavailable baselines.
+3. Focused-panel and tablet coverage: CDU/MCDU, ND, PFD, MCP/FCU, diagnostics, and failure states.
+4. Workflow integration: PFD/ND/MCP/FCU and training cards should agree on selected values, active/armed modes, route state, and workflow progress.
 
 ## How to Measure and Improve Fidelity
 
@@ -122,6 +144,10 @@ Required baselines for fidelity tracking:
 - Boeing EXEC pending state
 - Airbus MCDU default cockpit mode
 - Airbus INIT A, F-PLN (with discontinuity), PERF TAKEOFF, PROG
+- Boeing ND MAP and MAP failure
+- Airbus ND ARC and ARC aligning
+- Boeing and Airbus cockpit layout task modes
+- Boeing and Airbus automation PFDs
 - Mobile/tablet layouts (iPad landscape + portrait)
 
 These are captured using Playwright: `CAPTURE_BASELINE=1 npx playwright test e2e/baseline-screenshots.spec.ts`

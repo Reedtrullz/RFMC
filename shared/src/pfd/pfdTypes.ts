@@ -33,10 +33,20 @@ export type PFDState = {
   speedTrend: number;
   targetSpeed: number | null;
   targetAltitude: number | null;
+  targetHeading: number | null;
+  targetVerticalSpeed: number | null;
+  managedSpeed?: boolean;
+  managedHeading?: boolean;
+  managedAltitude?: boolean;
   flightDirector: {
     visible: boolean;
     pitch: number;
     roll: number;
+  };
+  failureFlags?: {
+    attitude: boolean;
+    airData: boolean;
+    navigation: boolean;
   };
   fmaBoxes?: {
     thrust?: boolean;

@@ -54,7 +54,14 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
     speedTrend: (aircraft?.accelerationKtS || 0) * 10,
     targetSpeed: state.autopilot.boeing.speed,
     targetAltitude: state.autopilot.boeing.altitude,
+    targetHeading: state.autopilot.boeing.heading,
+    targetVerticalSpeed: state.autopilot.boeing.verticalSpeed,
     radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,
+    failureFlags: {
+      attitude: state.position.irsState === 'OFF',
+      airData: false,
+      navigation: state.position.irsState === 'OFF',
+    },
     fmaBoxes: {
       thrust: Date.now() - (state.autopilot.truth.lastModeChangeTimestamps?.thrust || 0) < 10000,
       lateral: Date.now() - (state.autopilot.truth.lastModeChangeTimestamps?.lateral || 0) < 10000,

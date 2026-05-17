@@ -1,62 +1,65 @@
 interface AltitudeTapeProps {
   altitude: number;
   targetAltitude: number | null;
+  variant?: 'boeing' | 'airbus';
+  managed?: boolean;
 }
 
-export function AltitudeTape({ altitude, targetAltitude }: AltitudeTapeProps) {
+export function AltitudeTape({ altitude, targetAltitude, variant = 'boeing', managed = false }: AltitudeTapeProps) {
   const pixelsPerFoot = 0.2;
+  const bugColor = variant === 'airbus' ? '#39ffef' : '#ff00ff';
+  const readoutColor = variant === 'airbus' ? '#ffd400' : '#00ff44';
   
-  // VNAV Path Deviation (Mocked or calculated from store)
-  // 1 dot = 100ft, max 2 dots (200ft)
   const pathDev = 120; // Feet (high)
   const devScaleY = Math.max(-40, Math.min(40, (pathDev / 100) * 20));
 
   return (
-    <div className="relative flex h-full w-16 bg-[#1a1c1c] border-l border-white/20 overflow-hidden">
-      {/* Tape scale */}
+    <div className="relative flex h-full w-[72px] shrink-0 overflow-hidden border-l border-white/20 bg-[#101414]" data-testid={`${variant}-altitude-tape`}>
+      <div className="absolute right-1 top-2 z-20 text-[8px] font-black text-white/60">ALT</div>
+      {managed && (
+        <div className="absolute left-1 top-2 z-20 h-2 w-2 rounded-full bg-[#39ffef] shadow-[0_0_6px_#39ffef]" aria-label="managed altitude" />
+      )}
       <div className="absolute w-full" style={{ transform: `translateY(${altitude * pixelsPerFoot}px)` }}>
         {[...Array(50)].map((_, i) => {
           const val = i * 500;
           const y = -val * pixelsPerFoot;
           return (
-            <div key={val} className="absolute w-full border-t border-white/40" style={{ top: y }}>
-              <span className="absolute right-1 -top-2 font-mono text-[9px] text-white font-bold">{val}</span>
+            <div key={val} className="absolute w-full border-t border-white/50" style={{ top: y }}>
+              <span className="absolute right-2 -top-2 font-mono text-[9px] font-bold text-white">{val}</span>
             </div>
           );
         })}
       </div>
       
-      {/* VNAV Path Deviation Scale (V-PATH) */}
       <div className="absolute left-1 top-1/2 -translate-y-1/2 flex flex-col items-center h-40 w-4">
         <div className="flex flex-col justify-between h-full py-4 items-center">
-          <div className="w-1 h-1 bg-white rounded-full" /> {/* +2 dots */}
-          <div className="w-1.5 h-1.5 bg-white rounded-full" /> {/* +1 dot */}
-          <div className="w-3 h-[1px] bg-white opacity-40" /> {/* Center */}
-          <div className="w-1.5 h-1.5 bg-white rounded-full" /> {/* -1 dot */}
-          <div className="w-1 h-1 bg-white rounded-full" /> {/* -2 dots */}
+          <div className="w-1 h-1 bg-white rounded-full" />
+          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+          <div className="w-3 h-[1px] bg-white opacity-40" />
+          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+          <div className="w-1 h-1 bg-white rounded-full" />
         </div>
         
-        {/* The Diamond */}
         <div 
-          className="absolute w-3 h-3 border-2 border-[#ff00ff] rotate-45 bg-[#ff00ff]/20 z-20"
+          className="absolute z-20 h-3 w-3 rotate-45 border-2 bg-transparent"
           style={{ 
+            borderColor: bugColor,
             top: `calc(50% - ${devScaleY}px)`,
-            transform: 'translateY(-50%) rotate(45deg)'
+            transform: 'translateY(-50%) rotate(45deg)',
+            boxShadow: `0 0 8px ${bugColor}`,
           }}
         />
       </div>
 
-      {/* Target altitude bug (Magenta) */}
       {targetAltitude !== null && (
-        <div className="absolute left-0 w-full h-4 flex items-center" 
+        <div className="absolute left-0 flex h-4 w-full items-center"
              style={{ top: `${50 - (targetAltitude - altitude) * pixelsPerFoot}%`, transform: 'translateY(-50%)' }}>
-           <div className="w-1/3 h-0.5 bg-[#ff00ff] shadow-[0_0_8px_#ff00ff]" />
+           <div className="h-0.5 w-1/2" style={{ backgroundColor: bugColor, boxShadow: `0 0 8px ${bugColor}` }} />
         </div>
       )}
       
-      {/* Center readout */}
-      <div className="absolute top-1/2 left-0 right-0 z-10 flex h-8 -translate-y-1/2 items-center bg-black border-y border-white/40">
-        <span className="w-full text-center font-mono text-sm font-black text-[#00ff44]">{Math.round(altitude)}</span>
+      <div className="absolute top-1/2 left-0 right-0 z-10 flex h-9 -translate-y-1/2 items-center border-y border-white/60 bg-black">
+        <span className="w-full text-center font-mono text-sm font-black tabular-nums" style={{ color: readoutColor }}>{Math.round(altitude)}</span>
       </div>
     </div>
   );

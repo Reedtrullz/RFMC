@@ -6,6 +6,7 @@ import { SpeedTape } from '../common/SpeedTape';
 import { AltitudeTape } from '../common/AltitudeTape';
 import { AttitudeSphere } from '../common/AttitudeSphere';
 import { PfdAlerts } from '../common/PfdAlerts';
+import { VerticalSpeedIndicator } from '../common/VerticalSpeedIndicator';
 import { buildBoeingPFDState } from '@shared';
 
 export function BoeingPFD() {
@@ -23,41 +24,47 @@ export function BoeingPFD() {
   const pfd = buildBoeingPFDState(aggregatedState as any);
 
   return (
-    <div className="flex h-full w-full flex-col bg-black overflow-hidden font-mono">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-black font-mono" data-testid="boeing-pfd">
       <FMA />
       
       <div className="flex flex-1 relative overflow-hidden">
-        {/* Speed Tape */}
         <SpeedTape 
           speed={pfd.speed} 
           targetSpeed={pfd.targetSpeed} 
           trend={pfd.speedTrend}
+          variant="boeing"
         />
         
-        {/* Attitude Center */}
         <div className="flex-1 relative flex items-center justify-center">
           <AttitudeSphere 
             pitch={pfd.pitch} 
             bank={pfd.bank} 
             fd={pfd.flightDirector}
+            variant="boeing"
+            failed={pfd.failureFlags?.attitude}
           />
           <PfdAlerts text={pfd.alertText} level={pfd.alertLevel} />
         </div>
         
-        {/* Altitude Tape */}
         <AltitudeTape 
           altitude={pfd.altitude} 
           targetAltitude={pfd.targetAltitude} 
+          variant="boeing"
+        />
+        <VerticalSpeedIndicator
+          verticalSpeed={pfd.verticalSpeed}
+          targetVerticalSpeed={pfd.targetVerticalSpeed}
+          variant="boeing"
         />
       </div>
       
-      {/* Boeing Bottom Info */}
       <div className="h-12 flex items-center justify-between px-4 border-t border-white/5 bg-black/40">
         <div className="text-white/60 text-[10px]">
            BARO <span className="text-[#00ff44]">29.92 IN</span>
         </div>
-        <div className="text-white text-lg font-bold">
-           {Math.round(pfd.heading).toString().padStart(3, '0')}
+        <div className="flex flex-col items-center leading-none">
+          <span className="text-[8px] text-[#ff00ff]">HDG SEL {pfd.targetHeading?.toString().padStart(3, '0') ?? '---'}</span>
+          <span className="text-lg font-bold text-white">{Math.round(pfd.heading).toString().padStart(3, '0')}</span>
         </div>
         <div className="text-white/60 text-[10px]">
            DH <span className="text-[#00ff44]">200</span>

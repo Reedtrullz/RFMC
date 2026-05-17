@@ -4,6 +4,17 @@
 
 Current automated baseline, build/audit state, latest reviewed commit, and validation caveats are tracked in `docs/STATUS.md`. This file records implementation history and capability state only.
 
+## Current Continuation Focus
+
+The dispatcher/store cleanup phase is complete enough for the next milestone. The active public-demo track is visible realism, workflow completion, and release hardening:
+
+- Boeing MCP and Airbus FCU realism, with autoflight state reflected on PFD/ND.
+- Focused-panel and tablet visual regression coverage.
+- PFD follow-up states for approach, focused-panel, and failure/unavailable coverage.
+- State-driven training scenario guidance.
+- Boeing preflight workflow completion and Airbus workflow parity.
+- Richer deterministic navdata, LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
+
 ## Coverage Hardening Update
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.
 - Added frontend Zustand store regressions for route parsing, LEGS insert/delete, HOLD staging/commit, V-speed ordering, DEP/ARR, DIR INTC, and N1 LIMIT.
@@ -461,3 +472,42 @@ With the dispatcher extraction complete, each handler is responsible for declari
 - Store-based mode switching via `window.useCockpitLayoutStore` (avoids UI button dependency)
 - Aircraft switch via `window.useAircraftStore.setAircraft('AIRBUS_A320')`
 - Desktop viewport: 1440×900
+
+## Navigation Display Realism (#24)
+
+**Commit**: `4c87e84`
+**Date**: 2026-05-17
+
+| Deliverable | Detail | Status |
+|------------|--------|--------|
+| Boeing ND style | MAP frame sharpened with Boeing-oriented green CRT treatment and data-dense route context | **Merged** |
+| Airbus ND style | ARC presentation separated with Airbus LCD/bloom treatment and family-specific labeling | **Merged** |
+| Route context | Active waypoint, segment, discontinuity, constraint, FIX/HOLD, procedure, and range context remain visible | **Merged** |
+| Failure/aligning states | Boeing MAP failure and Airbus ARC aligning states have visual baselines | **Merged** |
+| Visual validation | Current command result lives in `docs/STATUS.md` | **Verified** |
+
+### Next visible gaps
+
+- PFDs now have an initial aircraft-family-specific realism pass; remaining PFD work is approach/failure/focused-panel coverage and deeper flight-director/approach cue behavior.
+- MCP/FCU needs to stop reading as generic web controls and become distinct Boeing/Airbus glareshield hardware.
+- Focused panels and tablet layouts need first-class visual coverage beyond the initial cockpit/ND slices.
+
+## Primary Flight Display Realism (Working Tree)
+
+**Base commit**: `4c87e84`
+**Date**: 2026-05-17
+
+| Deliverable | Detail | Status |
+|------------|--------|--------|
+| Shared PFD model | Added selected heading, selected vertical speed, managed cues, and failure flags to the shared PFD state | **Implemented** |
+| Boeing PFD | Added brighter attitude sphere, pitch ladder, bank scale, flight-director cue, speed/altitude tapes, VSI, selected heading/speed/altitude bugs, and Boeing-style bottom row | **Implemented** |
+| Airbus PFD | Wired Airbus PFD to `useAutopilotStore` FCU state, added Airbus colors, managed cue dots, cyan FD, speed/altitude tapes, VSI, and Airbus-style bottom row | **Implemented** |
+| Visual baselines | Added deterministic Boeing/Airbus automation PFD routes and Playwright snapshots | **Captured** |
+| Unit coverage | Added PFD model tests for selected targets, IRS failure flags, managed Airbus targets, and FMA status mapping | **Covered** |
+
+### Remaining PFD scope
+
+- Focused PFD baselines for Boeing and Airbus.
+- Approach-mode PFD cue coverage.
+- Fail/unavailable PFD visual baselines.
+- Deeper flight-director command behavior once the LNAV/VNAV/autoflight model is richer.

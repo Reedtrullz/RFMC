@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-17
 
 This document describes the testing strategy for VirtualCDU across all four test categories: unit, component, end-to-end, and visual regression. For live test counts and current CI gate status, see [`docs/STATUS.md`](STATUS.md).
 
@@ -206,6 +206,9 @@ npm run test:e2e
 # Smoke tests only (fast CI gate, desktop Chromium)
 npm run test:e2e:smoke
 
+# CI smoke gate (desktop Chromium)
+npm run test:e2e:ci
+
 # Full test matrix (all projects, all tests — alias)
 npm run test:e2e:full
 
@@ -250,12 +253,16 @@ Visual regression tests capture screenshots of key pages and states, then compar
 - Mobile/tablet Boeing and Airbus layouts
 - Night mode
 - Invalid scratchpad message state
+- Boeing/Airbus cockpit task-mode layouts from PR #23
+- Boeing/Airbus ND MAP/ARC/failure/aligning states from PR #24
+- Boeing/Airbus automation PFDs
 
 ### Snapshot storage
 
 Playwright snapshots are stored alongside test files in `*-snapshots/` directories:
 
 ```
+e2e/visual-pfd.spec.ts-snapshots/
 e2e/visual-boeing-cdu.spec.ts-snapshots/
 e2e/visual-airbus-mcdu.spec.ts-snapshots/
 e2e/visual-regression.spec.ts-snapshots/
@@ -346,6 +353,8 @@ Push/PR
 - **Fail-fast**: TypeScript type-checking runs first. If it fails, no further tests run.
 - **PR gate**: Unit tests + smoke E2E + build must pass. Visual tests run but baseline mismatches are warnings (diff artifacts are uploaded for manual review).
 - **Nightly**: Full browser matrix runs nightly on the main branch.
+
+Current verified command results and any local suite caveats live in [`docs/STATUS.md`](STATUS.md). Do not copy live counts into this file.
 
 ---
 
