@@ -33,10 +33,10 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 | DEP/ARR | Functional | SID, RWY, STAR, APPR |
 | PERF TO | Functional | V1, VR, V2, FLAPS, FLEX, → PERF APPR |
 | PERF APPR | Partial | QNH, WIND. TEMP/MDA/DH/LDG CONF display-only. |
-| FUEL PRED | Display-only | No interactive fields. |
+| FUEL PRED | Partial | Displays route/performance-derived trainer values; no direct data-entry fields. |
 | SEC F-PLN | Display-only | No interactive fields. |
 | RAD NAV | Display-only | No interactive fields. |
-| PROG | Display-only | No interactive fields. |
+| PROG | Partial | Displays route/performance-derived trainer values; no direct data-entry fields. |
 | DATA INDEX | Display-only | No interactive fields. |
 | MCDU MENU | Functional | Navigation to all page categories. |
 
@@ -47,4 +47,4 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 - Full ARINC 424 global leg/path support.
 - Full FBW/Fenix MCDU integration unless separately scoped.
 - Proprietary fonts, reference photos, or navdata without licensing clarity.
-- Full PFD/attitude display simulation, weather radar, terrain, TCAS, and live ND mirroring unless separately scoped.
+- Weather radar, terrain, TCAS, certified performance/navigation behavior, and live ND/PFD mirroring unless separately scoped.

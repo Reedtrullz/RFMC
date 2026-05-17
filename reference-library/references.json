@@ -8,6 +8,8 @@
     "unitGeneration": "n/a",
     "displayType": "n/a",
     "usageRights": "local planning document; do not redistribute externally without review",
+    "reviewStatus": "not-approved-for-pixel-measurement",
+    "pixelMeasurementApproved": false,
     "cropRules": "not used for pixel measurement; extract requirements and source references only",
     "measurementUse": "roadmap and validation requirements",
     "notes": "Strategic masterplan used as the source-of-truth roadmap."
@@ -21,6 +23,8 @@
     "unitGeneration": "mixed",
     "displayType": "mixed",
     "usageRights": "local reference only until licensing/provenance is reviewed",
+    "reviewStatus": "candidate-needs-rights-review",
+    "pixelMeasurementApproved": false,
     "cropRules": "manual crop per unit; record page number, display bounds, and perspective assumptions before measurement",
     "measurementUse": "visual reference candidate for Phase 0/1",
     "notes": "Contents still require manual extraction/review before being used as measurement truth."
@@ -34,6 +38,8 @@
     "unitGeneration": "varies",
     "displayType": "varies",
     "usageRights": "link/reference only; do not redistribute images without permission",
+    "reviewStatus": "link-reference-only",
+    "pixelMeasurementApproved": false,
     "cropRules": "if used, crop only for local measurement and record page URL/date",
     "measurementUse": "layout and procedural cross-check",
     "notes": "Public reference listed by the older accuracy plans."
@@ -47,6 +53,8 @@
     "unitGeneration": "simulated A320neo MCDU",
     "displayType": "color MCDU semantics reference",
     "usageRights": "link/reference only; follow upstream license",
+    "reviewStatus": "semantic-reference-only",
+    "pixelMeasurementApproved": false,
     "cropRules": "not a primary real-hardware pixel reference",
     "measurementUse": "Airbus key/page semantic cross-check",
     "notes": "Useful for scoped Airbus behavior and labels."

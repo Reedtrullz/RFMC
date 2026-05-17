@@ -25,6 +25,8 @@ Status source: `docs/STATUS.md`.
 | Boeing FIX | Two FIX entries with radial/distance validation | Yes unit | Pilot review required | Trainer-level two-slot implementation |
 | ND route context | Route points, direct-to active leg, discontinuities, constraints, procedures | Yes | Pilot review required | Training visualization, not measured avionics fidelity |
 | ND overlays | Multiple FIX radial/distance rings and HOLD racetrack preview | Yes | Pilot review required | Uses current trainer state only |
+| PFD/MCP/FCU visuals | Boeing/Airbus PFD states and autoflight panels | Yes visual | Pilot review required | Snapshot-protected, not hardware-measured |
+| High-resolution cockpit | 3456x2234 and Retina-equivalent task/focused layouts | Yes visual | Device review optional | Protects large-screen composition only |
 | ND controls/iPad | MAP/PLAN, range, overlay toggles, mobile ND toggle | Yes | iPad device review required | Keep CDU controls unobstructed |
 | Boeing CLB/CRZ/DES | Static pages render | Partial | Required | Add DES NOW and trainer-level prediction tests |
 | Airbus INIT/F-PLN/DEP-ARR/PERF TO | Main data-entry flow | Yes | Pilot review required | Secondary pages still scoped/display-only |
@@ -32,8 +34,8 @@ Status source: `docs/STATUS.md`.
 | SimBrief import | Mocked import loads origin/destination/route | Yes | Required with real plans | Expand to 20 fixtures |
 | CONTROL mode | Backend-authoritative page/input parity | Mock WebSocket bridge test | Live PMDG required | Mock adapter verifies connect/input/display/key forwarding |
 | MSFS PMDG | Keypress -> CDU update -> display readback | No | Required on Windows/MSFS/PMDG | Cannot be validated on this macOS workspace |
-| PWA/iPad | Offline refresh, mounted cockpit layout, safe areas | No | Required on iPad | Add viewport and offline tests |
-| Visual baseline | 35-screen screenshot capture | Scripted | Reference comparison required | `npm run capture:baseline` |
+| PWA/iPad | Offline refresh, mounted cockpit layout, safe areas | Partial | Required on iPad | PWA/safe-area foundations exist; add offline startup/update-flow tests |
+| Visual baseline | Snapshot suites, high-res layouts, and baseline capture | Scripted | Reference comparison required | `npm run capture:baseline` plus `npm run measure:visual` |
 
 ## Coverage Targets
 
@@ -53,6 +55,8 @@ Every PR should pass:
 - `npm test -- --run`
 - `npm run test:e2e`
 - `npm run build`
+- `npm run check:status-docs`
+- `npm run measure:visual` for visual/public-demo slices
 - `npm run test:coverage` once thresholds are enforced
 - Visual baseline/snapshot checks for pages touched by the PR
 - Audit policy review for dependency changes

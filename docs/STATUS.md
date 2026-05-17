@@ -25,7 +25,7 @@ This is the current source of truth for automated status. Other docs should link
 
 ## Current Commit
 
-Latest reviewed base commit: `2142103`. PRs #1–#24 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher). Cockpit visual regression baselines added (#23). ND symbology realism pass merged (#24) with Boeing/Airbus ND visual baselines captured and verified. PFD focused/approach/failure states, Boeing MCP and Airbus FCU hardware styling, and focused/tablet cockpit visual baselines are present. The current working tree repairs the desktop Chromium broad visual gate, adds explicit 3456x2234 plus Retina-equivalent cockpit visual protection, adds a visual-fidelity manifest/report gate, wires cockpit help to a shared state-aware training progress selector, adds shared PFD/autoflight/LNAV/VNAV/performance derived-state models, wires Airbus PROG/FUEL PRED plus backend CONTROL-mode Airbus display rendering to shared LNAV/performance truth, and now routes blocking performance warnings into training guidance.
+Latest reviewed base commit: `17b5e06`. PRs #1–#24 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher). Cockpit visual regression baselines added (#23). ND symbology realism pass merged (#24) with Boeing/Airbus ND visual baselines captured and verified. PFD focused/approach/failure states, Boeing MCP and Airbus FCU hardware styling, focused/tablet cockpit visual baselines, 3456x2234 plus Retina-equivalent cockpit visual protection, state-aware cockpit guidance, shared PFD/autoflight/LNAV/VNAV/performance derived-state models, Airbus PROG/FUEL PRED shared-truth rendering, and backend CONTROL-mode Airbus display coverage are present. The current working tree refreshes public documentation/wiki source structure and tightens visual-measurement reporting so unapproved references cannot be mistaken for hardware pixel-accuracy evidence.
 
 ## Implementation State
 
@@ -41,7 +41,7 @@ See `docs/IMPLEMENTATION_STATUS.md` for the dispatcher milestone, cockpit visual
 
 ## Validation Caveats
 
-- The app is a web-based procedure trainer, not a certified trainer and not approved for real-world operations.
+- The app is a web-based procedure trainer, not certified training software and not approved for real-world operations.
 - PMDG/MSFS live round-trip validation requires a Windows + MSFS + PMDG environment and is not proven by local macOS CI.
 - Visual screenshots and the visual-fidelity manifest prove render stability and metadata completeness only; they do not prove hardware pixel accuracy until rights-cleared reference crops are measured.
 - Airbus remains secondary scope; display-only pages must stay clearly scoped in docs and UI.

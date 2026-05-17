@@ -13,6 +13,14 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Boeing preflight workflow completion and Airbus workflow parity.
 - Richer deterministic navdata, integration of the shared LNAV/VNAV/performance models, CONTROL-mode parity, PWA/iPad hardening, accessibility, and public-demo documentation.
 
+## Public Documentation And Wiki Source Sync
+
+- Refreshed the README around the current product shape: Boeing-first RFMC/VirtualCDU with scoped Airbus support, cockpit instruments, offline PWA use, CONTROL-mode foundations, and explicit non-operational limitations.
+- Added repo-local wiki source pages under `docs/wiki/` so GitHub Wiki content can be generated or copied from versioned files.
+- Reworked `docs/ROADMAP.md` so completed high-resolution, PFD, MCP/FCU, state-aware guidance, shared LNAV/VNAV/performance, and PWA foundation work is treated as baseline rather than future scope.
+- Tightened release and limitation docs around status evidence, approved visual references, PMDG/MSFS live validation, and public-demo readiness.
+- Extended the visual measurement gate to classify measurement profiles by reference approval state; derived profiles remain internal consistency checks until their sources are approved for pixel measurement.
+
 ## Large-Desktop Visual Gate Update
 
 - Repaired the legacy Boeing CDU selector contract so broad desktop visual specs can find `data-testid="boeing-cdu"` again while cockpit layout wrappers keep using `cdu-panel`.

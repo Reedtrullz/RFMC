@@ -1,159 +1,124 @@
-# VirtualCDU — Boeing 737 NG FMC Trainer
+# RFMC / VirtualCDU
 
-A web-based Boeing 737 NG Flight Management Computer (FMC) / Control Display Unit (CDU) simulator with MSFS 2020 integration. Works on desktop and iPad — offline, no install required.
+A web-based Boeing 737 NG CDU/FMC trainer with scoped Airbus A320 MCDU support, cockpit-mode instruments, offline PWA use, and an optional MSFS bridge.
 
-**[https://fmc.reidar.tech](https://fmc.reidar.tech)**
+[https://fmc.reidar.tech](https://fmc.reidar.tech)
 
-## What is this?
+## What This Is
 
-VirtualCDU is a web-based Boeing 737 NG FMC/CDU procedure trainer for practicing flows and reviewing trainer-level navigation context. It is not certified, not approved for real-world operations, and visual fidelity is still being measured against hardware references.
+RFMC is a browser-based avionics procedure trainer for learning CDU/MCDU flows, route setup, cockpit scanning, navigation-display interpretation, and trainer-level autoflight concepts.
 
-Use it to:
-- **Learn** 737 FMC procedures without a simulator
-- **Practice** preflight flows (IDENT → POS INIT → RTE → DEP/ARR → PERF → THRUST → TAKEOFF)
-- **Train** with guided tutorials that explain the WHAT, WHY, and HOW of every entry
-- **Connect** to Microsoft Flight Simulator 2020 for live CDU sync (PMDG 737, FBW A320, Working Title CJ4)
+It is not certified training software, is not approved for real-world aviation operations, and does not provide operational performance or navigation data.
+
+## Current Status
+
+Current validation results live in [docs/STATUS.md](docs/STATUS.md). This README intentionally avoids copying live test counts.
+
+Implemented foundations include:
+
+- Boeing 737 CDU/FMC trainer pages and workflow foundations.
+- Scoped Airbus A320 MCDU pages with explicit functional/display-only boundaries.
+- Cockpit mode with CDU/MCDU, ND, PFD, MCP/FCU, task modes, focused panels, and iPad-oriented layout support.
+- Typed LSK dispatcher, centralized scratchpad/message handling, and EXEC/MOD lifecycle helpers.
+- Cockpit, ND, PFD, focused-panel, tablet, 3456x2234, and Retina-equivalent visual baselines.
+- Shared trainer-grade LNAV, VNAV, autoflight, PFD, and performance display models.
+- Mock-tested backend CONTROL-mode bridge foundations.
+- PWA/offline foundations for installed iPad and desktop use.
+
+Important boundaries:
+
+- Visual snapshots prove render stability, not hardware pixel accuracy.
+- Hardware fidelity is not claimed until rights-cleared references are measured.
+- PMDG/MSFS live validation requires Windows + MSFS + PMDG and is tracked separately in [docs/MSFS_LIVE_VALIDATION.md](docs/MSFS_LIVE_VALIDATION.md).
+- Airbus remains secondary scope behind the Boeing workflow.
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **12 Boeing FMC pages** | IDENT, POS INIT, RTE, DEP/ARR, PERF INIT, THRUST LIM, TAKEOFF REF, LEGS, PROGRESS, HOLD, FIX, MENU |
-| **7 extra Boeing pages** | CLB, CRZ, DES, DIR INTC, N1 LIMIT + full Airbus MCDU suite |
-| **Airbus A320 MCDU** | INIT A/B, F-PLN, PERF TO/APPR, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU |
-| **Guided tutorials** | 3 scenarios (Full Preflight, Takeoff Config, In-Flight Review) with pulsing button highlights and aviation-accurate explanations |
-| **Touch-optimized** | 44px touch targets, ripple feedback, iOS safe areas, PWA installable — works as a mounted cockpit display |
-| **Input validation** | Aviation-accurate validation: ICAO airports, V1<VR<V2 cross-field check, QNH 900-1100, wind DIR/SPEED |
-| **ICAO route parser** | Parses real route strings: `KJFK DCT RBV J42 LENDY8 KDCA` into LEGS waypoints |
-| **SimBrief import** | Parse SimBrief XML/JSON flight plans |
-| **MSFS integration** | WebSocket bridge server + PMDG 737 adapter via SimConnect |
-| **Responsive** | Desktop, iPad landscape/portrait, phone |
-| **Offline PWA** | Service worker, add to home screen, fullscreen kiosk mode |
+### Boeing 737
 
-## Tech Stack
+- IDENT, POS INIT, RTE, DEP/ARR, LEGS, PERF INIT, THRUST LIM, TAKEOFF REF, N1 LIMIT, PROGRESS, HOLD, FIX, CLB, CRZ, DES, DIR INTC, and MENU foundations.
+- Route parsing, terminal procedure selection, V-speed validation, takeoff runway invalidation, HOLD staging, FIX overlays, direct-to state, and trainer-grade PROGRESS/LNAV/VNAV cues.
+- Scratchpad validation for aviation-style entries such as ICAO identifiers, V-speeds, QNH, winds, and temperatures.
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Zustand |
-| **Backend** | Node.js, Express, WebSocket (ws), tsx |
-| **Shared** | TypeScript types, FMC state machine page functions |
-| **Deploy** | Docker, Ansible, Caddy, GitHub Actions |
+### Airbus A320
 
-Current validation status lives in [`docs/STATUS.md`](docs/STATUS.md). Avoid copying live test counts into this README.
+- INIT A/B, F-PLN, DEP/ARR, PERF TAKEOFF, PROG, FUEL PRED, PERF APPR, RAD NAV, SEC F-PLN, DATA INDEX, and MCDU MENU foundations.
+- Airbus-specific page labels, colors, managed/selected terminology, FCU presentation, and scoped page status.
+- Secondary pages remain explicitly trainer/display scoped unless their data entry and backend behavior are implemented.
 
-## Architecture
+### Cockpit Instruments
 
-```
-┌──────────┐   SimConnect    ┌──────────────┐   WebSocket    ┌──────────────┐
-│  MSFS    │ ◄──────────────► │  Node.js     │ ◄────────────► │  React App   │
-│  2020    │   (Named Pipe)  │  Bridge      │   JSON/ws://   │  (Browser)   │
-└──────────┘                 └──────────────┘                └──────────────┘
-```
+- CDU/MCDU hardware-style panels.
+- Boeing and Airbus Navigation Display presentations.
+- Boeing and Airbus PFD presentations with trainer-grade FMA state.
+- Boeing MCP and Airbus FCU visual controls.
+- Task modes for FMC focus, navigation, automation, approach, full deck, and free practice.
+- State-aware help cards driven by current FMC/autoflight progress.
 
-- **Frontend-authoritative** (standalone): FMC state lives in Zustand, pages computed locally. Works offline.
-- **Backend-authoritative** (connected): Server owns FMC state, sends DisplayData via WebSocket. Thin client relays input.
+## Screenshots
 
-## Project Structure
+Current screenshot baselines are maintained through Playwright visual tests under `e2e/*-snapshots/` and documented in [docs/VISUAL_REALISM.md](docs/VISUAL_REALISM.md). Public-facing screenshots should be refreshed from the current visual baseline workflow before a release.
 
-```
-RFMS/
-├── shared/                  # Shared types and FMC logic
-│   └── src/
-│       ├── types/           # FMCState, DisplayData, WebSocket types
-│       └── fmc/             # Page functions, parsers, nav data, tutorials
-├── src/                     # React frontend
-│   ├── components/CDU/      # Display, Keypad, LSK, Scratchpad, Bezel
-│   ├── components/          # ConnectionStatus, DemoWelcome, TutorialOverlay
-│   ├── hooks/               # useTouchFeedback, useWebSocket, useKioskMode, useSound
-│   └── store/               # Zustand FMC state machine
-├── server/                  # Node.js backend
-│   └── src/
-│       ├── aircraft-adapters/ # IAircraftAdapter + PMDG737Adapter
-│       ├── fmc-engine.ts    # Backend FMC state machine
-│       └── index.ts         # Express + WebSocket server
-├── inventory/               # Ansible inventory
-│   └── hosts.yml            # VPS target
-├── ansible-playbook.yml     # Docker-based deployment playbook
-├── Dockerfile               # Multi-stage build (Vite + Node.js)
-└── .github/workflows/       # CI/CD
-```
-
-## Getting Started
-
-### Local Development
+## Installation
 
 ```bash
 git clone https://github.com/Reedtrullz/RFMC.git
 cd RFMC
 npm install
-npm run dev          # Vite dev server on :5173
 ```
 
-In a separate terminal:
-```bash
-npm run server       # WebSocket bridge on :8080
-```
-
-### Production Build
+## Development Commands
 
 ```bash
-npm run build        # Vite builds to dist/
+npm run dev            # Vite dev server on :5173
+npm run server         # WebSocket bridge on :8080
+npm run build          # Production build
+npm run typecheck:all  # TypeScript for shared/frontend/server
+npm test -- --run      # Unit/regression tests
+npm run test:e2e:ci    # Desktop Chromium smoke gate
 ```
 
-### Docker
+## Visual Baseline Workflow
 
 ```bash
-docker build -t virtual-cdu .
-docker run -d --name virtual-cdu -p 8080:8080 virtual-cdu
+npm run test:e2e:visual
+npm run test:visual -- --project=desktop-chromium
+npx playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234
+npx playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2
+npm run capture:baseline
+npm run measure:visual
 ```
 
-## Deployment
+`npm run measure:visual` verifies the reference manifest, measurement profiles, and committed visual baselines. It does not imply measured real-hardware accuracy unless the report explicitly marks a surface as measured against approved references.
 
-### Manual Deploy
+## Architecture Overview
 
-```bash
-ansible-playbook -i inventory/hosts.yml ansible-playbook.yml
+RFMC is an npm workspace monorepo:
+
+```txt
+shared/  TypeScript FMC state, page renderers, validation, navdata, training, display models
+src/     React 18 + TypeScript + Vite frontend, Zustand stores, CDU/cockpit instruments
+server/  Node.js + Express + WebSocket bridge, CONTROL-mode FMC engine, aircraft adapters
+e2e/     Playwright smoke, visual, layout, and workflow tests
+docs/    Status, roadmap, scope, testing, release, and wiki source documentation
 ```
 
-### Automatic Deploy (GitHub Actions)
+Standalone/offline mode keeps state in the frontend. CONTROL mode uses the backend FMC engine and WebSocket display broadcasts. Any new supported CDU/MCDU behavior should preserve frontend/backend parity.
 
-Push to `main` triggers the workflow. Requires these GitHub secrets:
+## Documentation
 
-| Secret | Value |
-|--------|-------|
-| `SSH_PRIVATE_KEY` | Contents of `~/.ssh/id_rsa_racknerd` |
-| `SSH_KNOWN_HOSTS` | `ssh-keyscan 198.23.137.16` |
+- [Status](docs/STATUS.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Scope](docs/SCOPE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Testing](docs/TESTING.md)
+- [Known Limitations](docs/KNOWN_LIMITATIONS.md)
+- [Release Checklist](docs/RELEASE_CHECKLIST.md)
+- [Wiki source pages](docs/wiki/Home.md)
 
-### Architecture on VPS
+## Contributing
 
-```
-Internet → Caddy (:443) → localhost:8082 → Docker (virtual-cdu:8080)
-                              ↑
-                          TLS auto-renew
-```
-
-## FMC Pages Reference
-
-| Page | Purpose | Key Data |
-|------|---------|----------|
-| **IDENT** | Verify aircraft config | Model, engine rating, nav database version |
-| **POS INIT** | Initialize IRS position | REF AIRPORT, GATE |
-| **RTE** | Define flight plan | ORIGIN, DEST, FLT NO, route string |
-| **DEP/ARR** | Select terminal procedures | SID, runway, STAR, approach |
-| **PERF INIT** | Enter weight/economics | CRZ ALT, COST INDEX, ZFW, RESERVES |
-| **THRUST LIM** | Select takeoff thrust | TO, TO 1, TO 2, assumed temp |
-| **TAKEOFF REF** | Critical takeoff data | V1/VR/V2, trim, OAT, wind, QNH |
-| **LEGS** | Review waypoint-by-waypoint | Altitude/speed constraints, discontinuities |
-| **PROGRESS** | Enroute monitoring | DTG, ETA, fuel, wind, TAS |
-| **HOLD** | Create holding patterns | Fix, inbound course, leg time |
-| **FIX** | Reference waypoint info | Radial/distance, abeam points |
-| **MENU** | System selection | A/C identification, ATC, maintenance |
-
-## Tutorial Scenarios
-
-1. **Full Preflight (KJFK → KDCA)** — 25-step walkthrough from cold cockpit to takeoff-ready. Covers IDENT, POS INIT, RTE pages 1 & 2, DEP/ARR, PERF INIT, THRUST LIM, TAKEOFF REF, and EXEC.
-2. **Takeoff Configuration** — Enter V-speeds, trim, OAT, wind, and runway on the TAKEOFF REF page. Explains the safety significance of V1 (decision speed), VR (rotation), and V2 (takeoff safety).
-3. **In-Flight Review** — Review PROGRESS, check LEGS, select STAR and approach for arrival. Covers real pilot workflow during descent preparation.
+Keep changes focused, evidence-backed, and honest about scope. Behavior changes should include tests at the right layer, visual changes should update relevant baselines, and docs should separate implemented, mock-tested, snapshot-protected, measured, pilot-reviewed, and live-verified work.
 
 ## License
 

@@ -20,9 +20,9 @@ Run:
 npm run measure:visual
 ```
 
-This checks the reference manifest, measurement profile files, and committed app-owned Playwright baselines. It writes `docs/VISUAL_FIDELITY_REPORT.md`, which classifies each cockpit surface as snapshot-protected, measured against references, pilot-reviewed, and live-validated.
+This checks the reference manifest, measurement profile files, committed app-owned Playwright baselines, and whether any profile is backed by a reference explicitly approved for pixel measurement. It writes `docs/VISUAL_FIDELITY_REPORT.md`, which classifies each cockpit surface as snapshot-protected, measured against references, pilot-reviewed, and live-validated.
 
-The current gate is intentionally conservative: it warns when no rights-cleared hardware reference crops are approved for pixel measurement and must not be used as a hardware-accuracy claim.
+The current gate is intentionally conservative: it warns when no rights-cleared hardware reference crops are approved for pixel measurement and must not be used as a hardware-accuracy claim. Derived geometry or palette profiles protect internal consistency only until their source references are approved.
 
 ## Reference Intake
 
@@ -35,6 +35,7 @@ Use `reference-library/references.json` for source metadata. Before a reference 
 - Crop bounds.
 - Perspective correction assumptions.
 - Whether the reference is suitable for color, geometry, or only qualitative comparison.
+- `pixelMeasurementApproved: true` only after rights/provenance review is complete.
 
 ## Geometry
 
