@@ -1,6 +1,6 @@
 # VirtualCDU Status
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 This is the current source of truth for automated status. Other docs should link here instead of duplicating live test counts or build metrics.
 
@@ -18,7 +18,7 @@ This is the current source of truth for automated status. Other docs should link
 
 ## Current Commit
 
-Latest reviewed local commit: `ca0c7cb`. PRs #1–#21 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher).
+Latest reviewed local commit: `5f46b79`. PRs #1–#23 merged. Store extraction phase complete (18 action handler modules, typed LSK dispatcher). Cockpit visual regression baselines added (#23).
 
 ## Implementation State
 

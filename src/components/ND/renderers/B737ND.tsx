@@ -74,11 +74,17 @@ export function B737ND({ model }: B737NDProps) {
 
       {/* IRS Status Flags */}
       {model.irsState !== 'NAV' && (
-        <g transform="translate(50 50)" textAnchor="middle">
-          <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
-          <text y="2" fill="#ffcc00" fontSize="5" fontWeight="bold">
+        <g transform="translate(50 50)">
+          {/* Background dimming */}
+          <rect x="-45" y="-22" width="90" height="44" fill="black" opacity="0.6" />
+          {/* Failure text box */}
+          <rect x="-35" y="-14" width="70" height="28" fill="black" stroke={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} strokeWidth="0.8" rx="2" />
+          <text y="-3" fill={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} fontSize="6" fontWeight="bold" textAnchor="middle" letterSpacing="1.5">
             {model.irsState === 'OFF' ? 'MAP FAILURE' : 'IRS ALIGN'}
           </text>
+          {model.irsState === 'ALIGNING' && (
+            <text y="5" fill="#ffcc00" fontSize="3" textAnchor="middle" opacity="0.8">ALIGNING...</text>
+          )}
         </g>
       )}
 

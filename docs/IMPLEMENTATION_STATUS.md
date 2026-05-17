@@ -421,3 +421,43 @@ These are documented limitations and scope boundaries, not hidden completed work
 Before the dispatcher merge, the store blindly set `isModified: true, execLit: true` on every successful patch, regardless of whether the action actually modified route data. This meant non-modifying actions (e.g., radio tuning, page navigation sub-state changes) would incorrectly light the EXEC indicator.
 
 With the dispatcher extraction complete, each handler is responsible for declaring its own modification intent. The store now applies patches without adding MOD/EXEC flags, letting the handlers control this behavior explicitly.
+
+## Post-Dispatcher Cleanup (#18–#22)
+
+**Branch**: `main`
+**Date**: 2026-05-16
+
+| PR | Detail | Status |
+|----|--------|--------|
+| #18 | Centralized dispatcher result application — removed duplicate `set({ isModified, execLit })` from store | **Merged** |
+| #19 | Centralized HOLD field staging pattern — `stageHoldField()` shared helper | **Merged** |
+| #20 | Added `atsu_uplink_received` side effect to `applyDispatchResult()` | **Merged** |
+| #21 | Navigation result handling moved into `applyDispatchResult`; remaining `scratchpadError` writes migrated to `failScratchpad` | **Merged** |
+| #22 | Removed duplicate patch application in `applyDispatchResult`; fixed `clearScratchpad` order bug (must clear BEFORE applying patch) | **Merged** |
+
+### Key fixes
+
+- **`clearScratchpad` order**: The adapter was clearing scratchpad AFTER applying the state patch, which caused values set by the patch to be wiped. Fixed to clear first, then apply.
+- **`failScratchpad` migration**: `pressEXEC` and `insertWaypoint` migrated from direct `set({ scratchpadError })` to typed `failScratchpad()` calls.
+- **V-speed test flakiness**: Zustand state contamination between tests; fixed with explicit `resetState() + scratchpadState` in test setup.
+
+## Cockpit Visual Regression (#23)
+
+**Commit**: `5f46b79`
+**Date**: 2026-05-17
+
+| Deliverable | Detail | Status |
+|------------|--------|--------|
+| Test file | `e2e/visual/cockpit-layouts.spec.ts` — 195 lines | **Merged** |
+| Boeing tests | FMC focus, navigation, automation, approach, full deck (5 tests) | **Merged** |
+| Airbus tests | FMC focus, navigation, automation, approach, full deck (5 tests) | **Merged** |
+| Layout assertions | Full deck panel completeness, help sidebar docking, panel tray visibility (3 tests) | **Merged** |
+| Baselines | 2 initial screenshots captured (approach + automation modes) | **Captured** |
+
+### Test conventions
+
+- `@Visual Regression` tag for grep-filtered execution (`npm run test:visual`)
+- `maxDiffPixelRatio: 0.02` tolerance
+- Store-based mode switching via `window.useCockpitLayoutStore` (avoids UI button dependency)
+- Aircraft switch via `window.useAircraftStore.setAircraft('AIRBUS_A320')`
+- Desktop viewport: 1440×900

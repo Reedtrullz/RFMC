@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-16
-**Commit:** 90a7fcb
+**Generated:** 2026-05-17
+**Commit:** 5f46b79
 **Branch:** main
 **Project:** VirtualCDU — Boeing 737 NG FMC Trainer
 **Stack:** React 18 + TypeScript + Vite + Zustand (frontend), Node.js + Express + WebSocket (backend), TypeScript shared
@@ -17,7 +17,7 @@ RFMS/
 │       ├── types/           # FMCState, DisplayData, WebSocket types
 │       ├── fmc/             # Page functions, parsers, nav data, engines
 │       │   ├── pages/       # Boeing + Airbus page functions
-│       │   ├── actionHandlers/ # Extracted LSK action handlers (14 modules)
+│       │   ├── actionHandlers/ # Extracted LSK action handlers (18 modules)
 │       │   └── training/    # Tutorial scenarios
 │       └── index.ts
 ├── src/                     # React frontend (workspace)
@@ -43,9 +43,13 @@ RFMS/
 | Task | Location | Notes |
 |------|----------|-------|
 | FMC page logic | `shared/src/fmc/pages/` | Boeing/Airbus page functions |
-| LSK action handlers | `shared/src/fmc/actionHandlers/` | Extracted from store (14 modules) |
+| LSK action handlers | `shared/src/fmc/actionHandlers/` | Extracted from store (18 modules) |
+| LSK dispatcher | `shared/src/fmc/actionHandlers/lskDispatcher.ts` | Typed `dispatchLskAction()` → 16 handler families |
+| Action result types | `shared/src/fmc/actionHandlers/actionResult.ts` | FmcActionResult, FmcActionFailure, FmcActionSuccess |
 | Scratchpad engine | `shared/src/fmc/scratchpadEngine.ts` | 8-level priority queue, message factories |
+| Scratchpad adapter | `shared/src/fmc/fmcScratchpadAdapter.ts` | applyFmcActionResult, applyDispatchResult, failScratchpad |
 | EXEC lifecycle | `shared/src/fmc/routeModification.ts` | MOD/EXEC state machine + adapter |
+| Display grid validation | `shared/src/fmc/displayGridValidation.ts` | Strict 24×14 grid validation |
 | FMC state machine | `src/store/` | Zustand stores (10 modules) |
 | React components | `src/components/CDU/` | CDU display/inputs |
 | Navigation Display | `src/components/ND/` | ND symbology + layers + frame |
@@ -83,7 +87,7 @@ npm run dev           # Vite dev server :5173
 npm run server        # Node.js WS bridge :8080
 npm run build         # Vite build to dist/
 npm run typecheck:all # TypeScript check all workspaces
-npm run test          # Vitest unit tests (720 pass, 51 files)
+npm run test          # Vitest unit tests (752 pass, 55 files)
 npm run test:e2e      # Playwright e2e (all)
 npm run test:e2e:ci   # Playwright CI smoke (@smoke)
 npm run test:e2e:visual # Visual regression
@@ -97,6 +101,6 @@ npm run capture:baseline   # Capture Playwright baselines
 - `docs/ARCHITECTURE.md` — system architecture and design decisions
 - `docs/IMPLEMENTATION_STATUS.md` — recent changes and transitional state
 - 520 total files, ~40k lines of code, depth 5 max
-- 7 files >500 lines (useFMCStore.ts is largest at 2,362 lines)
+- 7 files >500 lines (useFMCStore.ts is largest at 2,056 lines)
 - Monorepo with npm workspaces, not Turborepo/pnpm
-- `shared/src/fmc/actionHandlers/` — 14 extracted LSK handler modules (store cleanup in progress)
+- `shared/src/fmc/actionHandlers/` — 18 extracted LSK handler modules (store extraction complete)

@@ -98,19 +98,23 @@ export default function App() {
       setAircraft('AIRBUS_A320');
       setPage('F_PLN');
     } else if (path === '/visual/nd/boeing-map') {
+      setCockpitMode(false);
       setAircraft('BOEING_737');
       setNDMode('L', 'MAP');
       setShowNd(true);
     } else if (path === '/visual/nd/boeing-map-failure') {
+      setCockpitMode(false);
       setAircraft('BOEING_737');
       setNDMode('L', 'MAP');
       setShowNd(true);
       useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF' } });
     } else if (path === '/visual/nd/airbus-arc') {
+      setCockpitMode(false);
       setAircraft('AIRBUS_A320');
       setNDMode('L', 'ARC');
       setShowNd(true);
     } else if (path === '/visual/nd/airbus-arc-aligning') {
+      setCockpitMode(false);
       setAircraft('AIRBUS_A320');
       setNDMode('L', 'ARC');
       setShowNd(true);
@@ -122,7 +126,7 @@ export default function App() {
         alerts: [{ id: 'test-caution', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', timestamp: Date.now(), clearable: true }] 
       });
     }
-  }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex]);
+  }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex, setCockpitMode]);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
