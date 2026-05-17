@@ -114,6 +114,8 @@ export function buildNavigationDisplayModel(
     anpNm: state.navPerformance.anpNm,
     rnpNm: state.navPerformance.rnpNm,
     radios: state.radios,
+    aircraftPosition: aircraftPos,
+    aircraftAltitude: state.aircraftState?.altitude || 0,
   };
 }
 

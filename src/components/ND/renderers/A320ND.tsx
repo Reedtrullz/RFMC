@@ -13,6 +13,7 @@ import { WXROverlay } from '../layers/WXROverlay';
 import { VerticalProfileOverlay } from '../layers/VerticalProfileOverlay';
 import { RnpContainmentOverlay } from '../layers/RnpContainmentOverlay';
 import { DebriefOverlay } from '../layers/DebriefOverlay';
+import { TerrainOverlay } from '../layers/TerrainOverlay';
 import { AircraftSymbol } from '../symbols/AircraftSymbol';
 import { ConstraintsOverlay } from '../symbology/ConstraintsOverlay';
 
@@ -46,6 +47,7 @@ export function A320ND({ model }: A320NDProps) {
       {/* Moving Symbology */}
       {model.irsState === 'NAV' ? (
         <g clipPath="url(#a320-nd-clip)">
+          <TerrainOverlay model={model} />
           <AirportSymbol model={model} />
           <RouteLine model={model} />
           <WaypointSymbol model={model} />

@@ -131,4 +131,6 @@ export interface NavigationDisplayModel {
     vor2: string;
     adf1: string;
   };
+  aircraftPosition: { lat: number; lon: number };
+  aircraftAltitude: number;
 }
