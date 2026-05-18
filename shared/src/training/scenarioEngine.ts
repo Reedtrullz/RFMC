@@ -94,7 +94,7 @@ export class TrainingScenarioEngine {
     return undefined;
   }
 
-  private validateState(state: any, validations: any[]): boolean {
+  validateState(state: any, validations: any[]): boolean {
     return validations.every(v => {
       const actual = this.getNestedValue(state, v.path);
       return this.checkCondition(actual, v.expected, v.operator);
@@ -127,6 +127,8 @@ export class TrainingScenarioEngine {
         return (actual as any).value === expected.value;
       case 'set_mcp':
         return (actual as any).field === expected.field && (actual as any).value === expected.value;
+      case 'verify_fma':
+        return true;
       // Add other validations as needed
       default:
         return false;

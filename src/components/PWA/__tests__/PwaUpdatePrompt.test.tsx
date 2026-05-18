@@ -16,8 +16,8 @@ describe('PwaUpdatePrompt', () => {
       <PwaUpdatePrompt offlineReady needRefresh={false} onClose={vi.fn()} onReload={vi.fn()} />,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('App ready to work offline.');
-    expect(screen.queryByRole('button', { name: 'RELOAD' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('App successfully configured for offline flight operations.');
+    expect(screen.queryByRole('button', { name: 'Update Now' })).not.toBeInTheDocument();
   });
 
   it('announces refresh state and runs reload action', () => {
@@ -26,8 +26,8 @@ describe('PwaUpdatePrompt', () => {
       <PwaUpdatePrompt offlineReady={false} needRefresh onClose={vi.fn()} onReload={onReload} />,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('New update available. Click to reload.');
-    fireEvent.click(screen.getByRole('button', { name: 'RELOAD' }));
+    expect(screen.getByRole('status')).toHaveTextContent('New database update is available for VirtualCDU.');
+    fireEvent.click(screen.getByRole('button', { name: 'Update Now' }));
     expect(onReload).toHaveBeenCalledTimes(1);
   });
 
@@ -37,7 +37,7 @@ describe('PwaUpdatePrompt', () => {
       <PwaUpdatePrompt offlineReady needRefresh={false} onClose={onClose} onReload={vi.fn()} />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'CLOSE' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

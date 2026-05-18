@@ -161,6 +161,149 @@ describe('handleSetFlaps (takeoff)', () => {
   });
 });
 
+describe('handleSetLandingTemp', () => {
+  it('returns handled:false when scratchpad is empty', () => {
+    const result = handleLandingAction('set_landing_temp', makeState(), '');
+    expect(result.handled).toBe(false);
+  });
+
+  it('rejects invalid temperature bounds', () => {
+    const resultLow = handleLandingAction('set_landing_temp', makeState(), '-51');
+    expect(resultLow.handled).toBe(true);
+    expect(resultLow.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultHigh = handleLandingAction('set_landing_temp', makeState(), '61');
+    expect(resultHigh.handled).toBe(true);
+    expect(resultHigh.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('sets valid landing temperature', () => {
+    const result = handleLandingAction('set_landing_temp', makeState(), '25');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.temp).toBe(25);
+  });
+});
+
+describe('handleSetLandingWind', () => {
+  it('returns handled:false when scratchpad is empty', () => {
+    const result = handleLandingAction('set_landing_wind', makeState(), '');
+    expect(result.handled).toBe(false);
+  });
+
+  it('rejects invalid wind format', () => {
+    const result = handleLandingAction('set_landing_wind', makeState(), '240');
+    expect(result.handled).toBe(true);
+    expect(result.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('rejects out of bounds wind direction or speed', () => {
+    const resultDir = handleLandingAction('set_landing_wind', makeState(), '361/15');
+    expect(resultDir.handled).toBe(true);
+    expect(resultDir.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultSpd = handleLandingAction('set_landing_wind', makeState(), '240/151');
+    expect(resultSpd.handled).toBe(true);
+    expect(resultSpd.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('sets valid landing wind', () => {
+    const result = handleLandingAction('set_landing_wind', makeState(), '240/15');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.windDir).toBe(240);
+    expect(patch.landing.windSpeed).toBe(15);
+  });
+});
+
+describe('handleSetMda', () => {
+  it('returns handled:false when scratchpad is empty', () => {
+    const result = handleLandingAction('set_mda', makeState(), '');
+    expect(result.handled).toBe(false);
+  });
+
+  it('rejects invalid MDA bounds', () => {
+    const resultLow = handleLandingAction('set_mda', makeState(), '-1');
+    expect(resultLow.handled).toBe(true);
+    expect(resultLow.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultHigh = handleLandingAction('set_mda', makeState(), '20001');
+    expect(resultHigh.handled).toBe(true);
+    expect(resultHigh.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('sets valid landing MDA', () => {
+    const result = handleLandingAction('set_mda', makeState(), '250');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.mda).toBe(250);
+  });
+});
+
+describe('handleSetDh', () => {
+  it('returns handled:false when scratchpad is empty', () => {
+    const result = handleLandingAction('set_dh', makeState(), '');
+    expect(result.handled).toBe(false);
+  });
+
+  it('rejects invalid DH bounds', () => {
+    const resultLow = handleLandingAction('set_dh', makeState(), '-1');
+    expect(resultLow.handled).toBe(true);
+    expect(resultLow.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultHigh = handleLandingAction('set_dh', makeState(), '1001');
+    expect(resultHigh.handled).toBe(true);
+    expect(resultHigh.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('sets valid landing DH', () => {
+    const result = handleLandingAction('set_dh', makeState(), '200');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.dh).toBe(200);
+  });
+});
+
+describe('handleToggleLdgConf', () => {
+  it('toggles config when scratchpad is empty', () => {
+    const result = handleLandingAction('toggle_ldg_conf', makeState(), '');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.ldgConf).toBe('CONF3');
+    expect(patch.landing.flaps).toBe('CONF3');
+
+    const stateConf3 = makeState({ landing: { runway: '', flaps: 'CONF3', vref: 0, ilsFrequency: '', course: 0, ldgConf: 'CONF3' } });
+    const resultToggle = handleLandingAction('toggle_ldg_conf', stateConf3, '');
+    const patchToggle = resultToggle.success?.patch as any;
+    expect(patchToggle.landing.ldgConf).toBe('FULL');
+    expect(patchToggle.landing.flaps).toBe('FULL');
+  });
+
+  it('updates to FULL when scratchpad is FULL', () => {
+    const result = handleLandingAction('toggle_ldg_conf', makeState(), 'FULL');
+    expect(result.handled).toBe(true);
+    const patch = result.success?.patch as any;
+    expect(patch.landing.ldgConf).toBe('FULL');
+    expect(patch.landing.flaps).toBe('FULL');
+  });
+
+  it('updates to CONF3 when scratchpad is 3 or CONF3', () => {
+    const result1 = handleLandingAction('toggle_ldg_conf', makeState(), '3');
+    expect(result1.handled).toBe(true);
+    expect((result1.success?.patch as any).landing.ldgConf).toBe('CONF3');
+
+    const result2 = handleLandingAction('toggle_ldg_conf', makeState(), 'CONF3');
+    expect(result2.handled).toBe(true);
+    expect((result2.success?.patch as any).landing.ldgConf).toBe('CONF3');
+  });
+
+  it('rejects invalid scratchpad input', () => {
+    const result = handleLandingAction('toggle_ldg_conf', makeState(), 'INVALID');
+    expect(result.handled).toBe(true);
+    expect(result.failure?.code).toBe('INVALID_ENTRY');
+  });
+});
+
 describe('handleLandingAction dispatcher', () => {
   it('returns handled:false for unknown actions', () => {
     const result = handleLandingAction('unknown', makeState(), 'data');

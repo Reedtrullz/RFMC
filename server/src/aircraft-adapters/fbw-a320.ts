@@ -258,6 +258,8 @@ export class FBWA320Adapter implements IAircraftAdapter {
       handle.addToDataDefinition(DEFINITION_ID, 'Plane Heading Degrees True', 'degrees', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'Airspeed Indicated', 'knots', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'Vertical Speed', 'feet per minute', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'FUEL TOTAL QUANTITY', 'gallons', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'TOTAL WEIGHT', 'pounds', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
@@ -273,19 +275,21 @@ export class FBWA320Adapter implements IAircraftAdapter {
             const heading = recvSimObjectData.data.readFloat64();
             const ias = recvSimObjectData.data.readFloat64();
             const vs = recvSimObjectData.data.readFloat64();
+            const fuelGallons = recvSimObjectData.data.readFloat64();
+            const gwVal = recvSimObjectData.data.readFloat64();
+            const fuelVal = Math.round(fuelGallons * 6.7);
 
             this.simState = {
               lat,
               lon,
               headingDeg: heading,
-              trackDeg: heading, // Simplified
+              trackDeg: heading,
               altitudeFt: altitude,
               indicatedAirspeedKt: ias,
               verticalSpeedFpm: vs,
               pitchDeg: 0,
               bankDeg: 0,
 
-              // Legacy
               altitude,
               heading,
               ias,
@@ -293,10 +297,12 @@ export class FBWA320Adapter implements IAircraftAdapter {
               gs: ias,
               vs,
               track: heading,
-              fuelTotal: 0,
-              gw: 0,
+              fuelTotal: fuelVal,
+              gw: gwVal,
             };
-            // Read radios
+            this.simState.fuelTotal = this.simState.fuelTotal;
+            this.simState.gw = this.simState.gw;
+            
             const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();

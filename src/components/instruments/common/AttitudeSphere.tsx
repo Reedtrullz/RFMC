@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface AttitudeSphereProps {
   pitch: number;
   bank: number;
@@ -13,7 +15,7 @@ interface AttitudeSphereProps {
 const pitchMarks = [-30, -25, -20, -15, -10, -5, 5, 10, 15, 20, 25, 30];
 const bankMarks = [-45, -30, -20, -10, 10, 20, 30, 45];
 
-export function AttitudeSphere({ pitch, bank, variant = 'boeing', fd, failed = false }: AttitudeSphereProps) {
+export const AttitudeSphere = React.memo(function AttitudeSphere({ pitch, bank, variant = 'boeing', fd, failed = false }: AttitudeSphereProps) {
   const pixelsPerDegree = 4;
   const sky = variant === 'airbus' ? '#1767c7' : '#0055ff';
   const ground = variant === 'airbus' ? '#8d4d22' : '#7a3f18';
@@ -132,7 +134,7 @@ export function AttitudeSphere({ pitch, bank, variant = 'boeing', fd, failed = f
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full border border-white/10 pointer-events-none" />
     </div>
   );
-}
+});
 
 function PitchMark({ mark, pixelsPerDegree, variant }: { mark: number; pixelsPerDegree: number; variant: 'boeing' | 'airbus' }) {
   const isMajor = Math.abs(mark) % 10 === 0;

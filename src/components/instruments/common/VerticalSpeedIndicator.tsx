@@ -1,10 +1,12 @@
+import React from 'react';
+
 interface VerticalSpeedIndicatorProps {
   verticalSpeed: number;
   targetVerticalSpeed: number | null;
   variant?: 'boeing' | 'airbus';
 }
 
-export function VerticalSpeedIndicator({ verticalSpeed, targetVerticalSpeed, variant = 'boeing' }: VerticalSpeedIndicatorProps) {
+export const VerticalSpeedIndicator = React.memo(function VerticalSpeedIndicator({ verticalSpeed, targetVerticalSpeed, variant = 'boeing' }: VerticalSpeedIndicatorProps) {
   const maxFpm = 6000;
   const clamped = Math.max(-maxFpm, Math.min(maxFpm, verticalSpeed));
   const pointerY = 50 - (clamped / maxFpm) * 42;
@@ -43,4 +45,4 @@ export function VerticalSpeedIndicator({ verticalSpeed, targetVerticalSpeed, var
       </div>
     </div>
   );
-}
+});

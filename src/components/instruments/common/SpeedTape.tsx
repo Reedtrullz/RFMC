@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface SpeedTapeProps {
   speed: number;
   targetSpeed: number | null;
@@ -5,7 +7,7 @@ interface SpeedTapeProps {
   managed?: boolean;
 }
 
-export function SpeedTape({ speed, targetSpeed, trend, variant = 'boeing', managed = false }: SpeedTapeProps & { trend?: number }) {
+export const SpeedTape = React.memo(function SpeedTape({ speed, targetSpeed, trend, variant = 'boeing', managed = false }: SpeedTapeProps & { trend?: number }) {
   const pixelsPerUnit = 2;
   const bugColor = variant === 'airbus' ? '#39ffef' : '#ff00ff';
   const readoutColor = variant === 'airbus' ? '#ffd400' : '#00ff44';
@@ -16,7 +18,7 @@ export function SpeedTape({ speed, targetSpeed, trend, variant = 'boeing', manag
       {managed && (
         <div className="absolute right-1 top-2 z-20 h-2 w-2 rounded-full bg-[#39ffef] shadow-[0_0_6px_#39ffef]" aria-label="managed speed" />
       )}
-      <div className="absolute w-full" style={{ transform: `translateY(${speed * pixelsPerUnit}px)` }}>
+      <div className="absolute w-full" style={{ transform: `translate3d(0, ${speed * pixelsPerUnit}px, 0)`, willChange: 'transform' }}>
         {[...Array(50)].map((_, i) => {
           const val = i * 10;
           const y = -val * pixelsPerUnit;
@@ -52,4 +54,4 @@ export function SpeedTape({ speed, targetSpeed, trend, variant = 'boeing', manag
       </div>
     </div>
   );
-}
+});

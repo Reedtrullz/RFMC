@@ -294,6 +294,13 @@ export interface LandingData {
   vref: number;
   ilsFrequency: string;
   course: number;
+  qnh?: number;
+  temp?: number;
+  windDir?: number;
+  windSpeed?: number;
+  mda?: number;
+  dh?: number;
+  ldgConf?: 'FULL' | 'CONF3';
 }
 
 export interface RadioData {

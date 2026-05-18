@@ -35,6 +35,7 @@ export type TrainingStep = {
   hint?: string;
   commonMistake?: string;
   validation?: string; 
+  highlightControl?: string;
 };
 
 export type PassCriteria = {

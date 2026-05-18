@@ -141,11 +141,16 @@ function isAirbusSpeedManaged(truth: AutoflightTruthState): boolean {
 }
 
 function isAirbusHeadingManaged(truth: AutoflightTruthState): boolean {
-  return truth.lateralActive === 'NAV' || truth.lateralArmed === 'NAV';
+  return truth.lateralActive === 'NAV' || 
+         truth.lateralArmed === 'NAV' || 
+         truth.lateralActive === 'LNAV' || 
+         truth.lateralArmed === 'LNAV';
 }
 
 function isAirbusAltitudeManaged(truth: AutoflightTruthState): boolean {
   return truth.verticalActive === 'CLB' ||
     truth.verticalActive === 'DES' ||
-    truth.verticalArmed === 'VNAV_PTH';
+    truth.verticalArmed === 'VNAV_PTH' ||
+    truth.verticalActive === 'VNAV_PTH' ||
+    truth.verticalActive === 'VNAV';
 }

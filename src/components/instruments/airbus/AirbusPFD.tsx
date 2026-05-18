@@ -11,8 +11,21 @@ import { buildPfdDisplayModel } from '@shared';
 
 export function AirbusPFD() {
   const aircraftState = useAircraftStore(s => s.aircraftState);
-  const autopilot = useAutopilotStore(s => s);
-  const state = useFMCStore(s => s);
+  const autopilot = useAutopilotStore(s => ({
+    airbus: s.airbus,
+    truth: s.truth,
+  }), (a, b) => a.airbus === b.airbus && a.truth === b.truth);
+  const state = useFMCStore(s => ({
+    aircraft: s.aircraft,
+    gpwsAlert: s.gpwsAlert,
+    tcasAlert: s.tcasAlert,
+    position: s.position,
+  }), (a, b) => 
+    a.aircraft === b.aircraft && 
+    a.gpwsAlert === b.gpwsAlert && 
+    a.tcasAlert === b.tcasAlert && 
+    a.position?.irsState === b.position?.irsState
+  );
   const aggregatedState = {
     ...state,
     aircraftState,

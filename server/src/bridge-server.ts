@@ -69,7 +69,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
   const fmc = options.fmc ?? new FMCEngine();
   const aircraft = options.aircraft ?? createAircraftAdapter();
-  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  let pollTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isPollingActive = false;
   let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
   function startHeartbeat(): void {
@@ -119,11 +120,18 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   let lastStateJSON: string | null = null;
 
   function startPolling(): void {
-    if (pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(async () => {
+    isPollingActive = true;
+    if (pollTimeout) clearTimeout(pollTimeout);
+    
+    async function tick() {
+      if (!isPollingActive) return;
+      
       if (!aircraft.isConnected) {
         if (shouldBeConnected && !retryTimeout) {
           retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
+        }
+        if (isPollingActive) {
+          pollTimeout = setTimeout(tick, 100);
         }
         return;
       }
@@ -158,18 +166,26 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       } catch (err) {
         devError('[Poll] Error:', err);
         metrics.simError();
+      } finally {
+        if (isPollingActive) {
+          pollTimeout = setTimeout(tick, 100);
+        }
       }
-    }, 100);
+    }
+    
+    pollTimeout = setTimeout(tick, 100);
   }
 
   function stopPolling(): void {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      pollInterval = null;
+    isPollingActive = false;
+    if (pollTimeout) {
+      clearTimeout(pollTimeout);
+      pollTimeout = null;
     }
   }
 
   let shouldBeConnected = false;
+  let isConnecting = false;
   let retryTimeout: ReturnType<typeof setTimeout> | null = null;
 
   async function attemptReconnect(): Promise<void> {
@@ -177,24 +193,38 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       clearTimeout(retryTimeout);
       retryTimeout = null;
     }
-    if (!shouldBeConnected || aircraft.isConnected) return;
+    if (!shouldBeConnected || aircraft.isConnected || isConnecting) return;
     
+    isConnecting = true;
     logger.info(LogEvent.SIM_CONNECTED, { message: 'Attempting auto-reconnect' });
-    const connected = await aircraft.connect();
-    if (connected) {
-      startPolling();
-      broadcast({
-        type: 'sim.connected',
-        aircraft: aircraft.name,
-        aircraftType: aircraft.aircraftType,
-        capabilities: aircraft.capabilities,
-        structuredCapabilities: toAdapterCapabilities(aircraft),
-        adapterHealth: getAdapterHealth(aircraft),
-        connectionStatus: aircraft.connectionStatus,
-        lastError: aircraft.lastError,
-      } as ServerMessage);
-    } else {
+    try {
+      const connectPromise = aircraft.connect();
+      const timeoutPromise = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000)
+      );
+      const connected = await Promise.race([connectPromise, timeoutPromise]);
+      if (!shouldBeConnected) return;
+      
+      if (connected) {
+        startPolling();
+        broadcast({
+          type: 'sim.connected',
+          aircraft: aircraft.name,
+          aircraftType: aircraft.aircraftType,
+          capabilities: aircraft.capabilities,
+          structuredCapabilities: toAdapterCapabilities(aircraft),
+          adapterHealth: getAdapterHealth(aircraft),
+          connectionStatus: aircraft.connectionStatus,
+          lastError: aircraft.lastError,
+        } as ServerMessage);
+      } else {
+        retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
+      }
+    } catch (err) {
+      devError('[SimConnect] Reconnect Error:', err);
       retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
+    } finally {
+      isConnecting = false;
     }
   }
 
@@ -230,6 +260,10 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     ws.on('message', (raw) => {
       try {
         if (!rateLimiter.isAllowed()) {
+          if (rateLimiter.isAbused()) {
+            ws.terminate();
+            return;
+          }
           ws.send(JSON.stringify({ type: 'error', message: 'Too many messages' } as ServerMessage));
           return;
         }
@@ -266,7 +300,19 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
           case 'sim.connect': {
             shouldBeConnected = true;
-            aircraft.connect().then(connected => {
+            if (aircraft.isConnected || isConnecting) {
+              break;
+            }
+            isConnecting = true;
+            
+            const connectPromise = aircraft.connect();
+            const timeoutPromise = new Promise<boolean>((_, reject) =>
+              setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000)
+            );
+            
+            Promise.race([connectPromise, timeoutPromise]).then(connected => {
+              isConnecting = false;
+              if (!shouldBeConnected) return;
               if (connected) {
                 startPolling();
                 broadcast({
@@ -287,6 +333,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
                 if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
               }
             }).catch(err => {
+              isConnecting = false;
+              if (!shouldBeConnected) return;
               devError('[SimConnect] Error:', err);
               metrics.simError();
               ws.send(JSON.stringify({

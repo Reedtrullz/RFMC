@@ -383,6 +383,9 @@ export class PMDG737Adapter implements IAircraftAdapter {
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK VAR', 'feet', SimConnectDataType.FLOAT64);
       
+      handle.addToDataDefinition(DEFINITION_ID, 'FUEL TOTAL QUANTITY', 'gallons', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'TOTAL WEIGHT', 'pounds', SimConnectDataType.FLOAT64);
+      
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
@@ -430,19 +433,23 @@ export class PMDG737Adapter implements IAircraftAdapter {
               apHeadingActive,
               apAltitudeActive,
               apTargetAltitude,
-
-              // Legacy
-              altitude,
-              heading,
-              ias,
-              tas,
-              gs,
-              vs,
-              track: heading,
-              fuelTotal: 0,
-              gw: 0,
-            };
-            const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
+              
+              fuelTotal: Math.round(recvSimObjectData.data.readFloat64() * 6.7),
+              gw: Math.round(recvSimObjectData.data.readFloat64()),
+ 
+               // Legacy
+               altitude,
+               heading,
+               ias,
+               tas,
+               gs,
+               vs,
+               track: heading,
+             };
+             this.simState.fuelTotal = this.simState.fuelTotal;
+             this.simState.gw = this.simState.gw;
+             
+             const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
             

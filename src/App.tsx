@@ -235,6 +235,18 @@ export default function App() {
     } else if (path === '/visual/airbus/f-pln') {
       setAircraft('AIRBUS_A320');
       setPage('F_PLN');
+    } else if (path === '/visual/airbus/fuel-pred') {
+      setAircraft('AIRBUS_A320');
+      setPage('FUEL_PRED');
+    } else if (path === '/visual/airbus/rad-nav') {
+      setAircraft('AIRBUS_A320');
+      setPage('RAD_NAV');
+    } else if (path === '/visual/airbus/mcdu-menu') {
+      setAircraft('AIRBUS_A320');
+      setPage('MCDU_MENU');
+    } else if (path === '/visual/airbus/perf-appr') {
+      setAircraft('AIRBUS_A320');
+      setPage('PERF_APPR');
     } else if (path === '/visual/nd/boeing-map') {
       setCockpitMode(false);
       setAircraft('BOEING_737');

@@ -45,14 +45,24 @@ function isValidCDUKey(key: string): boolean {
  */
 export class WSRateLimiter {
   private messages: number[] = [];
+  private totalMessagesInWindow: number[] = [];
   private readonly windowMs = 1000;
   private readonly maxMessages = 10;
+  private readonly abuseThreshold = 30;
 
   isAllowed(): boolean {
     const now = Date.now();
     this.messages = this.messages.filter(t => now - t < this.windowMs);
+    this.totalMessagesInWindow = this.totalMessagesInWindow.filter(t => now - t < this.windowMs);
+    this.totalMessagesInWindow.push(now);
     if (this.messages.length >= this.maxMessages) return false;
     this.messages.push(now);
     return true;
+  }
+
+  isAbused(): boolean {
+    const now = Date.now();
+    this.totalMessagesInWindow = this.totalMessagesInWindow.filter(t => now - t < this.windowMs);
+    return this.totalMessagesInWindow.length > this.abuseThreshold;
   }
 }

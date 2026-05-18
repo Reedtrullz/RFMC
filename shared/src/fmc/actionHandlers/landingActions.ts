@@ -15,6 +15,11 @@ export function handleLandingAction(
     case 'set_ils_frequency':  return handleSetIlsFrequency(state, scratchpad);
     case 'set_ils_course':     return handleSetIlsCourse(state, scratchpad);
     case 'set_flaps':          return handleSetFlaps(state, scratchpad);
+    case 'set_landing_temp':   return handleSetLandingTemp(state, scratchpad);
+    case 'set_landing_wind':   return handleSetLandingWind(state, scratchpad);
+    case 'set_mda':            return handleSetMda(state, scratchpad);
+    case 'set_dh':             return handleSetDh(state, scratchpad);
+    case 'toggle_ldg_conf':    return handleToggleLdgConf(state, scratchpad);
     default:                   return { handled: false };
   }
 }
@@ -34,6 +39,7 @@ function handleSetQnh(state: FMCState, scratchpad: string): FmcActionResult {
       clearScratchpad: true,
       patch: {
         takeoff: { ...state.takeoff, qnh: qnh * 100 },
+        landing: { ...state.landing, qnh },
         isModified: true, execLit: true,
       } as any,
     },
@@ -163,6 +169,128 @@ function handleSetFlaps(state: FMCState, scratchpad: string): FmcActionResult {
       clearScratchpad: true,
       patch: {
         takeoff,
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetLandingTemp(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const temp = parseInt(scratchpad, 10);
+  if (isNaN(temp) || temp < -50 || temp > 60) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_landing_temp' },
+    };
+  }
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        landing: { ...state.landing, temp },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetLandingWind(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const match = scratchpad.match(/^(\d{1,3})\/(\d{1,3})$/);
+  if (!match) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_landing_wind' },
+    };
+  }
+  const windDir = parseInt(match[1], 10);
+  const windSpeed = parseInt(match[2], 10);
+  if (isNaN(windDir) || windDir < 0 || windDir > 360 || isNaN(windSpeed) || windSpeed < 0 || windSpeed > 150) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_landing_wind' },
+    };
+  }
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        landing: { ...state.landing, windDir, windSpeed },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetMda(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const mda = parseInt(scratchpad, 10);
+  if (isNaN(mda) || mda < 0 || mda > 20000) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_mda' },
+    };
+  }
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        landing: { ...state.landing, mda },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleSetDh(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+  const dh = parseInt(scratchpad, 10);
+  if (isNaN(dh) || dh < 0 || dh > 1000) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_dh' },
+    };
+  }
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        landing: { ...state.landing, dh },
+        isModified: true, execLit: true,
+      } as any,
+    },
+  };
+}
+
+function handleToggleLdgConf(state: FMCState, scratchpad: string): FmcActionResult {
+  let nextVal: 'FULL' | 'CONF3';
+  if (!scratchpad) {
+    const current = state.landing.ldgConf || 'FULL';
+    nextVal = current === 'FULL' ? 'CONF3' : 'FULL';
+  } else {
+    const val = scratchpad.toUpperCase();
+    if (val === 'FULL') {
+      nextVal = 'FULL';
+    } else if (val === '3' || val === 'CONF3') {
+      nextVal = 'CONF3';
+    } else {
+      return {
+        handled: true,
+        failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.toggle_ldg_conf' },
+      };
+    }
+  }
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        landing: { ...state.landing, ldgConf: nextVal, flaps: nextVal },
         isModified: true, execLit: true,
       } as any,
     },

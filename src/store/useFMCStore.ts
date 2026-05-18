@@ -12,7 +12,6 @@ import { useAircraftStore } from './aircraftStore';
 import { useAutopilotStore } from './autopilotStore';
 import { useCockpitLayoutStore } from './cockpitLayoutStore';
 import { useConnectionStore } from './connectionStore';
-import { useTrainingStore } from './trainingStore';
 import { 
   selectFmcPositionSource, 
   calculateANP, 
@@ -21,6 +20,7 @@ import {
   calculateIrsDrift,
   FmsRuntimeEngine,
   loadIntoCache,
+  loadProceduresIntoCache,
   populateNavDb
 } from '@shared';
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
@@ -91,6 +91,32 @@ function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix
     { ...(entries[0] ?? legacy) },
     { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
   ];
+}
+
+function getTrainingHighlight(step: any): string | null {
+  if (step.highlightControl) return step.highlightControl;
+  const action = step.expectedAction;
+  if (!action) return null;
+  switch (action.type) {
+    case 'press_key':
+      return action.key;
+    case 'press_lsk':
+      return `${action.side}${action.index}`;
+    case 'set_mcp':
+      const fieldMap: Record<string, string> = {
+        fdLeft: 'FD_LEFT',
+        speed: 'IAS_SEL',
+        heading: 'HDG_SEL_BTN',
+        altitude: 'ALT_SEL',
+        cmdA: 'CMD_A',
+        lnav: 'LNAV',
+        vnav: 'VNAV',
+        app: 'APP_MODE',
+      };
+      return fieldMap[action.field] || null;
+    default:
+      return null;
+  }
 }
 
 // ---- Default initial state ----
@@ -264,6 +290,9 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   trainingScore: null as TrainingScore | null,
   trainingStepIndex: 0,
   trainingCompleted: false,
+  debriefMode: false,
+  activeScenario: null as any | null,
+  isReportVisible: false,
 
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
   holdPending: null as any,
@@ -278,9 +307,6 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   selectedPlanWaypointIndex: null,
   flightPathHistory: [] as { lat: number; lon: number; timestamp: number }[],
 
-  debriefMode: false,
-  activeScenario: null as any | null,
-  isReportVisible: false,
   atsu: {
     messages: [] as AcarsMessage[],
     pendingUplink: null as any,
@@ -382,6 +408,7 @@ interface FMCActions {
   startTraining: (scenarioId: string) => void;
   stopTraining: () => void;
   processTrainingAction: (action: any) => void;
+  setDebriefMode: (active: boolean) => void;
 
   setNDMode: (side: 'L' | 'R', mode: string) => void;
   setNDRange: (side: 'L' | 'R', range: number) => void;
@@ -453,6 +480,9 @@ interface TrainingState {
   trainingScore: TrainingScore | null;
   trainingStepIndex: number;
   trainingCompleted: boolean;
+  debriefMode: boolean;
+  activeScenario: any | null;
+  isReportVisible: boolean;
 }
 
 export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & TrainingState & FMCActions & {
@@ -747,7 +777,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // Training engine hook
     if (state.trainingActive) {
-      state.processTrainingAction({ type: 'press_lsk', side, index });
+      const currentStep = state.trainingScenario?.steps[state.trainingStepIndex];
+      const scratchpad = state.scratchpad.trim();
+      if (currentStep?.expectedAction?.type === 'enter_scratchpad') {
+        state.processTrainingAction({ type: 'enter_scratchpad', value: scratchpad });
+      } else {
+        state.processTrainingAction({ type: 'press_lsk', side, index });
+      }
     }
 
     const scratchpad = state.scratchpad.trim();
@@ -767,6 +803,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           loadIntoCache(id).catch(err => console.error(`Error background loading ${id}:`, err));
         });
       }
+    }
+
+    const originArpt = state.pendingRoute?.origin ?? state.route.origin;
+    const destArpt = state.pendingRoute?.destination ?? state.route.destination;
+    if (originArpt) {
+      loadProceduresIntoCache(originArpt).catch(() => {});
+    }
+    if (destArpt) {
+      loadProceduresIntoCache(destArpt).catch(() => {});
     }
 
     let handled = false;
@@ -1549,6 +1594,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     const engine = new TrainingScenarioEngine(scenario);
     const firstStep = engine.start();
+    const highlight = firstStep ? getTrainingHighlight(firstStep) : null;
 
     // Setup initial state
     if (scenario.setup.page) {
@@ -1564,6 +1610,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       trainingStepIndex: 0,
       trainingCompleted: false,
       tutorialActive: false, // Deactivate legacy tutorial
+      tutorialHighlight: highlight,
       mode: 'TUTORIAL'
     });
   },
@@ -1573,9 +1620,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       trainingActive: false,
       trainingScenario: null,
       trainingEngine: null,
+      tutorialHighlight: null,
       mode: 'ACTIVE'
     });
   },
+
+  setDebriefMode: (active: boolean) => set({ debriefMode: active }),
 
   processTrainingAction: (action: any) => {
     const { trainingActive, trainingEngine, trainingScenario } = get();
@@ -1589,12 +1639,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         set({ 
           trainingCompleted: true, 
           trainingActive: false,
+          tutorialHighlight: null,
           trainingScore: summary.score 
         });
         progressManager.completeLesson(trainingScenario.id, summary.score.total);
       } else {
+        const nextIndex = get().trainingStepIndex + 1;
+        const nextStep = trainingScenario.steps[nextIndex];
+        const highlight = nextStep ? getTrainingHighlight(nextStep) : null;
         set({ 
           trainingStepIndex: get().trainingStepIndex + 1,
+          tutorialHighlight: highlight,
           tutorialHint: null
         });
       }
@@ -1995,6 +2050,17 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
+    // 5b. Active Training Lesson Auto-Verification (e.g. verify_fma)
+    if (state.trainingActive && state.trainingEngine && state.trainingScenario) {
+      const currentStep = state.trainingScenario.steps[state.trainingStepIndex];
+      if (currentStep?.expectedAction?.type === 'verify_fma') {
+        const isValid = state.trainingEngine.validateState(state, currentStep.stateValidation || []);
+        if (isValid) {
+          get().processTrainingAction({ type: 'verify_fma', mode: currentStep.expectedAction.mode });
+        }
+      }
+    }
+
     // 4. Alerts
     if (anp > rnp) {
       alertBus.addAlert({ id: 'unable-rnp', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', clearable: false });
@@ -2105,27 +2171,6 @@ useConnectionStore.subscribe((state) => {
   });
 });
 
-// Synchronize training/tutorial from TrainingStore
-useTrainingStore.subscribe((state) => {
-  useFMCStore.setState({
-    tutorialActive: state.tutorialActive,
-    tutorialScenario: state.tutorialScenario,
-    tutorialStepIndex: state.tutorialStepIndex,
-    tutorialCompleted: state.tutorialCompleted,
-    tutorialHighlight: state.tutorialHighlight,
-    tutorialErrors: state.tutorialErrors,
-    tutorialStartTime: state.tutorialStartTime,
-    tutorialHint: state.tutorialHint,
-    tutorialSkipAvailable: state.tutorialSkipAvailable,
-    tutorialHintLevel: state.tutorialHintLevel,
-    trainingActive: state.trainingActive,
-    trainingScenario: state.trainingScenario,
-    trainingStepIndex: state.trainingStepIndex,
-    trainingCompleted: state.trainingCompleted,
-  });
-
-});
-
 // Start the FMS Ecosystem tick (1Hz)
 if (typeof window !== 'undefined') {
   setInterval(() => {
@@ -2137,6 +2182,5 @@ if (typeof window !== 'undefined') {
   (window as any).useAircraftStore = useAircraftStore;
   (window as any).useAutopilotStore = useAutopilotStore;
   (window as any).useConnectionStore = useConnectionStore;
-  (window as any).useTrainingStore = useTrainingStore;
   (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
 }

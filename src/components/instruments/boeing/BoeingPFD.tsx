@@ -11,8 +11,21 @@ import { buildPfdDisplayModel } from '@shared';
 
 export function BoeingPFD() {
   const aircraftState = useAircraftStore(s => s.aircraftState);
-  const autopilot = useAutopilotStore(s => s);
-  const fmc = useFMCStore(s => s);
+  const autopilot = useAutopilotStore(s => ({
+    boeing: s.boeing,
+    truth: s.truth,
+  }), (a, b) => a.boeing === b.boeing && a.truth === b.truth);
+  const fmc = useFMCStore(s => ({
+    aircraft: s.aircraft,
+    gpwsAlert: s.gpwsAlert,
+    tcasAlert: s.tcasAlert,
+    position: s.position,
+  }), (a, b) => 
+    a.aircraft === b.aircraft && 
+    a.gpwsAlert === b.gpwsAlert && 
+    a.tcasAlert === b.tcasAlert && 
+    a.position?.irsState === b.position?.irsState
+  );
   
   // Aggregate state for the builder (legacy compatibility for now)
   const aggregatedState = {

@@ -309,13 +309,17 @@ describe('renderPerfApprGrid', () => {
     expect(text).toContain('FULL');
   });
 
-  it('shows selectable markers for QNH and WIND', () => {
+  it('shows selectable markers for approach fields', () => {
     const state = createBaseState({ aircraft: 'AIRBUS_A320' });
     const data = renderPerfApprGrid(state);
     const text = toGridText(data);
 
     expect(text).toContain('< QNH');
     expect(text).toContain('< WIND');
+    expect(text).toContain('< TEMP');
+    expect(text).toContain('< MDA');
+    expect(text).toContain('< DH');
+    expect(text).toContain('< LDG CONF');
   });
 
   it('renders LDG CONF in green', () => {
@@ -347,11 +351,11 @@ describe('renderPerfApprGrid', () => {
 
     expect(data.lskActions).toEqual({
       L1: 'set_qnh',
-      L2: null,
-      L3: null,
-      L4: null,
-      L5: 'set_wind',
-      L6: null,
+      L2: 'set_landing_temp',
+      L3: 'set_landing_wind',
+      L4: 'set_mda',
+      L5: 'set_dh',
+      L6: 'toggle_ldg_conf',
       R1: null,
       R2: null,
       R3: null,
@@ -380,15 +384,15 @@ describe('renderPerfApprGrid', () => {
     expect(lines[0]).toContain('APPR');
     expect(lines[1]).toContain('< QNH');
     expect(lines[2]).toContain('1013');
-    expect(lines[3]).toContain('TEMP');
+    expect(lines[3]).toContain('< TEMP');
     expect(lines[4]).toContain('15°C');
     expect(lines[5]).toContain('< WIND');
     expect(lines[6]).toContain('---/---');
-    expect(lines[7]).toContain('MDA');
+    expect(lines[7]).toContain('< MDA');
     expect(lines[8]).toContain('----');
-    expect(lines[9]).toContain('DH');
+    expect(lines[9]).toContain('< DH');
     expect(lines[10]).toContain('----');
-    expect(lines[11]).toContain('LDG CONF');
+    expect(lines[11]).toContain('< LDG CONF');
     expect(lines[12]).toContain('FULL');
   });
 });

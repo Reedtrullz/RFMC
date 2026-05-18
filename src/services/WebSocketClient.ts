@@ -94,7 +94,6 @@ class WebSocketClient {
 
   private scheduleReconnect() {
     if (this.reconnectTimer) return;
-    if (this.reconnectAttempts > 5) return;
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
 

@@ -4,7 +4,6 @@ import { useWebSocket } from '../../../hooks/useWebSocket';
 import { useFMCStore } from '../../../store/useFMCStore';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
-import { useTrainingStore } from '../../../store/trainingStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
 import type { CDUKey } from '@shared';
 import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
@@ -22,8 +21,8 @@ export function Boeing737CDU() {
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useConnectionStore(s => s.connectionMode);
   const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const tutorialHighlight = useTrainingStore(s => s.tutorialHighlight);
-  const tutorialHintLevel = useTrainingStore(s => s.tutorialHintLevel);
+  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
+  const tutorialHintLevel = useFMCStore(s => s.tutorialHintLevel);
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
   const displayData = useFMCStore(s => s.getDisplayData());

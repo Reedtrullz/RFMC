@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
-import { useTrainingStore } from '../../store/trainingStore';
 import { useAlertStore } from '../../store/alertStore';
 import type { FMCState } from '@shared';
 import { buildLnavState, buildPerformancePrediction, buildVnavPrediction } from '@shared';
@@ -21,9 +20,9 @@ export function FmsInspector() {
    const navPerformance = useAircraftStore((s: any) => s.navPerformance);
    const scratchpadMessages = useFMCStore((s: any) => s.scratchpadMessages);
    
-   const activeScenario = useTrainingStore((s: any) => s.activeScenario);
-   const debriefMode = useTrainingStore((s: any) => s.debriefMode);
-   const setDebriefMode = useTrainingStore((s: any) => s.setDebriefMode);
+   const activeScenario = useFMCStore((s: any) => s.activeScenario);
+   const debriefMode = useFMCStore((s: any) => s.debriefMode);
+   const setDebriefMode = useFMCStore((s: any) => s.setDebriefMode);
   
   const addMessage = useAlertStore(s => s.addMessage);
   const receiveAtsuMessage = useAlertStore(s => s.receiveAtsuMessage);
@@ -233,7 +232,7 @@ export function FmsInspector() {
               </div>
 
               <button 
-                onClick={() => useTrainingStore.setState({ isReportVisible: true })}
+                onClick={() => useFMCStore.setState({ isReportVisible: true })}
                 className="w-full mt-2 bg-cdu-cyan text-black font-black p-2 rounded-sm text-[9px] uppercase hover:bg-cdu-cyan/80 transition-colors"
               >
                 Finish & Debrief
@@ -248,7 +247,7 @@ export function FmsInspector() {
                   if (s) {
                     scenarioEngine.loadScenario(s as any);
                     scenarioEngine.start();
-                    useTrainingStore.setState({ activeScenario: { ...s } });
+                    useFMCStore.setState({ activeScenario: { ...s } });
                   }
                 }}
                 defaultValue=""

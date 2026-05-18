@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface AltitudeTapeProps {
   altitude: number;
   targetAltitude: number | null;
@@ -5,7 +7,7 @@ interface AltitudeTapeProps {
   managed?: boolean;
 }
 
-export function AltitudeTape({ altitude, targetAltitude, variant = 'boeing', managed = false }: AltitudeTapeProps) {
+export const AltitudeTape = React.memo(function AltitudeTape({ altitude, targetAltitude, variant = 'boeing', managed = false }: AltitudeTapeProps) {
   const pixelsPerFoot = 0.2;
   const bugColor = variant === 'airbus' ? '#39ffef' : '#ff00ff';
   const readoutColor = variant === 'airbus' ? '#ffd400' : '#00ff44';
@@ -19,7 +21,7 @@ export function AltitudeTape({ altitude, targetAltitude, variant = 'boeing', man
       {managed && (
         <div className="absolute left-1 top-2 z-20 h-2 w-2 rounded-full bg-[#39ffef] shadow-[0_0_6px_#39ffef]" aria-label="managed altitude" />
       )}
-      <div className="absolute w-full" style={{ transform: `translateY(${altitude * pixelsPerFoot}px)` }}>
+      <div className="absolute w-full" style={{ transform: `translate3d(0, ${altitude * pixelsPerFoot}px, 0)`, willChange: 'transform' }}>
         {[...Array(50)].map((_, i) => {
           const val = i * 500;
           const y = -val * pixelsPerFoot;
@@ -63,4 +65,4 @@ export function AltitudeTape({ altitude, targetAltitude, variant = 'boeing', man
       </div>
     </div>
   );
-}
+});

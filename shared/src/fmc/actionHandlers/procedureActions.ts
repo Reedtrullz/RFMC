@@ -1,5 +1,6 @@
 import type { FMCState } from '../../types/fmc';
 import type { FmcActionResult } from './actionResult';
+import { NAV_CACHE } from '../navDatabase';
 
 export function handleProcedureAction(
   action: string,
@@ -18,6 +19,17 @@ export function handleProcedureAction(
 function handleSetSid(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
+
+  if (route.origin) {
+    const cachedProcedures = NAV_CACHE.procedures[route.origin.toUpperCase()];
+    if (cachedProcedures && cachedProcedures.length > 0) {
+      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'SID');
+      if (!exists) {
+        return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_sid' } };
+      }
+    }
+  }
+
   return {
     handled: true,
     success: {
@@ -40,6 +52,17 @@ function handleSetRwy(state: FMCState, scratchpad: string): FmcActionResult {
     };
   }
   const route = state.pendingRoute ?? state.route;
+
+  if (route.origin) {
+    const cachedAirport = NAV_CACHE.airports[route.origin.toUpperCase()];
+    if (cachedAirport && cachedAirport.runways) {
+      const exists = cachedAirport.runways.some(r => r.toUpperCase() === scratchpad.toUpperCase());
+      if (!exists) {
+        return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_rwy' } };
+      }
+    }
+  }
+
   return {
     handled: true,
     success: {
@@ -55,6 +78,17 @@ function handleSetRwy(state: FMCState, scratchpad: string): FmcActionResult {
 function handleSetStar(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
+
+  if (route.destination) {
+    const cachedProcedures = NAV_CACHE.procedures[route.destination.toUpperCase()];
+    if (cachedProcedures && cachedProcedures.length > 0) {
+      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'STAR');
+      if (!exists) {
+        return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_star' } };
+      }
+    }
+  }
+
   return {
     handled: true,
     success: {
@@ -71,6 +105,17 @@ function handleSetStar(state: FMCState, scratchpad: string): FmcActionResult {
 function handleSetAppr(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
+
+  if (route.destination) {
+    const cachedProcedures = NAV_CACHE.procedures[route.destination.toUpperCase()];
+    if (cachedProcedures && cachedProcedures.length > 0) {
+      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'APPROACH');
+      if (!exists) {
+        return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_appr' } };
+      }
+    }
+  }
+
   return {
     handled: true,
     success: {

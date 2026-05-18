@@ -4,7 +4,6 @@ import { useWebSocket } from '../../../hooks/useWebSocket';
 import { useFMCStore } from '../../../store/useFMCStore';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
-import { useTrainingStore } from '../../../store/trainingStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
 import type { CDUKey } from '@shared';
 import { AirbusMCDUShell } from './AirbusMCDUShell';
@@ -21,7 +20,7 @@ export function AirbusMCDU() {
   const execLit = useFMCStore(s => s.execLit);
   const connectionMode = useConnectionStore(s => s.connectionMode);
   const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const tutorialHighlight = useTrainingStore(s => s.tutorialHighlight);
+  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const { send } = useWebSocket();
 

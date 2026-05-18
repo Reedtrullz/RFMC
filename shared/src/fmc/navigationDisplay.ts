@@ -635,8 +635,19 @@ function buildBackgroundPoints(
   const activeIdents = new Set(activeRouteItems.map(item => item.ident));
   const points: NDRoutePoint[] = [];
 
+  const aircraftLat = context.aircraftPosition.lat;
+  const aircraftLon = context.aircraftPosition.lon;
+  const maxDistNm = context.rangeNm + 50;
+  const maxDeltaLat = maxDistNm / 60;
+  const cosLat = Math.cos(Math.max(-75, Math.min(75, aircraftLat)) * Math.PI / 180);
+  const maxDeltaLon = maxDistNm / (60 * Math.max(0.1, cosLat));
+
   Object.entries(db).forEach(([ident, pos], index) => {
     if (activeIdents.has(ident)) return;
+
+    const dLat = Math.abs(pos.lat - aircraftLat);
+    const dLon = Math.abs(pos.lon - aircraftLon);
+    if (dLat > maxDeltaLat || dLon > maxDeltaLon) return;
 
     const projected = projectGeoPointToND(pos, context);
     if (projected && projected.visible) {

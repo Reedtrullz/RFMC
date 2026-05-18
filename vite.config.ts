@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['fonts/*.ttf', 'icons/*.png', 'images/*.svg'],
       manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf,json}'],
         navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         runtimeCaching: [
           {
@@ -21,6 +21,20 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
