@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-17
-**Commit:** 5f46b79
+**Generated:** 2026-05-18
+**Commit:** bce5ccd
 **Branch:** main
 **Project:** VirtualCDU — Boeing 737 NG FMC Trainer
 **Stack:** React 18 + TypeScript + Vite + Zustand (frontend), Node.js + Express + WebSocket (backend), TypeScript shared
@@ -87,7 +87,7 @@ npm run dev           # Vite dev server :5173
 npm run server        # Node.js WS bridge :8080
 npm run build         # Vite build to dist/
 npm run typecheck:all # TypeScript check all workspaces
-npm run test          # Vitest unit tests (752 pass, 55 files)
+npm run test          # Vitest unit tests (793 pass, 62 files)
 npm run test:e2e      # Playwright e2e (all)
 npm run test:e2e:ci   # Playwright CI smoke (@smoke)
 npm run test:e2e:visual # Visual regression
@@ -100,7 +100,10 @@ npm run capture:baseline   # Capture Playwright baselines
 - `docs/STATUS.md` — current validation status (don't copy test counts to README)
 - `docs/ARCHITECTURE.md` — system architecture and design decisions
 - `docs/IMPLEMENTATION_STATUS.md` — recent changes and transitional state
-- 520 total files, ~40k lines of code, depth 5 max
-- 7 files >500 lines (useFMCStore.ts is largest at 2,056 lines)
+- 962 total files, ~58k lines of code, depth 5 max
+- 9 files >500 lines (useFMCStore.ts is largest at 2,056 lines)
 - Monorepo with npm workspaces, not Turborepo/pnpm
 - `shared/src/fmc/actionHandlers/` — 18 extracted LSK handler modules (store extraction complete)
+- CI: GitHub Actions (typecheck + unit + e2e + Docker build), VPS deploy via Ansible
+- Coverage threshold: 50% (Vitest, v8 provider)
+- No ESLint/Prettier config — inconsistent project-wide lint/style enforcement

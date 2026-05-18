@@ -49,6 +49,7 @@
   grid-template-areas: "cduslot";
   grid-template-columns: minmax(480px, 680px);
   grid-template-rows: 1fr;
+  width: auto;
 }
 
 .cockpit-stage--navigation {
@@ -63,7 +64,7 @@
     "mcpslot mcpslot"
     "pfdslot ndslot";
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: clamp(140px, 18vh, 240px) 1fr;
+  grid-template-rows: clamp(180px, 22vh, 320px) 1fr;
   max-width: 100%;
 }
 
@@ -72,17 +73,16 @@
     "mcpslot mcpslot"
     "pfdslot ndslot";
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: clamp(130px, 16vh, 230px) 1fr;
+  grid-template-rows: clamp(160px, 20vh, 290px) 1fr;
   max-width: 100%;
 }
 
 .cockpit-stage--full-deck {
   grid-template-areas:
-    "mcpslot mcpslot"
-    "pfdslot ndslot"
-    "cduslot cduslot";
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: clamp(130px, 16vh, 220px) 1fr 340px;
+    "mcpslot mcpslot mcpslot"
+    "pfdslot ndslot cduslot";
+  grid-template-columns: 1fr 1fr 1.2fr;
+  grid-template-rows: clamp(160px, 20vh, 280px) 1fr;
   max-width: 100%;
 }
 
@@ -160,7 +160,9 @@
 
 .cockpit-mcp-slot {
   width: 100%;
+  height: 100%;
   justify-self: stretch;
+  align-self: stretch;
   align-items: flex-start;
   padding: 0 12px;
 }
@@ -265,13 +267,11 @@
 
   .cockpit-stage--automation,
   .cockpit-stage--approach {
-    grid-template-rows: 360px minmax(880px, 1fr);
-    max-width: min(82vw, 2700px);
+    max-width: 100%;
   }
 
   .cockpit-stage--full-deck {
-    grid-template-rows: 340px minmax(760px, 1fr) 850px;
-    max-width: min(84vw, 2850px);
+    max-width: 100%;
   }
 
   .cockpit-mcp-slot {
@@ -282,16 +282,14 @@
 @media (min-width: 1600px) and (max-width: 2199px) and (min-height: 1000px) {
   .cockpit-stage--automation,
   .cockpit-stage--approach {
-    grid-template-rows: 190px minmax(600px, 1fr);
-    max-width: 1900px;
+    max-width: 100%;
   }
 
   .cockpit-stage--full-deck {
-    grid-template-rows: 160px minmax(400px, 1fr) 330px;
-    max-width: 1900px;
+    max-width: 100%;
   }
 
   .cockpit-stage--navigation {
-    max-width: 1800px;
+    max-width: 100%;
   }
 }
