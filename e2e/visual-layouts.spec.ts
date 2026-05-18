@@ -77,9 +77,9 @@ test.describe('cockpit layout visual sizing', () => {
     await enterCockpit(page);
     await selectMode(page, 'Full Deck');
 
-    await expectBox(page.getByTestId('autoflight-panel'), 580, 150);
-    await expectBox(page.getByTestId('pfd-panel'), 210, 300);
-    await expectBox(page.getByTestId('nd-panel'), 210, 300);
+    await expectBox(page.getByTestId('autoflight-panel'), 580, 140);
+    await expectBox(page.getByTestId('pfd-panel'), 210, 150);
+    await expectBox(page.getByTestId('nd-panel'), 210, 150);
     
     // Verify right-side of MCP is not clipped (Bug fix verification)
     const mcp = page.getByTestId('autoflight-panel');

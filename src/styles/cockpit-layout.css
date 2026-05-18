@@ -63,8 +63,8 @@
     "mcpslot mcpslot"
     "pfdslot ndslot";
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 160px 1fr;
-  max-width: 1600px;
+  grid-template-rows: clamp(140px, 18vh, 240px) 1fr;
+  max-width: 100%;
 }
 
 .cockpit-stage--approach {
@@ -72,8 +72,8 @@
     "mcpslot mcpslot"
     "pfdslot ndslot";
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 140px 1fr;
-  max-width: 1600px;
+  grid-template-rows: clamp(130px, 16vh, 230px) 1fr;
+  max-width: 100%;
 }
 
 .cockpit-stage--full-deck {
@@ -82,8 +82,8 @@
     "pfdslot ndslot"
     "cduslot cduslot";
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 140px 1fr 340px;
-  max-width: 1600px;
+  grid-template-rows: clamp(130px, 16vh, 220px) 1fr 340px;
+  max-width: 100%;
 }
 
 .cockpit-stage--free-practice {
