@@ -39,6 +39,7 @@ export interface EFISState {
   };
   centered: boolean;      // 737 CTR toggle
   side: 'L' | 'R';
+  tcasMode?: 'ABOVE' | 'BELOW' | 'NORMAL';
 }
 
 export type IrsState =
