@@ -16,13 +16,13 @@ export class LegSequencer {
     // Map FlightPlanWaypoint to FmsLeg for the engine
     const currentFmsLeg: FmsLeg = {
       type: (currentLeg.legType as any) || 'TF',
-      to: { ident: currentLeg.ident, lat: currentLeg.lat || 0, lon: currentLeg.lon || 0, type: 'WAYPOINT' },
+      to: { ident: currentLeg.ident, lat: currentLeg.lat!, lon: currentLeg.lon!, type: 'WAYPOINT' },
       altitudeConstraintFt: currentLeg.altitudeConstraint?.altitude,
     };
  
     const nextFmsLeg: FmsLeg | undefined = nextLeg ? {
       type: (nextLeg.legType as any) || 'TF',
-      to: { ident: nextLeg.ident, lat: nextLeg.lat || 0, lon: nextLeg.lon || 0, type: 'WAYPOINT' },
+      to: { ident: nextLeg.ident, lat: nextLeg.lat!, lon: nextLeg.lon!, type: 'WAYPOINT' },
       altitudeConstraintFt: nextLeg.altitudeConstraint?.altitude,
     } : undefined;
  
@@ -64,5 +64,19 @@ export class LegSequencer {
     }
 
     return { ok: true };
+  }
+
+  public static findLegIndex(
+    waypoints: FlightPlanWaypoint[],
+    ident: string,
+    currentLegIndex: number
+  ): number {
+    const normalized = ident.toUpperCase();
+    for (let i = currentLegIndex; i < waypoints.length; i++) {
+      if (!waypoints[i].discontinuity && waypoints[i].ident.toUpperCase() === normalized) {
+        return i;
+      }
+    }
+    return -1;
   }
 }

@@ -132,6 +132,8 @@ export function enrichRouteCoordinates(waypoints: FlightPlanWaypoint[], origin?:
       wp.lat = coords.lat;
       wp.lon = coords.lon;
       wp.coordinateSource = 'navdb';
+    } else if (!wp.discontinuity) {
+      wp.coordinateSource = 'UNRESOLVED';
     }
   });
 }

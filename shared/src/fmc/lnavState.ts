@@ -25,7 +25,8 @@ export interface LnavState {
 export function buildLnavState(state: FMCState): LnavState {
   const waypoints = state.flightPlan.waypoints;
   const destination = findDestination(waypoints, state.flightPlan.destination || state.route.destination || null);
-  const directToIndex = findDirectToIndex(waypoints, state.route.directTo);
+  const currentLegIndex = findFirstActiveIndex(waypoints) ?? 0;
+  const directToIndex = findDirectToIndex(waypoints, state.route.directTo, currentLegIndex);
   const firstDiscontinuityIndex = waypoints.findIndex((waypoint) => waypoint.discontinuity);
   const activeLegIndex = directToIndex ?? findFirstActiveIndex(waypoints);
   const activeWaypoint = activeLegIndex === null ? null : toSummary(waypoints[activeLegIndex], activeLegIndex);
@@ -66,14 +67,19 @@ export function buildLnavState(state: FMCState): LnavState {
   };
 }
 
-function findDirectToIndex(waypoints: FlightPlanWaypoint[], directTo?: string): number | null {
+function findDirectToIndex(waypoints: FlightPlanWaypoint[], directTo?: string, currentLegIndex = 0): number | null {
   if (!directTo) return null;
   const normalizedDirectTo = directTo.toUpperCase();
-  const index = waypoints.findIndex((waypoint) => (
-    !waypoint.discontinuity &&
-    waypoint.ident.toUpperCase() === normalizedDirectTo
-  ));
-  return index >= 0 ? index : null;
+  for (let i = currentLegIndex; i < waypoints.length; i++) {
+    const waypoint = waypoints[i];
+    if (
+      !waypoint.discontinuity &&
+      waypoint.ident.toUpperCase() === normalizedDirectTo
+    ) {
+      return i;
+    }
+  }
+  return null;
 }
 
 function findFirstActiveIndex(waypoints: FlightPlanWaypoint[]): number | null {

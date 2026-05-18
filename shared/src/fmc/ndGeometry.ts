@@ -11,6 +11,20 @@ export interface LatLon {
  * Calculates the Great Circle distance between two points in Nautical Miles
  */
 export function distanceNm(p1: LatLon, p2: LatLon): number {
+  if (
+    !p1 ||
+    !p2 ||
+    p1.lat === undefined ||
+    p1.lon === undefined ||
+    p2.lat === undefined ||
+    p2.lon === undefined ||
+    isNaN(p1.lat) ||
+    isNaN(p1.lon) ||
+    isNaN(p2.lat) ||
+    isNaN(p2.lon)
+  ) {
+    return 0;
+  }
   const R = 3440.065; // Earth radius in NM
   const dLat = (p2.lat - p1.lat) * Math.PI / 180;
   const dLon = (p2.lon - p1.lon) * Math.PI / 180;

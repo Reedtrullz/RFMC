@@ -40,6 +40,18 @@ export class FmsRuntimeEngine {
           ...state.flightPlan,
           waypoints: state.flightPlan.waypoints.slice(1)
         };
+        if (state.route.directTo) {
+          updates.route = {
+            ...state.route,
+            directTo: undefined
+          };
+        }
+        if (state.pendingRoute?.directTo) {
+          updates.pendingRoute = {
+            ...state.pendingRoute,
+            directTo: undefined
+          };
+        }
         // Also update performance engine with the change if needed
         console.log(`Sequencing: ${reason}`);
       }
