@@ -16,23 +16,23 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
     <g>
       {/* Mode and Range (Top Left) */}
       <g transform="translate(4 6)" fontSize="3.5" fill={colors.active} fontWeight="bold">
-        <text>{model.mode} {model.centered ? 'CTR' : ''}</text>
+        <text stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{model.mode} {model.centered ? 'CTR' : ''}</text>
       </g>
 
       <g transform="translate(50 6)" fontSize="3.2" fill={colors.text} fontWeight="bold" textAnchor="middle">
-        <text>{isAirbus ? 'AIRBUS' : 'BOEING'}</text>
+        <text stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{isAirbus ? 'AIRBUS' : 'BOEING'}</text>
       </g>
 
       {model.procedureLabel && model.procedureLabel !== 'NO PROC' && (
         <g transform="translate(50 11)" fontSize="3" fill={colors.magenta} fontWeight="bold" textAnchor="middle">
-          <text>{model.procedureLabel}</text>
+          <text stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{model.procedureLabel}</text>
         </g>
       )}
       
       {/* Range (Top Right) - Airbus only */}
       {isAirbus && (
         <g transform="translate(96 6)" fontSize="3.5" fill={colors.active} fontWeight="bold" textAnchor="end">
-          <text>{model.range}</text>
+          <text stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{model.range}</text>
         </g>
       )}
  
@@ -45,6 +45,10 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
             fontSize="3.2"
             letterSpacing="0.15em"
             fontWeight="900"
+            stroke="black"
+            strokeWidth="0.4"
+            paintOrder="stroke"
+            strokeLinejoin="round"
           >
             {model.anchorZones.waypointBlock.ident}
           </text>
@@ -56,6 +60,10 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
             fontSize="3.2"
             letterSpacing="0.05em"
             fontWeight="900"
+            stroke="black"
+            strokeWidth="0.4"
+            paintOrder="stroke"
+            strokeLinejoin="round"
           >
             {model.anchorZones.waypointBlock.eta.replace(':', '').replace('z', '')}.8z
           </text>
@@ -67,6 +75,10 @@ export function ModeAnnunciations({ model }: ModeAnnunciationsProps) {
             fontSize="3.2"
             letterSpacing="0.05em"
             fontWeight="900"
+            stroke="black"
+            strokeWidth="0.4"
+            paintOrder="stroke"
+            strokeLinejoin="round"
           >
             {model.anchorZones.waypointBlock.dist.toFixed(1)} NM
           </text>

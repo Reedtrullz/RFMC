@@ -9,6 +9,13 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
   const radius = 45;
   const rotation = model.mode === 'PLN' ? 0 : -model.heading;
 
+  const time = typeof window !== 'undefined' ? Date.now() / 2000 : 0;
+  const locShift = Math.sin(time) * 4;
+  const gsShift = Math.cos(time * 0.8) * 8;
+
+  const ly = cy + radius + 2;
+  const gx = 92;
+
   return (
     <g>
       <g transform={`rotate(${rotation} 50 ${cy})`}>
@@ -104,10 +111,71 @@ export function BoeingHeadingArc({ model }: BoeingHeadingArcProps) {
       )}
 
       {/* Selected Course Line (Magenta) */}
-      {model.selectedCourse !== null && (
+      {model.selectedCourse !== null && model.mode !== 'VOR' && (
         <g transform={`rotate(${model.selectedCourse - model.heading} 50 ${cy})`}>
           <line x1="50" y1={cy - radius} x2="50" y2={cy + radius} stroke="#ff00ff" strokeWidth="0.8" strokeDasharray="4 4" />
           <path d="M48 39 L52 39 L50 35 Z" fill="#ff00ff" />
+        </g>
+      )}
+
+      {model.mode === 'VOR' && (
+        <g>
+          <circle cx="42" cy={cy} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx="46" cy={cy} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx="50" cy={cy} r="0.5" fill="#ffffff" opacity="0.4" />
+          <circle cx="54" cy={cy} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx="58" cy={cy} r="0.7" fill="#ffffff" opacity="0.75" />
+
+          {model.selectedCourse !== null && (
+            <g transform={`rotate(${model.selectedCourse - model.heading} 50 ${cy})`}>
+              <path d={`M 50 ${cy - radius + 1} L 53 ${cy - radius + 8} L 47 ${cy - radius + 8} Z`} fill="#00ff66" />
+              <line x1="50" y1={cy - radius + 8} x2="50" y2={cy - radius * 0.35} stroke="#00ff66" strokeWidth="0.8" />
+              <line 
+                x1={50 + 2.5} 
+                y1={cy - radius * 0.35} 
+                x2={50 + 2.5} 
+                y2={cy + radius * 0.35} 
+                stroke="#00ff66" 
+                strokeWidth="1.3" 
+              />
+              <line x1="50" y1={cy + radius * 0.35} x2="50" y2={cy + radius - 5} stroke="#00ff66" strokeWidth="0.8" />
+              <line x1="50" y1={cy + radius - 5} x2="50" y2={cy + radius} stroke="#00ff66" strokeWidth="1.6" />
+            </g>
+          )}
+        </g>
+      )}
+
+      {model.mode === 'APP' && (
+        <g>
+          <line x1="38" y1={ly} x2="62" y2={ly} stroke="#ffffff" strokeWidth="0.4" opacity="0.4" />
+          <circle cx="42" cy={ly} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx="46" cy={ly} r="0.7" fill="#ffffff" opacity="0.75" />
+          <line x1="50" y1={ly - 1.5} x2="50" y2={ly + 1.5} stroke="#ffffff" strokeWidth="0.6" opacity="0.8" />
+          <circle cx="54" cy={ly} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx="58" cy={ly} r="0.7" fill="#ffffff" opacity="0.75" />
+
+          <polygon 
+            points={`${50 + locShift},${ly - 2} ${50 + locShift + 2},${ly} ${50 + locShift},${ly + 2} ${50 + locShift - 2},${ly}`} 
+            fill="#ff00ff" 
+            stroke="#000000" 
+            strokeWidth="0.2" 
+            filter="url(#boeing-glow)"
+          />
+
+          <line x1={gx} y1={cy - 18} x2={gx} y2={cy + 18} stroke="#ffffff" strokeWidth="0.4" opacity="0.4" />
+          <circle cx={gx} cy={cy - 12} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx={gx} cy={cy - 6} r="0.7" fill="#ffffff" opacity="0.75" />
+          <line x1={gx - 1.5} y1={cy} x2={gx + 1.5} y2={cy} stroke="#ffffff" strokeWidth="0.6" opacity="0.8" />
+          <circle cx={gx} cy={cy + 6} r="0.7" fill="#ffffff" opacity="0.75" />
+          <circle cx={gx} cy={cy + 12} r="0.7" fill="#ffffff" opacity="0.75" />
+
+          <polygon 
+            points={`${gx},${cy + gsShift - 2} ${gx + 2},${cy + gsShift} ${gx},${cy + gsShift + 2} ${gx - 2},${cy + gsShift}`} 
+            fill="#ff00ff" 
+            stroke="#000000" 
+            strokeWidth="0.2" 
+            filter="url(#boeing-glow)"
+          />
         </g>
       )}
 

@@ -20,15 +20,15 @@ export function WindVector({ model }: WindVectorProps) {
   return (
     <g transform="translate(4 6)" className="select-none" filter="url(#boeing-glow)">
       {/* Speed Block on a single row */}
-      <text fill="#ffffff" fontSize="3.4" letterSpacing="0.1" className="font-mono font-bold">
-        GS <tspan fill="#ffffff" className="font-mono font-black">{displayGs}</tspan>
+      <text fill="#ffffff" fontSize="3.4" letterSpacing="0.1" className="font-mono font-bold" stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">
+        GS <tspan fill="#ffffff" className="font-mono font-black" stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{displayGs}</tspan>
         {"   "}
-        TAS <tspan fill="#ffffff" className="font-mono font-black">{displayTas}</tspan>
+        TAS <tspan fill="#ffffff" className="font-mono font-black" stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">{displayTas}</tspan>
       </text>
 
       {/* Wind Block */}
       <g transform="translate(0 4.6)">
-        <text fill="#ffffff" fontSize="3.3" fontWeight="bold" letterSpacing="0.1" className="font-avionics">
+        <text fill="#ffffff" fontSize="3.3" fontWeight="bold" letterSpacing="0.1" className="font-avionics" stroke="black" strokeWidth="0.4" paintOrder="stroke" strokeLinejoin="round">
           {displayWindDir.toString().padStart(3, '0')}° / {displayWindSpeed}
         </text>
 
