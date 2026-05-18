@@ -1,35 +1,41 @@
-export class AuralAlertService {
-  private static context: AudioContext | null = null;
+import { getAudioContext, resumeAudioContext, trackNode, stopAll } from './audioContext';
 
-  private static init() {
-    if (!this.context) {
-      this.context = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
+export class AuralAlertService {
+  /**
+   * Initialize audio context and resume if suspended by autoplay policy.
+   * Safe to call multiple times — the singleton is created once.
+   */
+  public static async init(): Promise<void> {
+    getAudioContext();
+    await resumeAudioContext();
+  }
+
+  /**
+   * Stop all actively playing sounds immediately.
+   */
+  public static stopAll(): void {
+    stopAll();
   }
 
   /**
    * Boeing Caution Chime (Single Bell/Chime)
    */
   public static playBoeingCaution() {
-    this.init();
-    if (!this.context) return;
-    const t = this.context.currentTime;
-    // Boeing caution is a dual-tone chime or a single rich chime
-    this.playRichPulse(880, 0.8, t, 0.2);
-    this.playRichPulse(440, 0.8, t + 0.05, 0.1);
+    const ctx = getAudioContext();
+    const t = ctx.currentTime;
+    this.playRichPulse(ctx, 880, 0.8, t, 0.2);
+    this.playRichPulse(ctx, 440, 0.8, t + 0.05, 0.1);
   }
 
   /**
    * Boeing Warning (Cavalry Charge / Wailer)
    */
   public static playBoeingWarning() {
-    this.init();
-    if (!this.context) return;
-    // AP Disconnect or high priority warning
+    const ctx = getAudioContext();
     for (let i = 0; i < 6; i++) {
-      const t = this.context.currentTime + i * 0.3;
-      this.playRichPulse(880, 0.15, t, 0.2);
-      this.playRichPulse(1100, 0.15, t + 0.15, 0.2);
+      const t = ctx.currentTime + i * 0.3;
+      this.playRichPulse(ctx, 880, 0.15, t, 0.2);
+      this.playRichPulse(ctx, 1100, 0.15, t + 0.15, 0.2);
     }
   }
 
@@ -37,19 +43,17 @@ export class AuralAlertService {
    * Airbus Single Chime (Caution)
    */
   public static playAirbusCaution() {
-    this.init();
-    if (!this.context) return;
-    this.playRichPulse(580, 0.8, this.context.currentTime, 0.25);
+    const ctx = getAudioContext();
+    this.playRichPulse(ctx, 580, 0.8, ctx.currentTime, 0.25);
   }
 
   /**
    * Airbus Continuous Chime (Warning)
    */
   public static playAirbusWarning(durationSec: number = 3) {
-    this.init();
-    if (!this.context) return;
+    const ctx = getAudioContext();
     for (let i = 0; i < durationSec * 2; i++) {
-      this.playRichPulse(580, 0.4, this.context.currentTime + i * 0.5, 0.25);
+      this.playRichPulse(ctx, 580, 0.4, ctx.currentTime + i * 0.5, 0.25);
     }
   }
 
@@ -57,25 +61,24 @@ export class AuralAlertService {
    * Airbus Triple Click (FMA Change)
    */
   public static playAirbusTripleClick() {
-    this.init();
-    if (!this.context) return;
-    const t = this.context.currentTime;
+    const ctx = getAudioContext();
+    const t = ctx.currentTime;
     for (let i = 0; i < 3; i++) {
-      this.playPulse(1400, 0.04, t + i * 0.1, 0.15);
+      this.playPulse(ctx, 1400, 0.04, t + i * 0.1, 0.15);
     }
   }
 
   public static playVoice(text: string, rate: number = 1.0) {
     if (!window.speechSynthesis) return;
-    
+
     // Cancel any ongoing speech to prioritize new alerts
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = rate;
-    utterance.pitch = 0.8; // Deeper, more "cockpit" voice
+    utterance.pitch = 0.8;
     utterance.volume = 1.0;
-    
+
     // Select a male voice if available
     const voices = window.speechSynthesis.getVoices();
     const voice = voices.find(v => v.name.toLowerCase().includes('male')) || voices[0];
@@ -108,47 +111,40 @@ export class AuralAlertService {
     this.playVoice("TRAFFIC, TRAFFIC", 1.2);
   }
 
-  private static playPulse(freq: number, duration: number, time: number, volume: number = 0.15) {
-    if (!this.context) return;
-    const osc = this.context.createOscillator();
-    const gain = this.context.createGain();
+  private static playPulse(ctx: AudioContext, freq: number, duration: number, time: number, volume: number = 0.15) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, time);
     gain.gain.setValueAtTime(volume, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     osc.connect(gain);
-    gain.connect(this.context.destination);
-    osc.onended = () => {
-      osc.disconnect();
-      gain.disconnect();
-    };
+    gain.connect(ctx.destination);
+    trackNode(osc, gain);
     osc.start(time);
     osc.stop(time + duration);
   }
 
-  private static playRichPulse(freq: number, duration: number, time: number, volume: number = 0.2) {
-    if (!this.context) return;
-    
+  private static playRichPulse(ctx: AudioContext, freq: number, duration: number, time: number, volume: number = 0.2) {
     const frequencies = [freq, freq * 1.5, freq * 2];
     const gains = [1, 0.4, 0.2];
 
-    const masterGain = this.context.createGain();
+    const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(volume, time);
     masterGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-    masterGain.connect(this.context.destination);
+    masterGain.connect(ctx.destination);
 
     let finishedCount = 0;
     frequencies.forEach((f, i) => {
-      const osc = this.context!.createOscillator();
-      const gain = this.context!.createGain();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(f, time);
       gain.gain.setValueAtTime(gains[i], time);
       osc.connect(gain);
       gain.connect(masterGain);
+      trackNode(osc, gain);
       osc.onended = () => {
-        osc.disconnect();
-        gain.disconnect();
         finishedCount++;
         if (finishedCount === frequencies.length) {
           masterGain.disconnect();
@@ -166,4 +162,3 @@ export class AuralAlertService {
   public static playSingleChime() { this.playAirbusCaution(); }
   public static playContinuousChime(durationSec: number = 3) { this.playAirbusWarning(durationSec); }
 }
-
