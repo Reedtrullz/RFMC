@@ -9,6 +9,7 @@ import { AirbusNDFrame } from './frame/AirbusNDFrame';
 import { NDControls } from './NDControls';
 import { B737ND } from './renderers/B737ND';
 import { A320ND } from './renderers/A320ND';
+import { useInterpolatedTelemetry } from '../../hooks/useInterpolatedTelemetry';
 
 export interface NavigationDisplayProps {
   side?: 'L' | 'R';
@@ -17,7 +18,8 @@ export interface NavigationDisplayProps {
 export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   // Using narrow selectors to prevent unnecessary re-renders
   const aircraft = useAircraftStore(s => s.aircraft);
-  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const rawAircraftState = useAircraftStore(s => s.aircraftState);
+  const aircraftState = useInterpolatedTelemetry(rawAircraftState);
   const position = useAircraftStore(s => s.position);
   const performance = useAircraftStore(s => s.performance);
   const takeoff = useAircraftStore(s => s.takeoff);

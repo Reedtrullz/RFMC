@@ -8,9 +8,11 @@ import { AttitudeSphere } from '../common/AttitudeSphere';
 import { PfdAlerts } from '../common/PfdAlerts';
 import { VerticalSpeedIndicator } from '../common/VerticalSpeedIndicator';
 import { buildPfdDisplayModel } from '@shared';
+import { useInterpolatedTelemetry } from '../../../hooks/useInterpolatedTelemetry';
 
 export function BoeingPFD() {
-  const aircraftState = useAircraftStore(s => s.aircraftState);
+  const rawAircraftState = useAircraftStore(s => s.aircraftState);
+  const aircraftState = useInterpolatedTelemetry(rawAircraftState);
   const autopilot = useAutopilotStore(s => ({
     boeing: s.boeing,
     truth: s.truth,
