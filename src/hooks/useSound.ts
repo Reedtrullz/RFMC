@@ -1,4 +1,5 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
+import { getAudioContext, resumeAudioContext, trackNode } from '../services/audioContext';
 
 const SOUNDS = {
   keypress: { freq: 800, duration: 0.05, type: 'square' as OscillatorType, volume: 0.03 },
@@ -6,32 +7,25 @@ const SOUNDS = {
   exec: { freq: 1000, duration: 0.08, type: 'sine' as OscillatorType, volume: 0.04 },
   warning: { freq: 440, duration: 0.3, type: 'sawtooth' as OscillatorType, volume: 0.05 },
   lsk: { freq: 700, duration: 0.04, type: 'square' as OscillatorType, volume: 0.03 },
-  chime: { freq: 554.37, duration: 1.5, type: 'sine' as OscillatorType, volume: 0.08 }, // C#5
+  chime: { freq: 554.37, duration: 1.5, type: 'sine' as OscillatorType, volume: 0.08 },
 };
 
 type SoundName = keyof typeof SOUNDS;
 
 export function useSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const mutedRef = useRef(false);
 
-  useEffect(() => {
-    try {
-      ctxRef.current = new AudioContext();
-    } catch {
-      console.error('[Sound] Failed to create AudioContext');
-    }
+  if (mutedRef.current === false) {
     mutedRef.current = localStorage.getItem('cdu-muted') === 'true';
-    return () => { ctxRef.current?.close(); };
-  }, []);
+  }
 
-  const play = useCallback((name: SoundName) => {
-    if (mutedRef.current || !ctxRef.current) return;
+  const play = useCallback(async (name: SoundName) => {
+    if (mutedRef.current) return;
+
+    const ctx = getAudioContext();
+    await resumeAudioContext();
+
     const s = SOUNDS[name];
-    const ctx = ctxRef.current;
-
-    // Resume context if suspended (browser autoplay policy)
-    if (ctx.state === 'suspended') ctx.resume();
 
     if (name === 'chime') {
       [554.37, 440.00].forEach((freq, i) => {
@@ -43,10 +37,7 @@ export function useSound() {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.onended = () => {
-          osc.disconnect();
-          gain.disconnect();
-        };
+        trackNode(osc, gain);
         osc.start(ctx.currentTime + i * 0.5);
         osc.stop(ctx.currentTime + i * 0.5 + 1.2);
       });
@@ -61,10 +52,7 @@ export function useSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.onended = () => {
-      osc.disconnect();
-      gain.disconnect();
-    };
+    trackNode(osc, gain);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + s.duration);
   }, []);

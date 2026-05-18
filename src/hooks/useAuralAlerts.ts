@@ -80,18 +80,14 @@ export function useAuralAlerts() {
 
   // Global user interaction listener to resume audio context
   useEffect(() => {
-    const resume = () => {
-      // @ts-ignore - access private context to resume
-      if (AuralAlertService.context?.state === 'suspended') {
-        // @ts-ignore
-        AuralAlertService.context.resume();
-      }
+    const handleInteraction = () => {
+      AuralAlertService.init();
     };
-    window.addEventListener('click', resume, { once: true });
-    window.addEventListener('keydown', resume, { once: true });
+    window.addEventListener('click', handleInteraction, { once: true });
+    window.addEventListener('keydown', handleInteraction, { once: true });
     return () => {
-      window.removeEventListener('click', resume);
-      window.removeEventListener('keydown', resume);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
     };
   }, []);
 }
