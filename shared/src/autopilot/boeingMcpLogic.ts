@@ -70,3 +70,9 @@ export function processBoeingMCPAction(
       return {};
   }
 }
+
+export function calculateAltStarCaptureVs(vsEntry: number, deltaH: number, k = 0.005): number {
+  const absDeltaH = Math.abs(deltaH);
+  if (absDeltaH <= 20) return 0;
+  return Math.round(vsEntry * (1 - Math.exp(-k * absDeltaH)));
+}

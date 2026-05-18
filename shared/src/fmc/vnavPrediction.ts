@@ -61,14 +61,42 @@ export function buildVnavPrediction(state: FMCState): VnavPrediction {
     };
   }
 
-  const phase = inferPhase(currentAltitudeFt, cruiseAltitudeFt, lnav.distanceToDestinationNm);
+  let clampedCruiseAltitude: number | null = cruiseAltitudeFt;
+  if (cruiseAltitudeFt !== null && currentAltitudeFt !== null && lnav.distanceToDestinationNm !== null) {
+    const totalDist = lnav.distanceToDestinationNm;
+    const climbDist = Math.max(0, (cruiseAltitudeFt - currentAltitudeFt) / DESCENT_PROFILE_FT_PER_NM);
+    const descentDist = Math.max(0, cruiseAltitudeFt / DESCENT_PROFILE_FT_PER_NM);
+    
+    if (totalDist < climbDist + descentDist) {
+      const peakAltitude = (totalDist * DESCENT_PROFILE_FT_PER_NM + currentAltitudeFt) / 2;
+      clampedCruiseAltitude = Math.max(currentAltitudeFt, Math.min(cruiseAltitudeFt, peakAltitude));
+      
+      let maxConstraintAlt = 0;
+      for (const wp of state.flightPlan.waypoints) {
+        if (wp.altitudeConstraint) {
+          const alt1 = wp.altitudeConstraint.altitude;
+          const alt2 = wp.altitudeConstraint.altitude2 ?? 0;
+          const maxAlt = Math.max(alt1, alt2);
+          if (maxAlt > maxConstraintAlt) {
+            maxConstraintAlt = maxAlt;
+          }
+        }
+      }
+      if (maxConstraintAlt > 0) {
+        clampedCruiseAltitude = Math.min(cruiseAltitudeFt, Math.max(clampedCruiseAltitude, maxConstraintAlt));
+      }
+    }
+  }
+
+  const phase = inferPhase(currentAltitudeFt, clampedCruiseAltitude !== null ? clampedCruiseAltitude : cruiseAltitudeFt, lnav.distanceToDestinationNm);
   const nextConstraint = predictNextConstraint(state, lnav.activeLegIndex, currentAltitudeFt, groundSpeedKt);
   const distanceToDestinationNm = lnav.distanceToDestinationNm;
-  const topOfClimbDistanceNm = currentAltitudeFt < cruiseAltitudeFt - 1000
-    ? roundNm((cruiseAltitudeFt - currentAltitudeFt) / DESCENT_PROFILE_FT_PER_NM)
+  const effectiveCrzAlt = clampedCruiseAltitude !== null ? clampedCruiseAltitude : cruiseAltitudeFt;
+  const topOfClimbDistanceNm = currentAltitudeFt < effectiveCrzAlt - 1000
+    ? roundNm((effectiveCrzAlt - currentAltitudeFt) / DESCENT_PROFILE_FT_PER_NM)
     : null;
-  const topOfDescentDistanceNm = distanceToDestinationNm !== null && currentAltitudeFt <= cruiseAltitudeFt + 1000
-    ? Math.max(0, roundNm(distanceToDestinationNm - (cruiseAltitudeFt / DESCENT_PROFILE_FT_PER_NM)))
+  const topOfDescentDistanceNm = distanceToDestinationNm !== null && currentAltitudeFt <= effectiveCrzAlt + 1000
+    ? Math.max(0, roundNm(distanceToDestinationNm - (effectiveCrzAlt / DESCENT_PROFILE_FT_PER_NM)))
     : null;
 
   let pathDeviationFt: number | null = null;
@@ -94,11 +122,11 @@ export function buildVnavPrediction(state: FMCState): VnavPrediction {
       isRequiredVsActive = true;
     }
   } else if (phase === 'cruise') {
-    targetVnavAltitude = cruiseAltitudeFt;
-    pathDeviationFt = currentAltitudeFt - cruiseAltitudeFt;
+    targetVnavAltitude = effectiveCrzAlt;
+    pathDeviationFt = currentAltitudeFt - effectiveCrzAlt;
     isRequiredVsActive = false;
   } else if (phase === 'climb') {
-    targetVnavAltitude = cruiseAltitudeFt;
+    targetVnavAltitude = effectiveCrzAlt;
     pathDeviationFt = null;
     isRequiredVsActive = false;
   }

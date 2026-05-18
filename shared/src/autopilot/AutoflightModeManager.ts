@@ -23,6 +23,12 @@ export class AutoflightModeManager {
         if (state.position.irsState !== 'NAV') {
           return { ok: false, message: 'IRS NOT ALIGNED' };
         }
+        const hasUnresolved = state.flightPlan.waypoints.some(
+          wp => !wp.discontinuity && (wp.lat === undefined || wp.lon === undefined || wp.coordinateSource === 'UNRESOLVED')
+        );
+        if (hasUnresolved) {
+          return { ok: false, message: 'NAV DATA OUT' };
+        }
         return { ok: true };
 
       case 'VOR_LOC':
@@ -179,6 +185,12 @@ export class AutoflightModeManager {
     }
 
     return changed ? updates : null;
+  }
+
+  public static calculateAltStarCaptureVs(vsEntry: number, deltaH: number, k = 0.005): number {
+    const absDeltaH = Math.abs(deltaH);
+    if (absDeltaH <= 20) return 0;
+    return Math.round(vsEntry * (1 - Math.exp(-k * absDeltaH)));
   }
 
   private static isLateralCaptured(mode: LateralMode, state: FMCState): boolean {

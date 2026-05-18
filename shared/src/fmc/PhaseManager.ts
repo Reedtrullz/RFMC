@@ -1,4 +1,5 @@
 import { FlightPhase, FMCState } from '../types/fmc';
+import { navDatabase } from './NavDatabaseService';
 
 export class PhaseManager {
   /**
@@ -29,11 +30,21 @@ export class PhaseManager {
     // CRUISE logic
     if (Math.abs(altitude - crzAlt) < 1000) return 'CRUISE';
 
+    let airportElevation = 0;
+    if (state.flightPlan?.destination) {
+      const airport = navDatabase.getAirport(state.flightPlan.destination);
+      if (airport && airport.elevationFt !== undefined) {
+        airportElevation = airport.elevationFt;
+      }
+    }
+
+    const haaApproachThreshold = airportElevation + 3000;
+
     // DESCENT logic
-    if (vs < -300 && altitude > 3000) return 'DESCENT';
+    if (vs < -300 && altitude > haaApproachThreshold) return 'DESCENT';
 
     // APPROACH logic
-    if (altitude <= 3000 && speed < 250) return 'APPROACH';
+    if (altitude <= haaApproachThreshold && speed < 250) return 'APPROACH';
 
     // DONE logic
     if (speed < 5 && altitude < 1000 && state.flightPlan.destination) return 'DONE';

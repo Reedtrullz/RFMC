@@ -174,4 +174,61 @@ describe('buildVnavPrediction', () => {
     expect(prediction.available).toBe(false);
     expect(prediction.pathMessages).toContain('VNAV PATH INTERRUPTED BY DISCONTINUITY');
   });
+
+  it('compresses peak cruise altitude on extremely short routes', () => {
+    const baseState = makeState();
+    const state = {
+      ...baseState,
+      aircraftState: {
+        ...baseState.aircraftState!,
+        altitude: 2000,
+        altitudeFt: 2000,
+        lat: 60.0,
+        lon: 10.0,
+      },
+      flightPlan: {
+        ...baseState.flightPlan,
+        waypoints: [
+          { ident: 'ORIG', lat: 60.0, lon: 10.0, discontinuity: false },
+          { ident: 'DEST', lat: 60.0, lon: 10.4, discontinuity: false },
+        ],
+      },
+    };
+
+    const prediction = buildVnavPrediction(state);
+    expect(prediction.targetVnavAltitude).toBeLessThan(12000);
+    expect(prediction.cruiseAltitudeFt).toBe(12000);
+  });
+
+  it('ensures intermediate waypoint altitude restrictions override peak altitude compression', () => {
+    const baseState = makeState();
+    const state = {
+      ...baseState,
+      aircraftState: {
+        ...baseState.aircraftState!,
+        altitude: 2000,
+        altitudeFt: 2000,
+        lat: 60.0,
+        lon: 10.0,
+      },
+      flightPlan: {
+        ...baseState.flightPlan,
+        waypoints: [
+          { ident: 'ORIG', lat: 60.0, lon: 10.0, discontinuity: false },
+          {
+            ident: 'CLB01',
+            lat: 60.0,
+            lon: 10.2,
+            discontinuity: false,
+            altitudeConstraint: { type: 'AT_OR_ABOVE' as const, altitude: 8000 },
+          },
+          { ident: 'DEST', lat: 60.0, lon: 10.4, discontinuity: false },
+        ],
+      },
+    };
+
+    const prediction = buildVnavPrediction(state);
+    expect(prediction.targetVnavAltitude).toBeGreaterThanOrEqual(8000);
+    expect(prediction.cruiseAltitudeFt).toBe(12000);
+  });
 });
