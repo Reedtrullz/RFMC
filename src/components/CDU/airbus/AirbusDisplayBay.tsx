@@ -28,7 +28,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
         style={{
           display: 'grid',
           gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
-          gridTemplateRows: `repeat(${tokens.screen.rows}, ${rowHeight}) ${scratchpadHeight}`,
+          gridTemplateRows: `repeat(${tokens.screen.rows - 1}, ${rowHeight}) ${scratchpadHeight}`,
           columnGap: '0.25rem',
           width: totalWidth,
         }}
@@ -36,9 +36,9 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
         <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
         <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
-        <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
+        <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
           <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30">
-            <div className="w-full" style={{ height: `calc(${tokens.screen.rows} * ${rowHeight})` }}>
+            <div className="w-full" style={{ height: `calc(${tokens.screen.rows - 1} * ${rowHeight})` }}>
               <Display variant="airbus" />
             </div>
           </ScreenGlass>
@@ -46,7 +46,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
         <div
           className="bg-cdu-screen border-x-2 border-b-2 border-cdu-bezel-light/30 rounded-b-sm overflow-hidden"
           style={{
-            gridRow: 15,
+            gridRow: 14,
             gridColumn: 2,
             filter: `brightness(${brightness}%)`,
             height: scratchpadHeight,

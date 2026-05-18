@@ -24,7 +24,7 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintL
   const displayBayStyle = {
     display: 'grid',
     gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
-    gridTemplateRows: `repeat(${tokens.screen.rows}, ${rowHeight}) ${scratchpadHeight}`,
+    gridTemplateRows: `repeat(${tokens.screen.rows - 1}, ${rowHeight}) ${scratchpadHeight}`,
     columnGap: '0.2rem',
     '--cdu-row-h': rowHeight,
     '--cdu-row-height': rowHeight,
@@ -44,9 +44,9 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintL
       <BoeingLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />
       <BoeingLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />
 
-      <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%' }}>
+      <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
         <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full">
-          <div className="w-full" style={{ height: 'calc(14 * var(--cdu-row-h, 21px))' }}>
+          <div className="w-full" style={{ height: 'calc(13 * var(--cdu-row-h, 21px))' }}>
             <Display />
           </div>
         </ScreenGlass>
@@ -54,7 +54,7 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintL
       <div
         className="bg-cdu-screen"
         style={{
-          gridRow: 15,
+          gridRow: 14,
           gridColumn: 2,
           filter: `brightness(${brightness}%)`,
           height: scratchpadHeight,
