@@ -10,6 +10,11 @@ export class GpwsEngine {
     TOO_LOW_GEAR: 0, TOO_LOW_FLAPS: 0, GLIDESLOPE: 0, WINDSHEAR: 0
   };
 
+  // Cumulative altitude loss tracking for Mode 3 (Don't Sink)
+  private mode3PhaseAlt: number | null = null;
+  private mode3PhasePeak: number = 0;
+  private mode3LastPhase: string | null = null;
+
   public update(state: FMCState, dt: number): { alert: GpwsAlert; callout?: number } {
     const ac = state.aircraftState;
     if (!ac) return { alert: 'NONE' };
@@ -28,9 +33,34 @@ export class GpwsEngine {
       }
     }
 
-    // 2. Don't Sink (Mode 3 - After takeoff)
-    if (state.flightPhase === 'TAKEOFF' && vs < -100 && radioAlt < 1000) {
-       activeAlert = 'DONT_SINK';
+    // 2. Don't Sink (Mode 3 - After takeoff / go-around)
+    // Uses cumulative altitude loss rather than instantaneous VS to prevent nuisance alerts
+    const isProtectedPhase = state.flightPhase === 'TAKEOFF' || state.flightPhase === 'GO_AROUND';
+    if (isProtectedPhase && radioAlt < 1000) {
+      // Track phase transitions to reset peak tracking
+      if (this.mode3LastPhase !== state.flightPhase) {
+        this.mode3PhaseAlt = alt;
+        this.mode3PhasePeak = alt;
+        this.mode3LastPhase = state.flightPhase;
+      }
+
+      // Track peak altitude since phase start
+      if (alt > this.mode3PhasePeak) {
+        this.mode3PhasePeak = alt;
+      }
+
+      // Calculate cumulative altitude loss from peak
+      const cumulativeLossFromPeak = this.mode3PhasePeak - alt;
+      const dynamicMargin = Math.max(50, this.mode3PhasePeak * 0.08); // 8% of peak or 50ft minimum
+
+      if (cumulativeLossFromPeak > dynamicMargin) {
+        activeAlert = 'DONT_SINK';
+      }
+    } else {
+      // Reset tracking when not in a protected phase
+      this.mode3PhaseAlt = null;
+      this.mode3PhasePeak = 0;
+      this.mode3LastPhase = null;
     }
 
     // 3. Callouts (Mode 6)
