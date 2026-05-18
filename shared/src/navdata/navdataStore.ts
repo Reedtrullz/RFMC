@@ -18,13 +18,26 @@ export const NAV_FIXES: Record<string, NavFix> = {
   'SWANN': { ident: 'SWANN', type: 'WAYPOINT', lat: 39.1500, lon: -76.3500 },
   
   // ENGM
+  'ENAL': { ident: 'ENAL', type: 'AIRPORT', lat: 62.5625, lon: 6.1194, elevationFt: 70 },
+  'ENAT': { ident: 'ENAT', type: 'AIRPORT', lat: 69.9761, lon: 23.3717, elevationFt: 10 },
+  'ENBO': { ident: 'ENBO', type: 'AIRPORT', lat: 67.2692, lon: 14.3644, elevationFt: 43 },
+  'ENBR': { ident: 'ENBR', type: 'AIRPORT', lat: 60.2934, lon: 5.2181, elevationFt: 164 },
+  'BGO': { ident: 'BGO', type: 'VOR', lat: 60.2883, lon: 5.2533 },
+  'ENCN': { ident: 'ENCN', type: 'AIRPORT', lat: 58.2033, lon: 8.0853, elevationFt: 56 },
+  'ENDU': { ident: 'ENDU', type: 'AIRPORT', lat: 69.0558, lon: 18.5403, elevationFt: 252 },
+  'ENEV': { ident: 'ENEV', type: 'AIRPORT', lat: 68.4897, lon: 16.6783, elevationFt: 84 },
+  'ENFL': { ident: 'ENFL', type: 'AIRPORT', lat: 61.5833, lon: 5.0250, elevationFt: 37 },
   'ENGM': { ident: 'ENGM', type: 'AIRPORT', lat: 60.1939, lon: 11.1004, elevationFt: 681 },
   'OSL': { ident: 'OSL', type: 'VOR', lat: 60.1417, lon: 11.0767 },
   'SOXOT': { ident: 'SOXOT', type: 'WAYPOINT', lat: 60.3000, lon: 11.2000 },
-  
-  // ENBR
-  'ENBR': { ident: 'ENBR', type: 'AIRPORT', lat: 60.2934, lon: 5.2181, elevationFt: 164 },
-  'BGO': { ident: 'BGO', type: 'VOR', lat: 60.2883, lon: 5.2533 },
+  'ENHD': { ident: 'ENHD', type: 'AIRPORT', lat: 59.3444, lon: 5.2136, elevationFt: 87 },
+  'ENHF': { ident: 'ENHF', type: 'AIRPORT', lat: 70.6794, lon: 23.6683, elevationFt: 262 },
+  'ENKB': { ident: 'ENKB', type: 'AIRPORT', lat: 63.1119, lon: 7.8267, elevationFt: 204 },
+  'ENKR': { ident: 'ENKR', type: 'AIRPORT', lat: 69.7258, lon: 29.8889, elevationFt: 284 },
+  'ENML': { ident: 'ENML', type: 'AIRPORT', lat: 62.7447, lon: 7.2628, elevationFt: 10 },
+  'ENTC': { ident: 'ENTC', type: 'AIRPORT', lat: 69.6814, lon: 18.9189, elevationFt: 32 },
+  'ENTO': { ident: 'ENTO', type: 'AIRPORT', lat: 59.1867, lon: 10.2586, elevationFt: 286 },
+  'ENZV': { ident: 'ENZV', type: 'AIRPORT', lat: 58.8767, lon: 5.6378, elevationFt: 30 },
   // Route ENGM-ENBR
   'LUNIP': { ident: 'LUNIP', type: 'WAYPOINT', lat: 60.1000, lon: 10.5000 },
   'PESOT': { ident: 'PESOT', type: 'WAYPOINT', lat: 60.1500, lon: 8.5000 },

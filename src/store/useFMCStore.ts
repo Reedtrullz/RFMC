@@ -19,7 +19,9 @@ import {
   DEFAULT_RNP,
   calculateGroundSpeedAndTrack,
   calculateIrsDrift,
-  FmsRuntimeEngine
+  FmsRuntimeEngine,
+  loadIntoCache,
+  populateNavDb
 } from '@shared';
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
@@ -114,7 +116,11 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   focusedPanel: PanelId | null;
   instrumentZoom: Record<InstrumentPanelId, number>;
   highContrast: boolean;
+  dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
+  dbInitializationProgress: number;
 } = {
+  dbInitializationState: 'idle' as const,
+  dbInitializationProgress: 0,
   page: 'IDENT' as PageType,
   currentPage: 'IDENT' as PageType,
   pageHistory: [] as PageType[],
@@ -324,6 +330,7 @@ interface FMCActions {
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
   clearFailureMode: () => void;
   setBrightness: (b: number) => void;
+  initNavDb: () => Promise<void>;
 
   updateFlightPhase: () => void;
   receiveAtsuMessage: (from: string, text: string) => void;
@@ -456,6 +463,8 @@ export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & Traini
   focusedPanel: PanelId | null;
   instrumentZoom: Record<InstrumentPanelId, number>;
   highContrast: boolean;
+  dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
+  dbInitializationProgress: number;
 };
 
 type StoreAPI = import('zustand').StoreApi<FMCStore>;
@@ -742,6 +751,24 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     const scratchpad = state.scratchpad.trim();
+
+    // Trigger background pre-loading of potential airports or waypoints from IndexedDB into NAV_CACHE
+    if (scratchpad) {
+      const idents: string[] = [];
+      const upperScratchpad = scratchpad.toUpperCase();
+      if (upperScratchpad.includes('-') || upperScratchpad.includes(' ') || upperScratchpad.includes('/')) {
+        const matches = upperScratchpad.match(/[A-Z0-9]{3,5}/g);
+        if (matches) idents.push(...matches);
+      } else if (upperScratchpad.length >= 3 && upperScratchpad.length <= 5) {
+        idents.push(upperScratchpad);
+      }
+      if (idents.length > 0) {
+        idents.forEach(id => {
+          loadIntoCache(id).catch(err => console.error(`Error background loading ${id}:`, err));
+        });
+      }
+    }
+
     let handled = false;
 
     // Dispatch through typed central LSK dispatcher
@@ -1064,6 +1091,22 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   },
 
   resetState: () => set(defaultState),
+
+  initNavDb: async () => {
+    const state = get();
+    if (state.dbInitializationState !== 'idle') return;
+
+    set({ dbInitializationState: 'loading', dbInitializationProgress: 0 });
+    try {
+      await populateNavDb('/data/navdata.json', (progress) => {
+        set({ dbInitializationProgress: progress });
+      });
+      set({ dbInitializationState: 'ready' });
+    } catch (error) {
+      console.error('Failed to initialize NavDB:', error);
+      set({ dbInitializationState: 'error' });
+    }
+  },
 
   setSelectedPlanWaypoint: (index) => set({ selectedPlanWaypointIndex: index }),
 

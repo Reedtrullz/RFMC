@@ -200,3 +200,7 @@ export * from './fmc/actionHandlers/atsuActions';
 export { buildInitialFMCState } from './fmc/initialState';
 export { processFMCKey }        from './fmc/keyProcessor';
 export { buildDisplayData }     from './fmc/displayBuilder';
+
+// Database caching & dynamic loader
+export { loadIntoCache, getAirportCoordinates, getWaypointCoordinates } from './fmc/navDatabase';
+export { populateNavDb } from './db/navDataLoader';

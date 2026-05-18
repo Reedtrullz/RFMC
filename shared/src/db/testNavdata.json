@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "isPopulated": true,
+    "airacCycle": "2405",
+    "version": 1
+  },
+  "airports": [
+    {
+      "icao": "ENGM",
+      "name": "Oslo Gardermoen",
+      "lat": 60.193917,
+      "lon": 11.100361,
+      "elevation": 681,
+      "runways": ["01L", "01R", "19L", "19R"]
+    },
+    {
+      "icao": "ENBR",
+      "name": "Bergen Flesland",
+      "lat": 60.293333,
+      "lon": 5.218056,
+      "elevation": 170,
+      "runways": ["17", "35"]
+    },
+    {
+      "icao": "KJFK",
+      "name": "John F Kennedy Intl",
+      "lat": 40.639801,
+      "lon": -73.7789,
+      "elevation": 13,
+      "runways": ["04L", "04R", "13L", "13R", "22L", "22R", "31L", "31R"]
+    },
+    {
+      "icao": "KLAX",
+      "name": "Los Angeles Intl",
+      "lat": 33.942501,
+      "lon": -118.407997,
+      "elevation": 125,
+      "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"]
+    }
+  ],
+  "runways": [
+    {
+      "id": "ENGM-01L",
+      "airport_icao": "ENGM",
+      "ident": "01L",
+      "length": 11811,
+      "width": 148,
+      "heading": 13,
+      "lat": 60.1772,
+      "lon": 11.0858,
+      "ils_freq": 110.3
+    }
+  ],
+  "waypoints": [
+    {
+      "id": "LUNIP-WP",
+      "ident": "LUNIP",
+      "lat": 60.456,
+      "lon": 10.123,
+      "type": "WP",
+      "country_code": "EN"
+    },
+    {
+      "id": "OSL-VOR",
+      "ident": "OSL",
+      "lat": 60.123,
+      "lon": 11.456,
+      "type": "VOR",
+      "country_code": "EN"
+    }
+  ]
+}
