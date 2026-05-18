@@ -4,16 +4,17 @@ import {
 } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
-import { useAutopilotStore } from '../../store/autopilotStore';
-import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
-import { useTrainingStore } from '../../store/trainingStore';
 import { BoeingNDFrame } from './frame/BoeingNDFrame';
 import { AirbusNDFrame } from './frame/AirbusNDFrame';
 import { NDControls } from './NDControls';
 import { B737ND } from './renderers/B737ND';
 import { A320ND } from './renderers/A320ND';
 
-export function NavigationDisplay() {
+export interface NavigationDisplayProps {
+  side?: 'L' | 'R';
+}
+
+export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   // Using narrow selectors to prevent unnecessary re-renders
   const aircraft = useAircraftStore(s => s.aircraft);
   const aircraftState = useAircraftStore(s => s.aircraftState);
@@ -22,7 +23,6 @@ export function NavigationDisplay() {
   const takeoff = useAircraftStore(s => s.takeoff);
   const landing = useAircraftStore(s => s.landing);
   const ident = useAircraftStore(s => s.ident);
-  const autopilotTruth = useAutopilotStore(s => s.truth);
   const activeNavSource = useAircraftStore(s => s.activeNavSource);
   const navPerformance = useAircraftStore(s => s.navPerformance);
   
@@ -30,8 +30,7 @@ export function NavigationDisplay() {
   const demoMode = useFMCStore(s => s.demoMode);
   const tutorialActive = useFMCStore(s => s.tutorialActive);
   const autopilot = useFMCStore(s => s.autopilot as any); // Use legacy autopilot if available
-  const efisL = useFMCStore(s => s.efisL);
-  const efisR = useFMCStore(s => s.efisR);
+  const efis = useFMCStore(s => side === 'L' ? s.efisL : s.efisR);
   const trafficTargets = useFMCStore(s => s.trafficTargets as any);
   
   const flightPlan = useFMCStore(s => s.flightPlan);
@@ -45,23 +44,23 @@ export function NavigationDisplay() {
   const holdPending = useFMCStore(s => s.holdPending);
   const selectedPlanWaypointIndex = useFMCStore(s => s.selectedPlanWaypointIndex);
 
-  const side = 'L'; // In a multi-display setup, this would be a prop
-  const efis = side === 'L' ? efisL : efisR;
-  
   const model = useMemo(
     () => buildNavigationDisplayModel({
-      aircraft, efisL, efisR, flightPlan, route, isModified, 
+      aircraft,
+      efisL: side === 'L' ? efis : undefined,
+      efisR: side === 'R' ? efis : undefined,
+      flightPlan, route, isModified, 
       pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
       fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
       tutorialActive, performance, autopilot, position, activeNavSource, navPerformance,
       takeoff, landing, ident
     } as any, efis),
     [
-      aircraft, efisL, efisR, flightPlan, route, isModified, 
+      aircraft, efis, flightPlan, route, isModified, 
       pendingFlightPlan, pendingRoute, aircraftState, selectedPlanWaypointIndex,
       fixEntries, fix, hold, holdPending, trafficTargets, demoMode, 
       tutorialActive, performance, autopilot, position, activeNavSource, navPerformance,
-      takeoff, landing, ident, efis
+      takeoff, landing, ident, side
     ]
   );
 
@@ -77,13 +76,13 @@ export function NavigationDisplay() {
             <A320ND model={model} />
           </AirbusNDFrame>
         ) : (
-          <BoeingNDFrame model={model}>
+          <BoeingNDFrame model={model} side={side}>
             <B737ND model={model} />
           </BoeingNDFrame>
         )}
       </div>
 
-      <NDControls model={model} side={side} />
+      {model.style === 'airbus' && <NDControls model={model} side={side} />}
     </section>
   );
 }
