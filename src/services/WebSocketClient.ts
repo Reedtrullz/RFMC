@@ -95,7 +95,11 @@ class WebSocketClient {
   private scheduleReconnect() {
     if (this.reconnectTimer) return;
 
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+    const delayBase = 1000;
+    const delayMax = 10000;
+    const backoff = Math.min(delayMax, delayBase * Math.pow(2, this.reconnectAttempts));
+    const jitter = Math.random() * 1500;
+    const delay = backoff + jitter;
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
