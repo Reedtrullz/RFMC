@@ -1558,15 +1558,20 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       route.sid || undefined,
       route.star || undefined,
       route.approach || undefined,
-      [] // Add enroute parsing later
+      [], // Add enroute parsing later
+      route.runway || undefined
     );
 
-    const waypoints = expandedLegs.map(leg => ({
-      ident: leg.ident,
-      lat: leg.lat,
-      lon: leg.lon,
-      discontinuity: false,
-    }));
+    const waypoints = expandedLegs.map(leg => {
+      const isUnresolved = leg.lat === undefined || leg.lon === undefined || isNaN(leg.lat) || isNaN(leg.lon);
+      return {
+        ident: leg.ident,
+        lat: leg.lat,
+        lon: leg.lon,
+        coordinateSource: (isUnresolved ? 'UNRESOLVED' : 'navdb') as any,
+        discontinuity: false,
+      };
+    });
 
     if (state.pendingRoute) {
       set({ pendingFlightPlan: { ...state.flightPlan, waypoints } });
@@ -2079,10 +2084,79 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-    // 5. Autoflight Mode Capture Logic
-    const apUpdates = AutoflightModeManager.tick(state.autopilot.truth, state);
-    if (apUpdates) {
-      updates.autopilot = { ...state.autopilot, truth: { ...state.autopilot.truth, ...apUpdates } };
+    let apUpdates = AutoflightModeManager.tick(state.autopilot.truth, state);
+    
+    const isAirbus = state.aircraft === 'AIRBUS_A320';
+    const targetAlt = isAirbus ? state.autopilot.airbus.altitude : state.autopilot.boeing.altitude;
+    const currentAlt = state.aircraftState?.altitudeFt ?? state.aircraftState?.altitude ?? 0;
+    const deltaH = targetAlt - currentAlt;
+    const absDeltaH = Math.abs(deltaH);
+    const activeVertical = apUpdates?.verticalActive ?? state.autopilot.truth.verticalActive;
+    
+    let altStarTriggered = false;
+    if (
+      activeVertical !== 'ALT*' &&
+      activeVertical !== 'ALT_HOLD' &&
+      activeVertical !== 'OFF' &&
+      activeVertical !== 'G_S' &&
+      state.autopilot.truth.autopilotStatus !== 'OFF' &&
+      absDeltaH <= 400
+    ) {
+      apUpdates = {
+        ...(apUpdates || {}),
+        verticalActive: 'ALT*',
+        vsEntry: state.aircraftState?.verticalSpeedFpm ?? state.aircraftState?.vs ?? 1000,
+        lastModeChangeTimestamps: {
+          ...(apUpdates?.lastModeChangeTimestamps ?? state.autopilot.truth.lastModeChangeTimestamps),
+          vertical: Date.now(),
+        },
+      };
+      altStarTriggered = true;
+    }
+
+    if (apUpdates || state.autopilot.truth.verticalActive === 'ALT*' || altStarTriggered) {
+      const nextTruth = { ...state.autopilot.truth, ...apUpdates };
+      let boeingUpdate = {};
+      let airbusUpdate = {};
+
+      if (nextTruth.verticalActive === 'ALT*') {
+        const vsEntry = nextTruth.vsEntry !== undefined ? nextTruth.vsEntry : (state.aircraftState?.verticalSpeedFpm ?? state.aircraftState?.vs ?? 1000);
+        if (absDeltaH <= 20) {
+          apUpdates = {
+            ...(apUpdates || {}),
+            verticalActive: 'ALT_HOLD',
+            vsEntry: undefined,
+            lastModeChangeTimestamps: {
+              ...(apUpdates?.lastModeChangeTimestamps ?? state.autopilot.truth.lastModeChangeTimestamps),
+              vertical: Date.now(),
+            },
+          };
+          if (isAirbus) {
+            airbusUpdate = { verticalSpeed: 0 };
+          } else {
+            boeingUpdate = { verticalSpeed: 0, altHold: true, vs: false, vnav: false, lvlChg: false };
+          }
+        } else {
+          const k = 0.005;
+          const vsTarget = Math.round(vsEntry * (1 - Math.exp(-k * absDeltaH)));
+          if (isAirbus) {
+            airbusUpdate = { verticalSpeed: vsTarget };
+          } else {
+            boeingUpdate = { verticalSpeed: vsTarget };
+          }
+          apUpdates = {
+            ...(apUpdates || {}),
+            vsEntry: vsEntry,
+          };
+        }
+      }
+
+      updates.autopilot = {
+        ...state.autopilot,
+        truth: { ...state.autopilot.truth, ...apUpdates },
+        boeing: { ...state.autopilot.boeing, ...boeingUpdate },
+        airbus: { ...state.autopilot.airbus, ...airbusUpdate },
+      };
     }
 
     // 6. GPWS Logic

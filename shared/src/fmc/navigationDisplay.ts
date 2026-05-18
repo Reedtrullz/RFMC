@@ -257,7 +257,7 @@ interface RouteItem {
   ident: string;
   lat?: number;
   lon?: number;
-  coordinateSource: 'navdb' | 'simbrief' | 'manual' | 'synthetic' | 'unknown';
+  coordinateSource: 'navdb' | 'simbrief' | 'manual' | 'synthetic' | 'unknown' | 'UNRESOLVED';
   discontinuity: boolean;
   airport: boolean;
   navaid?: boolean;
