@@ -20,10 +20,15 @@ function handleSetSid(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
 
+  const upper = scratchpad.toUpperCase();
+  if (!/^[A-Z0-9]{3,8}$/.test(upper)) {
+    return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_sid' } };
+  }
+
   if (route.origin) {
     const cachedProcedures = NAV_CACHE.procedures[route.origin.toUpperCase()];
     if (cachedProcedures && cachedProcedures.length > 0) {
-      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'SID');
+      const exists = cachedProcedures.some(p => p.ident === upper && p.type === 'SID');
       if (!exists) {
         return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_sid' } };
       }
@@ -79,10 +84,15 @@ function handleSetStar(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
 
+  const upper = scratchpad.toUpperCase();
+  if (!/^[A-Z0-9]{3,8}$/.test(upper)) {
+    return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_star' } };
+  }
+
   if (route.destination) {
     const cachedProcedures = NAV_CACHE.procedures[route.destination.toUpperCase()];
     if (cachedProcedures && cachedProcedures.length > 0) {
-      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'STAR');
+      const exists = cachedProcedures.some(p => p.ident === upper && p.type === 'STAR');
       if (!exists) {
         return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_star' } };
       }
@@ -106,10 +116,15 @@ function handleSetAppr(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const route = state.pendingRoute ?? state.route;
 
+  const upper = scratchpad.toUpperCase();
+  if (!/^[A-Z0-9]{3,8}$/.test(upper)) {
+    return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_appr' } };
+  }
+
   if (route.destination) {
     const cachedProcedures = NAV_CACHE.procedures[route.destination.toUpperCase()];
     if (cachedProcedures && cachedProcedures.length > 0) {
-      const exists = cachedProcedures.some(p => p.ident === scratchpad.toUpperCase() && p.type === 'APPROACH');
+      const exists = cachedProcedures.some(p => p.ident === upper && p.type === 'APPROACH');
       if (!exists) {
         return { handled: true, failure: { code: 'INVALID_ENTRY', text: 'INVALID ENTRY', source: 'procedureActions.set_appr' } };
       }

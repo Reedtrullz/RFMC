@@ -33,7 +33,7 @@ export interface VnavPrediction {
 
 const CLIMB_FPM_LIMIT = 2500;
 const DESCENT_FPM_LIMIT = 2600;
-const DESCENT_PROFILE_FT_PER_NM = 300;
+const DESCENT_PROFILE_FT_PER_NM = 6076.1 * Math.tan(3 * Math.PI / 180);
 const TRAINER_NOTE = 'Trainer-grade approximation only. Not for dispatch or operational use.';
 
 export function buildVnavPrediction(state: FMCState): VnavPrediction {

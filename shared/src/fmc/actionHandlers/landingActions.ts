@@ -1,5 +1,6 @@
 import type { FMCState } from '../../types/fmc';
 import { PerformanceEngine } from '../PerformanceEngine';
+import { NAV_CACHE } from '../navDatabase';
 import type { FmcActionResult } from './actionResult';
 
 export function handleLandingAction(
@@ -55,6 +56,21 @@ function handleSetLandingRunway(state: FMCState, scratchpad: string): FmcActionR
     };
   }
   const runway = scratchpad.toUpperCase();
+  const route = state.pendingRoute ?? state.route;
+  
+  if (route.destination) {
+    const cachedAirport = NAV_CACHE.airports[route.destination.toUpperCase()];
+    if (cachedAirport && cachedAirport.runways) {
+      const exists = cachedAirport.runways.some(r => r.toUpperCase() === runway);
+      if (!exists) {
+        return {
+          handled: true,
+          failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_landing_runway' },
+        };
+      }
+    }
+  }
+
   return {
     handled: true,
     success: {
