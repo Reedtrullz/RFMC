@@ -81,6 +81,15 @@
   box-shadow: 0 1px 0 rgba(255,255,255,0.18);
 }
 
+.instrument-shell__inner-bevel {
+  position: absolute;
+  inset: 0;
+  border: 1px solid;
+  border-image: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(0, 0, 0, 0.8) 100%) 1;
+  pointer-events: none;
+  z-index: 10;
+}
+
 /* Glass & Screen Effects */
 .screen-glass {
   position: relative;
@@ -157,14 +166,47 @@
   mix-blend-mode: screen;
 }
 
+@keyframes crt-flicker {
+  0% { opacity: calc(var(--phosphor-glow, 0) * 0.94); }
+  5% { opacity: calc(var(--phosphor-glow, 0) * 1); }
+  10% { opacity: calc(var(--phosphor-glow, 0) * 0.92); }
+  15% { opacity: calc(var(--phosphor-glow, 0) * 0.97); }
+  20% { opacity: calc(var(--phosphor-glow, 0) * 0.94); }
+  25% { opacity: calc(var(--phosphor-glow, 0) * 1); }
+  30% { opacity: calc(var(--phosphor-glow, 0) * 0.96); }
+  35% { opacity: calc(var(--phosphor-glow, 0) * 0.93); }
+  40% { opacity: calc(var(--phosphor-glow, 0) * 0.97); }
+  45% { opacity: calc(var(--phosphor-glow, 0) * 0.95); }
+  50% { opacity: calc(var(--phosphor-glow, 0) * 1); }
+  55% { opacity: calc(var(--phosphor-glow, 0) * 0.94); }
+  60% { opacity: calc(var(--phosphor-glow, 0) * 0.98); }
+  65% { opacity: calc(var(--phosphor-glow, 0) * 0.93); }
+  70% { opacity: calc(var(--phosphor-glow, 0) * 0.97); }
+  75% { opacity: calc(var(--phosphor-glow, 0) * 0.95); }
+  80% { opacity: calc(var(--phosphor-glow, 0) * 1); }
+  85% { opacity: calc(var(--phosphor-glow, 0) * 0.94); }
+  90% { opacity: calc(var(--phosphor-glow, 0) * 0.96); }
+  95% { opacity: calc(var(--phosphor-glow, 0) * 0.93); }
+  100% { opacity: calc(var(--phosphor-glow, 0) * 0.94); }
+}
+
 .screen-glass__glow {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255, 0.05), transparent 80%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(57, 255, 20, 0.15) 0%,
+    rgba(57, 255, 20, 0.08) 25%,
+    rgba(57, 255, 20, 0.03) 55%,
+    rgba(57, 255, 20, 0.01) 70%,
+    transparent 85%
+  );
   opacity: var(--phosphor-glow, 0);
-  filter: blur(20px);
+  will-change: opacity;
+  transform: translate3d(0, 0, 0);
+  animation: crt-flicker 0.15s infinite;
 }
 
 /* ------------------------------------------------
@@ -217,8 +259,7 @@
     inset 0 -3px 4px rgba(0,0,0,0.58),
     0 2px 0 #050505,
     0 4px 5px rgba(0,0,0,0.55);
-  transform: translateY(0);
-  transition: transform 60ms ease, box-shadow 60ms ease, filter 80ms ease;
+  transition: filter 80ms ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -228,11 +269,20 @@
   touch-action: manipulation;
 }
 
-.avionics-key:active, .avionics-key--active {
-  transform: translateY(2px);
-  box-shadow:
-    inset 0 1px 2px rgba(0,0,0,0.8),
-    0 1px 0 #050505;
+.avionics-key__face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: transform 60ms ease;
+  will-change: transform;
+}
+
+.avionics-key:active .avionics-key__face,
+.avionics-key--active .avionics-key__face {
+  transform: translateY(1.5px);
 }
 
 .avionics-key:focus-visible,

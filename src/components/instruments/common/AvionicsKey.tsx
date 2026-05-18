@@ -56,8 +56,10 @@ export function AvionicsKey({
         }
       }}
     >
-      <span className="avionics-key__legend">{label}</span>
-      {subLabel && <span className="avionics-key__sublabel">{subLabel}</span>}
+      <span className="avionics-key__face">
+        <span className="avionics-key__legend">{label}</span>
+        {subLabel && <span className="avionics-key__sublabel">{subLabel}</span>}
+      </span>
     </button>
   );
 }

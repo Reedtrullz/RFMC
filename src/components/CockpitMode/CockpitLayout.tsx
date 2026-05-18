@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { AircraftType, CockpitLayoutMode } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
@@ -72,6 +72,25 @@ export function CockpitLayout() {
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const orientation = useOrientation();
   
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const aspectRatio = windowSize.width / windowSize.height;
+  const isTall = aspectRatio < 1.35;
+  
   useWakeLock(true);
 
   const isNight = brightness < 40;
@@ -98,9 +117,16 @@ export function CockpitLayout() {
     return () => window.removeEventListener('keydown', closeFocus);
   }, [setFocusedPanel]);
 
+  const dynamicStageStyle = {
+    '--bezel-padding': isTall ? '8px' : '24px',
+    '--side-margin': isTall ? '4px' : '32px',
+    '--stage-aspect-ratio': aspectRatio.toFixed(3),
+  } as CSSProperties;
+
   const cockpitStyle = {
     '--cockpit-brightness': brightness / 100,
     '--cockpit-contrast': isNight ? 1.2 : 1.0,
+    ...dynamicStageStyle,
   } as CSSProperties;
 
   return (
@@ -109,6 +135,7 @@ export function CockpitLayout() {
         cockpit-grid cockpit-lock no-scrollbar bg-black text-white
         ${isNight ? 'cockpit-night' : ''}
         ${highContrast ? 'cockpit-high-contrast' : ''}
+        ${isTall ? 'cockpit--tall-viewport' : 'cockpit--wide-viewport'}
       `}
       style={cockpitStyle}
     >

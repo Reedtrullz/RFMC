@@ -33,6 +33,7 @@ export function ScreenGlass({ children, variant = 'boeing', brightness = 100, cl
 
   return (
     <div className={`screen-glass screen-glass--${variant} ${className}`} style={style}>
+      <div className="instrument-shell__inner-bevel" />
       <div className="screen-glass__content">
         {children}
       </div>

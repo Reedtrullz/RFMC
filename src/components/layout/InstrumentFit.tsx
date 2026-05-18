@@ -75,6 +75,9 @@ export function InstrumentFit({
     return () => observer.disconnect();
   }, [dimensions.idealHeight, dimensions.idealWidth]);
 
+  const aspectRatio = slotSize.width / slotSize.height;
+  const isTall = slotSize.height > 1 ? aspectRatio < 1.35 : false;
+
   const scale = useMemo(() => {
     const widthScale = slotSize.width / contentSize.width;
     const heightScale = slotSize.height / contentSize.height;
@@ -83,17 +86,35 @@ export function InstrumentFit({
     return allowOverflowZoom ? preferredScale : Math.min(preferredScale, fitScale);
   }, [allowOverflowZoom, contentSize.height, contentSize.width, preferredScale, slotSize.height, slotSize.width]);
 
+  const dynamicStyles = useMemo(() => {
+    return {
+      '--bezel-padding': isTall ? '8px' : '24px',
+      '--side-margin': isTall ? '4px' : '32px',
+      '--instrument-aspect-ratio': aspectRatio.toFixed(3),
+    } as React.CSSProperties;
+  }, [isTall, aspectRatio]);
+
   return (
     <div
       ref={slotRef}
       className={`cockpit-instrument ${allowOverflowZoom ? 'cockpit-instrument--scrollable' : ''} ${className}`}
       data-testid={dataTestId}
+      style={{
+        width: '100%',
+        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        position: 'relative',
+        boxSizing: 'border-box',
+        ...dynamicStyles,
+      }}
     >
       <div
         className="instrument-fit-viewport"
         style={{
           width: contentSize.width * scale,
           height: contentSize.height * scale,
+          boxSizing: 'border-box',
         }}
       >
         <div

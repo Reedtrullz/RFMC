@@ -65,6 +65,7 @@ export function InstrumentShell({
       {profile?.screwPositions?.map((pos, idx) => {
         const left = profile?.outerWidthMm ? `${(pos.x / profile.outerWidthMm) * 100}%` : '0%';
         const top = profile?.outerHeightMm ? `${(pos.y / profile.outerHeightMm) * 100}%` : '0%';
+        const rotation = (idx * 137.5) % 360;
         return (
           <BezelScrew 
             key={idx}
@@ -72,9 +73,9 @@ export function InstrumentShell({
             style={{ 
               left,
               top,
-              transform: `translate(-50%, -50%) rotate(${pos.rotation}deg)`
+              transform: `translate(-50%, -50%) rotate(${rotation}deg)`
             }} 
-            rotation={pos.rotation} 
+            rotation={rotation} 
           />
         );
       })}
