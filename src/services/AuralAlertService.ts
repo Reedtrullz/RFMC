@@ -118,6 +118,10 @@ export class AuralAlertService {
     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     osc.connect(gain);
     gain.connect(this.context.destination);
+    osc.onended = () => {
+      osc.disconnect();
+      gain.disconnect();
+    };
     osc.start(time);
     osc.stop(time + duration);
   }
@@ -125,7 +129,6 @@ export class AuralAlertService {
   private static playRichPulse(freq: number, duration: number, time: number, volume: number = 0.2) {
     if (!this.context) return;
     
-    // Create multiple oscillators for harmonic richness
     const frequencies = [freq, freq * 1.5, freq * 2];
     const gains = [1, 0.4, 0.2];
 
@@ -134,6 +137,7 @@ export class AuralAlertService {
     masterGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     masterGain.connect(this.context.destination);
 
+    let finishedCount = 0;
     frequencies.forEach((f, i) => {
       const osc = this.context!.createOscillator();
       const gain = this.context!.createGain();
@@ -142,6 +146,14 @@ export class AuralAlertService {
       gain.gain.setValueAtTime(gains[i], time);
       osc.connect(gain);
       gain.connect(masterGain);
+      osc.onended = () => {
+        osc.disconnect();
+        gain.disconnect();
+        finishedCount++;
+        if (finishedCount === frequencies.length) {
+          masterGain.disconnect();
+        }
+      };
       osc.start(time);
       osc.stop(time + duration);
     });

@@ -34,7 +34,6 @@ export function useSound() {
     if (ctx.state === 'suspended') ctx.resume();
 
     if (name === 'chime') {
-      // High-Low chime
       [554.37, 440.00].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -44,6 +43,10 @@ export function useSound() {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+        };
         osc.start(ctx.currentTime + i * 0.5);
         osc.stop(ctx.currentTime + i * 0.5 + 1.2);
       });
@@ -58,6 +61,10 @@ export function useSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
+    osc.onended = () => {
+      osc.disconnect();
+      gain.disconnect();
+    };
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + s.duration);
   }, []);
