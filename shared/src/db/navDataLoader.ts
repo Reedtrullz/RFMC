@@ -1,4 +1,4 @@
-import { getNavDb, AirportRecord, RunwayRecord, WaypointRecord, ProcedureRecord } from './navDb';
+import { getNavDb, AirportRecord, RunwayRecord, WaypointRecord, ProcedureRecord, NavDBSchema } from './navDb';
 
 interface NavDataJson {
   metadata: {
@@ -28,6 +28,7 @@ export async function populateNavDb(
     const existingMetadata = await db.get('metadata', 'navdata_status');
     if (
       existingMetadata &&
+      'isPopulated' in existingMetadata.value &&
       existingMetadata.value.isPopulated &&
       existingMetadata.value.airacCycle === data.metadata.airacCycle &&
       existingMetadata.value.version === data.metadata.version
@@ -47,17 +48,19 @@ export async function populateNavDb(
     const checkpointKey = 'navdata_load_checkpoint';
     const checkpoint = await db.get('metadata', checkpointKey);
     
-    let resumeStoreName = 'airports';
+    type NavStoreName = 'airports' | 'runways' | 'waypoints' | 'procedures';
+    let resumeStoreName: NavStoreName = 'airports';
     let resumeIndex = 0;
     let resumeProcessedItems = 0;
     
     const isResumeValid = checkpoint && 
       checkpoint.value &&
+      'storeName' in checkpoint.value &&
       checkpoint.value.airacCycle === data.metadata.airacCycle &&
       checkpoint.value.version === data.metadata.version;
       
-    if (isResumeValid) {
-      resumeStoreName = checkpoint.value.storeName;
+    if (isResumeValid && checkpoint && 'storeName' in checkpoint.value) {
+      resumeStoreName = checkpoint.value.storeName as NavStoreName;
       resumeIndex = checkpoint.value.batchIndex;
       resumeProcessedItems = checkpoint.value.processedItems;
       processedItems = resumeProcessedItems;
@@ -73,15 +76,15 @@ export async function populateNavDb(
 
     const BATCH_SIZE = 1000;
 
-    async function processBatch<T>(
-      storeName: 'airports' | 'runways' | 'waypoints' | 'procedures', 
-      items: T[]
+    async function processBatch<K extends NavStoreName>(
+      storeName: K, 
+      items: NavDBSchema[K]['value'][]
     ) {
       if (!items || items.length === 0) return;
 
-      const storeOrder = ['airports', 'runways', 'waypoints', 'procedures'];
+      const storeOrder: NavStoreName[] = ['airports', 'runways', 'waypoints', 'procedures'];
       const targetOrderIndex = storeOrder.indexOf(storeName);
-      const resumeOrderIndex = storeOrder.indexOf(resumeStoreName as any);
+      const resumeOrderIndex = storeOrder.indexOf(resumeStoreName);
 
       if (targetOrderIndex < resumeOrderIndex) {
         processedItems += items.length;
@@ -96,7 +99,7 @@ export async function populateNavDb(
         const store = tx.objectStore(storeName);
 
         for (const item of batch) {
-          store.put(item as any);
+          store.put(item as NavDBSchema[K]['value']);
         }
         await tx.done;
 
@@ -106,12 +109,12 @@ export async function populateNavDb(
         }
 
         const nextBatchIndex = i + BATCH_SIZE;
-        let nextStoreName = storeName;
+        let nextStoreName: NavStoreName = storeName;
         let finalBatchIndex = nextBatchIndex;
         if (nextBatchIndex >= items.length) {
           const nextIndex = targetOrderIndex + 1;
           if (nextIndex < storeOrder.length) {
-            nextStoreName = storeOrder[nextIndex] as any;
+            nextStoreName = storeOrder[nextIndex] as NavStoreName;
             finalBatchIndex = 0;
           }
         }

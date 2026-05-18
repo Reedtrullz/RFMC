@@ -1,5 +1,5 @@
 import type { FMCState } from '../../types/fmc';
-import type { FmcActionResult } from './actionResult';
+import type { FmcActionResult, FmcActionSuccess } from './actionResult';
 import { resolveLskNavigation } from './navigationActions';
 import { handleSpecialLskAction } from './specialActions';
 import { handleSetFromTo, handleRouteAction } from './routeActions';
@@ -46,7 +46,7 @@ export function dispatchLskAction(input: DispatchLskActionInput): DispatchLskAct
         targetPage: nav.targetPage,
         pressKey: nav.pressKey,
         subPage: nav.setSubPage,
-      } as any,
+      } as FmcActionSuccess & { targetPage?: string; pressKey?: string; subPage?: number },
     };
   }
 
@@ -54,7 +54,7 @@ export function dispatchLskAction(input: DispatchLskActionInput): DispatchLskAct
   const special = handleSpecialLskAction(action, state, scratchpad);
   if (special.handled) {
     const sideEffects: string[] = [];
-    if ((special as any).sideEffect) sideEffects.push((special as any).sideEffect);
+    if (special.sideEffect) sideEffects.push(special.sideEffect);
     return { ...special, sideEffects };
   }
 
@@ -63,14 +63,14 @@ export function dispatchLskAction(input: DispatchLskActionInput): DispatchLskAct
     const ft = handleSetFromTo(state, scratchpad);
     if (ft.handled) {
       const sideEffects: string[] = [];
-      if ((ft.success as any)?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
+      if (ft.success?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
       return { ...ft, sideEffects };
     }
   }
   const route = handleRouteAction(action, state, scratchpad);
   if (route.handled) {
     const sideEffects: string[] = [];
-    if ((route.success as any)?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
+    if (route.success?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
     return { ...route, sideEffects };
   }
 
@@ -80,10 +80,10 @@ export function dispatchLskAction(input: DispatchLskActionInput): DispatchLskAct
 
   // 5. LEGS
   if (state.currentPage === 'LEGS') {
-    const leg = handleLegWpAction(action, state, scratchpad);
+    const leg = handleLegWpAction(action, state, scratchpad) as FmcActionResult & { sideEffect?: string };
     if (leg.handled) {
       const sideEffects: string[] = [];
-      if ((leg as any).sideEffect) sideEffects.push((leg as any).sideEffect);
+      if (leg.sideEffect) sideEffects.push(leg.sideEffect);
       return { ...leg, sideEffects };
     }
   }
@@ -104,7 +104,7 @@ export function dispatchLskAction(input: DispatchLskActionInput): DispatchLskAct
   const proc = handleProcedureAction(action, state, scratchpad);
   if (proc.handled) {
     const sideEffects: string[] = [];
-    if ((proc.success as any)?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
+    if (proc.success?.sideEffect === 'expand_active_route') sideEffects.push('expand_active_route');
     return { ...proc, sideEffects };
   }
 

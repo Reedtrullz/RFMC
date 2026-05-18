@@ -14,7 +14,7 @@ Zustand state machines. Frontend-authoritative FMC. Ephemeral—no persistence. 
 | `connectionStore.ts` | MSFS WebSocket status |
 | `autopilotStore.ts` | Autopilot modes |
 | `alertStore.ts` | Warnings/alerts |
-| `trainingStore.ts` | Tutorial state |
+| `trainingStore.ts` | Tutorial state (planned — see shared/src/fmc/training/ for current scenario engine) |
 
 ## CONVENTIONS
 - Zustand only — no Redux

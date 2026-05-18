@@ -18,6 +18,21 @@ async function shutdown(): Promise<void> {
 process.on('SIGINT', () => void shutdown());
 process.on('SIGTERM', () => void shutdown());
 
+process.on('unhandledRejection', (reason) => {
+  logger.error(LogEvent.SIM_ERROR, {
+    error: String(reason),
+    message: 'Unhandled promise rejection',
+  });
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error(LogEvent.SIM_ERROR, {
+    error: String(err),
+    message: 'Uncaught exception',
+  });
+  process.exit(1);
+});
+
 bridge.start().then((port) => {
   logger.info(LogEvent.SERVER_START, {
     port,

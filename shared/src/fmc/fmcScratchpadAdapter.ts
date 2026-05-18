@@ -12,11 +12,25 @@ import {
   invalidEntryMessage,
 } from './scratchpadEngine';
 import type { FMCState } from '../types/fmc';
-import type { FmcActionResult } from './actionHandlers/actionResult';
+import type { FmcActionSuccess, FmcActionResult } from './actionHandlers/actionResult';
 import type { DispatchLskActionResult } from './actionHandlers/lskDispatcher';
 
 type ZustandSet = (partial: Partial<FMCState> | ((state: FMCState) => Partial<FMCState>)) => void;
 type ZustandGet = () => FMCState;
+
+interface ExtendedDispatchSuccess extends FmcActionSuccess {
+  targetPage?: string;
+  pressKey?: string;
+  subPage?: Partial<FMCState>;
+}
+
+interface StoreMethods {
+  setPage: (page: string) => void;
+  pressKey: (key: string) => void;
+  expandActiveRoute: () => void;
+  stepPlanForward: () => void;
+  addMessage?: (text: string, type: string) => void;
+}
 
 function getSp(get: ZustandGet): ScratchpadState {
   const existing = get().scratchpadState;
@@ -129,13 +143,13 @@ export function applyFmcActionResult(
     const msg = invalidEntryMessage();
     msg.text = result.failure.text;
     fmcPushMessage(set, get, msg);
-    set({ scratchpadError: result.failure.text } as any);
+    set({ scratchpadError: result.failure.text } as Partial<FMCState>);
     return { shouldReturn: true };
   }
 
   if (result.success) {
-    if (result.success.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as any);
-    if (result.success.patch) set(result.success.patch as any);
+    if (result.success.clearScratchpad) set({ scratchpad: '', scratchpadError: null } as Partial<FMCState>);
+    if (result.success.patch) set(result.success.patch);
     return { shouldReturn: false };
   }
 
@@ -146,7 +160,7 @@ export function failScratchpad(set: ZustandSet, get: ZustandGet, text: string): 
   const msg = invalidEntryMessage();
   msg.text = text;
   fmcPushMessage(set, get, msg);
-  set({ scratchpadError: text } as any);
+  set({ scratchpadError: text } as Partial<FMCState>);
 }
 
 export function applyDispatchResult(
@@ -154,35 +168,38 @@ export function applyDispatchResult(
   get: ZustandGet,
   result: DispatchLskActionResult
 ): boolean {
-  if ((result.success as any)?.targetPage) {
-    (get() as any).setPage((result.success as any).targetPage);
+  const success = result.success as ExtendedDispatchSuccess | undefined;
+  const store = get() as FMCState & StoreMethods;
+
+  if (success?.targetPage) {
+    store.setPage(success.targetPage);
     return true;
   }
-  if ((result.success as any)?.pressKey) {
-    (get() as any).pressKey((result.success as any).pressKey);
+  if (success?.pressKey) {
+    store.pressKey(success.pressKey);
     return true;
   }
-  if ((result.success as any)?.subPage) {
-    set((result.success as any).subPage);
+  if (success?.subPage) {
+    set(success.subPage);
     return true;
   }
 
   const ar = applyFmcActionResult(set, get, result);
   if (ar.shouldReturn) return true;
 
-  // Side effects (store-specific, cast through any)
-  for (const effect of (result as any).sideEffects || []) {
-    if (effect === 'expand_active_route') (get() as any).expandActiveRoute();
-    if (effect === 'step_plan') { (get() as any).stepPlanForward(); return true; }
-    if (effect === 'print_message') setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as any), 1500);
+  // Side effects
+  for (const effect of result.sideEffects || []) {
+    if (effect === 'expand_active_route') store.expandActiveRoute();
+    if (effect === 'step_plan') { store.stepPlanForward(); return true; }
+    if (effect === 'print_message') setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as Partial<FMCState>), 1500);
     if (effect === 'atsu_uplink_received') {
-      (get() as any).addMessage?.('RTE UPLINK', 'IMPORTANT');
+      store.addMessage?.('RTE UPLINK', 'IMPORTANT');
     }
   }
 
   // scratchpadMessage in success
-  if ((result.success as any)?.scratchpadMessage) {
-    set({ scratchpadError: (result.success as any).scratchpadMessage, scratchpad: '', msgLight: true } as any);
+  if (success?.scratchpadMessage) {
+    set({ scratchpadError: success.scratchpadMessage, scratchpad: '', msgLight: true } as Partial<FMCState>);
   }
 
   return true;

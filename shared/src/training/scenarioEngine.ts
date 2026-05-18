@@ -176,9 +176,15 @@ export class TrainingScenarioEngine {
 
 // Singleton for easier integration with existing components
 export const scenarioEngine = new TrainingScenarioEngine({ 
-  id: 'placeholder', 
-  name: 'Placeholder', 
+  id: 'placeholder',
+  aircraft: 'BOEING_737',
+  title: 'Placeholder',
+  description: 'Placeholder scenario',
+  level: 1,
+  category: 'fmc',
+  difficulty: 'basic',
+  setup: {},
   steps: [], 
   estimatedMinutes: 5,
-  passCriteria: { minScore: 80 } 
-} as any);
+  passCriteria: { minScore: 80, maxMistakes: 5 } 
+});

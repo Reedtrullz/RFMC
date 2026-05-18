@@ -1,5 +1,5 @@
 import { AircraftState, FlightPlanWaypoint } from '../types/fmc';
-import { LegTypeEngine, FmsLeg } from './LegTypeEngine';
+import { LegTypeEngine, FmsLeg, LegType } from './LegTypeEngine';
 
 export class LegSequencer {
   /**
@@ -15,13 +15,13 @@ export class LegSequencer {
  
     // Map FlightPlanWaypoint to FmsLeg for the engine
     const currentFmsLeg: FmsLeg = {
-      type: (currentLeg.legType as any) || 'TF',
+      type: (currentLeg.legType as LegType) || 'TF',
       to: { ident: currentLeg.ident, lat: currentLeg.lat!, lon: currentLeg.lon!, type: 'WAYPOINT' },
       altitudeConstraintFt: currentLeg.altitudeConstraint?.altitude,
     };
  
     const nextFmsLeg: FmsLeg | undefined = nextLeg ? {
-      type: (nextLeg.legType as any) || 'TF',
+      type: (nextLeg.legType as LegType) || 'TF',
       to: { ident: nextLeg.ident, lat: nextLeg.lat!, lon: nextLeg.lon!, type: 'WAYPOINT' },
       altitudeConstraintFt: nextLeg.altitudeConstraint?.altitude,
     } : undefined;

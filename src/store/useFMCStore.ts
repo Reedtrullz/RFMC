@@ -2251,10 +2251,12 @@ if (typeof window !== 'undefined') {
     useFMCStore.getState().updateFmsEcosystem();
   }, 1000);
 
-  // Expose store for E2E testing
-  (window as any).useFMCStore = useFMCStore;
-  (window as any).useAircraftStore = useAircraftStore;
-  (window as any).useAutopilotStore = useAutopilotStore;
-  (window as any).useConnectionStore = useConnectionStore;
-  (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
+  // Expose stores for E2E testing only in non-production builds
+  if (import.meta.env.MODE !== 'production') {
+    (window as any).useFMCStore = useFMCStore;
+    (window as any).useAircraftStore = useAircraftStore;
+    (window as any).useAutopilotStore = useAutopilotStore;
+    (window as any).useConnectionStore = useConnectionStore;
+    (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
+  }
 }

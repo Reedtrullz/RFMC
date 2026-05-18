@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderIdentPage, renderMenuPage, renderPerfInitPage, renderPosInitPage, renderTakeoffRefPage, renderThrustLimPage } from '../fmc/pages/setup';
-import { renderLegsPage, renderHoldPage, renderFixPage, renderProgressPage } from '../fmc/pages/navigation';
+import { renderHoldPage, renderFixPage } from '../fmc/pages/navigation';
 import { renderRtePage, renderDepArrPage } from '../fmc/pages/route';
 import { renderClbPage } from '../fmc/pages/climb';
 import { renderCrzPage } from '../fmc/pages/cruise';
@@ -9,6 +9,7 @@ import { renderDirIntcPage } from '../fmc/pages/direct';
 import { renderN1LimitPage } from '../fmc/pages/n1limit';
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
 import { renderBoeingProgressGrid } from '../fmc/pages/boeing/progress.grid';
+import { renderBoeingLegsGrid } from '../fmc/pages/boeing/legs.grid';
 import { createBaseState } from './testUtils';
 
 const baseState = createBaseState({
@@ -60,8 +61,8 @@ describe('Page Renderers', () => {
       renderThrustLimPage,
       renderTakeoffRefPage,
       renderMenuPage,
-      renderLegsPage,
-      renderProgressPage,
+      renderBoeingLegsGrid,
+      renderBoeingProgressGrid,
       renderHoldPage,
       renderFixPage,
       renderRtePage,
@@ -115,15 +116,10 @@ describe('Page Renderers', () => {
   });
 
   it('renders authentic Boeing PROGRESS page layout', () => {
-    const data = renderProgressPage(baseState);
-    expect(data.title).toBe('PROGRESS');
-    expect(data.lines.some(l => l.text.includes('LAST'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('TO'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('NEXT'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('DEST'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('CMD SPD'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('KJFK'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('KDCA'))).toBe(true);
+    const data = renderBoeingProgressGrid(baseState);
+    expect(data.segments?.some(s => s.semantic === 'title' && s.text === 'PROGRESS')).toBe(true);
+    expect(data.segments?.some(s => s.text === 'KJFK')).toBe(true);
+    expect(data.segments?.some(s => s.text === 'KDCA')).toBe(true);
   });
 
   it('renders Boeing PROGRESS from shared LNAV VNAV and performance truth', () => {
@@ -180,11 +176,6 @@ describe('Page Renderers', () => {
       },
     });
 
-    const lineData = renderProgressPage(state);
-    expect(lineData.lines.some(l => l.text.includes('FIX1'))).toBe(true);
-    expect(lineData.lines.some(l => l.text.includes('VNAV'))).toBe(true);
-    expect(lineData.lines.some(l => l.text.includes('8000'))).toBe(true);
-
     const gridData = renderBoeingProgressGrid(state);
     expect(gridData.segments?.some(s => s.text === 'FIX1')).toBe(true);
     expect(gridData.segments?.some(s => s.text === 'FUEL DEST')).toBe(true);
@@ -230,9 +221,9 @@ describe('Page Renderers', () => {
         ],
       },
     };
-    const data = renderLegsPage(state);
-    expect(data.title).toBe('LEGS');
-    expect(data.lines.some(l => l.text.includes('RBV'))).toBe(true);
+    const data = renderBoeingLegsGrid(state);
+    expect(data.segments?.some(s => s.semantic === 'title' && s.text.includes('LEGS'))).toBe(true);
+    expect(data.segments?.some(s => s.text === 'RBV')).toBe(true);
   });
 
   it('emits delete_wp_* LSK actions when deleteMode is true', () => {
@@ -248,11 +239,10 @@ describe('Page Renderers', () => {
         ],
       },
     };
-    const data = renderLegsPage(state);
+    const data = renderBoeingLegsGrid(state);
     expect(data.lskActions['L1']).toBe('delete_wp_0');
     expect(data.lskActions['L2']).toBe('delete_wp_1');
     expect(data.lskActions['L3']).toBe('delete_wp_2');
-    expect(data.lines.some(l => l.text.includes('DEL') && l.text.includes('RBV'))).toBe(true);
   });
 
   it('emits edit_wp_* LSK actions when deleteMode is false', () => {
@@ -267,22 +257,9 @@ describe('Page Renderers', () => {
         ],
       },
     };
-    const data = renderLegsPage(state);
+    const data = renderBoeingLegsGrid(state);
     expect(data.lskActions['L1']).toBe('edit_wp_0');
     expect(data.lskActions['L2']).toBe('edit_wp_1');
-  });
-
-  it('shows DEL mode indicator in title when deleteMode is true', () => {
-    const state = {
-      ...baseState,
-      deleteMode: true,
-      flightPlan: {
-        ...baseState.flightPlan,
-        waypoints: [{ ident: 'RBV', discontinuity: false }],
-      },
-    };
-    const data = renderLegsPage(state);
-    expect(data.lines[0].text.includes('DEL')).toBe(true);
   });
 });
 

@@ -53,7 +53,7 @@ export class FmsRuntimeEngine {
           };
         }
         // Also update performance engine with the change if needed
-        console.log(`Sequencing: ${reason}`);
+        // TODO: route sequencing telemetry — replace with structured event logging
       }
     }
 

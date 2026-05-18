@@ -1,9 +1,25 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import type { ProcedureLeg } from '../fmc/navdataSchema';
 
+export type NavdataStatusValue = {
+  isPopulated: boolean;
+  airacCycle: string;
+  version: number;
+};
+
+export type NavdataCheckpointValue = {
+  airacCycle: string;
+  version: number;
+  storeName: string;
+  batchIndex: number;
+  processedItems: number;
+};
+
+export type DbMetadataValue = NavdataStatusValue | NavdataCheckpointValue;
+
 export interface DbMetadata {
   key: string;
-  value: any;
+  value: DbMetadataValue;
 }
 
 export interface AirportRecord {

@@ -16,7 +16,7 @@ export function handleSpecialLskAction(
             scratchpad: 'DES NOW ARMED',
             scratchpadError: null,
             msgLight: true,
-          } as any,
+          },
         },
       };
 
@@ -25,7 +25,7 @@ export function handleSpecialLskAction(
         handled: true,
         sideEffect: 'step_plan',
         returnEarly: true,
-      } as any as FmcActionResult & { sideEffect?: string; returnEarly?: boolean };
+      };
 
     case 'align_irs': {
       const supportedAircraft = ['BOEING_737', 'AIRBUS_A320'];
@@ -61,7 +61,7 @@ export function handleSpecialLskAction(
             isModified: false,
             execLit: false,
             editWaypointIndex: null,
-          } as any,
+          },
         },
       };
 
@@ -78,7 +78,7 @@ export function handleSpecialLskAction(
             msgLight: true,
             pendingFlightPlan: state.flightPlan,
             pendingRoute: state.route,
-          } as any,
+          },
         },
       };
 

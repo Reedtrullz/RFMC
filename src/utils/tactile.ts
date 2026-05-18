@@ -1,3 +1,5 @@
+import { getAudioContext } from '../services/audioContext';
+
 /**
  * Synthesizes a subtle tactile 'click' sound and triggers device vibration.
  */
@@ -6,7 +8,7 @@ class TactileEngine {
 
   private initAudio() {
     if (!this.audioCtx) {
-      this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioCtx = getAudioContext();
     }
   }
 

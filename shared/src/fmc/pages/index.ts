@@ -1,7 +1,7 @@
 import type { FMCState, DisplayData, PageType } from '../../types/fmc';
 import { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage, renderNavDataPage } from './setup';
 import { renderRtePage, renderDepArrPage } from './route';
-import { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } from './navigation';
+import { renderHoldPage, renderFixPage } from './navigation';
 import { renderClbPage } from './climb';
 import { renderCrzPage } from './cruise';
 import { renderDesPage } from './descent';
@@ -17,7 +17,7 @@ import { renderBoeingProgressGrid } from './boeing/progress.grid';
 
 export { renderIdentPage, renderPosInitPage, renderPerfInitPage, renderThrustLimPage, renderTakeoffRefPage, renderMenuPage } from './setup';
 export { renderRtePage, renderDepArrPage } from './route';
-export { renderLegsPage, renderProgressPage, renderHoldPage, renderFixPage } from './navigation';
+export { renderHoldPage, renderFixPage } from './navigation';
 export { renderClbPage } from './climb';
 export { renderCrzPage } from './cruise';
 export { renderDesPage } from './descent';

@@ -43,6 +43,12 @@ export class PhaseManager {
     // DESCENT logic
     if (vs < -300 && altitude > haaApproachThreshold) return 'DESCENT';
 
+    // GO_AROUND logic — aircraft was in approach then applies go-around thrust
+    const prevPhase = state.flightPhase;
+    if (prevPhase === 'APPROACH' && vs > 500 && altitude >= airportElevation + 500 && speed >= 150) {
+      return 'GO_AROUND';
+    }
+
     // APPROACH logic
     if (altitude <= haaApproachThreshold && speed < 250) return 'APPROACH';
 

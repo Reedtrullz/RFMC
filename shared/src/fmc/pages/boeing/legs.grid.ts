@@ -1,6 +1,32 @@
 import type { FMCState, DisplayData, DisplaySegment, AltitudeConstraint, SpeedConstraint } from '../../../types/fmc';
 import { boeingPage, boeingTitle, seg } from './boeingGridHelpers';
-import { getLegsLskActions } from '../navigation';
+function getLegsGridLskActions(state: FMCState): Record<string, string | null> {
+  const actions: Record<string, string | null> = {};
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const { legsPageIndex, deleteMode } = state;
+  const perPage = 5;
+  const start = legsPageIndex * perPage;
+  const waypoints = flightPlan.waypoints;
+  const totalPages = Math.max(1, Math.ceil(waypoints.length / perPage));
+  const pageCount = Math.min(perPage, waypoints.length - start);
+
+  for (let i = 0; i < pageCount; i++) {
+    const globalIndex = start + i;
+    const prefix = deleteMode ? 'delete_wp' : 'edit_wp';
+    actions[`L${i + 1}`] = `${prefix}_${globalIndex}`;
+    actions[`R${i + 1}`] = null;
+  }
+
+  if (totalPages > 1) {
+    if (legsPageIndex < totalPages - 1) actions['L6'] = 'next_page';
+    if (legsPageIndex > 0) actions['R6'] = 'prev_page';
+  }
+
+  if (state.efisL?.mode === 'PLN') actions['R6'] = 'step_plan';
+  if (state.isModified) actions['L6'] = 'erase';
+
+  return actions;
+}
 
 export function renderBoeingLegsGrid(state: FMCState): DisplayData {
   const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
@@ -49,7 +75,7 @@ export function renderBoeingLegsGrid(state: FMCState): DisplayData {
     segments.push(seg(13, 19, 'STEP>', 'white'));
   }
 
-  return boeingPage(segments, getLegsLskActions(state));
+  return boeingPage(segments, getLegsGridLskActions(state));
 }
 
 function formatAltitude(constraint?: AltitudeConstraint): string {
