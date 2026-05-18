@@ -36,13 +36,6 @@ export async function populateNavDb(
       return;
     }
 
-    const clearTx = db.transaction(['airports', 'runways', 'waypoints', 'procedures'], 'readwrite');
-    await clearTx.objectStore('airports').clear();
-    await clearTx.objectStore('runways').clear();
-    await clearTx.objectStore('waypoints').clear();
-    await clearTx.objectStore('procedures').clear();
-    await clearTx.done;
-
     const totalItems =
       (data.airports?.length ?? 0) +
       (data.runways?.length ?? 0) +
@@ -51,12 +44,53 @@ export async function populateNavDb(
       
     let processedItems = 0;
 
+    const checkpointKey = 'navdata_load_checkpoint';
+    const checkpoint = await db.get('metadata', checkpointKey);
+    
+    let resumeStoreName = 'airports';
+    let resumeIndex = 0;
+    let resumeProcessedItems = 0;
+    
+    const isResumeValid = checkpoint && 
+      checkpoint.value &&
+      checkpoint.value.airacCycle === data.metadata.airacCycle &&
+      checkpoint.value.version === data.metadata.version;
+      
+    if (isResumeValid) {
+      resumeStoreName = checkpoint.value.storeName;
+      resumeIndex = checkpoint.value.batchIndex;
+      resumeProcessedItems = checkpoint.value.processedItems;
+      processedItems = resumeProcessedItems;
+    } else {
+      await db.delete('metadata', checkpointKey);
+      const clearTx = db.transaction(['airports', 'runways', 'waypoints', 'procedures'], 'readwrite');
+      await clearTx.objectStore('airports').clear();
+      await clearTx.objectStore('runways').clear();
+      await clearTx.objectStore('waypoints').clear();
+      await clearTx.objectStore('procedures').clear();
+      await clearTx.done;
+    }
+
     const BATCH_SIZE = 1000;
 
-    async function processBatch<T>(storeName: 'airports' | 'runways' | 'waypoints' | 'procedures', items: T[]) {
+    async function processBatch<T>(
+      storeName: 'airports' | 'runways' | 'waypoints' | 'procedures', 
+      items: T[]
+    ) {
       if (!items || items.length === 0) return;
 
-      for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const storeOrder = ['airports', 'runways', 'waypoints', 'procedures'];
+      const targetOrderIndex = storeOrder.indexOf(storeName);
+      const resumeOrderIndex = storeOrder.indexOf(resumeStoreName as any);
+
+      if (targetOrderIndex < resumeOrderIndex) {
+        processedItems += items.length;
+        return;
+      }
+
+      const startIndex = targetOrderIndex === resumeOrderIndex ? resumeIndex : 0;
+
+      for (let i = startIndex; i < items.length; i += BATCH_SIZE) {
         const batch = items.slice(i, i + BATCH_SIZE);
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
@@ -70,6 +104,40 @@ export async function populateNavDb(
         if (onProgress && totalItems > 0) {
           onProgress(Math.round((processedItems / totalItems) * 100));
         }
+
+        const nextBatchIndex = i + BATCH_SIZE;
+        let nextStoreName = storeName;
+        let finalBatchIndex = nextBatchIndex;
+        if (nextBatchIndex >= items.length) {
+          const nextIndex = targetOrderIndex + 1;
+          if (nextIndex < storeOrder.length) {
+            nextStoreName = storeOrder[nextIndex] as any;
+            finalBatchIndex = 0;
+          }
+        }
+        
+        const currentProcessed = processedItems;
+
+        setTimeout(() => {
+          getNavDb().then(async (database) => {
+            try {
+              const metaTx = database.transaction('metadata', 'readwrite');
+              await metaTx.objectStore('metadata').put({
+                key: checkpointKey,
+                value: {
+                  airacCycle: data.metadata.airacCycle,
+                  version: data.metadata.version,
+                  storeName: nextStoreName,
+                  batchIndex: finalBatchIndex,
+                  processedItems: currentProcessed
+                }
+              });
+              await metaTx.done;
+            } catch (e) {
+              console.error('Error writing checkpoint', e);
+            }
+          });
+        }, 0);
 
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
@@ -91,6 +159,7 @@ export async function populateNavDb(
         version: data.metadata.version,
       },
     });
+    await metaTx.objectStore('metadata').delete(checkpointKey);
     await metaTx.done;
 
     if (onProgress) onProgress(100);
