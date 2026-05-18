@@ -1,5 +1,5 @@
 import type { FMCState, DisplayData, PageType } from '@virtual-cdu/shared';
-import { getPageRenderer, parseRouteString } from '@virtual-cdu/shared';
+import { getPageRenderer, parseRouteString, FmsRuntimeEngine } from '@virtual-cdu/shared';
 import {
   isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
   isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure,
@@ -26,9 +26,42 @@ function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix
 
 export class FMCEngine {
   private state: FMCState;
+  private tickInterval: any = null;
 
   constructor() {
     this.state = this.createDefaultState();
+    this.startTickLoop();
+  }
+
+  private startTickLoop(): void {
+    // 10Hz periodic tick loop (100ms) to ensure LNAV/VNAV state updates on the backend
+    this.tickInterval = setInterval(() => {
+      try {
+        const nextState = FmsRuntimeEngine.tick(this.state, 0.1);
+        if (nextState) {
+          this.state = {
+            ...this.state,
+            ...nextState,
+            autopilot: {
+              ...this.state.autopilot,
+              truth: {
+                ...this.state.autopilot.truth,
+                ...(nextState as any).autopilot?.truth
+              }
+            }
+          };
+        }
+      } catch (err) {
+        console.error('[FMC Engine] Error during server engine tick:', err);
+      }
+    }, 100);
+  }
+
+  destroy(): void {
+    if (this.tickInterval) {
+      clearInterval(this.tickInterval);
+      this.tickInterval = null;
+    }
   }
 
   private createDefaultState(): FMCState {

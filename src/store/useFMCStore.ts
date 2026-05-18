@@ -985,6 +985,49 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({ aircraftState: state });
     // Outward sync to AircraftStore
     useAircraftStore.getState().setAircraftState(state);
+
+    // Sync incoming autopilot telemetry from SimConnect back to FMC autopilot stores
+    if (state) {
+      set((s) => {
+        const truth = { ...s.autopilot.truth };
+        const boeing = { ...s.autopilot.boeing };
+        const airbus = { ...s.autopilot.airbus };
+
+        if (state.apMaster !== undefined) {
+          truth.autopilotStatus = state.apMaster ? (s.aircraft === 'AIRBUS_A320' ? 'AP1' : 'CMD_A') : 'OFF';
+        }
+        if (state.apLnavActive !== undefined) {
+          truth.lateralActive = state.apLnavActive ? 'LNAV' : 'OFF';
+          boeing.lnav = state.apLnavActive;
+        }
+        if (state.apVnavActive !== undefined) {
+          truth.verticalActive = state.apVnavActive ? 'VNAV_PTH' : 'OFF';
+          boeing.vnav = state.apVnavActive;
+        }
+        if (state.apHeadingActive !== undefined) {
+          truth.lateralActive = state.apHeadingActive ? 'HDG_SEL' : 'OFF';
+          boeing.hdgSel = state.apHeadingActive;
+        }
+        if (state.apAltitudeActive !== undefined) {
+          truth.verticalActive = state.apAltitudeActive ? 'ALT_HOLD' : 'OFF';
+          boeing.altHold = state.apAltitudeActive;
+        }
+        if (state.apTargetAltitude !== undefined) {
+          boeing.altitude = state.apTargetAltitude;
+        }
+
+        return {
+          autopilot: { boeing, airbus, truth }
+        };
+      });
+
+      useAutopilotStore.setState({
+        boeing: get().autopilot.boeing,
+        airbus: get().autopilot.airbus,
+        truth: get().autopilot.truth
+      });
+    }
+
     get().updateFlightPhase();
   },
 

@@ -1,7 +1,8 @@
 import { NAV_FIXES } from '../navdata/navdataStore';
 import { AIRPORTS, WAYPOINTS } from './airFMCData';
 import type { NavFix } from '../navdata/navdataTypes';
-import { getAirport, getWaypointsByIdent } from '../db/navDb';
+import { getAirport, getWaypointsByIdent, getProceduresForAirport, ProcedureRecord } from '../db/navDb';
+import type { ProcedureType } from './navdataSchema';
 
 interface GeoPoint {
   lat: number;
@@ -12,9 +13,11 @@ interface GeoPoint {
 export const NAV_CACHE: {
   airports: Record<string, GeoPoint & { name: string; runways: string[] }>;
   waypoints: Record<string, GeoPoint & { type?: string; country_code?: string }>;
+  procedures: Record<string, ProcedureRecord[]>;
 } = {
   airports: {},
   waypoints: {},
+  procedures: {},
 };
 
 // Check if IndexedDB is available (browsers only, avoids crashing Node.js server)
@@ -56,6 +59,27 @@ export async function loadIntoCache(ident: string): Promise<boolean> {
     }
   } catch (error) {
     console.error(`Failed to load ${upper} into nav cache:`, error);
+  }
+
+  return false;
+}
+
+export async function loadProceduresIntoCache(icao: string): Promise<boolean> {
+  if (!icao || !hasIndexedDB) return false;
+  const upper = icao.toUpperCase();
+  if (NAV_CACHE.procedures[upper]) {
+    return true;
+  }
+
+  try {
+    const sids = await getProceduresForAirport(upper, 'SID');
+    const stars = await getProceduresForAirport(upper, 'STAR');
+    const approaches = await getProceduresForAirport(upper, 'APPROACH');
+    
+    NAV_CACHE.procedures[upper] = [...sids, ...stars, ...approaches];
+    return true;
+  } catch (error) {
+    console.error(`Failed to load procedures for ${upper} into nav cache:`, error);
   }
 
   return false;

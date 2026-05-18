@@ -36,6 +36,14 @@
       "lon": -118.407997,
       "elevation": 125,
       "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"]
+    },
+    {
+      "icao": "KDCA",
+      "name": "Ronald Reagan Washington Natl",
+      "lat": 38.8522,
+      "lon": -77.0378,
+      "elevation": 15,
+      "runways": ["01", "19", "04", "22", "15", "33"]
     }
   ],
   "runways": [
@@ -67,6 +75,31 @@
       "lon": 11.456,
       "type": "VOR",
       "country_code": "EN"
+    }
+  ],
+  "procedures": [
+    {
+      "id": "ENGM-SID-LUNIP1A",
+      "airport_icao": "ENGM",
+      "type": "SID",
+      "ident": "LUNIP1A",
+      "transition": "01L",
+      "legs": [
+        { "type": "IF", "fix": "ENGM" },
+        { "type": "TF", "fix": "SOXOT", "course": 10, "distanceNm": 5 },
+        { "type": "TF", "fix": "LUNIP", "course": 280, "distanceNm": 15, "altitude": "7000A" }
+      ]
+    },
+    {
+      "id": "ENBR-STAR-LOGUT1B",
+      "airport_icao": "ENBR",
+      "type": "STAR",
+      "ident": "LOGUT1B",
+      "transition": "17",
+      "legs": [
+        { "type": "IF", "fix": "LOGUT" },
+        { "type": "TF", "fix": "BGO", "course": 260, "distanceNm": 20, "altitude": "4000" }
+      ]
     }
   ]
 }

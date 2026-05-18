@@ -1,5 +1,6 @@
-import { NavFix, Procedure, ProcedureLeg, ExpandedLeg } from './navdataTypes';
+import { NavFix, Procedure, ProcedureLeg, ExpandedLeg, ProcedureType } from './navdataTypes';
 import { getFix, PROCEDURES } from './navdataStore';
+import { NAV_CACHE } from '../fmc/navDatabase';
 
 export function expandRoute(
   origin: string,
@@ -11,10 +12,40 @@ export function expandRoute(
 ): ExpandedLeg[] {
   let legs: ExpandedLeg[] = [];
   
+  const findProcedure = (airportIcao: string, ident: string, type: ProcedureType): Procedure | undefined => {
+    const cachedProcs = NAV_CACHE.procedures[airportIcao.toUpperCase()];
+    if (cachedProcs) {
+      const p = cachedProcs.find(p => p.ident === ident && p.type === type);
+      if (p) {
+        return {
+          ident: p.ident,
+          type: p.type as ProcedureType,
+          airportIcao: p.airport_icao,
+          legs: p.legs.map(leg => ({
+            type: leg.type as any,
+            fixIdent: leg.fix,
+            courseDeg: leg.course,
+            distanceNm: leg.distanceNm,
+            altitudeConstraint: leg.altitude ? parseAltitude(leg.altitude) : undefined,
+            speedConstraint: leg.speed ? parseSpeed(leg.speed) : undefined,
+            isFlyOver: leg.turnDirection === 'L' || leg.turnDirection === 'R'
+          }))
+        };
+      }
+    }
+    
+    return PROCEDURES.find(p => p.ident === ident && p.type === type && (p.airport === airportIcao || p.airportIcao === airportIcao));
+  };
+
   // 1. SID
-  if (sidIdent) {
-    const sid = PROCEDURES.find(p => p.ident === sidIdent && p.type === 'SID');
-    if (sid) legs = [...legs, ...expandProcedure(sid)];
+  if (sidIdent && origin) {
+    const sid = findProcedure(origin, sidIdent, 'SID');
+    if (sid) {
+      legs = [...legs, ...expandProcedure(sid)];
+    } else {
+      const originFix = getFix(origin);
+      if (originFix) legs.push(mapFixToLeg(originFix, 'ORIGIN'));
+    }
   } else if (origin) {
     const originFix = getFix(origin);
     if (originFix) legs.push(mapFixToLeg(originFix, 'ORIGIN'));
@@ -27,14 +58,14 @@ export function expandRoute(
   }
 
   // 3. STAR
-  if (starIdent) {
-    const star = PROCEDURES.find(p => p.ident === starIdent && p.type === 'STAR');
+  if (starIdent && destination) {
+    const star = findProcedure(destination, starIdent, 'STAR');
     if (star) legs = [...legs, ...expandProcedure(star)];
   }
 
   // 4. Approach
-  if (approachIdent) {
-    const appr = PROCEDURES.find(p => p.ident === approachIdent && p.type === 'APPROACH');
+  if (approachIdent && destination) {
+    const appr = findProcedure(destination, approachIdent, 'APPROACH');
     if (appr) legs = [...legs, ...expandProcedure(appr)];
   } else if (destination && !starIdent) {
     const destFix = getFix(destination);
@@ -42,6 +73,16 @@ export function expandRoute(
   }
 
   return legs;
+}
+
+function parseAltitude(altStr: string) {
+  const val = parseInt(altStr.replace(/[^0-9]/g, ''));
+  return { value: val, type: 'AT' as const };
+}
+
+function parseSpeed(spdStr: string) {
+  const val = parseInt(spdStr.replace(/[^0-9]/g, ''));
+  return { value: val, type: 'AT' as const };
 }
 
 function mapFixToLeg(fix: NavFix, type: string): ExpandedLeg {

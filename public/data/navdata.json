@@ -23,7 +23,8 @@
     { "icao": "ENTO", "name": "Sandefjord Torp", "lat": 59.1867, "lon": 10.2586, "elevation": 286, "runways": ["18", "36"] },
     { "icao": "ENZV", "name": "Stavanger Sola", "lat": 58.8767, "lon": 5.6378, "elevation": 30, "runways": ["18", "36", "11", "29"] },
     { "icao": "KJFK", "name": "John F Kennedy Intl", "lat": 40.6398, "lon": -73.7789, "elevation": 13, "runways": ["04L", "04R", "13L", "13R", "22L", "22R", "31L", "31R"] },
-    { "icao": "KLAX", "name": "Los Angeles Intl", "lat": 33.9425, "lon": -118.408, "elevation": 125, "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"] }
+    { "icao": "KLAX", "name": "Los Angeles Intl", "lat": 33.9425, "lon": -118.408, "elevation": 125, "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"] },
+    { "icao": "KDCA", "name": "Ronald Reagan Washington Natl", "lat": 38.8522, "lon": -77.0378, "elevation": 15, "runways": ["01", "19", "04", "22", "15", "33"] }
   ],
   "runways": [
     { "id": "ENGM-01L", "airport_icao": "ENGM", "ident": "01L", "length": 11811, "width": 148, "heading": 13, "lat": 60.1772, "lon": 11.0858, "ils_freq": 110.3 },
@@ -35,6 +36,76 @@
     { "id": "PESOT-WP", "ident": "PESOT", "lat": 60.15, "lon": 8.5, "type": "WP", "country_code": "EN" },
     { "id": "LOGUT-WP", "ident": "LOGUT", "lat": 60.2, "lon": 6.5, "type": "WP", "country_code": "EN" },
     { "id": "OSL-VOR", "ident": "OSL", "lat": 60.1417, "lon": 11.0767, "type": "VOR", "country_code": "EN" },
-    { "id": "BGO-VOR", "ident": "BGO", "lat": 60.2883, "lon": 5.2533, "type": "VOR", "country_code": "EN" }
+    { "id": "BGO-VOR", "ident": "BGO", "lat": 60.2883, "lon": 5.2533, "type": "VOR", "country_code": "EN" },
+    { "id": "SOXOT-WP", "ident": "SOXOT", "lat": 60.3, "lon": 11.2, "type": "WP", "country_code": "EN" },
+    { "id": "CANAR-WP", "ident": "CANAR", "lat": 40.5639, "lon": -73.9167, "type": "WP", "country_code": "US" },
+    { "id": "BETTE-WP", "ident": "BETTE", "lat": 40.38, "lon": -73.35, "type": "WP", "country_code": "US" },
+    { "id": "RBV-VOR", "ident": "RBV", "lat": 40.2023, "lon": -74.495, "type": "VOR", "country_code": "US" },
+    { "id": "ENO-VOR", "ident": "ENO", "lat": 39.3875, "lon": -75.4325, "type": "VOR", "country_code": "US" },
+    { "id": "SWANN-WP", "ident": "SWANN", "lat": 39.15, "lon": -76.35, "type": "WP", "country_code": "US" },
+    { "id": "FERRY-WP", "ident": "FERRY", "lat": 38.93, "lon": -77.06, "type": "WP", "country_code": "US" },
+    { "id": "JFK-VOR", "ident": "JFK", "lat": 40.6327, "lon": -73.7709, "type": "VOR", "country_code": "US" },
+    { "id": "DCA-VOR", "ident": "DCA", "lat": 38.851, "lon": -77.0366, "type": "VOR", "country_code": "US" }
+  ],
+  "procedures": [
+    {
+      "id": "KJFK-SID-BETTE3",
+      "airport_icao": "KJFK",
+      "type": "SID",
+      "ident": "BETTE3",
+      "transition": "31L",
+      "legs": [
+        { "type": "IF", "fix": "KJFK" },
+        { "type": "TF", "fix": "CANAR", "course": 225, "distanceNm": 10, "speed": "250B" },
+        { "type": "TF", "fix": "BETTE", "course": 120, "distanceNm": 25, "altitude": "5000A" }
+      ]
+    },
+    {
+      "id": "KDCA-STAR-IRONS7",
+      "airport_icao": "KDCA",
+      "type": "STAR",
+      "ident": "IRONS7",
+      "transition": "19",
+      "legs": [
+        { "type": "IF", "fix": "RBV" },
+        { "type": "TF", "fix": "ENO", "course": 240, "distanceNm": 50, "altitude": "12000" },
+        { "type": "TF", "fix": "SWANN", "course": 235, "distanceNm": 35, "altitude": "6000" },
+        { "type": "TF", "fix": "FERRY", "course": 195, "distanceNm": 15, "speed": "210" }
+      ]
+    },
+    {
+      "id": "KDCA-APPROACH-ILS19",
+      "airport_icao": "KDCA",
+      "type": "APPROACH",
+      "ident": "ILS19",
+      "transition": "19",
+      "legs": [
+        { "type": "IF", "fix": "FERRY" },
+        { "type": "CF", "fix": "DCA", "course": 188, "distanceNm": 5, "altitude": "1500" }
+      ]
+    },
+    {
+      "id": "ENGM-SID-LUNIP1A",
+      "airport_icao": "ENGM",
+      "type": "SID",
+      "ident": "LUNIP1A",
+      "transition": "01L",
+      "legs": [
+        { "type": "IF", "fix": "ENGM" },
+        { "type": "TF", "fix": "SOXOT", "course": 10, "distanceNm": 5 },
+        { "type": "TF", "fix": "LUNIP", "course": 280, "distanceNm": 15, "altitude": "7000A" }
+      ]
+    },
+    {
+      "id": "ENBR-STAR-LOGUT1B",
+      "airport_icao": "ENBR",
+      "type": "STAR",
+      "ident": "LOGUT1B",
+      "transition": "17",
+      "legs": [
+        { "type": "IF", "fix": "LOGUT" },
+        { "type": "TF", "fix": "BGO", "course": 260, "distanceNm": 20, "altitude": "4000" }
+      ]
+    }
   ]
 }

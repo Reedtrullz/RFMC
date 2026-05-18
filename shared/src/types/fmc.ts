@@ -583,4 +583,10 @@ export interface AircraftState extends AircraftTelemetry {
   gw: number;
   accelerationKtS?: number;
   selectedHeading?: number;
+  apMaster?: boolean;
+  apLnavActive?: boolean;
+  apVnavActive?: boolean;
+  apHeadingActive?: boolean;
+  apAltitudeActive?: boolean;
+  apTargetAltitude?: number;
 }

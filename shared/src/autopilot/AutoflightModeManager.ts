@@ -1,5 +1,6 @@
 import { FMCState } from '../types/fmc';
 import { AutoflightTruthState, LateralMode, VerticalMode, ThrustMode } from './autopilotTypes';
+import { buildVnavPrediction } from '../fmc/vnavPrediction';
 
 export type ModeGuardResult = {
   ok: boolean;
@@ -164,6 +165,19 @@ export class AutoflightModeManager {
       }
     }
 
+    if (!changed && currentState.verticalActive === 'VNAV_PTH') {
+      const vnav = buildVnavPrediction(fmcState);
+      if (!vnav.available || (vnav.pathDeviationFt !== null && Math.abs(vnav.pathDeviationFt) > 250)) {
+        updates.verticalActive = 'OFF';
+        updates.verticalArmed = 'VNAV_PTH';
+        updates.lastModeChangeTimestamps = { 
+          ...currentState.lastModeChangeTimestamps, 
+          vertical: Date.now() 
+        };
+        changed = true;
+      }
+    }
+
     return changed ? updates : null;
   }
 
@@ -192,8 +206,13 @@ export class AutoflightModeManager {
     switch (mode) {
       case 'G_S':
         return true; // Simplified capture
-      case 'VNAV_PTH':
-        return true; // Simplified capture
+      case 'VNAV_PTH': {
+        const vnav = buildVnavPrediction(state);
+        if (!vnav.available || vnav.pathDeviationFt === null) {
+          return false;
+        }
+        return Math.abs(vnav.pathDeviationFt) < 150;
+      }
       default:
         return false;
     }

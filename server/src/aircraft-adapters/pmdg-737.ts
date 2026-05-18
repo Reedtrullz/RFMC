@@ -376,6 +376,13 @@ export class PMDG737Adapter implements IAircraftAdapter {
         'feet per minute',
         SimConnectDataType.FLOAT64
       );
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT MASTER', 'bool', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT LNAV ACTIVE', 'bool', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT VNAV ACTIVE', 'bool', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT HEADING LOCK', 'bool', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK', 'bool', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK VAR', 'feet', SimConnectDataType.FLOAT64);
+      
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
@@ -398,6 +405,12 @@ export class PMDG737Adapter implements IAircraftAdapter {
             const tas = recvSimObjectData.data.readFloat64();
             const gs = recvSimObjectData.data.readFloat64();
             const vs = recvSimObjectData.data.readFloat64();
+            const apMaster = recvSimObjectData.data.readFloat64() !== 0;
+            const apLnavActive = recvSimObjectData.data.readFloat64() !== 0;
+            const apVnavActive = recvSimObjectData.data.readFloat64() !== 0;
+            const apHeadingActive = recvSimObjectData.data.readFloat64() !== 0;
+            const apAltitudeActive = recvSimObjectData.data.readFloat64() !== 0;
+            const apTargetAltitude = recvSimObjectData.data.readFloat64();
 
             this.simState = {
               lat,
@@ -411,6 +424,12 @@ export class PMDG737Adapter implements IAircraftAdapter {
               verticalSpeedFpm: vs,
               pitchDeg: 0,
               bankDeg: 0,
+              apMaster,
+              apLnavActive,
+              apVnavActive,
+              apHeadingActive,
+              apAltitudeActive,
+              apTargetAltitude,
 
               // Legacy
               altitude,

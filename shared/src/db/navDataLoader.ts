@@ -1,4 +1,4 @@
-import { getNavDb, AirportRecord, RunwayRecord, WaypointRecord } from './navDb';
+import { getNavDb, AirportRecord, RunwayRecord, WaypointRecord, ProcedureRecord } from './navDb';
 
 interface NavDataJson {
   metadata: {
@@ -9,6 +9,7 @@ interface NavDataJson {
   airports: AirportRecord[];
   runways: RunwayRecord[];
   waypoints: WaypointRecord[];
+  procedures?: ProcedureRecord[];
 }
 
 export async function populateNavDb(
@@ -35,22 +36,24 @@ export async function populateNavDb(
       return;
     }
 
-    const clearTx = db.transaction(['airports', 'runways', 'waypoints'], 'readwrite');
+    const clearTx = db.transaction(['airports', 'runways', 'waypoints', 'procedures'], 'readwrite');
     await clearTx.objectStore('airports').clear();
     await clearTx.objectStore('runways').clear();
     await clearTx.objectStore('waypoints').clear();
+    await clearTx.objectStore('procedures').clear();
     await clearTx.done;
 
     const totalItems =
       (data.airports?.length ?? 0) +
       (data.runways?.length ?? 0) +
-      (data.waypoints?.length ?? 0);
+      (data.waypoints?.length ?? 0) +
+      (data.procedures?.length ?? 0);
       
     let processedItems = 0;
 
     const BATCH_SIZE = 1000;
 
-    async function processBatch<T>(storeName: 'airports' | 'runways' | 'waypoints', items: T[]) {
+    async function processBatch<T>(storeName: 'airports' | 'runways' | 'waypoints' | 'procedures', items: T[]) {
       if (!items || items.length === 0) return;
 
       for (let i = 0; i < items.length; i += BATCH_SIZE) {
@@ -75,6 +78,9 @@ export async function populateNavDb(
     await processBatch('airports', data.airports);
     await processBatch('runways', data.runways);
     await processBatch('waypoints', data.waypoints);
+    if (data.procedures) {
+      await processBatch('procedures', data.procedures);
+    }
 
     const metaTx = db.transaction('metadata', 'readwrite');
     await metaTx.objectStore('metadata').put({

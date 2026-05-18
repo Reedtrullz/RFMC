@@ -2,6 +2,7 @@ import type { FlightPlanWaypoint, FMCState } from '../types/fmc';
 import { distanceNm } from './ndGeometry';
 import { buildLnavState } from './lnavState';
 import { buildPerformancePrediction } from './performancePrediction';
+import { VerticalProfileEngine } from './VerticalProfileEngine';
 
 export type VnavPhase = 'climb' | 'cruise' | 'descent' | 'unavailable';
 
@@ -23,6 +24,9 @@ export interface VnavPrediction {
   topOfClimbDistanceNm: number | null;
   topOfDescentDistanceNm: number | null;
   nextConstraint: VnavConstraintPrediction | null;
+  pathDeviationFt: number | null;
+  isRequiredVsActive: boolean;
+  targetVnavAltitude: number | null;
   pathMessages: string[];
   notes: string[];
 }
@@ -49,6 +53,9 @@ export function buildVnavPrediction(state: FMCState): VnavPrediction {
       topOfClimbDistanceNm: null,
       topOfDescentDistanceNm: null,
       nextConstraint: null,
+      pathDeviationFt: null,
+      isRequiredVsActive: false,
+      targetVnavAltitude: null,
       pathMessages: ['PERF/VNAV UNAVAILABLE'],
       notes: [TRAINER_NOTE],
     };
@@ -63,6 +70,38 @@ export function buildVnavPrediction(state: FMCState): VnavPrediction {
   const topOfDescentDistanceNm = distanceToDestinationNm !== null && currentAltitudeFt <= cruiseAltitudeFt + 1000
     ? Math.max(0, roundNm(distanceToDestinationNm - (cruiseAltitudeFt / DESCENT_PROFILE_FT_PER_NM)))
     : null;
+
+  let pathDeviationFt: number | null = null;
+  let isRequiredVsActive = false;
+  let targetVnavAltitude: number | null = null;
+
+  if (phase === 'descent') {
+    if (nextConstraint) {
+      targetVnavAltitude = nextConstraint.altitudeFt;
+      pathDeviationFt = VerticalProfileEngine.calculatePathDeviation(
+        currentAltitudeFt,
+        nextConstraint.altitudeFt,
+        nextConstraint.distanceNm
+      );
+      isRequiredVsActive = true;
+    } else if (distanceToDestinationNm !== null) {
+      targetVnavAltitude = 0;
+      pathDeviationFt = VerticalProfileEngine.calculatePathDeviation(
+        currentAltitudeFt,
+        0,
+        distanceToDestinationNm
+      );
+      isRequiredVsActive = true;
+    }
+  } else if (phase === 'cruise') {
+    targetVnavAltitude = cruiseAltitudeFt;
+    pathDeviationFt = currentAltitudeFt - cruiseAltitudeFt;
+    isRequiredVsActive = false;
+  } else if (phase === 'climb') {
+    targetVnavAltitude = cruiseAltitudeFt;
+    pathDeviationFt = null;
+    isRequiredVsActive = false;
+  }
 
   if (nextConstraint && !nextConstraint.feasible) {
     pathMessages.push(nextConstraint.altitudeFt > currentAltitudeFt ? 'UNABLE NEXT ALT' : 'DRAG REQUIRED');
@@ -80,6 +119,9 @@ export function buildVnavPrediction(state: FMCState): VnavPrediction {
     topOfClimbDistanceNm,
     topOfDescentDistanceNm,
     nextConstraint,
+    pathDeviationFt,
+    isRequiredVsActive,
+    targetVnavAltitude,
     pathMessages,
     notes: [TRAINER_NOTE],
   };
