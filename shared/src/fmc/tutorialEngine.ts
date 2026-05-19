@@ -17,7 +17,7 @@ export const preflightScenario: TutorialScenario = {
       instruction:
         'PM: IDENT page displayed. Check aircraft type (737-800), engine rating (26K), and navigation database currency. This ensures the FMC is running the correct performance models and has up-to-date waypoint data. Press INIT REF to continue.',
       expectedAction: 'POS_INIT',
-      validate: () => true,
+      validate: () => false,
       page: 'IDENT',
       highlightField: 'POS_INIT',
       role: 'PM',

@@ -10,7 +10,7 @@ export const airbusBasicsScenario: TutorialScenario = {
       instruction:
         'Welcome to the A320 MCDU. Press INIT to start initialization. Airbus uses the INIT pages to define route endpoints, performance data, weight, and fuel information.',
       expectedAction: 'INIT_A',
-      validate: () => true,
+      validate: () => false,
       page: 'INIT_A',
       highlightField: 'INIT_A',
     },
@@ -92,7 +92,7 @@ export const airbusPreflight: TutorialScenario = {
       instruction:
         'You are on the INIT A page. This is the A320 equivalent of the Boeing POS INIT + RTE page combined. Enter FROM/TO (origin/destination), cost index, cruise flight level, and alternate.',
       expectedAction: 'INIT_A',
-      validate: () => true,
+      validate: () => false,
       page: 'INIT_A',
       highlightField: 'R1',
     },
@@ -216,7 +216,7 @@ export const airbusTakeoffScenario: TutorialScenario = {
       instruction:
         'Press PERF (top row, 3rd button) to go to PERF TO page. This is where Airbus pilots enter takeoff performance data.',
       expectedAction: 'PERF_TAKEOFF',
-      validate: () => true,
+      validate: () => false,
       page: 'INIT_A', // We're on IDENT page (INIT_A for Airbus)
       highlightField: 'PERF_TAKEOFF',
     },
@@ -287,7 +287,7 @@ export const airbusInFlightScenario: TutorialScenario = {
       instruction:
         'Press PROG (top row, 2nd button). The A320 PROG page shows distance-to-go, ETA, fuel remaining, wind, and true airspeed. Pilots check this page regularly enroute to monitor fuel burn and time.',
       expectedAction: 'PROG_A',
-      validate: () => true,
+      validate: () => false,
       page: 'PROG_A',
       highlightField: 'PROG_A',
     },
