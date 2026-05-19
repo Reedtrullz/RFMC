@@ -76,13 +76,13 @@ export const preflightScenario: TutorialScenario = {
       role: 'PF',
     },
     {
-      id: 'rte_dest',
-      instruction: 'PF: Enter destination KDCA. PM: Destination set to KDCA.',
-      expectedAction: 'KDCA',
-      validate: (input: string) => input.toUpperCase() === 'KDCA',
+      id: 'rte_next',
+      instruction:
+        'Press NEXT PAGE (bottom-right keypad area) to go to the route entry page. Page 1 defines endpoints; Page 2 defines the path between them.',
+      expectedAction: 'NEXT_PAGE',
+      validate: () => false,
       page: 'RTE',
-      highlightField: 'L2',
-      role: 'PF',
+      highlightField: 'NEXT_PAGE',
     },
     {
       id: 'rte_fltno',
