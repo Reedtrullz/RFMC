@@ -429,6 +429,7 @@ export interface TutorialStep {
   expectedAction: string;
   validate: (input: string, state: FMCState) => boolean;
   page: PageType;
+  subPage?: number;
   highlightField?: string;
   highlightControl?: string;
   hint?: string;
