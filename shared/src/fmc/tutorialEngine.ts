@@ -81,7 +81,7 @@ export const preflightScenario: TutorialScenario = {
       expectedAction: 'KDCA',
       validate: (input: string) => input.toUpperCase() === 'KDCA',
       page: 'RTE',
-      highlightField: 'L3',
+      highlightField: 'L2',
       role: 'PF',
     },
     {
