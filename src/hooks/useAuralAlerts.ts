@@ -60,6 +60,9 @@ export function useAuralAlerts() {
         case 'SINK_RATE': AuralAlertService.playSinkRate(); break;
         case 'DONT_SINK': AuralAlertService.playDontSink(); break;
         case 'GLIDESLOPE': AuralAlertService.playGlideslope(); break;
+        case 'TOO_LOW_GEAR': AuralAlertService.playTooLowGear(); break;
+        case 'TOO_LOW_FLAPS': AuralAlertService.playTooLowFlaps(); break;
+        case 'WINDSHEAR': AuralAlertService.playWindshear(); break;
       }
       lastGpws.current = gpwsAlert;
     }

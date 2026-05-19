@@ -49,5 +49,19 @@
         }
       ]
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-cockpit.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/images/screenshot-cdu.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
   ]
 }

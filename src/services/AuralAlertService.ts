@@ -107,6 +107,18 @@ export class AuralAlertService {
     this.playVoice("GLIDESLOPE", 0.9);
   }
 
+  public static playTooLowGear() {
+    this.playVoice("TOO LOW, GEAR", 1.1);
+  }
+
+  public static playTooLowFlaps() {
+    this.playVoice("TOO LOW, FLAPS", 1.1);
+  }
+
+  public static playWindshear() {
+    this.playVoice("WINDSHEAR, WINDSHEAR", 1.3);
+  }
+
   public static playTraffic() {
     this.playVoice("TRAFFIC, TRAFFIC", 1.2);
   }
