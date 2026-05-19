@@ -28,11 +28,11 @@ export const preflightScenario: TutorialScenario = {
     // --- POS INIT --- 
     {
       id: 'pos_init_ref',
-      instruction: 'PM: Position initialization required. REF AIRPORT tells the FMC where the aircraft is parked. The IRS uses this position to align its gyros. Type KJFK and press LSK L1.',
+      instruction: 'PM: Position initialization required. REF AIRPORT tells the FMC where the aircraft is parked. The IRS uses this position to align its gyros. Type KJFK and press LSK L2.',
       expectedAction: 'KJFK',
       validate: (input: string) => input.toUpperCase() === 'KJFK',
       page: 'POS_INIT',
-      highlightField: 'L1',
+      highlightField: 'L2',
       role: 'PM',
     },
     {

@@ -120,7 +120,8 @@ export function renderPosInitPage(state: FMCState): DisplayData {
       seg(13, 18, 'ROUTE>', 'white'),
     ],
     lskActions: {
-      L1: 'set_ref_airport',
+      L1: null,
+      L2: 'set_ref_airport',
       L3: 'set_gate',
       L6: 'menu',
       R6: 'rte',

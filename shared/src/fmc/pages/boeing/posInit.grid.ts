@@ -44,7 +44,8 @@ function renderPosInitPage1(state: FMCState): DisplayData {
     seg(13, 0, '<INDEX', 'white'),
     seg(13, 18, 'ROUTE>', 'white'),
   ], {
-    L1: 'set_ref_airport',
+    L1: null,
+    L2: 'set_ref_airport',
     L3: 'set_gate',
     L4: 'align_irs',
     L6: 'menu',
