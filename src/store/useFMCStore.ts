@@ -1015,7 +1015,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (scenario) {
         const step = scenario.steps[get().tutorialStepIndex];
         if (step) {
-          const actionMatches = !step.expectedAction || action === step.expectedAction;
+          const actionMatches = 
+            !step.expectedAction || 
+            action === step.expectedAction || 
+            lskId === step.highlightField;
           const validatePasses = !step.validate || step.validate(scratchpad, get());
           if (actionMatches && validatePasses) {
             get().advanceTutorial();
