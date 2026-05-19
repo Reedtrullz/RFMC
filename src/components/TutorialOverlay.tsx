@@ -22,7 +22,7 @@ export function TutorialOverlay() {
 
   return (
     <div className="fixed inset-x-0 top-14 z-40 flex justify-center pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-[500px] mx-2 mb-2">
+      <div className="pointer-events-auto w-full max-w-[310px] mx-2 mb-2">
         <div
           className="
           bg-cdu-bezel/95 backdrop-blur
