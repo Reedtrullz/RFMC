@@ -10,9 +10,12 @@ interface CDUButtonProps {
 }
 
 export function CDUButton({ label, className = '', variant = 'default', disabled, active, onPress }: CDUButtonProps) {
+  const ariaDescription = `Press ${label} key`;
+
   return (
     <AvionicsKey
       label={label}
+      ariaLabel={ariaDescription}
       variant={variant === 'function' ? 'function' : variant === 'exec' ? 'exec' : 'boeing'}
       lit={variant === 'exec'}
       active={active || variant === 'highlight'}

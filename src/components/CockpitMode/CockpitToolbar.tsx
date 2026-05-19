@@ -29,6 +29,8 @@ export function CockpitToolbar() {
             <button
               key={id}
               onClick={() => togglePanelHidden(id)}
+              aria-pressed={!isHidden}
+              aria-label={`Toggle ${label} panel`}
               className={`
                 flex items-center gap-2 px-4 transition-all whitespace-nowrap border-r border-[#2a2d2d]
                 ${!isHidden 
@@ -46,6 +48,7 @@ export function CockpitToolbar() {
       <div className="flex items-center bg-[#1a1c1c] border-l border-[#2a2d2d]">
         <button
           onClick={restoreRecommendedLayout}
+          aria-label="Restore recommended layout"
           className="px-4 h-full text-white/30 hover:text-white hover:bg-white/5 text-[9px] font-cdu uppercase font-bold border-r border-[#2a2d2d] transition-colors"
         >
           RESTORE
@@ -62,6 +65,7 @@ export function CockpitToolbar() {
         </button>
         <button
           onClick={() => setCockpitMode(false)}
+          aria-label="Exit cockpit mode"
           className="px-4 h-full text-cdu-error/40 hover:text-cdu-error hover:bg-cdu-error/5 text-[9px] font-cdu uppercase font-bold transition-colors"
         >
           EXIT
