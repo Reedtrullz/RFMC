@@ -1192,15 +1192,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (data.segments) {
       // For segment-based rendering, add/replace the last line (row 13)
       data.segments = data.segments.filter((s) => s.row !== 13);
-data.segments.push({
-      row: 13,
-      col: 0,
-      text: scratchpadText.padEnd(24, ' '),
-      color: scratchpadColor,
-      size: 'normal',
-      blink,
-      semantic,
-    });
+      data.segments.push({
+        row: 13,
+        col: 0,
+        text: scratchpadText.padEnd(24, ' '),
+        color: scratchpadColor,
+        size: 'normal',
+        blink,
+        semantic,
+      });
     } else {
       // Legacy line-based rendering
       data.lines[13] = {
@@ -1783,7 +1783,7 @@ data.segments.push({
       route.runway || undefined,
     );
 
-const waypoints = expandedLegs.map<FlightPlanWaypoint>((leg) => {
+    const waypoints = expandedLegs.map<FlightPlanWaypoint>((leg) => {
       const isUnresolved = leg.lat === undefined || leg.lon === undefined || isNaN(leg.lat) || isNaN(leg.lon);
       return {
         ident: leg.ident,
@@ -2008,7 +2008,10 @@ const waypoints = expandedLegs.map<FlightPlanWaypoint>((leg) => {
     // 2. Legacy UI Logic (Button Lights and Window state)
     if (isBoeing) {
       const normalizedAction = BOEING_ACTION_MAP[action] ?? action;
-      const update = processBoeingMCPAction(state.autopilot.boeing, normalizedAction as keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE');
+      const update = processBoeingMCPAction(
+        state.autopilot.boeing,
+        normalizedAction as keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE',
+      );
       state.updateBoeingMCP(update);
       return;
     }
@@ -2493,11 +2496,11 @@ if (typeof window !== 'undefined') {
     win.useCockpitLayoutStore = useCockpitLayoutStore;
   }
 
-interface E2EWindow extends Window {
-  useFMCStore: typeof useFMCStore;
-  useAircraftStore: typeof useAircraftStore;
-  useAutopilotStore: typeof useAutopilotStore;
-  useConnectionStore: typeof useConnectionStore;
-  useCockpitLayoutStore: typeof useCockpitLayoutStore;
-}
+  interface E2EWindow extends Window {
+    useFMCStore: typeof useFMCStore;
+    useAircraftStore: typeof useAircraftStore;
+    useAutopilotStore: typeof useAutopilotStore;
+    useConnectionStore: typeof useConnectionStore;
+    useCockpitLayoutStore: typeof useCockpitLayoutStore;
+  }
 }

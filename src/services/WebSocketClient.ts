@@ -65,27 +65,27 @@ class WebSocketClient {
         this.scheduleReconnect();
       };
 
-ws.onerror = (err) => {
-    const error = err instanceof Event ? 'WebSocket error event' : err;
-    devError('[WS] WebSocket error:', error);
+      ws.onerror = (err) => {
+        const error = err instanceof Event ? 'WebSocket error event' : err;
+        devError('[WS] WebSocket error:', error);
 
-    const isFatal = this.classifyError(error);
-    
-    if (isFatal) {
-      devError('[WS] Fatal error encountered, stopping reconnect attempts');
-      this.setStatus('ERROR');
-      this.ws?.close();
-      if (this.reconnectTimer) {
-        clearTimeout(this.reconnectTimer);
-        this.reconnectTimer = null;
-      }
-      this.handleFatalError(error);
-    } else {
-      this.setStatus('ERROR');
-      this.ws?.close();
-      this.scheduleReconnect();
-    }
-  };
+        const isFatal = this.classifyError(error);
+
+        if (isFatal) {
+          devError('[WS] Fatal error encountered, stopping reconnect attempts');
+          this.setStatus('ERROR');
+          this.ws?.close();
+          if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+          }
+          this.handleFatalError(error);
+        } else {
+          this.setStatus('ERROR');
+          this.ws?.close();
+          this.scheduleReconnect();
+        }
+      };
     } catch (err) {
       devError('[WS] Connection failed:', err);
       this.setStatus('ERROR');
@@ -112,7 +112,7 @@ ws.onerror = (err) => {
     }
   }
 
-private scheduleReconnect() {
+  private scheduleReconnect() {
     if (this.reconnectTimer) return;
 
     const delayBase = 1000;
@@ -131,22 +131,26 @@ private scheduleReconnect() {
   private classifyError(error: unknown): boolean {
     if (typeof error === 'string') {
       const errMsg = error.toLowerCase();
-      if (errMsg.includes('network') || 
-          errMsg.includes('timeout') || 
-          errMsg.includes('connection refused') ||
-          errMsg.includes('server error') ||
-          errMsg.includes('failed to connect') ||
-          errMsg.includes('unexpected token')) {
+      if (
+        errMsg.includes('network') ||
+        errMsg.includes('timeout') ||
+        errMsg.includes('connection refused') ||
+        errMsg.includes('server error') ||
+        errMsg.includes('failed to connect') ||
+        errMsg.includes('unexpected token')
+      ) {
         return false;
       }
-      if (errMsg.includes('cors') || 
-          errMsg.includes('forbidden') || 
-          errMsg.includes('unauthorized') ||
-          errMsg.includes('401') || 
-          errMsg.includes('403') ||
-          errMsg.includes('invalid url') ||
-          errMsg.includes('syntax error') ||
-          errMsg.includes('protocol error')) {
+      if (
+        errMsg.includes('cors') ||
+        errMsg.includes('forbidden') ||
+        errMsg.includes('unauthorized') ||
+        errMsg.includes('401') ||
+        errMsg.includes('403') ||
+        errMsg.includes('invalid url') ||
+        errMsg.includes('syntax error') ||
+        errMsg.includes('protocol error')
+      ) {
         return true;
       }
     }
@@ -154,22 +158,26 @@ private scheduleReconnect() {
     if (error instanceof Error) {
       const name = error.name.toLowerCase();
       const message = error.message.toLowerCase();
-      if (name.includes('network') || 
-          name.includes('timeout') || 
-          name.includes('connectionerror') ||
-          message.includes('connection refused') ||
-          message.includes('server error') ||
-          message.includes('failed to connect')) {
+      if (
+        name.includes('network') ||
+        name.includes('timeout') ||
+        name.includes('connectionerror') ||
+        message.includes('connection refused') ||
+        message.includes('server error') ||
+        message.includes('failed to connect')
+      ) {
         return false;
       }
-      if (name.includes('security') || 
-          name.includes('cros') || 
-          name.includes('cors') ||
-          name.includes('http') && message.includes('401') ||
-          name.includes('http') && message.includes('403') ||
-          message.includes('invalid url') ||
-          message.includes('syntax error') ||
-          message.includes('protocol')) {
+      if (
+        name.includes('security') ||
+        name.includes('cros') ||
+        name.includes('cors') ||
+        (name.includes('http') && message.includes('401')) ||
+        (name.includes('http') && message.includes('403')) ||
+        message.includes('invalid url') ||
+        message.includes('syntax error') ||
+        message.includes('protocol')
+      ) {
         return true;
       }
     }

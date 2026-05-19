@@ -26,7 +26,7 @@ export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   const activeNavSource = useAircraftStore((s) => s.activeNavSource);
   const navPerformance = useAircraftStore((s) => s.navPerformance);
 
-  const fullState = useFMCStore(state => state);
+  const fullState = useFMCStore((state) => state);
 
   const model = useMemo(() => {
     return buildNavigationDisplayModel(fullState, fullState.efisL);

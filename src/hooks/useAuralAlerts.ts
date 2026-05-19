@@ -45,14 +45,19 @@ export function useAuralAlerts() {
       lastProcessedAlertId.current = null;
     }
 
-// Handle FMA Changes (Airbus Triple Click)
-  if (isAirbus && (lateralActive !== lastLateralActive.current || verticalActive !== lastVerticalActive.current || thrustActive !== lastThrustActive.current)) {
-    // Only play if it's a significant mode change, not just values
-    AuralAlertService.playAirbusTripleClick();
-    lastLateralActive.current = lateralActive;
-    lastVerticalActive.current = verticalActive;
-    lastThrustActive.current = thrustActive;
-  }
+    // Handle FMA Changes (Airbus Triple Click)
+    if (
+      isAirbus &&
+      (lateralActive !== lastLateralActive.current ||
+        verticalActive !== lastVerticalActive.current ||
+        thrustActive !== lastThrustActive.current)
+    ) {
+      // Only play if it's a significant mode change, not just values
+      AuralAlertService.playAirbusTripleClick();
+      lastLateralActive.current = lateralActive;
+      lastVerticalActive.current = verticalActive;
+      lastThrustActive.current = thrustActive;
+    }
 
     // Handle GPWS Alerts
     if (gpwsAlert !== lastGpws.current) {
