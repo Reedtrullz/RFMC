@@ -1,13 +1,14 @@
 export * from './types/fmc';
 export * from './types/cockpit';
 export * from './types/webSocket';
+export type { AircraftType } from './types/core';
 
 // FMC logic — shared between frontend and backend
 export { PAGE_LINES, PAGE_WIDTH, SCRATCHPAD_MAX, LSK_COUNT } from './fmc/constants';
 export { getPageRenderer } from './fmc/pages/index';
 export { getAirbusPageRenderer } from './fmc/pages/airbus/index';
 export { parseRouteString, greatCircleDistance, isProcedure } from './fmc/flightPlanParser';
-export { parseSimBrief, parseSimBriefXML, parseSimBriefJSON } from './fmc/simbriefParser';
+export { parseSimBrief } from './fmc/simbriefParser';
 export { buildNavigationDisplayModel } from './fmc/navigationDisplay';
 export * from './fmc/ndGeometry';
 export * from './fmc/ndProjection';
@@ -61,8 +62,6 @@ export {
 } from './fmc/displayColors';
 export type { DisplayColor, BoeingColor, AirbusColor } from './fmc/displayColors';
 export {
-  clampDisplayText,
-  composeLegacyDisplayLine,
   displayDataToGrid,
   displayLineToSegments,
   gridToPlainText,

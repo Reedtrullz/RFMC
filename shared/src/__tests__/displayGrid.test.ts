@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  clampDisplayText,
-  composeLegacyDisplayLine,
   displayDataToGrid,
   displayLineToSegments,
   scratchpadToGridSegment,
@@ -9,11 +7,6 @@ import {
 import type { DisplayData } from '../types/fmc';
 
 describe('displayGrid', () => {
-  it('clamps display text to the fixed 24-column CDU width', () => {
-    expect(clampDisplayText('ABC')).toBe('ABC                     ');
-    expect(clampDisplayText('123456789012345678901234567')).toBe('123456789012345678901234');
-  });
-
   it('converts line metadata into character-grid segments', () => {
     const [segment] = displayLineToSegments(
       {
@@ -40,9 +33,12 @@ describe('displayGrid', () => {
   });
 
   it('preserves legacy left and right labels in fixed-width rows', () => {
-    expect(composeLegacyDisplayLine({ text: ' V1', rightLabel: '130 KT' })).toBe(' V1               130 KT');
-    expect(composeLegacyDisplayLine({ text: ' ERASE', leftLabel: '<' })).toBe('< ERASE                 ');
-    expect(composeLegacyDisplayLine({ text: ' KJFK/KDCA', leftLabel: ' ----' })).toContain('KJFK/KDCA');
+    const [segmentW1] = displayLineToSegments({ text: ' V1', rightLabel: '130 KT' }, 0);
+    expect(segmentW1.text).toBe(' V1               130 KT');
+    const [segmentErase] = displayLineToSegments({ text: ' ERASE', leftLabel: '<' }, 0);
+    expect(segmentErase.text).toBe('< ERASE                 ');
+    const [segmentRoute] = displayLineToSegments({ text: ' KJFK/KDCA', leftLabel: ' ----' }, 0);
+    expect(segmentRoute.text).toContain('KJFK/KDCA');
   });
 
   it('pads missing rows when converting legacy DisplayData', () => {

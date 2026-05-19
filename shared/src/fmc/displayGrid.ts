@@ -77,23 +77,16 @@ export function title(row: number, titleText: string, page: string): DisplaySegm
   ];
 }
 
-export function clampDisplayText(text: string, width = PAGE_WIDTH): string {
-  return text.padEnd(width, ' ').slice(0, width);
-}
-
-export function composeLegacyDisplayLine(line: DisplayLine): string {
-  let text = clampDisplayText(line.leftLabel ? `${line.leftLabel}${line.text}` : line.text);
+export function displayLineToSegments(line: DisplayLine, row: number): DisplaySegment[] {
+  let text = line.leftLabel ? `${line.leftLabel}${line.text}` : line.text;
+  text = text.padEnd(PAGE_WIDTH, ' ').slice(0, PAGE_WIDTH);
 
   if (line.rightLabel) {
     const right = line.rightLabel.slice(0, PAGE_WIDTH);
     text = `${text.slice(0, PAGE_WIDTH - right.length)}${right}`;
   }
+  text = text.padEnd(PAGE_WIDTH, ' ').slice(0, PAGE_WIDTH);
 
-  return clampDisplayText(text);
-}
-
-export function displayLineToSegments(line: DisplayLine, row: number): DisplaySegment[] {
-  const text = composeLegacyDisplayLine(line);
   const segment: DisplaySegment = {
     row,
     col: 0,
@@ -143,7 +136,7 @@ export function scratchpadToGridSegment(
   return {
     row: 0,
     col: 0,
-    text: clampDisplayText(text),
+    text: text.padEnd(PAGE_WIDTH, ' ').slice(0, PAGE_WIDTH),
     size: 'normal',
     ...options,
   };

@@ -14,7 +14,6 @@ export function useAuralAlerts() {
   const aircraft = useAircraftStore((s) => s.aircraft);
   const autopilotTruth = useAutopilotStore((s) => s.truth);
   const { lateralActive, verticalActive, thrustActive, autopilotStatus } = autopilotTruth;
-  const fma = { lateralActive, verticalActive, thrustActive };
 
   const alerts = useFMCStore((s) => s.alerts);
 
@@ -22,7 +21,7 @@ export function useAuralAlerts() {
   const lastTcas = useRef(tcasAlert);
   const lastApStatus = useRef(autopilotStatus);
   const lastProcessedAlertId = useRef<string | null>(null);
-  const lastFma = useRef(JSON.stringify(fma));
+  const lastFma = useRef(JSON.stringify({ lateralActive, verticalActive, thrustActive }));
 
   useEffect(() => {
     const isAirbus = aircraft.includes('AIRBUS');
@@ -45,7 +44,7 @@ export function useAuralAlerts() {
     }
 
     // Handle FMA Changes (Airbus Triple Click)
-    const currentFmaStr = JSON.stringify(fma);
+    const currentFmaStr = JSON.stringify({ lateralActive, verticalActive, thrustActive });
     if (isAirbus && currentFmaStr !== lastFma.current) {
       // Only play if it's a significant mode change, not just values
       AuralAlertService.playAirbusTripleClick();
@@ -94,7 +93,16 @@ export function useAuralAlerts() {
       AuralAlertService.playBoeingWarning(); // Cavalry charge is used for both for now, or specifically Boeing
     }
     lastApStatus.current = autopilotStatus;
-  }, [gpwsAlert, tcasAlert, autopilotStatus, aircraft, alerts, fma]);
+  }, [
+    gpwsAlert,
+    tcasAlert,
+    autopilotStatus,
+    aircraft,
+    alerts,
+    lateralActive,
+    verticalActive,
+    thrustActive,
+  ]);
 
   // Global user interaction listener to resume audio context
   useEffect(() => {

@@ -6,7 +6,7 @@ import { ClientMessage, CDUKey } from '@virtual-cdu/shared';
 export function validateClientMessage(data: unknown): ClientMessage | null {
   if (!data || typeof data !== 'object') return null;
 
-  const msg = data as any;
+  const msg = data as Record<string, unknown>;
   if (typeof msg.type !== 'string') return null;
 
   switch (msg.type) {

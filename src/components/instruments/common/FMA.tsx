@@ -3,6 +3,7 @@ import { useAircraftStore } from '../../../store/aircraftStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
 import { useFMCStore } from '../../../store/useFMCStore';
 import { buildBoeingFMAState, buildAirbusFMAState } from '@shared';
+import type { FMCState } from '@shared';
 
 export function FMA() {
   const aircraft = useAircraftStore((s) => s.aircraft);
@@ -19,7 +20,7 @@ export function FMA() {
   const boxStyle = 'border border-white shadow-[0_0_4px_rgba(255,255,255,0.5)]';
 
   if (aircraft === 'BOEING_737') {
-    const fma = buildBoeingFMAState(autopilot, fmc as any);
+    const fma = buildBoeingFMAState(autopilot, fmc as unknown as FMCState);
 
     return (
       <div className="flex w-full justify-between border-b border-[#2a2d2d] bg-black p-1 font-mono text-xs font-bold uppercase h-10">
@@ -48,7 +49,7 @@ export function FMA() {
   }
 
   if (aircraft === 'AIRBUS_A320') {
-    const fma = buildAirbusFMAState(autopilot, fmc as any);
+    const fma = buildAirbusFMAState(autopilot, fmc as unknown as FMCState);
     return (
       <div className="grid grid-cols-5 w-full border-b border-[#2a2d2d] bg-black p-0.5 font-mono text-[9px] font-bold uppercase text-[#00ff44] h-8">
         <div

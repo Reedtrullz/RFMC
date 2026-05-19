@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { buildNavigationDisplayModel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
@@ -27,22 +28,41 @@ export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   const navPerformance = useAircraftStore((s) => s.navPerformance);
 
   // Training and Demo state
-  const demoMode = useFMCStore((s) => s.demoMode);
-  const tutorialActive = useFMCStore((s) => s.tutorialActive);
-  const autopilot = useFMCStore((s) => s.autopilot as any); // Use legacy autopilot if available
-  const efis = useFMCStore((s) => (side === 'L' ? s.efisL : s.efisR));
-  const trafficTargets = useFMCStore((s) => s.trafficTargets as any);
-
-  const flightPlan = useFMCStore((s) => s.flightPlan);
-  const route = useFMCStore((s) => s.route);
-  const isModified = useFMCStore((s) => s.isModified);
-  const pendingFlightPlan = useFMCStore((s) => s.pendingFlightPlan);
-  const pendingRoute = useFMCStore((s) => s.pendingRoute);
-  const fixEntries = useFMCStore((s) => s.fixEntries);
-  const fix = useFMCStore((s) => s.fix);
-  const hold = useFMCStore((s) => s.hold);
-  const holdPending = useFMCStore((s) => s.holdPending);
-  const selectedPlanWaypointIndex = useFMCStore((s) => s.selectedPlanWaypointIndex);
+  const {
+    demoMode,
+    tutorialActive,
+    autopilot,
+    efis,
+    trafficTargets,
+    flightPlan,
+    route,
+    isModified,
+    pendingFlightPlan,
+    pendingRoute,
+    fixEntries,
+    fix,
+    hold,
+    holdPending,
+    selectedPlanWaypointIndex,
+  } = useFMCStore(
+    useShallow((s) => ({
+      demoMode: s.demoMode,
+      tutorialActive: s.tutorialActive,
+      autopilot: s.autopilot as any,
+      efis: side === 'L' ? s.efisL : s.efisR,
+      trafficTargets: s.trafficTargets as any,
+      flightPlan: s.flightPlan,
+      route: s.route,
+      isModified: s.isModified,
+      pendingFlightPlan: s.pendingFlightPlan,
+      pendingRoute: s.pendingRoute,
+      fixEntries: s.fixEntries,
+      fix: s.fix,
+      hold: s.hold,
+      holdPending: s.holdPending,
+      selectedPlanWaypointIndex: s.selectedPlanWaypointIndex,
+    })),
+  );
 
   const model = useMemo(
     () =>

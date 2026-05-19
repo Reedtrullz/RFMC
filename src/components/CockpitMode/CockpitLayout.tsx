@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState, useMemo, type CSSProperties } from 'react';
 import type { AircraftType, CockpitLayoutMode } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
@@ -95,7 +95,7 @@ export function CockpitLayout() {
 
   const isNight = brightness < 40;
   const validation = validateVisiblePanels(layoutMode, hiddenPanels);
-  const controls: LayoutControls = {
+  const controls: LayoutControls = useMemo(() => ({
     aircraft,
     hiddenPanels: new Set(hiddenPanels),
     pinnedPanels: new Set(pinnedPanels),
@@ -106,7 +106,17 @@ export function CockpitLayout() {
     onZoomIn: (panelId) => adjustInstrumentZoom(panelId, 0.08),
     onZoomOut: (panelId) => adjustInstrumentZoom(panelId, -0.08),
     onZoomReset: resetInstrumentZoom,
-  };
+  }), [
+    aircraft,
+    hiddenPanels,
+    pinnedPanels,
+    instrumentZoom,
+    setFocusedPanel,
+    togglePanelHidden,
+    togglePanelPinned,
+    adjustInstrumentZoom,
+    resetInstrumentZoom,
+  ]);
 
   useEffect(() => {
     const closeFocus = (event: KeyboardEvent) => {

@@ -7,7 +7,7 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
 
   let autothrottleMode: BoeingFMAState['autothrottleMode'] = '';
   if (truth.thrustActive !== 'OFF') {
-    autothrottleMode = truth.thrustActive === 'SPEED' ? 'MCP SPD' : (truth.thrustActive as any);
+    autothrottleMode = truth.thrustActive === 'SPEED' ? 'MCP SPD' : (truth.thrustActive as BoeingFMAState['autothrottleMode']);
   } else if (mcp.autothrottleArm) {
     autothrottleMode = 'ARM';
   }
@@ -29,7 +29,7 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
   let apStatus: BoeingFMAState['apStatus'] = '';
   if (truth.autopilotStatus !== 'OFF') {
     const status = truth.autopilotStatus.replace('_', ' ');
-    apStatus = status as any;
+    apStatus = status as BoeingFMAState['apStatus'];
   } else if (mcp.fdLeft || mcp.fdRight) {
     apStatus = 'FD';
   }

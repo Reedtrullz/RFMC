@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { NavigationDisplayModel } from '@shared';
+import type { EFISState } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { AvionicsKey } from '../instruments/common/AvionicsKey';
 
@@ -37,7 +38,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             {modes.map((m) => (
               <button
                 key={m}
-                onClick={() => setNDMode(side, m as any)}
+                onClick={() => setNDMode(side, m)}
                 className={`h-5 px-1.5 rounded-full text-[8px] font-bold transition-all ${efis.mode === m ? 'bg-cdu-cyan text-black shadow-[0_0_8px_rgba(0,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
               >
                 {m.replace('ROSE_', '').replace('NAV', 'NV')}
@@ -71,7 +72,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             label={ov}
             active={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
             lit={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
-            onPress={() => toggleNDOverlay(side, ov.toLowerCase() as any)}
+            onPress={() => toggleNDOverlay(side, ov.toLowerCase() as keyof EFISState['overlays'])}
             variant={model.style === 'airbus' ? 'airbus' : 'boeing'}
             className="!h-6 !text-[7px] !min-w-0"
           />

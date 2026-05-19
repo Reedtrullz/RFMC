@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import { handleAtsuAction } from '../fmc/actionHandlers/atsuActions';
 import { buildInitialFMCState } from '../fmc/initialState';
 
@@ -16,7 +17,7 @@ describe('handleAtsuAction', () => {
     const result = handleAtsuAction('atsu_uplink', makeState(), '');
     expect(result.handled).toBe(true);
     expect(result.success?.patch).toBeDefined();
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.atsu.pendingUplink).toBeDefined();
     expect(patch.atsu.pendingUplink.origin).toBe('KJFK');
     expect(patch.atsu.pendingUplink.destination).toBe('KLAX');
@@ -51,7 +52,7 @@ describe('handleAtsuAction', () => {
     const result = handleAtsuAction('atsu_load_route', state, '');
     expect(result.handled).toBe(true);
     expect(result.success?.patch).toBeDefined();
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
   });
@@ -65,7 +66,7 @@ describe('handleAtsuAction', () => {
     });
     const result = handleAtsuAction('view_msg_msg1', state, '');
     expect(result.handled).toBe(true);
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.page).toBe('ATSU_MSG_DETAIL');
     expect(patch.selectedMessageId).toBe('msg1');
   });

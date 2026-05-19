@@ -20,19 +20,34 @@ function styleFor(cell: CellData): CSSProperties {
   return { gridRow: cell.row + 1, gridColumn: cell.col + 1 };
 }
 
-const CellSpan = memo(function CellSpan({ cell, variant }: CellSpanProps) {
-  return (
-    <span
-      className={classNameFor(cell, variant)}
-      style={styleFor(cell)}
-      data-row={cell.row + 1}
-      data-col={cell.col + 1}
-      data-semantic={cell.semantic}
-    >
-      {cell.char || '\u00A0'}
-    </span>
-  );
-});
+const CellSpan = memo(
+  function CellSpan({ cell, variant }: CellSpanProps) {
+    return (
+      <span
+        className={classNameFor(cell, variant)}
+        style={styleFor(cell)}
+        data-row={cell.row + 1}
+        data-col={cell.col + 1}
+        data-semantic={cell.semantic}
+      >
+        {cell.char || '\u00A0'}
+      </span>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.variant === nextProps.variant &&
+      prevProps.cell.row === nextProps.cell.row &&
+      prevProps.cell.col === nextProps.cell.col &&
+      prevProps.cell.char === nextProps.cell.char &&
+      prevProps.cell.color === nextProps.cell.color &&
+      prevProps.cell.size === nextProps.cell.size &&
+      prevProps.cell.blink === nextProps.cell.blink &&
+      prevProps.cell.inverse === nextProps.cell.inverse &&
+      prevProps.cell.semantic === nextProps.cell.semantic
+    );
+  }
+);
 
 interface CDUDisplayGridProps {
   grid: GridDisplayData;

@@ -27,7 +27,11 @@ export function useWakeLock(enabled: boolean = true) {
 
   const releaseWakeLock = useCallback(async () => {
     if (sentinel) {
-      await sentinel.release();
+      try {
+        await sentinel.release();
+      } catch (err: any) {
+        devError(`[WakeLock] Failed to release: ${err.message}`);
+      }
       setSentinel(null);
     }
   }, [sentinel]);

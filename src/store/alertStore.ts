@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import type { FlightDeckAlert, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
 
+export interface AcarsUplink extends AcarsMessage {
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
 export interface AlertState {
   alerts: FlightDeckAlert[];
   scratchpadMessages: FmcMessage[];
@@ -8,7 +12,7 @@ export interface AlertState {
   tcasAlert: boolean;
   atsu: {
     messages: AcarsMessage[];
-    pendingUplink: any | null;
+    pendingUplink: AcarsUplink | null;
   };
 }
 

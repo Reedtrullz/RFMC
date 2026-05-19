@@ -35,3 +35,10 @@ export interface FmcActionResult {
   success?: FmcActionSuccess;
   failure?: FmcActionFailure;
 }
+
+export function getPatch(result: FmcActionResult): any {
+  if (!result.success?.patch) {
+    throw new Error('Expected a successful FmcActionResult with a patch');
+  }
+  return result.success.patch;
+}

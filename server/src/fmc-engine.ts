@@ -1,4 +1,5 @@
 import type { FMCState, DisplayData, PageType } from '@virtual-cdu/shared';
+import type { AircraftType, AltitudeConstraint, SpeedConstraint } from '@virtual-cdu/shared';
 import { getPageRenderer, parseRouteString, FmsRuntimeEngine } from '@virtual-cdu/shared';
 import {
   isValidICAO,
@@ -30,12 +31,18 @@ function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix
   return [{ ...(entries[0] ?? legacy) }, { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) }];
 }
 
+export interface FMCEngineOptions {
+  onError?: (err: Error) => void;
+}
+
 export class FMCEngine {
   private state: FMCState;
   private tickInterval: any = null;
+  private onError?: (err: Error) => void;
 
-  constructor() {
+  constructor(options?: FMCEngineOptions) {
     this.state = this.createDefaultState();
+    this.onError = options?.onError;
     this.startTickLoop();
   }
 
@@ -58,7 +65,12 @@ export class FMCEngine {
           };
         }
       } catch (err) {
-        console.error('[FMC Engine] Error during server engine tick:', err);
+        const errorObject = err instanceof Error ? err : new Error(String(err));
+        console.error('[FMC Engine] Error during server engine tick:', errorObject);
+        if (this.onError) {
+          this.onError(errorObject);
+        }
+        this.destroy();
       }
     }, 100);
   }
@@ -267,7 +279,7 @@ export class FMCEngine {
     };
   }
 
-  private createDefaultEFIS(aircraft: any, side: 'L' | 'R'): any {
+  private createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): any {
     return {
       mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
       range: 40,
@@ -586,7 +598,7 @@ export class FMCEngine {
     return false;
   }
 
-  private updateWaypointConstraint(index: number, altitude?: any, speed?: any): void {
+  private updateWaypointConstraint(index: number, altitude?: AltitudeConstraint, speed?: SpeedConstraint): void {
     const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
     const waypoints = [...flightPlan.waypoints];
     if (index >= 0 && index < waypoints.length) {

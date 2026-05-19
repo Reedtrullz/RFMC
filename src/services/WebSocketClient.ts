@@ -67,6 +67,8 @@ class WebSocketClient {
       ws.onerror = (err) => {
         devError('[WS] Error:', err);
         this.setStatus('ERROR');
+        this.ws?.close();
+        this.scheduleReconnect();
       };
     } catch (err) {
       devError('[WS] Connection failed:', err);

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { BoeingMCPState, buildBoeingMcpDisplayModel } from '@shared';
 import { useFMCStore } from '../../../../store/useFMCStore';
 import { useAutopilotStore } from '../../../../store/autopilotStore';
@@ -16,7 +16,7 @@ interface BoeingMCPProps {
 export function BoeingMCP({ state, updateState, pressButton }: BoeingMCPProps) {
   const truth = useAutopilotStore((s) => s.truth);
   const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
-  const display = buildBoeingMcpDisplayModel(state, truth);
+  const display = useMemo(() => buildBoeingMcpDisplayModel(state, truth), [state, truth]);
   const sectionClass =
     'relative flex flex-col items-center gap-3 rounded-[6px] border border-black/45 bg-[#2f3434] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-10px_18px_rgba(0,0,0,0.34)]';
 

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FMCEngine } from '../fmc-engine';
+import { FmsRuntimeEngine } from '@virtual-cdu/shared';
 
 function enter(engine: FMCEngine, text: string): void {
   for (const char of text) {
@@ -462,5 +463,26 @@ describe('FMCEngine', () => {
     expect(extra?.color).toBe('green');
     expect(minDestinationFuel?.text).toBe(' 2.5');
     expect(reserve?.text).toBe('2.5');
+  });
+
+  it('notifies onError and stops the tick loop when engine tick throws', async () => {
+    const tickSpy = vi.spyOn(FmsRuntimeEngine, 'tick').mockImplementation(() => {
+      throw new Error('Test tick error');
+    });
+
+    let caughtError: any = null;
+    const engine = new FMCEngine({
+      onError: (err) => {
+        caughtError = err;
+      },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    expect(caughtError).not.toBeNull();
+    expect(caughtError?.message).toBe('Test tick error');
+
+    tickSpy.mockRestore();
+    engine.destroy();
   });
 });

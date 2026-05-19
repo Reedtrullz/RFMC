@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import {
   handleSelectTo,
   handleSelectTo1,
@@ -94,7 +95,7 @@ describe('handleSetRunway', () => {
     expect(result.success?.patch?.takeoff?.vr).toBe(0);
     expect(result.success?.patch?.takeoff?.v2).toBe(0);
     expect(result.success?.scratchpadMessage).toBe('V SPEEDS DELETED');
-    expect((result.success?.patch as any)?.msgLight).toBe(true);
+    expect((getPatch(result))?.msgLight).toBe(true);
   });
 });
 

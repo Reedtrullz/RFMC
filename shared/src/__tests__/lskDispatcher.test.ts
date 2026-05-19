@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '../fmc/actionHandlers/lskDispatcher';
 import { buildInitialFMCState } from '../fmc/initialState';
 
@@ -23,7 +24,7 @@ describe('dispatchLskAction', () => {
     const result = dispatchLskAction({ state: makeState(), action: 'erase', scratchpad: '' });
     expect(result.handled).toBe(true);
     expect(result.success?.patch).toBeDefined();
-    expect((result.success?.patch as any)?.isModified).toBe(false);
+    expect((getPatch(result))?.isModified).toBe(false);
   });
 
   it('dispatches special action (align_irs)', () => {

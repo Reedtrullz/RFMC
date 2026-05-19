@@ -15,8 +15,8 @@ import type { FMCState } from '../types/fmc';
 import type { FmcActionSuccess, FmcActionResult } from './actionHandlers/actionResult';
 import type { DispatchLskActionResult } from './actionHandlers/lskDispatcher';
 
-type ZustandSet = (partial: Partial<FMCState> | ((state: FMCState) => Partial<FMCState>)) => void;
-type ZustandGet = () => FMCState;
+export type ZustandSet = (partial: Partial<FMCState> | ((state: FMCState) => Partial<FMCState>)) => void;
+export type ZustandGet = () => FMCState;
 
 interface ExtendedDispatchSuccess extends FmcActionSuccess {
   targetPage?: string;

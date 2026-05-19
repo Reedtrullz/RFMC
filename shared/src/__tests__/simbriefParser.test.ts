@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSimBriefJSON, parseSimBriefXML, parseSimBrief } from '../fmc/simbriefParser';
+import { parseSimBrief } from '../fmc/simbriefParser';
 
 describe('SimBrief Parser', () => {
   it('parses SimBrief JSON', () => {
@@ -11,7 +11,7 @@ describe('SimBrief Parser', () => {
       crzAlt: 35000,
       costIndex: 50,
     };
-    const result = parseSimBriefJSON(JSON.stringify(data));
+    const result = parseSimBrief(JSON.stringify(data));
     expect(result.origin).toBe('KJFK');
     expect(result.destination).toBe('KDCA');
     expect(result.flightNumber).toBe('AA123');
@@ -26,7 +26,7 @@ describe('SimBrief Parser', () => {
       destination: 'KSFO',
       route: 'DCT',
     };
-    const result = parseSimBriefJSON(JSON.stringify(data));
+    const result = parseSimBrief(JSON.stringify(data));
     expect(result.origin).toBe('KLAX');
     expect(result.destination).toBe('KSFO');
     expect(result.performance?.crzAlt).toBeUndefined();
@@ -45,7 +45,7 @@ describe('SimBrief Parser', () => {
         <block_fuel>10.2</block_fuel>
       </ofp>
     `;
-    const result = parseSimBriefXML(xml);
+    const result = parseSimBrief(xml);
     expect(result.origin).toBe('KJFK');
     expect(result.destination).toBe('KDCA');
     expect(result.performance?.zfw).toBe(60500);
@@ -78,7 +78,7 @@ describe('SimBrief Parser', () => {
         </navlog>
       </ofp>
     `;
-    const result = parseSimBriefXML(xml);
+    const result = parseSimBrief(xml);
     expect(result.waypoints).toBeDefined();
     expect(result.waypoints).toHaveLength(2);
     expect(result.waypoints![0].ident).toBe('RBV');
@@ -95,7 +95,7 @@ describe('SimBrief Parser', () => {
         fix: [{ ident: 'RBV', pos_lat: '40.202333', pos_long: '-74.494722' }],
       },
     });
-    const result = parseSimBriefJSON(json);
+    const result = parseSimBrief(json);
     expect(result.waypoints).toBeDefined();
     expect(result.waypoints).toHaveLength(1);
     expect(result.waypoints![0].ident).toBe('RBV');

@@ -11,16 +11,25 @@ interface ModeHelpCardProps {
 
 export function ModeHelpCard({ mode, onResetLayout }: ModeHelpCardProps) {
   const config = getTrainingModeConfig(mode);
-  const fmcState = useFMCStore();
+  
+  const currentPage = useFMCStore((s) => s.currentPage);
+  const aircraft = useFMCStore((s) => s.aircraft);
+  const flightPhase = useFMCStore((s) => s.flightPhase);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+
+  void currentPage;
+  void flightPhase;
+  void tutorialActive;
+
   const autopilotState = useAutopilotStore((state) => ({
     boeing: state.boeing,
     airbus: state.airbus,
     truth: state.truth,
   }));
   const progress = buildTrainingProgress({
-    aircraft: fmcState.aircraft,
+    aircraft: aircraft,
     layoutMode: mode,
-    fmcState,
+    fmcState: useFMCStore.getState(),
     autopilotState,
   });
 

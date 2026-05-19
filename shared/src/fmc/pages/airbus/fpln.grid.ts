@@ -67,7 +67,7 @@ export function renderFplnGrid(state: FMCState): DisplayData {
   return airbusPage(segments, lskActions);
 }
 
-function formatAltitude(constraint: any): string {
+function formatAltitude(constraint?: any): string {
   const formatted = formatAltitudeConstraint(constraint);
   return formatted || ' --- ';
 }

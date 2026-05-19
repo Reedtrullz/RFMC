@@ -7,7 +7,7 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
 
   let autothrustMode: AirbusFMAState['autothrustMode'] = '';
   if (truth.thrustActive !== 'OFF') {
-    autothrustMode = truth.thrustActive as any;
+    autothrustMode = truth.thrustActive as AirbusFMAState['autothrustMode'];
   }
 
   let verticalMode: AirbusFMAState['verticalMode'] = '';
@@ -24,7 +24,7 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
   } else if (truth.verticalActive === 'OP_DES') {
     verticalMode = 'OP DES';
   } else if (truth.verticalActive !== 'OFF') {
-    verticalMode = truth.verticalActive as any;
+    verticalMode = truth.verticalActive as AirbusFMAState['verticalMode'];
   } else {
     verticalMode = 'ALT';
   }
@@ -34,7 +34,7 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
   else if (truth.lateralActive === 'HDG_SEL') lateralMode = 'HDG';
   else if (truth.lateralActive === 'LOC') lateralMode = 'LOC';
   else if (truth.lateralActive === 'APP') lateralMode = 'APP NAV';
-  else if (truth.lateralActive !== 'OFF') lateralMode = truth.lateralActive as any;
+  else if (truth.lateralActive !== 'OFF') lateralMode = truth.lateralActive as AirbusFMAState['lateralMode'];
   else lateralMode = 'HDG';
 
   const armedModes: string[] = [];

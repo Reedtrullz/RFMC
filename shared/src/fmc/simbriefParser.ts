@@ -1,5 +1,4 @@
 import type { FlightPlan, FlightPlanWaypoint } from '../types/fmc';
-import { parseRouteString } from './flightPlanParser';
 
 interface SimBriefData {
   origin?: string;
@@ -18,7 +17,7 @@ interface SimBriefData {
  * Parse SimBrief XML content into a flight plan.
  * SimBrief exports contain <origin>, <destination>, <route>, etc.
  */
-export function parseSimBriefXML(xml: string): Partial<FlightPlan> & {
+function parseSimBriefXML(xml: string): Partial<FlightPlan> & {
   route: string;
   waypoints?: FlightPlanWaypoint[];
   performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number };
@@ -70,7 +69,7 @@ export function parseSimBriefXML(xml: string): Partial<FlightPlan> & {
 /**
  * Parse SimBrief JSON into a flight plan.
  */
-export function parseSimBriefJSON(json: string): Partial<FlightPlan> & {
+function parseSimBriefJSON(json: string): Partial<FlightPlan> & {
   route: string;
   waypoints?: FlightPlanWaypoint[];
   performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number };

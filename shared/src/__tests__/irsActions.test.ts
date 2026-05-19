@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import { handleIrsAction } from '../fmc/actionHandlers/irsActions';
 import { buildInitialFMCState } from '../fmc/initialState';
 import type { FMCState } from '../types/fmc';
@@ -41,7 +42,7 @@ describe('handleIrsAction — set_irs_pos', () => {
     });
     const result = handleIrsAction('set_irs_pos', state, 'N4715.4W12218.6');
     expect(result.handled).toBe(true);
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.position.irsAlignmentProgress).toBe(0);
     expect(patch.position.irsTimeRemaining).toBe(600);
   });
@@ -53,7 +54,7 @@ describe('handleIrsAction — set_irs_pos', () => {
     });
     const result = handleIrsAction('set_irs_pos', state, 'N4715.4W12218.6');
     expect(result.handled).toBe(true);
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.position.irsTimeRemaining).toBe(30);
   });
 

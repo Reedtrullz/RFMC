@@ -1,6 +1,7 @@
 import type { McduPage, McduLine, McduToken, McduColor, McduFont, DisplayData, DisplaySegment } from '../types/fmc';
-import { PAGE_LINES, PAGE_WIDTH } from './constants';
+import type { DisplayColor } from './displayColors';
 import { seg } from './displayGrid';
+import { PAGE_LINES, PAGE_WIDTH } from './constants';
 
 /**
  * Validates a page structure against the 14x24 rule.
@@ -40,7 +41,7 @@ export function renderAirbusMcduPage(page: McduPage, lskActions: Record<string, 
     let leftOffset = 0;
     line.left?.forEach((token) => {
       segments.push(
-        seg(rowIndex, leftOffset, token.text, token.color as any, {
+        seg(rowIndex, leftOffset, token.text, token.color as DisplayColor, {
           size: token.font === 'small' ? 'small' : 'normal',
         }),
       );
@@ -52,7 +53,7 @@ export function renderAirbusMcduPage(page: McduPage, lskActions: Record<string, 
     line.right?.reverse().forEach((token) => {
       rightOffset -= token.text.length;
       segments.push(
-        seg(rowIndex, rightOffset, token.text, token.color as any, {
+        seg(rowIndex, rightOffset, token.text, token.color as DisplayColor, {
           size: token.font === 'small' ? 'small' : 'normal',
         }),
       );
@@ -65,7 +66,7 @@ export function renderAirbusMcduPage(page: McduPage, lskActions: Record<string, 
       let currentOffset = centerOffset;
       line.center.forEach((token) => {
         segments.push(
-          seg(rowIndex, currentOffset, token.text, token.color as any, {
+          seg(rowIndex, currentOffset, token.text, token.color as DisplayColor, {
             size: token.font === 'small' ? 'small' : 'normal',
           }),
         );

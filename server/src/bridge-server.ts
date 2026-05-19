@@ -103,7 +103,13 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     },
   });
 
-  const fmc = options.fmc ?? new FMCEngine();
+  const fmc =
+    options.fmc ??
+    new FMCEngine({
+      onError: (err) => {
+        broadcast({ type: 'error', message: 'Engine sync error' });
+      },
+    });
   const aircraft = options.aircraft ?? createAircraftAdapter();
   let pollTimeout: ReturnType<typeof setTimeout> | null = null;
   let isPollingActive = false;

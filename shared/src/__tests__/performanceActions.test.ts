@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import {
   handleSetCrzAlt,
   handleSetCostIndex,
@@ -99,9 +100,9 @@ describe('handleSetZfw', () => {
     const state = makeState({ takeoff: { ...buildInitialFMCState().takeoff, flaps: '5' } });
     const result = handleSetZfw(state, '140');
     expect(result.handled).toBe(true);
-    expect((result.success?.patch as any)?.takeoff?.suggestedV1).toBeGreaterThan(0);
-    expect((result.success?.patch as any)?.takeoff?.suggestedVr).toBeGreaterThan(0);
-    expect((result.success?.patch as any)?.takeoff?.suggestedV2).toBeGreaterThan(0);
+    expect((getPatch(result))?.takeoff?.suggestedV1).toBeGreaterThan(0);
+    expect((getPatch(result))?.takeoff?.suggestedVr).toBeGreaterThan(0);
+    expect((getPatch(result))?.takeoff?.suggestedV2).toBeGreaterThan(0);
   });
 
   it('rejects zero ZFW', () => {

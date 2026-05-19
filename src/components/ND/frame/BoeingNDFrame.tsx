@@ -106,7 +106,7 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
     const modes = ['APP', 'VOR', 'MAP', 'PLN'];
     const currentIndex = modes.indexOf(efis.mode);
     const nextIndex = (currentIndex + 1) % modes.length;
-    setNDMode(sideKey, modes[nextIndex] as any);
+    setNDMode(sideKey, modes[nextIndex]);
   };
 
   return (
@@ -204,7 +204,7 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
                   <button
                     type="button"
                     data-testid={`nd-overlay-btn-${btn.key}`}
-                    onClick={() => toggleNDOverlay(sideKey, btn.key as any)}
+                    onClick={() => toggleNDOverlay(sideKey, btn.key as keyof typeof efis.overlays)}
                     className="w-7 h-7 rounded-[3px] bg-[#1a1b1d] border border-[#303336] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_2px_4px_rgba(0,0,0,0.8)] active:translate-y-[1px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] cursor-pointer flex items-center justify-center transition-all duration-75"
                     style={{
                       background: 'radial-gradient(circle, #25282b 0%, #151719 100%)',

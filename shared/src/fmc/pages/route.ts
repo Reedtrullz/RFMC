@@ -1,5 +1,5 @@
 import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
-import { PAGE_LINES, PAGE_WIDTH } from '../constants';
+import { PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 
 function fmt(
@@ -32,90 +32,6 @@ function modData(
   color?: DisplayLine['color'],
 ): DisplayLine {
   return fmt(text, left, right, color, isModified ? 'modified' : undefined);
-}
-
-export function renderRtePage(state: FMCState): DisplayData {
-  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
-  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
-  const { rteSubPage } = state;
-  const title = state.isModified ? 'MOD RTE' : 'RTE';
-
-  if (rteSubPage === 0) {
-    return {
-      title,
-      pageIndicator: '1/2',
-      lines: [
-        inverse(`  ${title}              1/2`),
-        fmt(' ORIGIN', '', ''),
-        modData(` ${route.origin || '[    ]'}`, state.isModified),
-        fmt(' DEST', '', ''),
-        modData(` ${route.destination || '[    ]'}`, state.isModified),
-        blank(),
-        fmt(' FLT NO', '', ''),
-        modData(` ${route.flightNumber || '--------'}`, state.isModified),
-        blank(),
-        fmt(' CO ROUTE', '', ''),
-        modData(` ${route.companyRoute || '---------'}`, state.isModified),
-        blank(),
-        state.isModified ? fmt(' ERASE', '<', '', 'amber') : blank(),
-      ],
-      lskActions: {
-        L1: 'set_origin',
-        L2: null,
-        L3: 'set_dest',
-        L4: null,
-        L5: null,
-        L6: state.isModified ? 'erase' : 'next_page',
-        R1: 'set_flt_no',
-        R2: null,
-        R3: 'dep_arr',
-        R4: null,
-        R5: null,
-        R6: null,
-      },
-    };
-  }
-
-  // RTE page 2 — route entry
-  const routeLines = route.routeString || '----';
-  const waypointPreview = flightPlan.waypoints
-    .slice(0, 4)
-    .map((w) => w.ident)
-    .join(' ');
-
-  return {
-    title,
-    pageIndicator: '2/2',
-    lines: [
-      inverse(`  ${title}              2/2`),
-      fmt(' ROUTE', '', ''),
-      modData(` ${routeLines.length > 20 ? routeLines.slice(0, 20) : routeLines.padEnd(20)}`, state.isModified),
-      blank(),
-      fmt(' VIA/TO', '', ''),
-      fmt(' DIRECT'),
-      blank(),
-      fmt(' WPT PREVIEW', '', ''),
-      fmt(` ${waypointPreview || '----'}`),
-      blank(),
-      blank(),
-      blank(),
-      state.isModified ? fmt(' ERASE', '<', '', 'amber') : blank(),
-    ],
-    lskActions: {
-      L1: 'set_route',
-      L2: null,
-      L3: null,
-      L4: null,
-      L5: null,
-      L6: state.isModified ? 'erase' : 'prev_page',
-      R1: null,
-      R2: null,
-      R3: 'legs',
-      R4: null,
-      R5: null,
-      R6: null,
-    },
-  };
 }
 
 export function renderDepArrPage(state: FMCState): DisplayData {

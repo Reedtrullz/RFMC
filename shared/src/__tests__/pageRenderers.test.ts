@@ -1,14 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  renderIdentPage,
-  renderMenuPage,
-  renderPerfInitPage,
-  renderPosInitPage,
-  renderTakeoffRefPage,
-  renderThrustLimPage,
-} from '../fmc/pages/setup';
+import { renderIdentPage, renderMenuPage, renderPerfInitPage, renderThrustLimPage } from '../fmc/pages/setup';
 import { renderHoldPage, renderFixPage } from '../fmc/pages/navigation';
-import { renderRtePage, renderDepArrPage } from '../fmc/pages/route';
+import { renderDepArrPage } from '../fmc/pages/route';
 import { renderClbPage, renderCrzPage, renderDesPage, renderDirIntcPage, renderN1LimitPage } from '../fmc/pages/index';
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
 import { renderBoeingProgressGrid } from '../fmc/pages/boeing/progress.grid';
@@ -73,16 +66,13 @@ describe('Page Renderers', () => {
   it('tags every primary Boeing page title as a semantic title', () => {
     const renderers = [
       renderIdentPage,
-      renderPosInitPage,
       renderPerfInitPage,
       renderThrustLimPage,
-      renderTakeoffRefPage,
       renderMenuPage,
       renderBoeingLegsGrid,
       renderBoeingProgressGrid,
       renderHoldPage,
       renderFixPage,
-      renderRtePage,
       renderDepArrPage,
       renderClbPage,
       renderCrzPage,
@@ -109,31 +99,6 @@ describe('Page Renderers', () => {
       ? data.segments.some((s) => s.text.includes('DES NOW'))
       : data.lines.some((line) => line.text.includes('DES NOW'));
     expect(hasText).toBe(true);
-  });
-
-  it('renders TAKEOFF REF page 2 as landing and approach reference', () => {
-    const data = renderTakeoffRefPage({
-      ...baseState,
-      takeoffRefPageIndex: 1,
-      route: { ...baseState.route, approach: 'ILS19' },
-      landing: { runway: '19', flaps: '30', vref: 142, ilsFrequency: '109.90', course: 193 },
-    });
-
-    expect(data.pageIndicator).toBe('2/2');
-    expect(data.lines.some((l) => l.text.includes('LANDING RW'))).toBe(true);
-    expect(data.lines.some((l) => l.text.includes('ILS19'))).toBe(true);
-    expect(data.lines.some((l) => l.text.includes('142 KT'))).toBe(true);
-    expect(data.lskActions.L3).toBe('set_landing_flaps');
-    expect(data.lskActions.R3).toBe('set_landing_vref');
-  });
-
-  it('renders POS INIT page', () => {
-    const data = renderPosInitPage(baseState);
-    expect(data.title).toBe('POS INIT');
-    const hasRefAirport =
-      data.segments?.some((s) => s.text.includes('REF AIRPORT')) ||
-      data.lines?.some((l) => l.text.includes('REF AIRPORT'));
-    expect(hasRefAirport).toBe(true);
   });
 
   it('renders authentic Boeing PROGRESS page layout', () => {
@@ -174,8 +139,6 @@ describe('Page Renderers', () => {
       },
       takeoff: {
         ...baseState.takeoff,
-        runway: '04L',
-        flaps: '5',
       },
       aircraftState: {
         lat: 40.6413,

@@ -187,14 +187,14 @@ export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
       (state) =>
         ({
           [side === 'L' ? 'efisL' : 'efisR']: { ...state[side === 'L' ? 'efisL' : 'efisR'], mode },
-        }) as any,
+        }) as Partial<CockpitLayoutState>,
     ),
   setEFISRange: (side, range) =>
     set(
       (state) =>
         ({
           [side === 'L' ? 'efisL' : 'efisR']: { ...state[side === 'L' ? 'efisL' : 'efisR'], range },
-        }) as any,
+        }) as Partial<CockpitLayoutState>,
     ),
 }));
 

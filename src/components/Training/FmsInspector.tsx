@@ -10,9 +10,17 @@ import { scenarioEngine } from '@shared/training/scenarioEngine';
 export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const fmcState = useFMCStore((s) => s as unknown as FMCState);
+  const route = useFMCStore((s) => s.route);
+  const flightPlan = useFMCStore((s) => s.flightPlan);
+  const performance = useFMCStore((s) => s.performance);
+  const takeoff = useFMCStore((s) => s.takeoff);
+  const landing = useFMCStore((s) => s.landing);
+  const position = useFMCStore((s) => s.position);
+  const execLit = useFMCStore((s) => s.execLit);
+  const isModified = useFMCStore((s) => s.isModified);
+  const pendingFlightPlan = useFMCStore((s) => s.pendingFlightPlan);
+  const pendingRoute = useFMCStore((s) => s.pendingRoute);
 
-  // Using specific store hooks for truth data
   const aircraftState = useAircraftStore((s) => s.aircraftState);
   const aircraft = useAircraftStore((s) => s.aircraft);
   const flightPhase = useFMCStore((s) => s.flightPhase);
@@ -27,6 +35,46 @@ export function FmsInspector() {
   const addMessage = useAlertStore((s) => s.addMessage);
   const receiveAtsuMessage = useAlertStore((s) => s.receiveAtsuMessage);
 
+  const modelState = React.useMemo((): FMCState => {
+    const currentState = useFMCStore.getState();
+    return {
+      ...currentState,
+      route,
+      flightPlan,
+      performance,
+      takeoff,
+      landing,
+      position,
+      execLit,
+      isModified,
+      pendingFlightPlan,
+      pendingRoute,
+      aircraft,
+      aircraftState: aircraftState ?? currentState.aircraftState,
+      activeNavSource,
+      navPerformance: navPerformance ?? currentState.navPerformance,
+    };
+  }, [
+    route,
+    flightPlan,
+    performance,
+    takeoff,
+    landing,
+    position,
+    execLit,
+    isModified,
+    pendingFlightPlan,
+    pendingRoute,
+    aircraft,
+    aircraftState,
+    activeNavSource,
+    navPerformance,
+  ]);
+
+  const lnav = React.useMemo(() => buildLnavState(modelState), [modelState]);
+  const vnav = React.useMemo(() => buildVnavPrediction(modelState), [modelState]);
+  const performancePrediction = React.useMemo(() => buildPerformancePrediction(modelState), [modelState]);
+
   if (!isOpen) {
     return (
       <button
@@ -38,17 +86,6 @@ export function FmsInspector() {
       </button>
     );
   }
-
-  const modelState: FMCState = {
-    ...fmcState,
-    aircraft,
-    aircraftState: aircraftState ?? fmcState.aircraftState,
-    activeNavSource,
-    navPerformance: navPerformance ?? fmcState.navPerformance,
-  };
-  const lnav = buildLnavState(modelState);
-  const vnav = buildVnavPrediction(modelState);
-  const performancePrediction = buildPerformancePrediction(modelState);
 
   return (
     <div className="fixed top-12 right-4 w-[340px] bg-[#0c0d0d] border border-white/10 rounded-sm shadow-[0_0_40px_rgba(0,0,0,0.8)] z-50 text-white font-mono text-[10px] overflow-hidden flex flex-col max-h-[85vh] outline outline-4 outline-black/20">

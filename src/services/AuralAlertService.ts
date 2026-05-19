@@ -7,7 +7,11 @@ export class AuralAlertService {
    */
   public static async init(): Promise<void> {
     getAudioContext();
-    await resumeAudioContext();
+    try {
+      await resumeAudioContext();
+    } catch (e) {
+      console.warn('[AuralAlertService] Failed to resume audio context:', e);
+    }
   }
 
   /**

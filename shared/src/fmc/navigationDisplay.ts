@@ -94,7 +94,7 @@ export function buildNavigationDisplayModel(state: FMCState, efis?: EFISState): 
   const pendingRouteData = hasPending
     ? processRoute(
         pendingRouteItems,
-        state.pendingRoute!.directTo,
+        state.pendingRoute?.directTo,
         true,
         projectionContext,
         isPlanMode,

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getPatch } from '../fmc/actionHandlers/actionResult';
 import { handlePositionAction } from '../fmc/actionHandlers/positionActions';
 import { buildInitialFMCState } from '../fmc/initialState';
 
@@ -16,7 +17,7 @@ describe('handlePositionAction', () => {
     const result = handlePositionAction('set_ref_airport', makeState(), 'KJFK');
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.position.refAirport).toBe('KJFK');
   });
 
@@ -36,7 +37,7 @@ describe('handlePositionAction', () => {
     const result = handlePositionAction('set_gate', makeState(), 'A12');
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
-    const patch = result.success?.patch as any;
+    const patch = getPatch(result);
     expect(patch.position.gate).toBe('A12');
   });
 });

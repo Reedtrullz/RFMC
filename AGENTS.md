@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
 **Generated:** 2026-05-19
-**Commit:** 9f1886d
+**Commit:** a469942
 **Branch:** main
 **Project:** VirtualCDU — Boeing 737 NG FMC Trainer
 **Stack:** React 18 + TypeScript + Vite + Zustand (frontend), Node.js + Express + WebSocket (backend), TypeScript shared

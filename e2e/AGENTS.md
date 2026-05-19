@@ -1,6 +1,6 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-15
+**Generated:** 2026-05-19
 **Focus:** e2e/ (Playwright tests)
 
 ## OVERVIEW

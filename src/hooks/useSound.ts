@@ -23,7 +23,11 @@ export function useSound() {
     if (mutedRef.current) return;
 
     const ctx = getAudioContext();
-    await resumeAudioContext();
+    try {
+      await resumeAudioContext();
+    } catch (e) {
+      console.warn('[useSound] Failed to resume audio context:', e);
+    }
 
     const s = SOUNDS[name];
 

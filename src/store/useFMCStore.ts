@@ -94,6 +94,8 @@ import {
   fmcPushMessage,
   applyFmcActionResult,
   applyDispatchResult,
+  ZustandSet,
+  ZustandGet,
   failScratchpad,
 } from '@shared/fmc/fmcScratchpadAdapter';
 import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
@@ -975,10 +977,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const originArpt = state.pendingRoute?.origin ?? state.route.origin;
     const destArpt = state.pendingRoute?.destination ?? state.route.destination;
     if (originArpt) {
-      loadProceduresIntoCache(originArpt).catch((err) => devError('Failed to load arrival procedures', err));
+      loadProceduresIntoCache(originArpt).catch((err) => {
+        devError('Failed to load arrival procedures', err);
+        failScratchpad(set as ZustandSet, get as ZustandGet, 'PROC DATA UNAVAIL');
+      });
     }
     if (destArpt) {
-      loadProceduresIntoCache(destArpt).catch((err) => devError('Failed to load destination procedures', err));
+      loadProceduresIntoCache(destArpt).catch((err) => {
+        devError('Failed to load destination procedures', err);
+        failScratchpad(set as ZustandSet, get as ZustandGet, 'PROC DATA UNAVAIL');
+      });
     }
 
     let handled = false;
@@ -986,7 +994,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Dispatch through typed central LSK dispatcher
     const dispatchResult = dispatchLskAction({ state, action, scratchpad });
     if (dispatchResult.handled) {
-      handled = applyDispatchResult(set as any, get as any, dispatchResult);
+      handled = applyDispatchResult(set as ZustandSet, get as ZustandGet, dispatchResult);
     }
 
     // LEGS waypoint side effects — array mutations must stay in store
@@ -1056,7 +1064,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         const alt = parseInt(altMatch[1], 10);
         altitude = { type: 'AT', altitude: alt >= 1000 ? alt : alt * 100 };
       } else {
-        failScratchpad(set as any, get as any, 'INVALID FORMAT');
+        failScratchpad(set as ZustandSet, get as ZustandGet, 'INVALID FORMAT');
         return;
       }
 
@@ -1332,7 +1340,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       // Merge SimBrief coordinates if available
       if (parsed && data.waypoints) {
         parsed.waypoints.forEach((pwp) => {
-          const swp = data.waypoints!.find((w) => w.ident === pwp.ident);
+          const swp = data.waypoints?.find((w) => w.ident === pwp.ident);
           if (swp && swp.lat !== undefined && swp.lon !== undefined) {
             pwp.lat = swp.lat;
             pwp.lon = swp.lon;
@@ -1418,7 +1426,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       // 2. Standard database lookup
       const dbPoint = getWaypoint(id) || getAirport(id);
       if (!dbPoint) {
-        failScratchpad(set as any, get as any, 'NOT IN DATABASE');
+        failScratchpad(set as ZustandSet, get as ZustandGet, 'NOT IN DATABASE');
         return;
       }
       nextWaypoint = {

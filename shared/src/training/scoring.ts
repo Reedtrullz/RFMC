@@ -1,4 +1,4 @@
-import { TrainingMistake, TrainingScore } from './trainingTypes';
+import { TrainingMistake, TrainingScore, PassCriteria } from './trainingTypes';
 
 export function calculateScore(
   mistakes: TrainingMistake[],
@@ -41,7 +41,7 @@ export function calculateScore(
   };
 }
 
-export function isPass(score: TrainingScore, criteria: any): boolean {
+export function isPass(score: TrainingScore, criteria: PassCriteria): boolean {
   if (score.total < criteria.minScore) return false;
   if (score.mistakes.length > criteria.maxMistakes) return false;
   return true;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
 import { useAircraftStore } from '../store/aircraftStore';
 import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
-import { tutorialScenarios, airbusTutorialScenarios, parseSimBriefJSON } from '@shared';
+import { tutorialScenarios, airbusTutorialScenarios, parseSimBrief } from '@shared';
 
 export function DemoWelcome() {
   const tutorialActive = useFMCStore((s) => s.tutorialActive);
@@ -39,7 +39,7 @@ export function DemoWelcome() {
       if (!res.ok) throw new Error('NETWORK ERROR');
       const text = await res.text();
       if (!text || text.trim().length === 0) throw new Error('EMPTY RESPONSE');
-      const data = parseSimBriefJSON(text);
+      const data = parseSimBrief(text);
       if (!data.origin || !data.destination) throw new Error('NO FLIGHT PLAN');
       useFMCStore.getState().loadFlightPlan({
         origin: data.origin,
