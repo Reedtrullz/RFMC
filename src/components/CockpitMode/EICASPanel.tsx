@@ -1,9 +1,12 @@
 import { useFMCStore } from '../../store/useFMCStore';
+import { useDraggable } from '../../hooks/useDraggable';
 
 export function EICASPanel() {
   const alerts = useFMCStore((s) => s.alerts);
   const cockpitMode = useFMCStore((s) => s.cockpitMode);
   const aircraftState = useFMCStore((s) => s.aircraftState);
+
+  const { position, dragHandlers, isDragging } = useDraggable();
 
   if (!cockpitMode) return null;
 
@@ -56,11 +59,22 @@ export function EICASPanel() {
 
       {/* Primary Engine EICAS Panel (Floating HUD Card) */}
       <div
-        className="fixed bottom-4 right-4 z-40 bg-zinc-950/95 border border-zinc-800 rounded-lg p-3 text-white font-mono w-[240px] shadow-2xl backdrop-blur-md pointer-events-auto"
+        className={`fixed bottom-4 right-4 z-40 bg-zinc-950/95 border rounded-lg p-3 text-white font-mono w-[240px] shadow-2xl backdrop-blur-md pointer-events-auto transition-transform ${isDragging ? 'scale-[1.01] border-cdu-cyan' : 'border-zinc-800'}`}
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+          transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
+        }}
         data-testid="eicas-primary-engine"
       >
-        <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-zinc-800 pb-1 mb-2 flex justify-between">
-          <span>Engine Primary</span>
+        <div
+          className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-zinc-800 pb-1 mb-2 flex justify-between cursor-grab active:cursor-grabbing"
+          {...dragHandlers}
+          title="Drag to reposition panel"
+        >
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-zinc-600 select-none mr-0.5">⠿</span>
+            <span>Engine Primary</span>
+          </div>
           <span className="text-cdu-cyan font-bold">EICAS</span>
         </div>
 
