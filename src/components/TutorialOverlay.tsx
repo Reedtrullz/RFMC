@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
 import { CDUButton } from './CDU/CDUButton';
 import { devError, calculateTutorialGrade } from '@shared';
+import { useDraggable } from '../hooks/useDraggable';
 
 export function TutorialOverlay() {
   const tutorialActive = useFMCStore((s) => s.tutorialActive);
@@ -16,26 +17,39 @@ export function TutorialOverlay() {
   const getCurrentTutorialStep = useFMCStore((s) => s.getCurrentTutorialStep);
   const clearTutorialHint = useFMCStore((s) => s.clearTutorialHint);
 
+  const { position, dragHandlers, isDragging } = useDraggable();
+
   if (!tutorialActive && !tutorialCompleted) return null;
 
   const currentStep = getCurrentTutorialStep();
 
   return (
     <div className="fixed inset-x-0 top-14 z-40 flex justify-center pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-[310px] mx-2 mb-2">
+      <div
+        className={`pointer-events-auto w-full max-w-[310px] mx-2 mb-2 transition-transform ${isDragging ? 'scale-[1.01]' : ''}`}
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+          transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
+        }}
+      >
         <div
-          className="
+          className={`
           bg-cdu-bezel/95 backdrop-blur
-          border border-cdu-cyan/30
-          rounded-lg p-3
-          shadow-lg shadow-cdu-cyan/10
-        "
+          border rounded-lg p-3
+          shadow-lg shadow-cdu-cyan/10 transition-colors
+          ${isDragging ? 'border-cdu-cyan' : 'border-cdu-cyan/30'}
+        `}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider">
-              {tutorialCompleted ? 'Complete!' : `Step ${stepIndex + 1}`}
-            </span>
+          {/* Header (Drag Handle) */}
+          <div
+            className="flex items-center justify-between mb-2 cursor-grab active:cursor-grabbing"
+            {...dragHandlers}
+            title="Drag to reposition panel"
+          >
+            <div className="flex items-center gap-1.5 text-cdu-cyan text-xs font-cdu uppercase tracking-wider">
+              <span className="text-[10px] text-zinc-500 select-none">⠿</span>
+              <span>{tutorialCompleted ? 'Complete!' : `Step ${stepIndex + 1}`}</span>
+            </div>
             <div className="flex items-center gap-2">
               {!tutorialCompleted && (
                 <button
