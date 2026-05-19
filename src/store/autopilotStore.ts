@@ -102,7 +102,10 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
   pressButton: (action) => {
     const normalizedAction = BOEING_ACTION_MAP[action] ?? action;
 
-    const boeingUpdate = processBoeingMCPAction(get().boeing, normalizedAction as any);
+    const boeingUpdate = processBoeingMCPAction(
+      get().boeing,
+      normalizedAction as keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE',
+    );
     if (Object.keys(boeingUpdate).length > 0) {
       set((state) => ({
         boeing: { ...state.boeing, ...boeingUpdate },
