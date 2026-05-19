@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useShallow } from 'zustand/react/shallow';
 import { buildNavigationDisplayModel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { useAircraftStore } from '../../store/aircraftStore';
@@ -9,16 +8,12 @@ import { NDControls } from './NDControls';
 import { B737ND } from './renderers/B737ND';
 import { A320ND } from './renderers/A320ND';
 import { useInterpolatedTelemetry } from '../../hooks/useInterpolatedTelemetry';
-import { AutopilotState } from '@shared/autopilot/autopilotTypes';
-import type { TCASTarget } from '@shared/fmc/ndTypes';
-import type { EFISState, FMCState } from '@shared';
 
 export interface NavigationDisplayProps {
   side?: 'L' | 'R';
 }
 
 export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
-  // Using narrow selectors to prevent unnecessary re-renders
   const aircraft = useAircraftStore((s) => s.aircraft);
   const rawAircraftState = useAircraftStore((s) => s.aircraftState);
   const aircraftState = useInterpolatedTelemetry(rawAircraftState);
@@ -31,96 +26,11 @@ export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   const activeNavSource = useAircraftStore((s) => s.activeNavSource);
   const navPerformance = useAircraftStore((s) => s.navPerformance);
 
-  const selectorResult = useFMCStore(
-    useShallow((s) => ({
-      demoMode: s.demoMode,
-      tutorialActive: s.tutorialActive,
-      autopilotBoeingHeading: s.autopilot.boeing.heading,
-      autopilotAirbusHeading: s.autopilot.airbus.heading,
-      autopilotTruthLateralActive: s.autopilot.truth.lateralActive,
-      autopilotBoeingCourseL: s.autopilot.boeing.courseL,
-      trafficTargets: s.trafficTargets,
-      efis: side === 'L' ? s.efisL : s.efisR,
-      flightPlan: s.flightPlan,
-      route: s.route,
-      isModified: s.isModified,
-      pendingFlightPlan: s.pendingFlightPlan,
-      pendingRoute: s.pendingRoute,
-      fixEntries: s.fixEntries,
-      fix: s.fix,
-      hold: s.hold,
-      holdPending: s.holdPending,
-      selectedPlanWaypointIndex: s.selectedPlanWaypointIndex,
-    })),
-  );
+  const fullState = useFMCStore(state => state);
 
-  const {
-    demoMode,
-    tutorialActive,
-    autopilotBoeingHeading,
-    autopilotAirbusHeading,
-    autopilotTruthLateralActive,
-    autopilotBoeingCourseL,
-    trafficTargets,
-    efis,
-    flightPlan,
-    route,
-    isModified,
-    pendingFlightPlan,
-    pendingRoute,
-    fixEntries,
-    fix,
-    hold,
-    holdPending,
-    selectedPlanWaypointIndex,
-  } = selectorResult;
-
-const model = useMemo(() => {
-    const state = {
-      ...selectorResult,
-      aircraft,
-      position,
-      activeNavSource,
-      navPerformance,
-      takeoff,
-      landing,
-      ident,
-      radios,
-      aircraftState,
-      performance,
-    };
-    return buildNavigationDisplayModel(state, selectorResult.efis);
-  }, [
-    aircraft,
-    selectorResult.efis,
-    flightPlan,
-    route,
-    isModified,
-    pendingFlightPlan,
-    pendingRoute,
-    aircraftState,
-    selectedPlanWaypointIndex,
-    fixEntries,
-    fix,
-    hold,
-    holdPending,
-    trafficTargets,
-    demoMode,
-    tutorialActive,
-    performance,
-    selectorResult.autopilotBoeingHeading,
-    selectorResult.autopilotAirbusHeading,
-    selectorResult.autopilotTruthLateralActive,
-    selectorResult.autopilotBoeingCourseL,
-    position,
-    activeNavSource,
-    navPerformance,
-    takeoff,
-    landing,
-    ident,
-    radios,
-    side,
-  ]);
+  const model = useMemo(() => {
+    return buildNavigationDisplayModel(fullState, fullState.efisL);
+  }, [fullState]);
 
   return (
     <section

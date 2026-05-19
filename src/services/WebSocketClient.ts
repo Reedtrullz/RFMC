@@ -1,6 +1,7 @@
 import type { ClientMessage, ServerMessage } from '@shared';
 import { devLog, devError } from '@shared';
 import { useFMCStore } from '../store/useFMCStore';
+import { useAircraftStore } from '../store/aircraftStore';
 
 type StatusListener = (status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR') => void;
 
@@ -178,6 +179,46 @@ private scheduleReconnect() {
 
   private handleFatalError(error: unknown): void {
     devError('[WS] Fatal WebSocket error - user notification required:', error);
+  }
+
+  private handleServerMessage(msg: ServerMessage) {
+    switch (msg.type) {
+      case 'fmc.display':
+        useFMCStore.getState().setExternalDisplayData(msg.data);
+        break;
+      case 'sim.connected':
+        useFMCStore.getState().setConnectedAircraft(msg.aircraft, msg.capabilities ?? [], msg.aircraftType);
+        useFMCStore.getState().setConnectionDiagnostics({
+          connectedAircraft: msg.aircraft,
+          connectedCapabilities: msg.capabilities as string[] | null | undefined,
+          adapterHealth: msg.adapterHealth,
+          lastError: null,
+        });
+        break;
+      case 'sim.disconnected':
+        useFMCStore.getState().setConnectedAircraft(null, null, null);
+        useFMCStore.getState().setConnectionDiagnostics({
+          connectedAircraft: null,
+          connectedCapabilities: null,
+          adapterHealth: null,
+          lastError: msg.lastError,
+        });
+        break;
+      case 'sim.data':
+        const acState = msg.aircraftState ?? null;
+        useFMCStore.getState().setAircraftState(acState);
+        useFMCStore.getState().setSimVariables(msg.variables);
+        useAircraftStore.getState().setAircraftState(acState);
+        if (msg.radios) {
+          useAircraftStore.getState().updateRadios(msg.radios);
+        }
+        break;
+      case 'sim.heartbeat':
+        break;
+      case 'error':
+        devError('[WS] Server error:', msg.message);
+        break;
+    }
   }
 
   private getSavedServerUrl(): string {
