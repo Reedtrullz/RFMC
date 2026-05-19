@@ -7,17 +7,17 @@ export function useFPSMonitor() {
   const lastTime = useRef(performance.now());
   const requestRef = useRef<number>();
 
-  const animate = (time: number) => {
-    frameCount.current++;
-    if (time >= lastTime.current + 1000) {
-      setFps(Math.round((frameCount.current * 1000) / (time - lastTime.current)));
-      frameCount.current = 0;
-      lastTime.current = time;
-    }
-    requestRef.current = requestAnimationFrame(animate);
-  };
-
   useEffect(() => {
+    const animate = (time: number) => {
+      frameCount.current++;
+      if (time >= lastTime.current + 1000) {
+        setFps(Math.round((frameCount.current * 1000) / (time - lastTime.current)));
+        frameCount.current = 0;
+        lastTime.current = time;
+      }
+      requestRef.current = requestAnimationFrame(animate);
+    };
+
     requestRef.current = requestAnimationFrame(animate);
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
