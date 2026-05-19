@@ -95,7 +95,7 @@ describe('handleSetRunway', () => {
     expect(result.success?.patch?.takeoff?.vr).toBe(0);
     expect(result.success?.patch?.takeoff?.v2).toBe(0);
     expect(result.success?.scratchpadMessage).toBe('V SPEEDS DELETED');
-    expect((getPatch(result))?.msgLight).toBe(true);
+    expect(getPatch(result)?.msgLight).toBe(true);
   });
 });
 

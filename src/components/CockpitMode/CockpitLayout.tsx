@@ -95,28 +95,31 @@ export function CockpitLayout() {
 
   const isNight = brightness < 40;
   const validation = validateVisiblePanels(layoutMode, hiddenPanels);
-  const controls: LayoutControls = useMemo(() => ({
-    aircraft,
-    hiddenPanels: new Set(hiddenPanels),
-    pinnedPanels: new Set(pinnedPanels),
-    instrumentZoom,
-    onFocus: setFocusedPanel,
-    onHide: togglePanelHidden,
-    onTogglePin: togglePanelPinned,
-    onZoomIn: (panelId) => adjustInstrumentZoom(panelId, 0.08),
-    onZoomOut: (panelId) => adjustInstrumentZoom(panelId, -0.08),
-    onZoomReset: resetInstrumentZoom,
-  }), [
-    aircraft,
-    hiddenPanels,
-    pinnedPanels,
-    instrumentZoom,
-    setFocusedPanel,
-    togglePanelHidden,
-    togglePanelPinned,
-    adjustInstrumentZoom,
-    resetInstrumentZoom,
-  ]);
+  const controls: LayoutControls = useMemo(
+    () => ({
+      aircraft,
+      hiddenPanels: new Set(hiddenPanels),
+      pinnedPanels: new Set(pinnedPanels),
+      instrumentZoom,
+      onFocus: setFocusedPanel,
+      onHide: togglePanelHidden,
+      onTogglePin: togglePanelPinned,
+      onZoomIn: (panelId) => adjustInstrumentZoom(panelId, 0.08),
+      onZoomOut: (panelId) => adjustInstrumentZoom(panelId, -0.08),
+      onZoomReset: resetInstrumentZoom,
+    }),
+    [
+      aircraft,
+      hiddenPanels,
+      pinnedPanels,
+      instrumentZoom,
+      setFocusedPanel,
+      togglePanelHidden,
+      togglePanelPinned,
+      adjustInstrumentZoom,
+      resetInstrumentZoom,
+    ],
+  );
 
   useEffect(() => {
     const closeFocus = (event: KeyboardEvent) => {

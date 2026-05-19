@@ -18,8 +18,8 @@ describe('handleFixAction — set_fix_ref', () => {
     const result = handleFixAction('set_fix_ref', makeState(), 'SEA');
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
-    expect((getPatch(result))?.fixEntries[0].refFix).toBe('SEA');
-    expect((getPatch(result))?.fix?.refFix).toBe('SEA');
+    expect(getPatch(result)?.fixEntries[0].refFix).toBe('SEA');
+    expect(getPatch(result)?.fix?.refFix).toBe('SEA');
   });
 
   it('rejects an invalid waypoint (too short)', () => {

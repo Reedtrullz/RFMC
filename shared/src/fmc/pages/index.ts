@@ -1,11 +1,5 @@
 import type { FMCState, DisplayData, PageType } from '../../types/fmc';
-import {
-  renderIdentPage,
-  renderPerfInitPage,
-  renderThrustLimPage,
-  renderMenuPage,
-  renderNavDataPage,
-} from './setup';
+import { renderIdentPage, renderPerfInitPage, renderThrustLimPage, renderMenuPage, renderNavDataPage } from './setup';
 import { renderDepArrPage } from './route';
 import { renderHoldPage, renderFixPage } from './navigation';
 import { renderBoeingClimbGrid as renderClbPage } from './boeing/climb.grid';
@@ -21,12 +15,7 @@ import { renderBoeingLegsGrid } from './boeing/legs.grid';
 import { renderBoeingTakeoffRefGrid } from './boeing/takeoffRef.grid';
 import { renderBoeingProgressGrid } from './boeing/progress.grid';
 
-export {
-  renderIdentPage,
-  renderPerfInitPage,
-  renderThrustLimPage,
-  renderMenuPage,
-} from './setup';
+export { renderIdentPage, renderPerfInitPage, renderThrustLimPage, renderMenuPage } from './setup';
 export { renderDepArrPage } from './route';
 export { renderHoldPage, renderFixPage } from './navigation';
 export { renderClbPage, renderCrzPage, renderDesPage, renderDirIntcPage, renderN1LimitPage };

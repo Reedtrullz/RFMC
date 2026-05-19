@@ -93,16 +93,7 @@ export function useAuralAlerts() {
       AuralAlertService.playBoeingWarning(); // Cavalry charge is used for both for now, or specifically Boeing
     }
     lastApStatus.current = autopilotStatus;
-  }, [
-    gpwsAlert,
-    tcasAlert,
-    autopilotStatus,
-    aircraft,
-    alerts,
-    lateralActive,
-    verticalActive,
-    thrustActive,
-  ]);
+  }, [gpwsAlert, tcasAlert, autopilotStatus, aircraft, alerts, lateralActive, verticalActive, thrustActive]);
 
   // Global user interaction listener to resume audio context
   useEffect(() => {

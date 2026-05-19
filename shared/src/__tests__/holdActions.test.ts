@@ -171,18 +171,18 @@ describe('handleHoldAction — set_hold_direction', () => {
   it('accepts L direction', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'L');
     expect(result.handled).toBe(true);
-    expect((getPatch(result)).holdPending.direction).toBe('L');
+    expect(getPatch(result).holdPending.direction).toBe('L');
   });
 
   it('accepts R direction', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'R');
     expect(result.handled).toBe(true);
-    expect((getPatch(result)).holdPending.direction).toBe('R');
+    expect(getPatch(result).holdPending.direction).toBe('R');
   });
 
   it('is case-insensitive', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'l');
     expect(result.handled).toBe(true);
-    expect((getPatch(result)).holdPending.direction).toBe('L');
+    expect(getPatch(result).holdPending.direction).toBe('L');
   });
 });

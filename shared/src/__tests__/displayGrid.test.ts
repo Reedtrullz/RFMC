@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  displayDataToGrid,
-  displayLineToSegments,
-  scratchpadToGridSegment,
-} from '../fmc/displayGrid';
+import { displayDataToGrid, displayLineToSegments, scratchpadToGridSegment } from '../fmc/displayGrid';
 import type { DisplayData } from '../types/fmc';
 
 describe('displayGrid', () => {

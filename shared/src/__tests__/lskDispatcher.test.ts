@@ -24,7 +24,7 @@ describe('dispatchLskAction', () => {
     const result = dispatchLskAction({ state: makeState(), action: 'erase', scratchpad: '' });
     expect(result.handled).toBe(true);
     expect(result.success?.patch).toBeDefined();
-    expect((getPatch(result))?.isModified).toBe(false);
+    expect(getPatch(result)?.isModified).toBe(false);
   });
 
   it('dispatches special action (align_irs)', () => {

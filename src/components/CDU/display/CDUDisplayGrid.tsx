@@ -46,7 +46,7 @@ const CellSpan = memo(
       prevProps.cell.inverse === nextProps.cell.inverse &&
       prevProps.cell.semantic === nextProps.cell.semantic
     );
-  }
+  },
 );
 
 interface CDUDisplayGridProps {

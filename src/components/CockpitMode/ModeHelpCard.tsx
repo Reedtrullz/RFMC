@@ -11,7 +11,7 @@ interface ModeHelpCardProps {
 
 export function ModeHelpCard({ mode, onResetLayout }: ModeHelpCardProps) {
   const config = getTrainingModeConfig(mode);
-  
+
   const currentPage = useFMCStore((s) => s.currentPage);
   const aircraft = useFMCStore((s) => s.aircraft);
   const flightPhase = useFMCStore((s) => s.flightPhase);

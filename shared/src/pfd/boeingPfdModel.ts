@@ -7,7 +7,8 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
 
   let autothrottleMode: BoeingFMAState['autothrottleMode'] = '';
   if (truth.thrustActive !== 'OFF') {
-    autothrottleMode = truth.thrustActive === 'SPEED' ? 'MCP SPD' : (truth.thrustActive as BoeingFMAState['autothrottleMode']);
+    autothrottleMode =
+      truth.thrustActive === 'SPEED' ? 'MCP SPD' : (truth.thrustActive as BoeingFMAState['autothrottleMode']);
   } else if (mcp.autothrottleArm) {
     autothrottleMode = 'ARM';
   }

@@ -10,16 +10,18 @@
 ## Work Stream A: Critical Resilience (HIGH — do first)
 
 ### [x] A1. Add root ErrorBoundary in `src/main.tsx`
+
 - **File:** `src/main.tsx`
 - **What:** Wrap `<App />` in `<ErrorBoundary>` with a full-page crash fallback
 - **Why:** Any error in App-level hook initialization or outside inner boundaries → white screen
-- **Verification:** 
+- **Verification:**
   - `npm run typecheck:all` passes
   - Temporarily throw in App useEffect → crash fallback renders instead of white screen
 - **Effort:** ~5 min
 - **Dependencies:** None
 
 ### [x] A2. Fix WebSocket `onerror` missing reconnect trigger
+
 - **File:** `src/services/WebSocketClient.ts`, lines 67-70
 - **What:** Add `this.scheduleReconnect()` inside the `ws.onerror` handler, and also call `this.ws?.close()` to ensure `onclose` fires as a belt-and-suspenders approach
 - **Why:** If socket enters faulted-but-not-closed state, client hangs in ERROR forever
@@ -31,6 +33,7 @@
 - **Dependencies:** None
 
 ### [x] A3. Fix `useAuralAlerts.ts` — effect fires every render
+
 - **File:** `src/hooks/useAuralAlerts.ts`
 - **What:** Replace inline `fma` object in useEffect deps with primitive destructured values: `[lateralActive, verticalActive, thrustActive, gpwsAlert, tcasAlert, autopilotStatus, aircraft, alerts]`
 - **Why:** Object recreated every render → useEffect runs continuously
@@ -42,6 +45,7 @@
 - **Dependencies:** None
 
 ### [x] A4. Fix `CDUDisplayGrid.tsx` — CellSpan memo ineffective
+
 - **File:** `src/components/CDU/display/CDUDisplayGrid.tsx`
 - **What:** Add custom comparison function to `memo()` wrapping `CellSpan`, comparing `cell.char`, `cell.color`, `cell.size`, `cell.blink`, `cell.inverse`, `cell.semantic`, and `variant`
 - **Why:** Without custom comparator, all 336 cells re-render on every scratchpad keystroke because cell object references change
@@ -54,6 +58,7 @@
 - **Dependencies:** None
 
 ### [x] A5. Fix non-null assertions on nullable paths
+
 - **Files:**
   - `shared/src/fmc/navigationDisplay.ts` line 97: `state.pendingRoute!.directTo` → `state.pendingRoute?.directTo`
   - `src/store/useFMCStore.ts` line 1335: `data.waypoints!.find(...)` → `data.waypoints?.find(...) ?? undefined`
@@ -73,6 +78,7 @@
 ## Work Stream B: React Performance (MEDIUM)
 
 ### [x] B1. Fix Zustand over-subscriptions
+
 - **Files:**
   - `src/components/CockpitMode/ModeHelpCard.tsx`: Replace `useFMCStore()` with specific selectors for only the fields used (e.g., `currentPage`, `aircraft`, `flightPhase`, `tutorialActive`)
   - `src/components/Training/FmsInspector.tsx`: Replace `useFMCStore(s => s)` with specific slice selectors. Also wrap `buildLnavState`, `buildVnavPrediction`, `buildPerformancePrediction` computations in `useMemo`
@@ -86,6 +92,7 @@
 - **Dependencies:** None
 
 ### [x] B2. Memoize `controls` object in CockpitLayout.tsx
+
 - **File:** `src/components/CockpitMode/CockpitLayout.tsx`
 - **What:** Wrap `controls` object creation in `useMemo` with appropriate deps. Stabilize the `Set` instances and callbacks so downstream instrument components aren't forced to re-render
 - **Why:** New object with new Set/function references on every render defeats child memoization
@@ -98,6 +105,7 @@
 - **Dependencies:** None
 
 ### [x] B3. Memoize `buildBoeingMcpDisplayModel` in BoeingMCP.tsx
+
 - **File:** `src/components/instruments/boeing/BoeingMCP/BoeingMCP.tsx`
 - **What:** Wrap `buildBoeingMcpDisplayModel(state, truth)` call in `useMemo` keyed on `state` and `truth` references
 - **Why:** Expensive computation runs unconditionally on every render
@@ -108,6 +116,7 @@
 - **Dependencies:** None
 
 ### [x] B4. Consolidate NavigationDisplay selectors
+
 - **File:** `src/components/ND/NavigationDisplay.tsx`
 - **What:** Replace 15 individual `useFMCStore` calls with a single `useFMCStore(useShallow(s => ({ ... })))` selector object
 - **Why:** Reduces subscriber overhead and groups state change notifications
@@ -125,6 +134,7 @@
 ## Work Stream C: Error Handling Hardening (MEDIUM)
 
 ### [x] C1. Wrap async browser APIs in try-catch
+
 - **Files:**
   - `src/hooks/useSound.ts`: Wrap `await resumeAudioContext()` in try-catch, swallow gracefully (audio is non-critical)
   - `src/hooks/useWakeLock.ts`: Wrap `await sentinel.release()` in try-catch
@@ -138,6 +148,7 @@
 - **Dependencies:** None
 
 ### [x] C2. Surface background loading failures to UI
+
 - **File:** `src/store/useFMCStore.ts`, lines 978/981
 - **What:** When `loadProceduresIntoCache` fails, push a scratchpad advisory message (e.g., `PROC DATA UNAVAIL`) instead of only logging to console
 - **Why:** Pilots get no feedback when terminal procedure data fails to load
@@ -149,6 +160,7 @@
 - **Dependencies:** Scratchpad message system already exists (scratchpadEngine.ts)
 
 ### [x] C3. Server tick errors → notify WebSocket clients
+
 - **File:** `server/src/fmc-engine.ts`, line 61 area
 - **What:** When engine tick catches an error, broadcast a `{ type: 'error', message: 'Engine sync error' }` to connected clients, or set a health flag that the heartbeat can include
 - **Why:** Silent server-side engine failures leave clients with stale state and no indication
@@ -165,6 +177,7 @@
 ## Work Stream D: Dead Code & Cleanup (MEDIUM)
 
 ### [x] D1. Remove legacy non-grid page renderers
+
 - **Files to modify:**
   - `shared/src/fmc/pages/index.ts`: Remove re-exports of `renderPosInitPage`, `renderTakeoffRefPage`, `renderRtePage`
   - `shared/src/fmc/pages/setup.ts`: Delete `renderPosInitPage`, `renderTakeoffRefPage` functions (keep grid variants)
@@ -180,6 +193,7 @@
 - **Dependencies:** None
 
 ### [x] D2. Clean up orphan files
+
 - **Actions:**
   - Delete `test.ts` (root — single throwaway import line)
   - Delete `scratch/testNavdata.ts` (scratchpad script)
@@ -194,6 +208,7 @@
 - **Dependencies:** None
 
 ### [x] D3. Register or remove FBW A320 adapter
+
 - **File:** `server/src/aircraft-adapters/fbw-a320.ts`
 - **Decision required:** Is the FlyByWire A320 adapter planned for future use?
   - **If YES:** Register it in `server/src/aircraft-adapters/index.ts` factory and add env var switch
@@ -206,6 +221,7 @@
 - **Dependencies:** Decision from project owner
 
 ### [x] D4. Clean up unused SimBrief parser exports
+
 - **File:** `shared/src/fmc/simbriefParser.ts`
 - **What:** Remove or mark as internal the standalone `parseSimBriefXML` and `parseSimBriefJSON` exports — only the unified `parseSimBrief` wrapper is used
 - **Pre-check:** Confirm no imports of the individual functions
@@ -216,6 +232,7 @@
 - **Dependencies:** None
 
 ### [x] D5. Remove unused BrightnessPanel destructure
+
 - **File:** `src/components/CockpitMode/BrightnessPanel.tsx`
 - **What:** Remove unused `highContrast` and `setHighContrast` destructured variables
 - **Verification:** `npm run typecheck:all` passes, lint passes
@@ -229,6 +246,7 @@
 ## Work Stream E: Type Safety Improvements (MEDIUM-LOW)
 
 ### [x] E1. Eliminate `as any` in store adapter calls
+
 - **File:** `src/store/useFMCStore.ts`
 - **What:** Exported `ZustandSet`/`ZustandGet` types from fmcScratchpadAdapter.ts; replaced 5 `set as any, get as any` callsites with `set as ZustandSet, get as ZustandGet`
 - **Pattern:** Create a `StoreAdapter` type alias matching `{ set: ..., get: ... }` and use it in `fmcScratchpadAdapter.ts` function signatures
@@ -240,6 +258,7 @@
 - **Dependencies:** Understanding of Zustand's `StoreApi` types
 
 ### [x] E2. Type the `FmcActionSuccess.patch` for handler tests
+
 - **Files:** All test files in `shared/src/__tests__/` using `result.success?.patch as any`
 - **What:** Create a test helper like `getPatch<T>(result: FmcActionResult): T` that safely narrows the patch type, replacing ~100 `as any` casts in tests
 - **Verification:**
@@ -249,6 +268,7 @@
 - **Dependencies:** None
 
 ### [x] E3. Fix remaining production `as any` casts
+
 - **Files and patterns:**
   - `src/components/ND/NavigationDisplay.tsx` lines 32, 34, 76: Type `autopilot` and `trafficTargets` selectors properly
   - `src/components/ND/NDControls.tsx` lines 40, 74: Type the ND mode/overlay enums properly instead of casting
@@ -268,6 +288,7 @@
 - **Dependencies:** Need to understand existing type unions for ND modes, PFD models, and segment colors
 
 ### [x] E4. Type loose `any` parameters in server and shared
+
 - **Files:**
   - `src/store/alertStore.ts` line 11: `pendingUplink: any | null` → define `AcarsUplink` interface
   - `server/src/fmc-engine.ts` line 270: `createDefaultEFIS(aircraft: any)` → `AircraftType`
@@ -287,6 +308,7 @@
 ## Work Stream F: Long-term Architecture (LOW — plan only)
 
 ### F1. Decompose `useFMCStore.ts` (2,465 lines)
+
 - **Not in this plan's execution scope** — requires design discussion
 - **Proposed approach:**
   - Extract display rendering (`getDisplayData` + scratchpad injection) → `src/store/displaySlice.ts`
@@ -297,11 +319,13 @@
 - **Effort:** ~1 day
 
 ### F2. Resolve TODO: route sequencing telemetry
+
 - **File:** `shared/src/fmc/FmsRuntimeEngine.ts` line 56
 - **What:** Replace console-based telemetry with structured event logging (same pattern as server `LogEvent`)
 - **Effort:** ~30 min
 
 ### F3. Debounce RotaryKnob continuous interactions
+
 - **File:** `src/components/instruments/common/RotaryKnob.tsx`
 - **What:** Throttle `onRotate(delta)` callbacks during wheel/drag to ~60fps instead of per-pixel
 - **Effort:** ~20 min
