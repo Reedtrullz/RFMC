@@ -2,7 +2,7 @@ import { MockSimConnectAdapter } from './mock-simconnect';
 import type { IAircraftAdapter } from './IAircraftAdapter';
 import { createRequire } from 'node:module';
 
-const _require = createRequire(__filename);
+const _require = createRequire(import.meta.url);
 
 export type AircraftAdapterKind = 'pmdg' | 'mock' | 'fbw-a320' | 'fbw';
 
