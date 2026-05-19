@@ -143,8 +143,8 @@ export function expandProcedure(procedure: Procedure, runway?: string, transitio
     const fix = leg.fixIdent ? getFix(leg.fixIdent) : null;
     return {
       ident: leg.fixIdent || 'USER',
-      lat: fix?.lat!,
-      lon: fix?.lon!,
+      lat: fix?.lat ?? 0,
+      lon: fix?.lon ?? 0,
       type: leg.type,
       altitudeConstraint: leg.altitudeConstraint,
       speedConstraint: leg.speedConstraint,
