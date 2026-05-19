@@ -34,6 +34,7 @@ export const allPanelIds: PanelId[] = [
   'checklist',
   'connection',
   'settings',
+  'eicas',
 ];
 
 export const trainingModes: TrainingModeConfig[] = [
@@ -117,11 +118,11 @@ export const trainingModes: TrainingModeConfig[] = [
     label: 'Custom Practice',
     purpose: 'Freely choose visible panels for instrument practice outside a guided lesson.',
     aircraft: 'both',
-    visiblePanels: ['cdu', 'nd', 'pfd', 'autoflight'],
+    visiblePanels: ['cdu', 'nd', 'pfd', 'autoflight', 'eicas'],
     minimumRequiredPanels: ['pfd', 'nd'],
     primaryPanel: 'pfd',
     layoutPreset: 'fullDeck',
-    defaultZoom: { pfd: 1, nd: 1, cdu: 1, autoflight: 1 },
+    defaultZoom: { pfd: 1, nd: 1, cdu: 1, autoflight: 1, eicas: 1 },
     defaultOverlays: [],
     beginnerHint: 'Use this mode when you want direct panel practice without lesson-driven panel changes.',
     practiceTask: 'Enable only the instruments you want to practice.',

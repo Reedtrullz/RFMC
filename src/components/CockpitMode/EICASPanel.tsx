@@ -1,14 +1,16 @@
 import { useFMCStore } from '../../store/useFMCStore';
 import { useDraggable } from '../../hooks/useDraggable';
+import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 
 export function EICASPanel() {
   const alerts = useFMCStore((s) => s.alerts);
   const cockpitMode = useFMCStore((s) => s.cockpitMode);
   const aircraftState = useFMCStore((s) => s.aircraftState);
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('eicas'));
 
   const { position, dragHandlers, isDragging } = useDraggable();
 
-  if (!cockpitMode) return null;
+  if (!cockpitMode || isHidden) return null;
 
   // 1. Crew Alerting System (CAS) Overlay
   const displayAlerts = alerts.filter((a) => a.level !== 'STATUS').slice(0, 10);

@@ -18,4 +18,5 @@ export const panelLabels: Record<PanelId, string> = {
   checklist: 'Checklist',
   connection: 'Connection',
   settings: 'Settings',
+  eicas: 'EICAS',
 };

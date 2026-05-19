@@ -9,7 +9,17 @@ export function CockpitToolbar() {
   const highContrast = useCockpitLayoutStore((s) => s.highContrast);
   const toggleHighContrast = useCockpitLayoutStore((s) => s.toggleHighContrast);
 
-  const panels: PanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'instructor', 'checklist', 'connection', 'settings'];
+  const panels: PanelId[] = [
+    'cdu',
+    'nd',
+    'pfd',
+    'autoflight',
+    'eicas',
+    'instructor',
+    'checklist',
+    'connection',
+    'settings',
+  ];
 
   return (
     <div
