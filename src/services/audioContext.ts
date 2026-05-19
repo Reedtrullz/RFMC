@@ -11,8 +11,14 @@ let context: AudioContext | null = null;
 const activeOscillators = new Set<OscillatorNode>();
 const activeGains = new Set<GainNode>();
 
+declare global {
+  interface Window {
+    webkitAudioContext?: AudioContext;
+  }
+}
+
 function createContext(): AudioContext {
-  const Ctor = window.AudioContext || (window as any).webkitAudioContext;
+  const Ctor = window.AudioContext ?? window.webkitAudioContext;
   return new Ctor();
 }
 

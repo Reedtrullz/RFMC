@@ -64,12 +64,27 @@ class WebSocketClient {
         this.scheduleReconnect();
       };
 
-      ws.onerror = (err) => {
-        devError('[WS] Error:', err);
-        this.setStatus('ERROR');
-        this.ws?.close();
-        this.scheduleReconnect();
-      };
+ws.onerror = (err) => {
+    const error = err instanceof Event ? 'WebSocket error event' : err;
+    devError('[WS] WebSocket error:', error);
+
+    const isFatal = this.classifyError(error);
+    
+    if (isFatal) {
+      devError('[WS] Fatal error encountered, stopping reconnect attempts');
+      this.setStatus('ERROR');
+      this.ws?.close();
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+      this.handleFatalError(error);
+    } else {
+      this.setStatus('ERROR');
+      this.ws?.close();
+      this.scheduleReconnect();
+    }
+  };
     } catch (err) {
       devError('[WS] Connection failed:', err);
       this.setStatus('ERROR');
@@ -96,7 +111,7 @@ class WebSocketClient {
     }
   }
 
-  private scheduleReconnect() {
+private scheduleReconnect() {
     if (this.reconnectTimer) return;
 
     const delayBase = 1000;
@@ -112,50 +127,57 @@ class WebSocketClient {
     }, delay);
   }
 
-  private handleServerMessage(msg: ServerMessage) {
-    const store = useFMCStore.getState();
-    switch (msg.type) {
-      case 'fmc.display':
-        store.setExternalDisplayData(msg.data);
-        break;
-      case 'sim.connected':
-        store.setConnectionStatus('CONNECTED');
-        store.setConnectionMode('CONTROL');
-        store.setConnectionDiagnostics({
-          structuredCapabilities: msg.structuredCapabilities ?? null,
-          adapterHealth: msg.adapterHealth ?? null,
-        });
-        store.setConnectedAircraft(msg.aircraft, msg.capabilities ?? null, msg.aircraftType ?? null);
-        store.setConnectedLastError(msg.lastError ?? null);
-        store.setSessionStartTime(Date.now());
-        break;
-      case 'sim.disconnected':
-        store.setConnectionStatus('DISCONNECTED');
-        store.setConnectionMode('STANDALONE');
-        store.setConnectedAircraft(null, null, null);
-        store.setConnectionDiagnostics({
-          structuredCapabilities: null,
-          adapterHealth: null,
-        });
-        store.setAircraftState(null);
-        store.setConnectedLastError(msg.lastError ?? null);
-        store.setSessionStartTime(null);
-        break;
-      case 'sim.data':
-        store.setSimVariables(msg.variables);
-        if (msg.aircraftState) {
-          store.setAircraftState(msg.aircraftState);
-        }
-        break;
-      case 'sim.heartbeat':
-        store.setLatency(Math.abs(Date.now() - msg.serverTime));
-        break;
-      case 'error':
-        devError('[WS] Server error:', msg.message);
-        store.setConnectionStatus('ERROR');
-        store.setConnectedLastError(msg.message);
-        break;
+  private classifyError(error: unknown): boolean {
+    if (typeof error === 'string') {
+      const errMsg = error.toLowerCase();
+      if (errMsg.includes('network') || 
+          errMsg.includes('timeout') || 
+          errMsg.includes('connection refused') ||
+          errMsg.includes('server error') ||
+          errMsg.includes('failed to connect') ||
+          errMsg.includes('unexpected token')) {
+        return false;
+      }
+      if (errMsg.includes('cors') || 
+          errMsg.includes('forbidden') || 
+          errMsg.includes('unauthorized') ||
+          errMsg.includes('401') || 
+          errMsg.includes('403') ||
+          errMsg.includes('invalid url') ||
+          errMsg.includes('syntax error') ||
+          errMsg.includes('protocol error')) {
+        return true;
+      }
     }
+
+    if (error instanceof Error) {
+      const name = error.name.toLowerCase();
+      const message = error.message.toLowerCase();
+      if (name.includes('network') || 
+          name.includes('timeout') || 
+          name.includes('connectionerror') ||
+          message.includes('connection refused') ||
+          message.includes('server error') ||
+          message.includes('failed to connect')) {
+        return false;
+      }
+      if (name.includes('security') || 
+          name.includes('cros') || 
+          name.includes('cors') ||
+          name.includes('http') && message.includes('401') ||
+          name.includes('http') && message.includes('403') ||
+          message.includes('invalid url') ||
+          message.includes('syntax error') ||
+          message.includes('protocol')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private handleFatalError(error: unknown): void {
+    devError('[WS] Fatal WebSocket error - user notification required:', error);
   }
 
   private getSavedServerUrl(): string {

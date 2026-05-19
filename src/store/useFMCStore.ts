@@ -103,6 +103,26 @@ import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
 import { devLog, devError, devWarn } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
+import { DisplayColor } from '@shared/fmc/displayColors';
+import type { DisplaySemantic } from '@shared/types/fmc';
+
+const BOEING_ACTION_MAP: Record<string, string> = {
+  LNAV: 'lnav',
+  VNAV: 'vnav',
+  LVL_CHG: 'lvlChg',
+  HDG_SEL: 'hdgSel',
+  VOR_LOC: 'vorLoc',
+  APP: 'app',
+  ALT_HLD: 'altHold',
+  VS: 'vs',
+  N1: 'n1',
+  SPEED: 'speedMode',
+  cmdA: 'cmdA',
+  cmdB: 'cmdB',
+  cwsA: 'cwsA',
+  cwsB: 'cwsB',
+  SPD_MACH_TOGGLE: 'SPD_MACH_TOGGLE',
+};
 
 type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
 
@@ -1009,7 +1029,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         } else if (wpAction === 'edit_wp' && scratchpad) {
           state.insertWaypoint(wpIdx, scratchpad);
           handled = true;
-        } else if (wpAction === 'delete_wp' && (dispatchResult as any)?.sideEffects?.includes('delete_waypoint')) {
+        } else if (wpAction === 'delete_wp' && dispatchResult.sideEffects?.includes('delete_waypoint')) {
           state.deleteWaypoint(wpIdx);
           handled = true;
         }
@@ -1144,9 +1164,9 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const activeMsg = scratchpadMessages[0];
 
     let scratchpadText = ' ';
-    let scratchpadColor = (state.aircraft === 'AIRBUS_A320' ? 'white' : 'green') as any;
+    let scratchpadColor: DisplayColor = state.aircraft === 'AIRBUS_A320' ? 'white' : 'green';
     let blink = false;
-    let semantic = undefined;
+    let semantic: DisplaySemantic | undefined = undefined;
 
     if (scratchpadState) {
       scratchpadText = getActiveDisplay(scratchpadState);
@@ -1166,21 +1186,21 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       scratchpadColor = activeMsg.severity === 'ADVISORY' ? 'white' : 'amber';
       blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'IMPORTANT';
       semantic =
-        activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
+        activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'placeholder';
     }
 
     if (data.segments) {
       // For segment-based rendering, add/replace the last line (row 13)
       data.segments = data.segments.filter((s) => s.row !== 13);
-      data.segments.push({
-        row: 13,
-        col: 0,
-        text: scratchpadText.padEnd(24, ' '),
-        color: scratchpadColor,
-        size: 'normal',
-        blink,
-        semantic: semantic as any,
-      });
+data.segments.push({
+      row: 13,
+      col: 0,
+      text: scratchpadText.padEnd(24, ' '),
+      color: scratchpadColor,
+      size: 'normal',
+      blink,
+      semantic,
+    });
     } else {
       // Legacy line-based rendering
       data.lines[13] = {
@@ -1188,7 +1208,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         color: scratchpadColor,
         inverse: false,
         blinking: blink,
-        semantic: semantic as any,
+        semantic,
       };
     }
 
@@ -1763,13 +1783,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       route.runway || undefined,
     );
 
-    const waypoints = expandedLegs.map((leg) => {
+const waypoints = expandedLegs.map<FlightPlanWaypoint>((leg) => {
       const isUnresolved = leg.lat === undefined || leg.lon === undefined || isNaN(leg.lat) || isNaN(leg.lon);
       return {
         ident: leg.ident,
         lat: leg.lat,
         lon: leg.lon,
-        coordinateSource: (isUnresolved ? 'UNRESOLVED' : 'navdb') as any,
+        coordinateSource: isUnresolved ? 'UNRESOLVED' : 'navdb',
         discontinuity: false,
       };
     });
@@ -1987,7 +2007,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     // 2. Legacy UI Logic (Button Lights and Window state)
     if (isBoeing) {
-      const update = processBoeingMCPAction(state.autopilot.boeing, action as any);
+      const normalizedAction = BOEING_ACTION_MAP[action] ?? action;
+      const update = processBoeingMCPAction(state.autopilot.boeing, normalizedAction as keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE');
       state.updateBoeingMCP(update);
       return;
     }
@@ -2464,10 +2485,19 @@ if (typeof window !== 'undefined') {
 
   // Expose stores for E2E testing only in non-production builds
   if (import.meta.env.MODE !== 'production') {
-    (window as any).useFMCStore = useFMCStore;
-    (window as any).useAircraftStore = useAircraftStore;
-    (window as any).useAutopilotStore = useAutopilotStore;
-    (window as any).useConnectionStore = useConnectionStore;
-    (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
+    const win = window as unknown as E2EWindow;
+    win.useFMCStore = useFMCStore;
+    win.useAircraftStore = useAircraftStore;
+    win.useAutopilotStore = useAutopilotStore;
+    win.useConnectionStore = useConnectionStore;
+    win.useCockpitLayoutStore = useCockpitLayoutStore;
   }
+
+interface E2EWindow extends Window {
+  useFMCStore: typeof useFMCStore;
+  useAircraftStore: typeof useAircraftStore;
+  useAutopilotStore: typeof useAutopilotStore;
+  useConnectionStore: typeof useConnectionStore;
+  useCockpitLayoutStore: typeof useCockpitLayoutStore;
+}
 }

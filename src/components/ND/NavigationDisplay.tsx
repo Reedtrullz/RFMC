@@ -9,6 +9,9 @@ import { NDControls } from './NDControls';
 import { B737ND } from './renderers/B737ND';
 import { A320ND } from './renderers/A320ND';
 import { useInterpolatedTelemetry } from '../../hooks/useInterpolatedTelemetry';
+import { AutopilotState } from '@shared/autopilot/autopilotTypes';
+import type { TCASTarget } from '@shared/fmc/ndTypes';
+import type { EFISState, FMCState } from '@shared';
 
 export interface NavigationDisplayProps {
   side?: 'L' | 'R';
@@ -21,36 +24,23 @@ export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
   const aircraftState = useInterpolatedTelemetry(rawAircraftState);
   const position = useAircraftStore((s) => s.position);
   const performance = useAircraftStore((s) => s.performance);
+  const radios = useAircraftStore((s) => s.radios);
   const takeoff = useAircraftStore((s) => s.takeoff);
   const landing = useAircraftStore((s) => s.landing);
   const ident = useAircraftStore((s) => s.ident);
   const activeNavSource = useAircraftStore((s) => s.activeNavSource);
   const navPerformance = useAircraftStore((s) => s.navPerformance);
 
-  // Training and Demo state
-  const {
-    demoMode,
-    tutorialActive,
-    autopilot,
-    efis,
-    trafficTargets,
-    flightPlan,
-    route,
-    isModified,
-    pendingFlightPlan,
-    pendingRoute,
-    fixEntries,
-    fix,
-    hold,
-    holdPending,
-    selectedPlanWaypointIndex,
-  } = useFMCStore(
+  const selectorResult = useFMCStore(
     useShallow((s) => ({
       demoMode: s.demoMode,
       tutorialActive: s.tutorialActive,
-      autopilot: s.autopilot as any,
+      autopilotBoeingHeading: s.autopilot.boeing.heading,
+      autopilotAirbusHeading: s.autopilot.airbus.heading,
+      autopilotTruthLateralActive: s.autopilot.truth.lateralActive,
+      autopilotBoeingCourseL: s.autopilot.boeing.courseL,
+      trafficTargets: s.trafficTargets,
       efis: side === 'L' ? s.efisL : s.efisR,
-      trafficTargets: s.trafficTargets as any,
       flightPlan: s.flightPlan,
       route: s.route,
       isModified: s.isModified,
@@ -64,66 +54,73 @@ export function NavigationDisplay({ side = 'L' }: NavigationDisplayProps) {
     })),
   );
 
-  const model = useMemo(
-    () =>
-      buildNavigationDisplayModel(
-        {
-          aircraft,
-          efisL: side === 'L' ? efis : undefined,
-          efisR: side === 'R' ? efis : undefined,
-          flightPlan,
-          route,
-          isModified,
-          pendingFlightPlan,
-          pendingRoute,
-          aircraftState,
-          selectedPlanWaypointIndex,
-          fixEntries,
-          fix,
-          hold,
-          holdPending,
-          trafficTargets,
-          demoMode,
-          tutorialActive,
-          performance,
-          autopilot,
-          position,
-          activeNavSource,
-          navPerformance,
-          takeoff,
-          landing,
-          ident,
-        } as any,
-        efis,
-      ),
-    [
+  const {
+    demoMode,
+    tutorialActive,
+    autopilotBoeingHeading,
+    autopilotAirbusHeading,
+    autopilotTruthLateralActive,
+    autopilotBoeingCourseL,
+    trafficTargets,
+    efis,
+    flightPlan,
+    route,
+    isModified,
+    pendingFlightPlan,
+    pendingRoute,
+    fixEntries,
+    fix,
+    hold,
+    holdPending,
+    selectedPlanWaypointIndex,
+  } = selectorResult;
+
+const model = useMemo(() => {
+    const state = {
+      ...selectorResult,
       aircraft,
-      efis,
-      flightPlan,
-      route,
-      isModified,
-      pendingFlightPlan,
-      pendingRoute,
-      aircraftState,
-      selectedPlanWaypointIndex,
-      fixEntries,
-      fix,
-      hold,
-      holdPending,
-      trafficTargets,
-      demoMode,
-      tutorialActive,
-      performance,
-      autopilot,
       position,
       activeNavSource,
       navPerformance,
       takeoff,
       landing,
       ident,
-      side,
-    ],
-  );
+      radios,
+      aircraftState,
+      performance,
+    };
+    return buildNavigationDisplayModel(state, selectorResult.efis);
+  }, [
+    aircraft,
+    selectorResult.efis,
+    flightPlan,
+    route,
+    isModified,
+    pendingFlightPlan,
+    pendingRoute,
+    aircraftState,
+    selectedPlanWaypointIndex,
+    fixEntries,
+    fix,
+    hold,
+    holdPending,
+    trafficTargets,
+    demoMode,
+    tutorialActive,
+    performance,
+    selectorResult.autopilotBoeingHeading,
+    selectorResult.autopilotAirbusHeading,
+    selectorResult.autopilotTruthLateralActive,
+    selectorResult.autopilotBoeingCourseL,
+    position,
+    activeNavSource,
+    navPerformance,
+    takeoff,
+    landing,
+    ident,
+    radios,
+    side,
+  ]);
 
   return (
     <section

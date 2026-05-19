@@ -21,7 +21,9 @@ export function useAuralAlerts() {
   const lastTcas = useRef(tcasAlert);
   const lastApStatus = useRef(autopilotStatus);
   const lastProcessedAlertId = useRef<string | null>(null);
-  const lastFma = useRef(JSON.stringify({ lateralActive, verticalActive, thrustActive }));
+  const lastLateralActive = useRef(lateralActive);
+  const lastVerticalActive = useRef(verticalActive);
+  const lastThrustActive = useRef(thrustActive);
 
   useEffect(() => {
     const isAirbus = aircraft.includes('AIRBUS');
@@ -43,13 +45,14 @@ export function useAuralAlerts() {
       lastProcessedAlertId.current = null;
     }
 
-    // Handle FMA Changes (Airbus Triple Click)
-    const currentFmaStr = JSON.stringify({ lateralActive, verticalActive, thrustActive });
-    if (isAirbus && currentFmaStr !== lastFma.current) {
-      // Only play if it's a significant mode change, not just values
-      AuralAlertService.playAirbusTripleClick();
-      lastFma.current = currentFmaStr;
-    }
+// Handle FMA Changes (Airbus Triple Click)
+  if (isAirbus && (lateralActive !== lastLateralActive.current || verticalActive !== lastVerticalActive.current || thrustActive !== lastThrustActive.current)) {
+    // Only play if it's a significant mode change, not just values
+    AuralAlertService.playAirbusTripleClick();
+    lastLateralActive.current = lateralActive;
+    lastVerticalActive.current = verticalActive;
+    lastThrustActive.current = thrustActive;
+  }
 
     // Handle GPWS Alerts
     if (gpwsAlert !== lastGpws.current) {
