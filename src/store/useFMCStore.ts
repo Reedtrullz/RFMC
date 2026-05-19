@@ -98,7 +98,7 @@ import {
   ZustandGet,
   failScratchpad,
 } from '@shared/fmc/fmcScratchpadAdapter';
-import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
+import { getActiveDisplay, createInitialScratchpadState } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
 import { devLog, devError, devWarn } from '@shared';
@@ -248,6 +248,7 @@ const defaultState: FMCState &
   pageHistory: [] as PageType[],
   scratchpad: '',
   scratchpadError: null as string | null,
+  scratchpadState: createInitialScratchpadState(),
   demoMode: false,
 
   aircraft: 'BOEING_737' as AircraftType,
