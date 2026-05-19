@@ -18,8 +18,8 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
 
   const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
   const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
-  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`;
-  const totalWidth = `${tokens.screen.widthMm * mmToPx + tokens.lsk.insetMm * mmToPx * 8}px`;
+  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 2.2}px`;
+  const totalWidth = `${tokens.screen.widthMm * mmToPx + tokens.lsk.insetMm * mmToPx * 4.4}px`;
 
   return (
     <div className="instrument-display-recess">

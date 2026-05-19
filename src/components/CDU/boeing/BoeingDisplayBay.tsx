@@ -24,7 +24,7 @@ export function BoeingDisplayBay({
   const mmToPx = 3.8; // Approximate conversion for high-fidelity feel
 
   const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
-  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`; // Approximate width for LSK columns
+  const lskWidth = `${tokens.lsk.insetMm * mmToPx * 2.2}px`; // Approximate width for LSK columns
   const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
 
   const displayBayStyle = {
