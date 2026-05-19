@@ -6,7 +6,7 @@ interface WXROverlayProps {
 
 export function WXROverlay({ model }: WXROverlayProps) {
   const data = model.wxrData;
-  if (!data || !model.overlays.wxr || model.irsState !== 'NAV') return null;
+  if (!data || !model.overlays.wxr || (model.irsState !== 'NAV' && model.navSource !== 'GPS')) return null;
 
   const cy = model.centered ? 50 : 84;
 

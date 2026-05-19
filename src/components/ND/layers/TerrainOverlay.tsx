@@ -24,8 +24,8 @@ function getTerrainElevation(lat: number, lon: number): number {
 }
 
 export function TerrainOverlay({ model }: TerrainOverlayProps) {
-  // If terrain is not toggled on or IRS is not in NAV mode, don't show terrain
-  if (!model.overlays.terr || model.irsState !== 'NAV') return null;
+  // If terrain is not toggled on or nav source is unavailable, don't show terrain
+  if (!model.overlays.terr || (model.irsState !== 'NAV' && model.navSource !== 'GPS')) return null;
 
   const isPlanMode = model.mode === 'PLAN' || model.mode === 'PLN';
   // Authentic avionics: Terrain overlay is inhibited in PLAN mode
