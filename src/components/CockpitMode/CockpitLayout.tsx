@@ -247,17 +247,77 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         </CockpitLayoutGrid>
       );
 
-    case 'free-practice':
+    case 'free-practice': {
+      const hasCdu = !controls.hiddenPanels.has('cdu');
+      const hasNd = !controls.hiddenPanels.has('nd');
+      const hasPfd = !controls.hiddenPanels.has('pfd');
+      const hasAutoflight = !controls.hiddenPanels.has('autoflight');
+
+      // 1. Full Deck (All 4 active)
+      if (hasCdu && hasNd && hasPfd && hasAutoflight) {
+        return (
+          <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
+            {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
+            {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
+            {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+            {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
+          </CockpitLayoutGrid>
+        );
+      }
+
+      // 2. Three panels (Autoflight + PFD + ND active)
+      if (hasAutoflight && hasPfd && hasNd) {
+        return (
+          <CockpitLayoutGrid preset="threePanelTraining" modeClass="cockpit-stage--automation">
+            {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
+            {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
+            {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+          </CockpitLayoutGrid>
+        );
+      }
+
+      // 3. Two panels (PFD + ND active)
+      if (hasPfd && hasNd) {
+        return (
+          <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--free-practice">
+            {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
+            {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
+          </CockpitLayoutGrid>
+        );
+      }
+
+      // 4. Navigation (CDU + ND active)
+      if (hasCdu && hasNd) {
+        return (
+          <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--navigation">
+            {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+            {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
+          </CockpitLayoutGrid>
+        );
+      }
+
+      // 5. FMC Focus (Only CDU active)
+      if (hasCdu) {
+        return (
+          <CockpitLayoutGrid preset="singleInstrumentFocus" modeClass="cockpit-stage--fmc-focus">
+            {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
+          </CockpitLayoutGrid>
+        );
+      }
+
+      // Default fallback
       return (
         <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--free-practice">
-          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
-          {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
-          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
-          {renderInstrumentPanel('autoflight', controls, {
-            className: 'cockpit-mcp-slot cockpit-free-practice__optional',
-          })}
+          {hasPfd && renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
+          {hasNd && renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
+          {hasCdu && renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
+          {hasAutoflight &&
+            renderInstrumentPanel('autoflight', controls, {
+              className: 'cockpit-mcp-slot cockpit-free-practice__optional',
+            })}
         </CockpitLayoutGrid>
       );
+    }
   }
 }
 
