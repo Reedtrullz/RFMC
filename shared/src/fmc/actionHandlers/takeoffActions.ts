@@ -259,6 +259,12 @@ export function handleTakeoffAction(
   switch (action) {
     case 'select_to':
       return handleSelectTo(state, scratchpad);
+    case 'select_clb':
+      return { handled: true, success: { patch: { takeoff: { ...state.takeoff, toMode: 'CLB' } } } };
+    case 'select_crz':
+      return { handled: true, success: { patch: { takeoff: { ...state.takeoff, toMode: 'CRZ' } } } };
+    case 'select_con':
+      return { handled: true, success: { patch: { takeoff: { ...state.takeoff, toMode: 'CON' } } } };
     case 'select_to_1':
       return handleSelectTo1(state);
     case 'select_to_2':
