@@ -43,7 +43,7 @@ export function A320ND({ model }: A320NDProps) {
 
       {/* Static Background */}
       <RangeRings model={model} color="#004433" />
-      
+
       {/* Moving Symbology */}
       {model.irsState === 'NAV' ? (
         <g clipPath="url(#a320-nd-clip)">
@@ -54,7 +54,7 @@ export function A320ND({ model }: A320NDProps) {
           <ConstraintsOverlay model={model} />
           <HoldPattern model={model} />
           <FixRing model={model} />
-          
+
           {/* Advanced Overlays */}
           <WXROverlay model={model} />
           <VerticalProfileOverlay points={model.verticalProfilePoints} />
@@ -67,23 +67,41 @@ export function A320ND({ model }: A320NDProps) {
           {/* Background dimming */}
           <rect x="-45" y="-22" width="90" height="44" fill="black" opacity="0.6" />
           {/* Failure text box */}
-          <rect x="-38" y="-14" width="76" height="28" fill="black" stroke={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} strokeWidth="0.8" rx="2" />
-          <text y="-3" fill={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'} fontSize="6" fontWeight="bold" textAnchor="middle" letterSpacing="1.5">
+          <rect
+            x="-38"
+            y="-14"
+            width="76"
+            height="28"
+            fill="black"
+            stroke={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'}
+            strokeWidth="0.8"
+            rx="2"
+          />
+          <text
+            y="-3"
+            fill={model.irsState === 'ALIGNING' ? '#00ff00' : '#ffcc00'}
+            fontSize="6"
+            fontWeight="bold"
+            textAnchor="middle"
+            letterSpacing="1.5"
+          >
             {model.irsState === 'OFF' ? 'MAP NOT AVAIL' : 'IRS ALIGN'}
           </text>
           {model.irsState === 'ALIGNING' && (
-            <text y="5" fill="#ffcc00" fontSize="3" textAnchor="middle" opacity="0.8">ALIGNING...</text>
+            <text y="5" fill="#ffcc00" fontSize="3" textAnchor="middle" opacity="0.8">
+              ALIGNING...
+            </text>
           )}
         </g>
       )}
 
       {/* Navigation Foundation */}
       <AirbusHeadingScale model={model} />
-      
+
       {/* Information Blocks */}
       <WindVector model={model} />
       <ModeAnnunciations model={model} />
-      
+
       {/* Nav Accuracy & Source */}
       <g transform="translate(4 94)" fontSize="3" fill="#ffffff" fontWeight="bold">
         <text>GPS {model.navSource === 'GPS' ? 'PRIMARY' : ''}</text>
@@ -96,7 +114,9 @@ export function A320ND({ model }: A320NDProps) {
       {model.irsState === 'NAV' && model.anpNm > model.rnpNm && (
         <g transform="translate(50 78)" textAnchor="middle">
           <rect x="-25" y="-6" width="50" height="12" fill="black" stroke="#ffcc00" strokeWidth="0.5" />
-          <text y="2" fill="#ffcc00" fontSize="3.5" fontWeight="bold">NAV ACCUR DOWNGRAD</text>
+          <text y="2" fill="#ffcc00" fontSize="3.5" fontWeight="bold">
+            NAV ACCUR DOWNGRAD
+          </text>
         </g>
       )}
 
@@ -105,7 +125,9 @@ export function A320ND({ model }: A320NDProps) {
 
       {/* TMPY Annunciation (Airbus MOD equivalent) */}
       {model.isModified && model.irsState === 'NAV' && (
-        <text x="50" y="92" textAnchor="middle" fill="#ffcc00" fontSize="4" fontWeight="bold">TMPY</text>
+        <text x="50" y="92" textAnchor="middle" fill="#ffcc00" fontSize="4" fontWeight="bold">
+          TMPY
+        </text>
       )}
     </g>
   );

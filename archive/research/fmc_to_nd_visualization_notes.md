@@ -10,11 +10,11 @@ In the reference screenshot, the right display is an **Airbus-style Navigation D
 
 The ND is affected by three different sources:
 
-| Source | What it controls |
-|---|---|
-| **FMC / MCDU / FMGS** | Route, waypoints, legs, procedures, constraints, holds, fixes, active leg, missed approach, VNAV profile, top of climb/descent |
-| **EFIS / ND control panel** | ND mode, range, map overlays, weather radar, terrain, traffic, airports, waypoints, stations |
-| **Aircraft sensors / avionics** | Actual aircraft position, heading, track, wind, VOR/DME/ILS data, GPS/IRS position, TCAS traffic, radar, terrain database |
+| Source                          | What it controls                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **FMC / MCDU / FMGS**           | Route, waypoints, legs, procedures, constraints, holds, fixes, active leg, missed approach, VNAV profile, top of climb/descent |
+| **EFIS / ND control panel**     | ND mode, range, map overlays, weather radar, terrain, traffic, airports, waypoints, stations                                   |
+| **Aircraft sensors / avionics** | Actual aircraft position, heading, track, wind, VOR/DME/ILS data, GPS/IRS position, TCAS traffic, radar, terrain database      |
 
 For your app, do **not** think of the ND as “another FMC page.” Think of it as a **live graphical renderer** of the FMC state.
 
@@ -74,12 +74,12 @@ On an Airbus-style ND, the active flight plan is typically green.
 
 For your app, I would use two visual styles:
 
-| State | Boeing-style | Airbus-style |
-|---|---|---|
-| Active route | Magenta solid line | Green solid line |
-| Modified / temporary route | White or dashed magenta | Yellow dashed line |
-| Discontinuity | Broken line / gap | “F-PLN DISCONTINUITY” gap |
-| Direct-to intercept | Dashed intercept line | Dashed temporary intercept line |
+| State                      | Boeing-style            | Airbus-style                    |
+| -------------------------- | ----------------------- | ------------------------------- |
+| Active route               | Magenta solid line      | Green solid line                |
+| Modified / temporary route | White or dashed magenta | Yellow dashed line              |
+| Discontinuity              | Broken line / gap       | “F-PLN DISCONTINUITY” gap       |
+| Direct-to intercept        | Dashed intercept line   | Dashed temporary intercept line |
 
 ---
 
@@ -113,7 +113,7 @@ A ───── B ───── C ───── D
 
 User adds direct-to C:
 A ───── B
- \ 
+ \
   \ - - - C ───── D
 ```
 
@@ -331,13 +331,13 @@ APPROACH SPEED
 
 ND effects:
 
-| FMC input | ND effect |
-|---|---|
-| Cruise altitude | Changes top of climb and top of descent |
-| Cost index | Can affect climb/cruise/descent speed predictions |
-| Altitude constraints | Adds level-off points or constraint markers |
-| Descent forecast | Changes descent path prediction |
-| Approach speed | Affects deceleration point |
+| FMC input            | ND effect                                         |
+| -------------------- | ------------------------------------------------- |
+| Cruise altitude      | Changes top of climb and top of descent           |
+| Cost index           | Can affect climb/cruise/descent speed predictions |
+| Altitude constraints | Adds level-off points or constraint markers       |
+| Descent forecast     | Changes descent path prediction                   |
+| Approach speed       | Affects deceleration point                        |
 
 Useful symbols to render:
 
@@ -428,14 +428,14 @@ Then show or hide the bearing needles on the ND.
 
 For a 737 FMC app, I would implement these:
 
-| Mode | What it shows | Why it matters |
-|---|---|---|
-| **MAP** | Main FMC route, aircraft position, waypoints, active leg | Most common mode |
-| **MAP CTR** | Same as MAP, but aircraft centered in full compass rose | Good for spatial awareness |
-| **PLAN** | North-up static route review | Used with LEGS stepping |
-| **APP** | Localizer/glideslope/raw approach data | Shows ILS/GLS approach concept |
-| **VOR** | Raw VOR course/deviation | Shows conventional nav backup |
-| **VSD** | Vertical route/profile view | Great for VNAV teaching |
+| Mode        | What it shows                                            | Why it matters                 |
+| ----------- | -------------------------------------------------------- | ------------------------------ |
+| **MAP**     | Main FMC route, aircraft position, waypoints, active leg | Most common mode               |
+| **MAP CTR** | Same as MAP, but aircraft centered in full compass rose  | Good for spatial awareness     |
+| **PLAN**    | North-up static route review                             | Used with LEGS stepping        |
+| **APP**     | Localizer/glideslope/raw approach data                   | Shows ILS/GLS approach concept |
+| **VOR**     | Raw VOR course/deviation                                 | Shows conventional nav backup  |
+| **VSD**     | Vertical route/profile view                              | Great for VNAV teaching        |
 
 For your app, start with **MAP** and **PLAN** first. Those are the most directly connected to FMC learning.
 
@@ -489,14 +489,14 @@ Press STEP → ND moves to next waypoint
 
 For Airbus, implement:
 
-| Mode | What it shows | Why it matters |
-|---|---|---|
-| **ARC** | Forward 90-degree map view | Most common operational ND view |
-| **ROSE NAV** | Centered compass rose with FMGS route | Good for full orientation |
-| **PLAN** | North-up route review | Used for checking flight plan changes |
-| **ROSE ILS** | Raw ILS/xLS style approach view | Shows final approach guidance |
-| **ROSE VOR** | Raw VOR navigation | Conventional nav |
-| **TCAS / TERR / WX overlays** | Optional layers | Situational awareness |
+| Mode                          | What it shows                         | Why it matters                        |
+| ----------------------------- | ------------------------------------- | ------------------------------------- |
+| **ARC**                       | Forward 90-degree map view            | Most common operational ND view       |
+| **ROSE NAV**                  | Centered compass rose with FMGS route | Good for full orientation             |
+| **PLAN**                      | North-up route review                 | Used for checking flight plan changes |
+| **ROSE ILS**                  | Raw ILS/xLS style approach view       | Shows final approach guidance         |
+| **ROSE VOR**                  | Raw VOR navigation                    | Conventional nav                      |
+| **TCAS / TERR / WX overlays** | Optional layers                       | Situational awareness                 |
 
 Your screenshot is closest to **Airbus ARC/NAV**.
 
@@ -520,29 +520,29 @@ ADF1/ADF2         bearing pointer sources
 
 This is the part I would build around.
 
-| FMC/MCDU action | ND visual result |
-|---|---|
-| Enter origin/destination | Airports appear |
-| Enter route waypoint | Waypoint appears and connects to route |
-| Select SID | Departure path appears |
-| Select STAR | Arrival path appears |
-| Select approach | Final approach path appears |
-| Create discontinuity | Route line breaks |
-| Clear discontinuity | Route connects |
-| Direct-to waypoint | Active leg redraws direct to selected fix |
-| Add hold | Racetrack hold appears |
-| Modify route before EXEC/INSERT | Dashed temporary route appears |
-| Press EXEC/INSERT | Temporary route becomes active |
-| Enter cruise altitude | T/C and T/D move |
-| Add altitude constraint | Constraint appears at waypoint |
-| Select CSTR | Constraint labels show/hide |
-| Select ARPT/WPT/STA | Map symbols appear/disappear |
-| Select TERR | Terrain overlay appears |
-| Select WXR | Weather radar overlay appears |
-| Select TFC | Traffic symbols appear |
-| Tune ILS | ILS course/deviation appears |
-| Select PLAN | Route review view appears |
-| Press STEP on LEGS page | ND centers next waypoint |
+| FMC/MCDU action                 | ND visual result                          |
+| ------------------------------- | ----------------------------------------- |
+| Enter origin/destination        | Airports appear                           |
+| Enter route waypoint            | Waypoint appears and connects to route    |
+| Select SID                      | Departure path appears                    |
+| Select STAR                     | Arrival path appears                      |
+| Select approach                 | Final approach path appears               |
+| Create discontinuity            | Route line breaks                         |
+| Clear discontinuity             | Route connects                            |
+| Direct-to waypoint              | Active leg redraws direct to selected fix |
+| Add hold                        | Racetrack hold appears                    |
+| Modify route before EXEC/INSERT | Dashed temporary route appears            |
+| Press EXEC/INSERT               | Temporary route becomes active            |
+| Enter cruise altitude           | T/C and T/D move                          |
+| Add altitude constraint         | Constraint appears at waypoint            |
+| Select CSTR                     | Constraint labels show/hide               |
+| Select ARPT/WPT/STA             | Map symbols appear/disappear              |
+| Select TERR                     | Terrain overlay appears                   |
+| Select WXR                      | Weather radar overlay appears             |
+| Select TFC                      | Traffic symbols appear                    |
+| Tune ILS                        | ILS course/deviation appears              |
+| Select PLAN                     | Route review view appears                 |
+| Press STEP on LEGS page         | ND centers next waypoint                  |
 
 ---
 
@@ -551,50 +551,44 @@ This is the part I would build around.
 I would structure it like this:
 
 ```ts
-FmcState
-  route
-  activeLegIndex
-  temporaryRoute
-  discontinuities
-  origin
-  destination
-  selectedRunway
-  selectedSid
-  selectedStar
-  selectedApproach
-  performance
-  constraints
-  holds
-  fixes
-  navaids
-  rnpAnp
+FmcState;
+route;
+activeLegIndex;
+temporaryRoute;
+discontinuities;
+origin;
+destination;
+selectedRunway;
+selectedSid;
+selectedStar;
+selectedApproach;
+performance;
+constraints;
+holds;
+fixes;
+navaids;
+rnpAnp;
 
-NdState
-  aircraftType: "B737" | "A320"
-  mode: "MAP" | "PLAN" | "ARC" | "ROSE_NAV" | "APP" | "VOR"
-  rangeNm: 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640
-  centered: boolean
-  overlays:
-    airports: boolean
-    waypoints: boolean
-    stations: boolean
-    constraints: boolean
-    terrain: boolean
-    weather: boolean
-    traffic: boolean
-    data: boolean
-    position: boolean
+NdState;
+aircraftType: 'B737' | 'A320';
+mode: 'MAP' | 'PLAN' | 'ARC' | 'ROSE_NAV' | 'APP' | 'VOR';
+rangeNm: 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
+centered: boolean;
+overlays: airports: boolean;
+waypoints: boolean;
+stations: boolean;
+constraints: boolean;
+terrain: boolean;
+weather: boolean;
+traffic: boolean;
+data: boolean;
+position: boolean;
 ```
 
 Then the ND component becomes a renderer:
 
 ```tsx
-<NavigationDisplay
-  aircraft="A320"
-  fmcState={fmcState}
-  ndState={ndState}
-  aircraftPosition={aircraftPosition}
-/>
+<NavigationDisplay aircraft="A320" fmcState={fmcState} ndState={ndState} aircraftPosition={aircraftPosition} />
 ```
 
 The FMC should not “draw” the ND directly.

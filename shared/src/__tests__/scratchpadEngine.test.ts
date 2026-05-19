@@ -254,18 +254,13 @@ describe('Priority queue ordering', () => {
       unableNextAltMessage(),
       dragRequiredMessage(),
     ];
-    const ids = msgs.map(m => m.id);
+    const ids = msgs.map((m) => m.id);
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(ids.length);
   });
 
   it('correctly sorts a mixed priority list', () => {
-    const msgs = [
-      invalidEntryMessage(),
-      unableNextAltMessage(),
-      notInDatabaseMessage(),
-      insufficientFuelMessage(),
-    ];
+    const msgs = [invalidEntryMessage(), unableNextAltMessage(), notInDatabaseMessage(), insufficientFuelMessage()];
 
     const sorted = [...msgs].sort((a, b) => a.priority - b.priority || a.createdAt - b.createdAt);
 
@@ -313,12 +308,7 @@ function createEmptyState(): ScratchpadState {
   return { buffer: '', message: null, messageQueue: [], history: [] };
 }
 
-function makeMsg(
-  id: string,
-  text: string,
-  priority: MessagePriority,
-  createdAt: number,
-): ScratchpadMessage {
+function makeMsg(id: string, text: string, priority: MessagePriority, createdAt: number): ScratchpadMessage {
   return {
     id,
     text,

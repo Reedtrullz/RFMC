@@ -1,7 +1,10 @@
 import type { DisplayLine } from '../types/fmc';
 import type { DisplaySemantic } from './displaySemantics';
 
-export function inferBoeingSemantic(color: DisplayLine['color'] | undefined, inverse = false): DisplaySemantic | undefined {
+export function inferBoeingSemantic(
+  color: DisplayLine['color'] | undefined,
+  inverse = false,
+): DisplaySemantic | undefined {
   if (inverse) return 'title';
   if (color === 'white') return 'label';
   if (color === 'green') return 'activeData';
@@ -11,7 +14,10 @@ export function inferBoeingSemantic(color: DisplayLine['color'] | undefined, inv
   return undefined;
 }
 
-export function inferAirbusSemantic(color: DisplayLine['color'] | undefined, inverse = false): DisplaySemantic | undefined {
+export function inferAirbusSemantic(
+  color: DisplayLine['color'] | undefined,
+  inverse = false,
+): DisplaySemantic | undefined {
   if (inverse) return 'title';
   if (color === 'white') return 'label';
   if (color === 'blue') return 'inactiveData';

@@ -28,7 +28,7 @@ export function useSound() {
     const s = SOUNDS[name];
 
     if (name === 'chime') {
-      [554.37, 440.00].forEach((freq, i) => {
+      [554.37, 440.0].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';

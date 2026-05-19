@@ -16,14 +16,14 @@ export const SENSOR_ACCURACY: Record<NavSource, number> = {
  * Selects the best available navigation source based on priority
  */
 export function selectFmcPositionSource(sensors: NavSensor[]): NavSource {
-  const available = sensors.filter(s => s.available);
-  
-  if (available.some(s => s.source === 'LOC_GPS')) return 'LOC_GPS';
-  if (available.some(s => s.source === 'GPS')) return 'GPS';
-  if (available.some(s => s.source === 'DME_DME')) return 'DME_DME';
-  if (available.some(s => s.source === 'VOR_DME')) return 'VOR_DME';
-  if (available.some(s => s.source === 'LOC')) return 'LOC';
-  
+  const available = sensors.filter((s) => s.available);
+
+  if (available.some((s) => s.source === 'LOC_GPS')) return 'LOC_GPS';
+  if (available.some((s) => s.source === 'GPS')) return 'GPS';
+  if (available.some((s) => s.source === 'DME_DME')) return 'DME_DME';
+  if (available.some((s) => s.source === 'VOR_DME')) return 'VOR_DME';
+  if (available.some((s) => s.source === 'LOC')) return 'LOC';
+
   return 'IRS';
 }
 
@@ -31,11 +31,11 @@ export function selectFmcPositionSource(sensors: NavSensor[]): NavSource {
  * Calculates Actual Navigation Performance (ANP)
  */
 export function calculateANP(sensors: NavSensor[], activeSource: NavSource): number {
-  const activeSensor = sensors.find(s => s.source === activeSource);
+  const activeSensor = sensors.find((s) => s.source === activeSource);
   if (!activeSensor || !activeSensor.available) {
     return SENSOR_ACCURACY.IRS * 1.5; // Degraded IRS
   }
-  
+
   // In a real system, ANP is a statistical 95% confidence radius.
   // For the trainer, we use the sensor's current error or its base accuracy.
   return Math.max(activeSensor.positionErrorNm, SENSOR_ACCURACY[activeSource]);
@@ -59,7 +59,7 @@ export function calculateGroundSpeedAndTrack(
   heading: number,
   tas: number,
   windDir: number,
-  windSpeed: number
+  windSpeed: number,
 ): { gs: number; track: number } {
   // Convert to radians
   const hdgRad = (heading * Math.PI) / 180;

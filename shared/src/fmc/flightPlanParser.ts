@@ -13,7 +13,11 @@ import { getAirportCoordinates, getWaypointCoordinates } from './navDatabase';
  * - Ends with number, 5+ chars: procedure (SID/STAR)
  * - DCT: direct
  */
-export function parseRouteString(routeString: string): { origin: string; destination: string; waypoints: FlightPlanWaypoint[] } {
+export function parseRouteString(routeString: string): {
+  origin: string;
+  destination: string;
+  waypoints: FlightPlanWaypoint[];
+} {
   if (!routeString.trim()) {
     return { origin: '', destination: '', waypoints: [] };
   }
@@ -75,7 +79,7 @@ export function parseRouteString(routeString: string): { origin: string; destina
     if (isProcedure(token)) {
       const legs = PROCEDURE_LEGS[token];
       if (legs) {
-        legs.forEach(leg => {
+        legs.forEach((leg) => {
           waypoints.push({
             ident: leg,
             airway: previousAirway,
@@ -113,7 +117,7 @@ export function parseRouteString(routeString: string): { origin: string; destina
 }
 
 export function enrichRouteCoordinates(waypoints: FlightPlanWaypoint[], origin?: string, destination?: string): void {
-  waypoints.forEach(wp => {
+  waypoints.forEach((wp) => {
     if (wp.lat !== undefined && wp.lon !== undefined) {
       if (!wp.coordinateSource) wp.coordinateSource = 'unknown';
       return;
@@ -123,7 +127,7 @@ export function enrichRouteCoordinates(waypoints: FlightPlanWaypoint[], origin?:
     if (wp.ident === origin || wp.ident === destination || (wp.ident.length === 4 && !/\d/.test(wp.ident))) {
       coords = getAirportCoordinates(wp.ident);
     }
-    
+
     if (!coords) {
       coords = getWaypointCoordinates(wp.ident);
     }
@@ -204,15 +208,11 @@ function parseConstraint(token: string): ParsedConstraint {
 /**
  * Calculate great circle distance between two lat/lon points (in NM)
  */
-export function greatCircleDistance(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number
-): number {
+export function greatCircleDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3440.065; // Earth radius in nautical miles
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }

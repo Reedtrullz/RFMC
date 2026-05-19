@@ -26,6 +26,7 @@ This document is designed to be **actionable and trackable**.
 This is the single source of truth for all visual and behavioral accuracy work.
 
 ### Display
+
 - **Size**: 14 rows × 24 characters
 - **Technology**: Full-color LCD (NG models)
 - **Colors**:
@@ -38,15 +39,16 @@ This is the single source of truth for all visual and behavioral accuracy work.
 
 ### Function Keys (Exactly 14)
 
-| Row | Keys |
-|-----|------|
-| **Top Row** | INIT REF • RTE • CLB • CRZ • DES |
+| Row            | Keys                                                     |
+| -------------- | -------------------------------------------------------- |
+| **Top Row**    | INIT REF • RTE • CLB • CRZ • DES                         |
 | **Second Row** | DIR INTC • LEGS • DEP ARR • HOLD • PROG • N1 LIMIT • FIX |
-| **Navigation** | PREV PAGE • NEXT PAGE |
+| **Navigation** | PREV PAGE • NEXT PAGE                                    |
 
 **Note:** Some aircraft show `MENU` instead of `DIR INTC` in the second row.
 
 ### Other Interface Elements
+
 - 12 Line Select Keys (6 left + 6 right)
 - Full alphanumeric keypad + `CLR`, `DEL`, `EXEC`, `/`, `+/-`, `SP`
 - Brightness knob (right side)
@@ -60,17 +62,18 @@ This is the single source of truth for all visual and behavioral accuracy work.
 
 The scores below are **initial planning estimates**, not measured baselines. Phase 0 must either confirm or replace them with evidence from screenshots, coverage reports, performance measurements, live simulator sessions, and pilot review rubrics.
 
-| Category                        | Current | Target    | Assessment |
-|--------------------------------|---------|-----------|------------|
-| Core Logic & Procedures        | 87/100 est. | 95/100    | Strong foundation; 54 unit tests and 9 E2E tests currently pass |
-| **Visual Fidelity (Boeing)**   | **62/100 est.** | **90/100** | **Biggest gap; all 14 function/navigation keys are present, but layout/font/color fidelity is not measured** |
-| Visual Fidelity (Airbus)       | 68/100 est. | 88/100    | Functional; secondary pages include display-only/static behavior |
-| Navigation Database Depth      | 48/100 est. | 80/100    | Mock/limited nav dataset and lightweight route parser |
-| MSFS Integration               | 60/100 est. | 90/100    | PMDG scaffolded; live round-trip unverified. FBW MCDU display/key I/O is mock-only |
-| Training System Depth          | 65/100 est. | 85/100    | Basic tutorials exist |
-| **Overall**                    | **72/100 est.** | **90+/100** | Estimate pending Phase 0 measurement |
+| Category                     | Current         | Target      | Assessment                                                                                                   |
+| ---------------------------- | --------------- | ----------- | ------------------------------------------------------------------------------------------------------------ |
+| Core Logic & Procedures      | 87/100 est.     | 95/100      | Strong foundation; 54 unit tests and 9 E2E tests currently pass                                              |
+| **Visual Fidelity (Boeing)** | **62/100 est.** | **90/100**  | **Biggest gap; all 14 function/navigation keys are present, but layout/font/color fidelity is not measured** |
+| Visual Fidelity (Airbus)     | 68/100 est.     | 88/100      | Functional; secondary pages include display-only/static behavior                                             |
+| Navigation Database Depth    | 48/100 est.     | 80/100      | Mock/limited nav dataset and lightweight route parser                                                        |
+| MSFS Integration             | 60/100 est.     | 90/100      | PMDG scaffolded; live round-trip unverified. FBW MCDU display/key I/O is mock-only                           |
+| Training System Depth        | 65/100 est.     | 85/100      | Basic tutorials exist                                                                                        |
+| **Overall**                  | **72/100 est.** | **90+/100** | Estimate pending Phase 0 measurement                                                                         |
 
 ### Confirmed Baseline Facts
+
 - TypeScript: 0 errors across all 3 workspaces.
 - Unit tests: 54/54 pass.
 - E2E tests: 9/9 pass.
@@ -85,9 +88,11 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 ## 3. Phased Improvement Roadmap
 
 ### Phase 0: Baseline & Setup (3–5 days)
+
 **Objective:** Convert planning estimates into measured baselines and lock the current evidence trail.
 
 **Tasks**
+
 - Record current verification state in `IMPLEMENTATION_STATUS.md`: typecheck, unit tests, E2E tests, build output, and the deferred Vite/esbuild audit exception.
 - Capture baseline screenshots for at least 25 major screens across Boeing and Airbus, including IDENT, POS INIT, RTE pages, LEGS, DEP/ARR, PERF INIT, THRUST LIM, TAKEOFF REF, HOLD, FIX, DIR INTC, N1 LIMIT, Airbus INIT/F-PLN/DEP-ARR/PERF, and connection diagnostics.
 - Define the reference-image set for Boeing and Airbus visual comparisons, including source, aircraft variant, display type, and acceptable cropping/scale rules.
@@ -96,6 +101,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 - Finalize Pilot Review Rubric for visual realism, behavioral accuracy, training value, and iPad usability.
 
 **Exit Gates**
+
 - Current 54 unit / 9 E2E / build / audit state documented.
 - Visual baseline complete with repeatable screenshot capture commands.
 - Measurement method documented for ΔE and character-position variance; unmeasured scores are not presented as facts.
@@ -108,6 +114,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Goal:** Make the CDU visually close to real 737 NG hardware.
 
 **Key Tasks**
+
 - Complete full multi-color display semantics (cyan, green, magenta, white, shaded/modified) and verify they match real-reference use cases.
 - Verify physical layout, spacing, labels, and behavior for all 14 existing function/navigation keys.
 - Accurate FMC-style font + precise character spacing
@@ -119,17 +126,20 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Exit Gates (All must be met)**
 
 **Visual Quality**
+
 - Character positioning variance vs real photos: **≤ 4%**
 - Color accuracy: **ΔE ≤ 4**
 - All **14 function/navigation keys** verified for layout, label, and behavior
 - Pilot visual realism rating: **≥ 4.0/5** (n ≥ 4 pilots)
 
 **Technical Quality**
+
 - No regression in tests or functionality
 - Maintain **≥ 55 fps** on iPad (with animations)
 - Zero new TypeScript or test failures
 
 **Validation Requirement**
+
 - Structured pilot review session required before proceeding to Phase 2.
 
 ---
@@ -139,11 +149,13 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Goal:** Bring Airbus MCDU visuals to comparable quality.
 
 **Key Tasks**
+
 - Correct Airbus color semantics and key labels
 - Contextual LSK labeling system
 - Consistent button feedback and backlighting across both aircraft
 
 **Exit Gates**
+
 - Airbus color accuracy **ΔE ≤ 5**
 - Pilot rating for Airbus visuals **≥ 4.0/5**
 - Visual regression passes for both Boeing and Airbus modes
@@ -156,6 +168,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Goal:** Enable realistic route and procedure handling.
 
 **Key Tasks**
+
 - Expandable navigation database structure
 - Core ARINC 424 leg support
 - Enhanced LEGS page (editing, constraints, discontinuities)
@@ -163,6 +176,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 - Basic failure annunciations
 
 **Exit Gates**
+
 - Can load and display real-world SimBrief routes with SID/STAR correctly
 - LEGS page supports full waypoint editing with proper updates
 - Pilot rating on procedure realism **≥ 4.2/5**
@@ -175,6 +189,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Goal:** Make connected mode reliable and useful across aircraft.
 
 **Key Tasks**
+
 - Robust connection handling, diagnostics, and recovery
 - Live PMDG validation on Windows + MSFS + PMDG: connect, send keypress, observe CDU state change, read display back into VirtualCDU.
 - Decide whether FBW/Fenix support is in scope. If yes, replace mock-only MCDU display/key I/O with real aircraft-specific mappings; if no, keep the UI limitation explicit.
@@ -182,6 +197,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 - Real-time performance metrics in UI
 
 **Exit Gates**
+
 - PMDG keypress → CDU update → display readback round trip verified in live simulator sessions.
 - Connection success rate **≥ 98%** across the defined live test matrix.
 - Average display latency **< 80 ms** during connected sessions.
@@ -194,11 +210,13 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 **Goal:** Evolve tutorials into structured training.
 
 **Key Tasks**
+
 - Scenario-based tutorials with error detection
 - Performance scoring and adaptive guidance
 - SOP and crew coordination integration
 
 **Exit Gates**
+
 - Users complete full preflight flow with minimal help
 - Average confidence increase **≥ +1.5 points**
 - Pilot rating for training effectiveness **≥ 4.3/5**
@@ -208,24 +226,27 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 ## 4. Success Metrics (End-State Targets)
 
 ### Visual Accuracy
-| Metric                            | Current Baseline     | Target              | Measurement                          |
-|-----------------------------------|----------------------|---------------------|--------------------------------------|
-| Character positioning variance    | Not yet measured     | ≤ 3%                | Automated image comparison vs Phase 0 reference set |
-| Color accuracy (ΔE)               | Not yet measured     | ≤ 3                 | Color sampling vs real references    |
-| Function/navigation keys (Boeing) | All 14 present       | All 14 layout/behavior verified | UI + automated verification + pilot review |
-| Frame rate (iPad + animations)    | Not yet measured     | ≥ 55 fps            | Performance profiling                |
-| Pilot visual realism rating       | Not yet measured     | ≥ 4.3/5             | Structured rubric (n ≥ 5)            |
+
+| Metric                            | Current Baseline | Target                          | Measurement                                         |
+| --------------------------------- | ---------------- | ------------------------------- | --------------------------------------------------- |
+| Character positioning variance    | Not yet measured | ≤ 3%                            | Automated image comparison vs Phase 0 reference set |
+| Color accuracy (ΔE)               | Not yet measured | ≤ 3                             | Color sampling vs real references                   |
+| Function/navigation keys (Boeing) | All 14 present   | All 14 layout/behavior verified | UI + automated verification + pilot review          |
+| Frame rate (iPad + animations)    | Not yet measured | ≥ 55 fps                        | Performance profiling                               |
+| Pilot visual realism rating       | Not yet measured | ≥ 4.3/5                         | Structured rubric (n ≥ 5)                           |
 
 ### Functional & Training Value
-| Metric                                      | Target     | Method |
-|---------------------------------------------|------------|--------|
-| Standard operations match real FMC          | ≥ 95%      | Test matrix + pilot validation |
-| Input validation effectiveness              | ≥ 95%      | Fuzz testing + pilot scenarios |
-| Real-world route loading success            | ≥ 90%      | Versioned route/navdata fixture set of at least 20 real SimBrief routes |
-| Pilot “useful for procedure training” rating| ≥ 4.5/5    | Rubric |
-| Average user confidence increase            | ≥ +1.5 pts | Pre/post self-assessment |
+
+| Metric                                       | Target     | Method                                                                  |
+| -------------------------------------------- | ---------- | ----------------------------------------------------------------------- |
+| Standard operations match real FMC           | ≥ 95%      | Test matrix + pilot validation                                          |
+| Input validation effectiveness               | ≥ 95%      | Fuzz testing + pilot scenarios                                          |
+| Real-world route loading success             | ≥ 90%      | Versioned route/navdata fixture set of at least 20 real SimBrief routes |
+| Pilot “useful for procedure training” rating | ≥ 4.5/5    | Rubric                                                                  |
+| Average user confidence increase             | ≥ +1.5 pts | Pre/post self-assessment                                                |
 
 ### Technical Quality
+
 - 100% TypeScript compliance
 - 100% test pass rate (currently 54 unit + 9 E2E)
 - ≥ 85% coverage on shared FMC logic
@@ -237,6 +258,7 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 ## 5. Measurement & Review Process
 
 **Objective Metrics**
+
 - Visual regression testing using Playwright against curated real CDU reference photos and Phase 0 screenshot baselines.
 - Built-in performance monitoring.
 - Automated test coverage reports.
@@ -244,10 +266,12 @@ The scores below are **initial planning estimates**, not measured baselines. Pha
 - Live simulator session logs for PMDG round-trip and any future FBW/Fenix mappings.
 
 **Subjective Metrics**
+
 - Use a structured **Pilot Review Rubric** (visual realism, behavioral accuracy, training value, iPad usability).
 - Minimum 3–5 pilots/instructors per major review round.
 
 **Review Cadence**
+
 - After every phase completion
 - Monthly quick progress review
 - After significant pilot feedback
@@ -259,15 +283,18 @@ Maintain a simple progress table in `IMPLEMENTATION_STATUS.md`.
 ## 6. Implementation Guidelines
 
 **Performance**
+
 - All visual work must maintain **≥ 55 fps** on target devices.
 - Use efficient React patterns and avoid layout thrashing.
 
 **Scope Control**
+
 - Complete Phase 1 visual work before expanding nav database complexity.
 - Start nav database with an expandable structure before full ARINC parsing.
 - Treat FBW/Fenix MCDU integration as out of scope until a dedicated mapping plan is approved.
 
 **Risk Mitigation**
+
 - Prototype font and color system early and validate quickly with 1–2 pilots.
 - Run visual regression tests in both standalone and connected modes.
 
@@ -286,8 +313,9 @@ This plan provides clear direction, measurable targets, and a structured path fo
 ---
 
 **Document Control**
+
 - Update after each phase or major feedback round.
 - Keep `IMPLEMENTATION_STATUS.md` as the live status tracker.
 - Reference real hardware photos and Boeing FCOM for validation.
 
-*End of Refined Accuracy Improvement Plan (v4.0)*
+_End of Refined Accuracy Improvement Plan (v4.0)_

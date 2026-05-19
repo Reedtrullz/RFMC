@@ -42,8 +42,16 @@ export function trackNode(osc: OscillatorNode, gain: GainNode): void {
   osc.onended = () => {
     activeOscillators.delete(osc);
     activeGains.delete(gain);
-    try { osc.disconnect(); } catch { /* already disconnected */ }
-    try { gain.disconnect(); } catch { /* already disconnected */ }
+    try {
+      osc.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      gain.disconnect();
+    } catch {
+      /* already disconnected */
+    }
   };
 }
 
@@ -53,10 +61,16 @@ export function stopAll(): void {
     try {
       osc.stop();
       osc.disconnect();
-    } catch { /* already stopped */ }
+    } catch {
+      /* already stopped */
+    }
   }
   for (const gain of activeGains) {
-    try { gain.disconnect(); } catch { /* already disconnected */ }
+    try {
+      gain.disconnect();
+    } catch {
+      /* already disconnected */
+    }
   }
   activeOscillators.clear();
   activeGains.clear();

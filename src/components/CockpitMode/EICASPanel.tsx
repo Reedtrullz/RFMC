@@ -1,24 +1,24 @@
 import { useFMCStore } from '../../store/useFMCStore';
 
 export function EICASPanel() {
-  const alerts = useFMCStore(s => s.alerts);
-  const cockpitMode = useFMCStore(s => s.cockpitMode);
-  const aircraftState = useFMCStore(s => s.aircraftState);
-  
+  const alerts = useFMCStore((s) => s.alerts);
+  const cockpitMode = useFMCStore((s) => s.cockpitMode);
+  const aircraftState = useFMCStore((s) => s.aircraftState);
+
   if (!cockpitMode) return null;
 
   // 1. Crew Alerting System (CAS) Overlay
-  const displayAlerts = alerts.filter(a => a.level !== 'STATUS').slice(0, 10);
+  const displayAlerts = alerts.filter((a) => a.level !== 'STATUS').slice(0, 10);
 
   // 2. Primary Engine Indications (EICAS Engine Display)
   const vs = aircraftState?.verticalSpeedFpm ?? 0;
-  
+
   // Dynamic N1 calculations (B737 idle 32%, cruise ~65-75%, climb/takeoff ~90-96%)
   let targetN1 = 64.5;
   if (vs < -100) {
-    targetN1 = Math.max(32.0, 64.5 + (vs / 150)); 
+    targetN1 = Math.max(32.0, 64.5 + vs / 150);
   } else if (vs > 100) {
-    targetN1 = Math.min(95.5, 74.0 + (vs / 100));
+    targetN1 = Math.min(95.5, 74.0 + vs / 100);
   }
 
   const n1_1 = targetN1.toFixed(1);
@@ -42,8 +42,8 @@ export function EICASPanel() {
       {displayAlerts.length > 0 && (
         <div className="fixed top-[45%] left-1/2 -translate-x-1/2 w-[300px] pointer-events-none z-50">
           <div className="flex flex-col items-center space-y-1">
-            {displayAlerts.map(alert => (
-              <div 
+            {displayAlerts.map((alert) => (
+              <div
                 key={alert.id}
                 className={`px-4 py-1 rounded text-[11px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-2 duration-300 ${getAlertStyles(alert.level)}`}
               >
@@ -55,7 +55,7 @@ export function EICASPanel() {
       )}
 
       {/* Primary Engine EICAS Panel (Floating HUD Card) */}
-      <div 
+      <div
         className="fixed bottom-4 right-4 z-40 bg-zinc-950/95 border border-zinc-800 rounded-lg p-3 text-white font-mono w-[240px] shadow-2xl backdrop-blur-md pointer-events-auto"
         data-testid="eicas-primary-engine"
       >
@@ -75,7 +75,7 @@ export function EICASPanel() {
             <div className="flex justify-between items-center text-sm font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-zinc-900">
               <span className="text-emerald-400">{n1_1}</span>
               <div className="h-1 w-12 bg-zinc-800 rounded-full overflow-hidden relative">
-                <div 
+                <div
                   className="h-full bg-emerald-500 absolute left-0 top-0 transition-all duration-500"
                   style={{ width: `${Math.min(100, (targetN1 / 100) * 100)}%` }}
                 />
@@ -133,9 +133,13 @@ export function EICASPanel() {
 
 function getAlertStyles(level: string) {
   switch (level) {
-    case 'WARNING': return 'bg-red-600 text-white shadow-lg shadow-red-900/50';
-    case 'CAUTION': return 'bg-amber-500 text-black shadow-lg shadow-amber-900/50';
-    case 'ADVISORY': return 'bg-transparent text-white border border-white/20 backdrop-blur-sm';
-    default: return 'text-white';
+    case 'WARNING':
+      return 'bg-red-600 text-white shadow-lg shadow-red-900/50';
+    case 'CAUTION':
+      return 'bg-amber-500 text-black shadow-lg shadow-amber-900/50';
+    case 'ADVISORY':
+      return 'bg-transparent text-white border border-white/20 backdrop-blur-sm';
+    default:
+      return 'text-white';
   }
 }

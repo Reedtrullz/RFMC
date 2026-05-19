@@ -12,11 +12,9 @@
 .mode-help-card,
 .cockpit-first-run,
 .cockpit-empty-state {
-  border: 1px solid rgba(255,255,255,0.08);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015)),
-    rgba(3, 6, 7, 0.78);
-  box-shadow: inset 0 0 24px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)), rgba(3, 6, 7, 0.78);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(10px);
 }
 
@@ -144,13 +142,15 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  background: rgba(0,0,0,0.64);
+  background: rgba(0, 0, 0, 0.64);
   padding: 0.25rem;
   opacity: 0;
   transform: translateY(-0.25rem);
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
   backdrop-filter: blur(8px);
 }
 
@@ -194,10 +194,10 @@
 .cockpit-first-run button {
   flex: 0 0 auto;
   color: white;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   padding: 0.35rem 0.55rem;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .panel-tray {
@@ -213,8 +213,8 @@
 }
 
 .panel-tray button {
-  color: rgba(255,255,255,0.86);
-  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(3, 6, 7, 0.72);
   padding: 0.35rem 0.55rem;
@@ -241,9 +241,18 @@
 }
 
 @keyframes cockpit-hint-pulse {
-  0% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.7; filter: brightness(1.4); }
-  100% { opacity: 1; filter: brightness(1); }
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.7;
+    filter: brightness(1.4);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
 }
 
 .cockpit-high-contrast {

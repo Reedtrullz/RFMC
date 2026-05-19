@@ -17,14 +17,14 @@ interface AvionicsKeyProps {
   ariaLabel?: string;
 }
 
-export function AvionicsKey({ 
-  label, 
-  subLabel, 
-  active, 
-  lit, 
+export function AvionicsKey({
+  label,
+  subLabel,
+  active,
+  lit,
   highlighted,
   shape,
-  variant = 'boeing', 
+  variant = 'boeing',
   onPress,
   className = '',
   disabled,

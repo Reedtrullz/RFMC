@@ -1,12 +1,14 @@
 # PROJECT KNOWLEDGE BASE
 
 **Generated:** 2026-05-15
-**Area:** shared/src/__tests__
+**Area:** shared/src/**tests**
 
 ## OVERVIEW
+
 Unit tests for shared FMC logic, types, and utilities.
 
 ## STRUCTURE
+
 ```
 __tests__/
 ├── autopilot/
@@ -19,17 +21,19 @@ __tests__/
 ```
 
 ## WHERE TO LOOK
-| Task | Location |
-|------|----------|
-| FMC page tests | `__tests__/fmc/` |
-| Navigation data tests | `__tests__/navdata/` |
-| Autopilot tests | `__tests__/autopilot/` |
-| PFD tests | `__tests__/pfd/` |
-| Tutorial/scenario tests | `__tests__/training/` |
-| Type utility tests | `__tests__/types/` |
-| General utility tests | `__tests__/utils/` |
+
+| Task                    | Location               |
+| ----------------------- | ---------------------- |
+| FMC page tests          | `__tests__/fmc/`       |
+| Navigation data tests   | `__tests__/navdata/`   |
+| Autopilot tests         | `__tests__/autopilot/` |
+| PFD tests               | `__tests__/pfd/`       |
+| Tutorial/scenario tests | `__tests__/training/`  |
+| Type utility tests      | `__tests__/types/`     |
+| General utility tests   | `__tests__/utils/`     |
 
 ## CONVENTIONS
+
 - **Vitest**: Uses `describe`, `it`, `expect` from Vitest
 - **Mocking**: Use `vi.mock()` for mocks, reset with `vi.resetAllMocks()`
 - **Async**: Use `async/await` for promises, `await vi.waitUntil()` for polling
@@ -38,6 +42,7 @@ __tests__/
 - **Coverage**: Aim for 80%+ on modified files; global threshold is 50%
 
 ## ANTI-PATTERNS
+
 - **No console.log**: Tests should be silent; use `expect` or `vi.spyOn` for verification
 - **No hardcoded timeouts**: Use `vi.useFakeTimers()` or polling with `vi.waitUntil()`
 - **No testing private methods**: Test through public interface only

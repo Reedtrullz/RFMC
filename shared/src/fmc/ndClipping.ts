@@ -5,10 +5,13 @@ import { NDRoutePoint } from './ndTypes';
  * Returns the clipped coordinates or null if the line is entirely outside.
  */
 export function clipLineToCircle(
-  x1: number, y1: number,
-  x2: number, y2: number,
-  cx: number, cy: number,
-  r: number
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  cx: number,
+  cy: number,
+  r: number,
 ): { x1: number; y1: number; x2: number; y2: number; clipped: boolean } | null {
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -47,7 +50,7 @@ export function clipLineToCircle(
     y1: y1 + clipMin * dy,
     x2: x1 + clipMax * dx,
     y2: y1 + clipMax * dy,
-    clipped: clipMin > 0 || clipMax < 1
+    clipped: clipMin > 0 || clipMax < 1,
   };
 }
 
@@ -57,7 +60,7 @@ export function clipLineToCircle(
 export function clipRouteSegment(
   from: NDRoutePoint,
   to: NDRoutePoint,
-  isCentered: boolean
+  isCentered: boolean,
 ): { x1: number; y1: number; x2: number; y2: number; clipped: boolean; visible: boolean } {
   const cx = 50;
   const cy = isCentered ? 50 : 84;
@@ -72,6 +75,6 @@ export function clipRouteSegment(
 
   return {
     ...circleResult,
-    visible: true
+    visible: true,
   };
 }

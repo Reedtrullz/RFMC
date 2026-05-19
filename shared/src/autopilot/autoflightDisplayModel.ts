@@ -1,8 +1,4 @@
-import type {
-  AirbusFCUState,
-  AutoflightTruthState,
-  BoeingMCPState,
-} from './autopilotTypes';
+import type { AirbusFCUState, AutoflightTruthState, BoeingMCPState } from './autopilotTypes';
 
 export type DisplayWindowModel = {
   text: string;
@@ -38,10 +34,7 @@ export type AirbusFcuDisplayModel = {
   };
 };
 
-export function buildBoeingMcpDisplayModel(
-  state: BoeingMCPState,
-  truth: AutoflightTruthState,
-): BoeingMcpDisplayModel {
+export function buildBoeingMcpDisplayModel(state: BoeingMCPState, truth: AutoflightTruthState): BoeingMcpDisplayModel {
   const iasMachActive = state.speed !== null || state.mach !== null;
 
   return {
@@ -49,9 +42,8 @@ export function buildBoeingMcpDisplayModel(
     windows: {
       courseL: { text: formatDegrees(state.courseL), active: true },
       iasMach: {
-        text: state.mach !== null
-          ? `.${Math.round(state.mach * 100)}`
-          : (state.speed?.toString() ?? '').padStart(3, ' '),
+        text:
+          state.mach !== null ? `.${Math.round(state.mach * 100)}` : (state.speed?.toString() ?? '').padStart(3, ' '),
         active: iasMachActive,
         unit: state.mach !== null ? 'MACH' : 'SPD',
       },
@@ -66,10 +58,7 @@ export function buildBoeingMcpDisplayModel(
   };
 }
 
-export function buildAirbusFcuDisplayModel(
-  state: AirbusFCUState,
-  truth: AutoflightTruthState,
-): AirbusFcuDisplayModel {
+export function buildAirbusFcuDisplayModel(state: AirbusFCUState, truth: AutoflightTruthState): AirbusFcuDisplayModel {
   const speedManaged = isAirbusSpeedManaged(truth);
   const headingManaged = isAirbusHeadingManaged(truth);
   const altitudeManaged = isAirbusAltitudeManaged(truth);
@@ -123,7 +112,7 @@ function formatAirbusWindow(
 
   if (field === 'vs') {
     return {
-      text: value === null ? '-----' : (value > 0 ? `+${value}` : value.toString()),
+      text: value === null ? '-----' : value > 0 ? `+${value}` : value.toString(),
       active: value !== null,
       managed: false,
     };
@@ -141,16 +130,20 @@ function isAirbusSpeedManaged(truth: AutoflightTruthState): boolean {
 }
 
 function isAirbusHeadingManaged(truth: AutoflightTruthState): boolean {
-  return truth.lateralActive === 'NAV' || 
-         truth.lateralArmed === 'NAV' || 
-         truth.lateralActive === 'LNAV' || 
-         truth.lateralArmed === 'LNAV';
+  return (
+    truth.lateralActive === 'NAV' ||
+    truth.lateralArmed === 'NAV' ||
+    truth.lateralActive === 'LNAV' ||
+    truth.lateralArmed === 'LNAV'
+  );
 }
 
 function isAirbusAltitudeManaged(truth: AutoflightTruthState): boolean {
-  return truth.verticalActive === 'CLB' ||
+  return (
+    truth.verticalActive === 'CLB' ||
     truth.verticalActive === 'DES' ||
     truth.verticalArmed === 'VNAV_PTH' ||
     truth.verticalActive === 'VNAV_PTH' ||
-    truth.verticalActive === 'VNAV';
+    truth.verticalActive === 'VNAV'
+  );
 }

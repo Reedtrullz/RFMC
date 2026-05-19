@@ -30,7 +30,7 @@ export class MessageService {
   private addAirbusMessage(msg: FmcMessage): void {
     if (msg.type === 1) {
       // Type I messages are immediate and override everything
-      this.messages = [msg, ...this.messages.filter(m => m.type !== 1)];
+      this.messages = [msg, ...this.messages.filter((m) => m.type !== 1)];
     } else {
       // Type II messages are queued
       if (this.messages.length < this.maxType2Queue) {
@@ -57,7 +57,7 @@ export class MessageService {
   }
 
   public clearMessageById(id: string): void {
-    this.messages = this.messages.filter(m => m.id !== id);
+    this.messages = this.messages.filter((m) => m.id !== id);
   }
 
   public getAllMessages(): FmcMessage[] {

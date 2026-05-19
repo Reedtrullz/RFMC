@@ -9,27 +9,27 @@ import { scenarioEngine } from '@shared/training/scenarioEngine';
 
 export function FmsInspector() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const fmcState = useFMCStore((s) => s as unknown as FMCState);
 
   // Using specific store hooks for truth data
-   const aircraftState = useAircraftStore((s) => s.aircraftState);
-   const aircraft = useAircraftStore((s) => s.aircraft);
-   const flightPhase = useFMCStore((s) => s.flightPhase);
-   const activeNavSource = useAircraftStore((s) => s.activeNavSource);
-   const navPerformance = useAircraftStore((s) => s.navPerformance);
-   const scratchpadMessages = useFMCStore((s) => s.scratchpadMessages);
-   
-   const activeScenario = useFMCStore((s) => s.activeScenario);
-   const debriefMode = useFMCStore((s) => s.debriefMode);
-   const setDebriefMode = useFMCStore((s) => s.setDebriefMode);
-  
-  const addMessage = useAlertStore(s => s.addMessage);
-  const receiveAtsuMessage = useAlertStore(s => s.receiveAtsuMessage);
-  
+  const aircraftState = useAircraftStore((s) => s.aircraftState);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const flightPhase = useFMCStore((s) => s.flightPhase);
+  const activeNavSource = useAircraftStore((s) => s.activeNavSource);
+  const navPerformance = useAircraftStore((s) => s.navPerformance);
+  const scratchpadMessages = useFMCStore((s) => s.scratchpadMessages);
+
+  const activeScenario = useFMCStore((s) => s.activeScenario);
+  const debriefMode = useFMCStore((s) => s.debriefMode);
+  const setDebriefMode = useFMCStore((s) => s.setDebriefMode);
+
+  const addMessage = useAlertStore((s) => s.addMessage);
+  const receiveAtsuMessage = useAlertStore((s) => s.receiveAtsuMessage);
+
   if (!isOpen) {
     return (
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-4 right-4 bg-[#1a1c1c] border-2 border-[#2a2d2d] text-cdu-cyan px-4 py-2 rounded-sm shadow-2xl z-50 flex items-center gap-2 font-cdu text-[10px] font-black uppercase tracking-widest hover:border-cdu-cyan/40 transition-colors"
       >
@@ -98,9 +98,7 @@ export function FmsInspector() {
             </div>
             <div className="flex justify-between py-1">
               <span className="text-white/40 uppercase">Active Leg</span>
-              <span className="text-cdu-cyan font-black">
-                {lnav.activeWaypoint?.ident || 'NONE'}
-              </span>
+              <span className="text-cdu-cyan font-black">{lnav.activeWaypoint?.ident || 'NONE'}</span>
             </div>
             <div className="flex justify-between border-b border-white/5 py-1">
               <span className="text-white/40 uppercase">Next / Dest</span>
@@ -128,7 +126,8 @@ export function FmsInspector() {
             <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
               <div className="text-[8px] text-white/20 uppercase mb-1">Dist to T/D</div>
               <div className="text-amber-500 font-black text-xs">
-                {vnav.topOfDescentDistanceNm !== null ? vnav.topOfDescentDistanceNm.toFixed(1) : '---'} <span className="text-[8px]">NM</span>
+                {vnav.topOfDescentDistanceNm !== null ? vnav.topOfDescentDistanceNm.toFixed(1) : '---'}{' '}
+                <span className="text-[8px]">NM</span>
               </div>
             </div>
             <div className="bg-black/40 p-2 border border-white/5 rounded-sm">
@@ -181,7 +180,11 @@ export function FmsInspector() {
           </div>
           <div className="mt-2 flex justify-between border-b border-white/5 pb-1 text-[9px]">
             <span className="text-white/40 uppercase">Fuel at Dest</span>
-            <span className={performancePrediction.warnings.includes('INSUFFICIENT FUEL') ? 'text-cdu-error' : 'text-cdu-exec'}>
+            <span
+              className={
+                performancePrediction.warnings.includes('INSUFFICIENT FUEL') ? 'text-cdu-error' : 'text-cdu-exec'
+              }
+            >
               {performancePrediction.estimatedFuelAtDestination !== null
                 ? `${Math.round(performancePrediction.estimatedFuelAtDestination)} LB`
                 : '----'}
@@ -201,18 +204,27 @@ export function FmsInspector() {
           </div>
           <div className="space-y-1.5">
             {scratchpadMessages.length === 0 ? (
-              <div className="text-white/10 italic text-center py-2 border border-dashed border-white/5">No active messages</div>
-             ) : (
-               scratchpadMessages.map((msg: FMCState['scratchpadMessages'][0]) => (
-                 <div key={msg.id} className={`p-2 border-l-2 ${msg.severity === 'ALERT' ? 'border-cdu-error bg-cdu-error/5' : 'border-amber-500 bg-amber-500/5'}`}>
-                   <div className="flex justify-between text-[8px] mb-1">
-                     <span className={msg.severity === 'ALERT' ? 'text-cdu-error font-black' : 'text-amber-500 font-bold'}>{msg.severity}</span>
-                     <span className="text-white/20">{new Date(msg.timestamp).toLocaleTimeString()}</span>
-                   </div>
-                   <div className="text-white/80 leading-tight uppercase font-black tracking-tight">{msg.text}</div>
-                 </div>
-               ))
-             )}
+              <div className="text-white/10 italic text-center py-2 border border-dashed border-white/5">
+                No active messages
+              </div>
+            ) : (
+              scratchpadMessages.map((msg: FMCState['scratchpadMessages'][0]) => (
+                <div
+                  key={msg.id}
+                  className={`p-2 border-l-2 ${msg.severity === 'ALERT' ? 'border-cdu-error bg-cdu-error/5' : 'border-amber-500 bg-amber-500/5'}`}
+                >
+                  <div className="flex justify-between text-[8px] mb-1">
+                    <span
+                      className={msg.severity === 'ALERT' ? 'text-cdu-error font-black' : 'text-amber-500 font-bold'}
+                    >
+                      {msg.severity}
+                    </span>
+                    <span className="text-white/20">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <div className="text-white/80 leading-tight uppercase font-black tracking-tight">{msg.text}</div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -225,13 +237,15 @@ export function FmsInspector() {
               <div className="space-y-1.5">
                 {activeScenario.goals.map((goal: { id: string; text: string; completed: boolean }) => (
                   <div key={goal.id} className="flex items-start gap-2">
-                    <div className={`mt-1 w-1.5 h-1.5 shrink-0 ${goal.completed ? 'bg-cdu-exec' : 'border border-white/20'}`} />
+                    <div
+                      className={`mt-1 w-1.5 h-1.5 shrink-0 ${goal.completed ? 'bg-cdu-exec' : 'border border-white/20'}`}
+                    />
                     <span className={goal.completed ? 'text-cdu-exec' : 'text-white/40'}>{goal.text}</span>
                   </div>
                 ))}
               </div>
 
-              <button 
+              <button
                 onClick={() => useFMCStore.setState({ isReportVisible: true })}
                 className="w-full mt-2 bg-cdu-cyan text-black font-black p-2 rounded-sm text-[9px] uppercase hover:bg-cdu-cyan/80 transition-colors"
               >
@@ -240,7 +254,7 @@ export function FmsInspector() {
             </div>
           ) : (
             <div className="space-y-2">
-              <select 
+              <select
                 className="w-full bg-[#0a0c0e] border border-white/10 text-white/60 p-2 rounded-sm text-[9px] uppercase font-bold focus:border-cdu-cyan/40 outline-none"
                 onChange={(e) => {
                   const s = SCENARIOS[e.target.value];
@@ -252,9 +266,13 @@ export function FmsInspector() {
                 }}
                 defaultValue=""
               >
-                <option value="" disabled>Select Scenario...</option>
-                {Object.values(SCENARIOS).map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                <option value="" disabled>
+                  Select Scenario...
+                </option>
+                {Object.values(SCENARIOS).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -265,9 +283,9 @@ export function FmsInspector() {
         <section className="bg-white/5 p-3 rounded-sm border border-white/5">
           <h4 className="text-white/40 mb-2 font-black uppercase tracking-widest text-[9px]">Uplink Injection</h4>
           <div className="flex gap-1">
-            <input 
+            <input
               id="acars-input"
-              type="text" 
+              type="text"
               placeholder="MESSAGE TEXT..."
               className="flex-1 bg-black border border-white/10 text-white/80 p-2 rounded-sm text-[9px] uppercase font-bold outline-none focus:border-cdu-cyan/40"
               onKeyDown={(e) => {
@@ -280,7 +298,7 @@ export function FmsInspector() {
                 }
               }}
             />
-            <button 
+            <button
               onClick={() => {
                 const input = document.getElementById('acars-input') as HTMLInputElement;
                 if (input.value) {
@@ -297,14 +315,14 @@ export function FmsInspector() {
       </div>
 
       <div className="mt-auto p-3 bg-[#141517] border-t border-white/5 grid grid-cols-2 gap-2">
-        <button 
+        <button
           onClick={() => setDebriefMode(!debriefMode)}
           className={`p-2 rounded-sm border-2 font-black uppercase text-[9px] transition-all ${debriefMode ? 'bg-cdu-exec/10 border-cdu-exec text-cdu-exec' : 'bg-black/40 border-white/5 text-white/20'}`}
         >
           Debrief {debriefMode ? 'Active' : 'Off'}
         </button>
-        <button 
-          onClick={() => addMessage("GPS 1 FAILURE", "ALERT", aircraft === 'BOEING_737' ? 'boeing' : 'airbus')}
+        <button
+          onClick={() => addMessage('GPS 1 FAILURE', 'ALERT', aircraft === 'BOEING_737' ? 'boeing' : 'airbus')}
           className="bg-cdu-error/10 hover:bg-cdu-error/20 text-cdu-error p-2 rounded-sm border-2 border-cdu-error/40 font-black uppercase text-[9px] transition-all"
         >
           Fail GPS

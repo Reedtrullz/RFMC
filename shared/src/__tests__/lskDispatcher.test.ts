@@ -87,7 +87,15 @@ describe('dispatchLskAction', () => {
   });
 
   it('dispatches hold action (set_hold_fix)', () => {
-    const state = makeState({ flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [{ ident: 'JFK', discontinuity: false }] } });
+    const state = makeState({
+      flightPlan: {
+        origin: '',
+        destination: '',
+        flightNumber: '',
+        route: '',
+        waypoints: [{ ident: 'JFK', discontinuity: false }],
+      },
+    });
     const result = dispatchLskAction({ state, action: 'set_hold_fix', scratchpad: 'JFK' });
     expect(result.handled).toBe(true);
   });

@@ -1,8 +1,3 @@
 export function WearTexture() {
-  return (
-    <div 
-      className="machine-wear-overlay" 
-      aria-hidden="true" 
-    />
-  );
+  return <div className="machine-wear-overlay" aria-hidden="true" />;
 }

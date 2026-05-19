@@ -18,7 +18,7 @@ export const EffectProfiles = {
     phosphorGlow: 0.75,
     lcdBloom: 0,
   } as ScreenEffectProfile,
-  
+
   LCD: {
     scanlineOpacity: 0.04,
     reflectionOpacity: 0.08,

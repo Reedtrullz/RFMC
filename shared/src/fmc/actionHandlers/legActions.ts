@@ -4,7 +4,7 @@ import type { FmcActionResult } from './actionResult';
 export function handleLegWpAction(
   action: string,
   state: FMCState,
-  scratchpad: string
+  scratchpad: string,
 ): FmcActionResult & { sideEffect?: string } {
   const match = action.match(/^(edit_wp|delete_wp|insert_wp)_(\d+)$/);
   if (!match) return { handled: false };

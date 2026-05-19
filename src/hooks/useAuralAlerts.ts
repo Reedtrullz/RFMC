@@ -9,15 +9,15 @@ import { AuralAlertService } from '../services/AuralAlertService';
  * Ensures alerts are played only once per trigger.
  */
 export function useAuralAlerts() {
-  const gpwsAlert = useFMCStore(s => s.gpwsAlert);
-  const tcasAlert = useFMCStore(s => s.tcasAlert);
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const autopilotTruth = useAutopilotStore(s => s.truth);
+  const gpwsAlert = useFMCStore((s) => s.gpwsAlert);
+  const tcasAlert = useFMCStore((s) => s.tcasAlert);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const autopilotTruth = useAutopilotStore((s) => s.truth);
   const { lateralActive, verticalActive, thrustActive, autopilotStatus } = autopilotTruth;
   const fma = { lateralActive, verticalActive, thrustActive };
-  
-  const alerts = useFMCStore(s => s.alerts);
-  
+
+  const alerts = useFMCStore((s) => s.alerts);
+
   const lastGpws = useRef(gpwsAlert);
   const lastTcas = useRef(tcasAlert);
   const lastApStatus = useRef(autopilotStatus);
@@ -55,14 +55,30 @@ export function useAuralAlerts() {
     // Handle GPWS Alerts
     if (gpwsAlert !== lastGpws.current) {
       switch (gpwsAlert) {
-        case 'PULL_UP': AuralAlertService.playPullUp(); break;
-        case 'TERRAIN': AuralAlertService.playTerrain(); break;
-        case 'SINK_RATE': AuralAlertService.playSinkRate(); break;
-        case 'DONT_SINK': AuralAlertService.playDontSink(); break;
-        case 'GLIDESLOPE': AuralAlertService.playGlideslope(); break;
-        case 'TOO_LOW_GEAR': AuralAlertService.playTooLowGear(); break;
-        case 'TOO_LOW_FLAPS': AuralAlertService.playTooLowFlaps(); break;
-        case 'WINDSHEAR': AuralAlertService.playWindshear(); break;
+        case 'PULL_UP':
+          AuralAlertService.playPullUp();
+          break;
+        case 'TERRAIN':
+          AuralAlertService.playTerrain();
+          break;
+        case 'SINK_RATE':
+          AuralAlertService.playSinkRate();
+          break;
+        case 'DONT_SINK':
+          AuralAlertService.playDontSink();
+          break;
+        case 'GLIDESLOPE':
+          AuralAlertService.playGlideslope();
+          break;
+        case 'TOO_LOW_GEAR':
+          AuralAlertService.playTooLowGear();
+          break;
+        case 'TOO_LOW_FLAPS':
+          AuralAlertService.playTooLowFlaps();
+          break;
+        case 'WINDSHEAR':
+          AuralAlertService.playWindshear();
+          break;
       }
       lastGpws.current = gpwsAlert;
     }
@@ -78,7 +94,6 @@ export function useAuralAlerts() {
       AuralAlertService.playBoeingWarning(); // Cavalry charge is used for both for now, or specifically Boeing
     }
     lastApStatus.current = autopilotStatus;
-
   }, [gpwsAlert, tcasAlert, autopilotStatus, aircraft, alerts, fma]);
 
   // Global user interaction listener to resume audio context

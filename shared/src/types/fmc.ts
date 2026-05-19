@@ -652,13 +652,13 @@ export interface AircraftState extends AircraftTelemetry {
   apTargetAltitude?: number;
 
   // Approach / NAV radio state
-  approachArmed?: boolean;    // Pilot has armed approach mode
-  hasLoc?: boolean;           // Localizer signal captured
-  hasGs?: boolean;            // Glideslope signal captured
-  locDeviation?: number;      // Localizer deviation in dots (-2 to +2)
-  gsDeviation?: number;       // Glideslope deviation in dots (-2 to +2)
+  approachArmed?: boolean; // Pilot has armed approach mode
+  hasLoc?: boolean; // Localizer signal captured
+  hasGs?: boolean; // Glideslope signal captured
+  locDeviation?: number; // Localizer deviation in dots (-2 to +2)
+  gsDeviation?: number; // Glideslope deviation in dots (-2 to +2)
 
   // Configuration state (needed by GPWS)
-  gearDown?: boolean;         // Landing gear down
-  flapsPosition?: number;     // Flaps deployment in degrees
+  gearDown?: boolean; // Landing gear down
+  flapsPosition?: number; // Flaps deployment in degrees
 }

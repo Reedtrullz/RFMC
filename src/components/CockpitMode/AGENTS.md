@@ -4,9 +4,11 @@
 **Area:** src/components/CockpitMode
 
 ## OVERVIEW
+
 Cockpit mode components for full cockpit view, including layout, panels, toolbar, brightness, EICAS, and helper overlays.
 
 ## STRUCTURE
+
 ```
 CockpitMode/
 ├── CockpitLayout.tsx         # Main cockpit layout grid
@@ -25,22 +27,24 @@ CockpitMode/
 ```
 
 ## WHERE TO LOOK
-| Task | Location |
-|------|----------|
-| Main cockpit layout | `CockpitLayout.tsx`, `CockpitLayoutGrid.tsx` |
-| Left/right panels | `CockpitPanels.tsx` |
-| Top toolbar | `CockpitToolbar.tsx` |
-| Brightness control | `BrightnessPanel.tsx` |
-| EICAS display | `EICASPanel.tsx` |
-| Display selector (PFD/ND) | `DisplaySelector.tsx` |
-| First-run guidance | `FirstRunGuidance.tsx` |
-| Keyboard help overlay | `KeyboardHelpOverlay.tsx` |
-| Mode-specific help cards | `ModeHelpCard.tsx` |
-| Orientation prompt (mobile) | `OrientationPrompt.tsx` |
-| Performance overlay | `PerformanceOverlay.tsx` |
-| Empty state | `CockpitEmptyState.tsx` |
+
+| Task                        | Location                                     |
+| --------------------------- | -------------------------------------------- |
+| Main cockpit layout         | `CockpitLayout.tsx`, `CockpitLayoutGrid.tsx` |
+| Left/right panels           | `CockpitPanels.tsx`                          |
+| Top toolbar                 | `CockpitToolbar.tsx`                         |
+| Brightness control          | `BrightnessPanel.tsx`                        |
+| EICAS display               | `EICASPanel.tsx`                             |
+| Display selector (PFD/ND)   | `DisplaySelector.tsx`                        |
+| First-run guidance          | `FirstRunGuidance.tsx`                       |
+| Keyboard help overlay       | `KeyboardHelpOverlay.tsx`                    |
+| Mode-specific help cards    | `ModeHelpCard.tsx`                           |
+| Orientation prompt (mobile) | `OrientationPrompt.tsx`                      |
+| Performance overlay         | `PerformanceOverlay.tsx`                     |
+| Empty state                 | `CockpitEmptyState.tsx`                      |
 
 ## CONVENTIONS
+
 - **Layout-first**: Uses CSS Grid for responsive cockpit layout
 - **Touch targets**: Minimum 44px for interactive elements
 - **iOS safe areas**: Respects safe area insets on mobile
@@ -50,6 +54,7 @@ CockpitMode/
 - **Accessibility**: ARIA labels where appropriate, keyboard navigable
 
 ## ANTI-PATTERNS
+
 - **Absolute positioning**: Avoid fixed positioning; use grid/flex layout
 - **Hardcoded dimensions**: Use relative units (rem, %) or Tailwind classes
 - **Direct DOM manipulation**: Prefer React state and refs over `document.*`

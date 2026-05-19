@@ -7,13 +7,13 @@ interface ScratchpadProps {
 }
 
 export function Scratchpad({ variant = 'boeing' }: ScratchpadProps) {
-  const scratchpad = useFMCStore(s => s.scratchpad);
-  const scratchpadError = useFMCStore(s => s.scratchpadError);
-  const messages = useFMCStore(s => s.scratchpadMessages);
+  const scratchpad = useFMCStore((s) => s.scratchpad);
+  const scratchpadError = useFMCStore((s) => s.scratchpadError);
+  const messages = useFMCStore((s) => s.scratchpadMessages);
   const activeMessage = messages[0];
 
   const displayText = scratchpadError || scratchpad || activeMessage?.text || ' ';
-  
+
   let level: AlertLevel | undefined = undefined;
   if (scratchpadError) {
     level = 'WARNING';

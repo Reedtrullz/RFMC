@@ -11,10 +11,7 @@ import { SCRATCHPAD_MAX } from './constants';
 // src/store/fmcStore.ts calls this and applies the returned patch via set().
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function processFMCKey(
-  state: FMCState,
-  key: string
-): Partial<FMCState> {
+export function processFMCKey(state: FMCState, key: string): Partial<FMCState> {
   const { scratchpad } = state;
 
   // ── Alphanumeric / punctuation input ──────────────────────────────────────
@@ -53,30 +50,30 @@ export function processFMCKey(
 
   // ── Page navigation keys ─────────────────────────────────────────────────
   const PAGE_MAP: Record<string, FMCState['currentPage']> = {
-    INIT_REF:    'IDENT',
-    RTE:         'RTE',
-    CLB:         'CLB',
-    CRZ:         'CRZ',
-    DES:         'DES',
-    DIR_INTC:    'DIR_INTC',
-    LEGS:        'LEGS',
-    DEP_ARR:     'DEP_ARR',
-    HOLD:        'HOLD',
-    PERF:        'TAKEOFF_REF',
-    PROG:        'PROGRESS',
-    N1_LIMIT:    'N1_LIMIT',
-    FIX:         'FIX',
-    MENU:        'MENU',
+    INIT_REF: 'IDENT',
+    RTE: 'RTE',
+    CLB: 'CLB',
+    CRZ: 'CRZ',
+    DES: 'DES',
+    DIR_INTC: 'DIR_INTC',
+    LEGS: 'LEGS',
+    DEP_ARR: 'DEP_ARR',
+    HOLD: 'HOLD',
+    PERF: 'TAKEOFF_REF',
+    PROG: 'PROGRESS',
+    N1_LIMIT: 'N1_LIMIT',
+    FIX: 'FIX',
+    MENU: 'MENU',
     // Airbus
-    INIT_A:      'INIT_A',
-    INIT_B:      'INIT_B',
-    F_PLN:       'F_PLN',
-    PERF_TAKEOFF:'PERF_TAKEOFF',
-    PROG_A:      'PROG_A',
-    DEP_ARR_A:   'DEP_ARR_A',
-    MCDU_MENU:   'MCDU_MENU',
-    RAD_NAV:     'RAD_NAV',
-    DATA_INDEX:  'DATA_INDEX',
+    INIT_A: 'INIT_A',
+    INIT_B: 'INIT_B',
+    F_PLN: 'F_PLN',
+    PERF_TAKEOFF: 'PERF_TAKEOFF',
+    PROG_A: 'PROG_A',
+    DEP_ARR_A: 'DEP_ARR_A',
+    MCDU_MENU: 'MCDU_MENU',
+    RAD_NAV: 'RAD_NAV',
+    DATA_INDEX: 'DATA_INDEX',
   };
 
   if (key in PAGE_MAP) {

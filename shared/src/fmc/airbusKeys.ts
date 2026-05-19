@@ -3,10 +3,10 @@
 
 export const AIRBUS_FUNCTION_KEYS = [
   { label: 'AIR\nPORT', key: 'INIT_A' },
-  { label: 'F-PLN',  key: 'F_PLN' },
-  { label: 'PERF',   key: 'PERF_TAKEOFF' },
-  { label: 'PROG',   key: 'PROG_A' },
-  { label: 'RAD\nNAV',  key: 'RAD_NAV' },
+  { label: 'F-PLN', key: 'F_PLN' },
+  { label: 'PERF', key: 'PERF_TAKEOFF' },
+  { label: 'PROG', key: 'PROG_A' },
+  { label: 'RAD\nNAV', key: 'RAD_NAV' },
   { label: 'MCDU\nMENU', key: 'MCDU_MENU' },
 ];
 

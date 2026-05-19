@@ -21,7 +21,7 @@ test.describe('Autopilot Mode Guards', () => {
 
     // 3. Check scratchpad for error message
     await expect(page.getByTestId('scratchpad')).toContainText('NO ACTIVE ROUTE');
-    
+
     // 4. Verify LNAV annunciator is NOT lit
     const lnavBtn = page.getByRole('button', { name: 'LNAV', exact: true });
     await expect(lnavBtn.locator('.annunciator-amber, .annunciator-green')).not.toBeVisible();
@@ -37,10 +37,10 @@ test.describe('Autopilot Mode Guards', () => {
     await page.goto('/');
     await page.locator('button:has-text("A320neo")').click();
     await dismissWelcome(page);
-    
+
     const locBtn = page.getByRole('button', { name: 'LOC', exact: true });
     await locBtn.click();
-    
+
     // Toggles the local state - verify button background or state indicator if possible
     await expect(locBtn).toBeVisible();
   });

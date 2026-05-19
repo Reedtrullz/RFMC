@@ -42,7 +42,8 @@ describe('NavigationDisplay', () => {
         { refFix: 'RBV', radial: 270, distance: 35 },
       ],
       aircraftState: {
-        lat: 40.0, lon: -74.0, // Near DIXIE/RBV
+        lat: 40.0,
+        lon: -74.0, // Near DIXIE/RBV
         heading: 0,
         track: 0,
         selectedHeading: 0,
@@ -58,7 +59,7 @@ describe('NavigationDisplay', () => {
         altitudeFt: 10000,
         indicatedAirspeedKt: 250,
         verticalSpeedFpm: 0,
-      }
+      },
     });
 
     render(<NavigationDisplay />);
@@ -97,7 +98,8 @@ describe('NavigationDisplay', () => {
         ],
       },
       aircraftState: {
-        lat: 48.8, lon: 2.55,
+        lat: 48.8,
+        lon: 2.55,
         heading: 0,
         track: 0,
         selectedHeading: 0,
@@ -114,20 +116,27 @@ describe('NavigationDisplay', () => {
         indicatedAirspeedKt: 250,
         verticalSpeedFpm: 0,
       },
-      efisL: { 
-        mode: 'ARC', 
-        range: 40, 
-        overlays: { 
-          wpt: true, arpt: true, sta: true, data: true, pos: false, 
-          terr: false, wxr: false, tfc: true, cstr: true 
-        }, 
-        centered: false, 
-        side: 'L' 
+      efisL: {
+        mode: 'ARC',
+        range: 40,
+        overlays: {
+          wpt: true,
+          arpt: true,
+          sta: true,
+          data: true,
+          pos: false,
+          terr: false,
+          wxr: false,
+          tfc: true,
+          cstr: true,
+        },
+        centered: false,
+        side: 'L',
       },
     });
- 
+
     render(<NavigationDisplay />);
- 
+
     // expect(screen.getByText(/AIRBUS/i)).toBeInTheDocument();
     // High-fidelity label assertions are temporarily relaxed to satisfy CI
     // expect(screen.getAllByText(/LFPG/).length).toBeGreaterThan(0);
@@ -156,7 +165,8 @@ describe('NavigationDisplay', () => {
         ],
       },
       aircraftState: {
-        lat: 40.0, lon: -74.0,
+        lat: 40.0,
+        lon: -74.0,
         heading: 0,
         track: 0,
         selectedHeading: 0,
@@ -173,15 +183,22 @@ describe('NavigationDisplay', () => {
         indicatedAirspeedKt: 250,
         verticalSpeedFpm: 0,
       },
-      efisL: { 
-        mode: 'MAP', 
-        range: 40, 
-        overlays: { 
-          wpt: true, arpt: true, sta: true, data: true, pos: false, 
-          terr: false, wxr: false, tfc: true, cstr: false 
-        }, 
-        centered: false, 
-        side: 'L' 
+      efisL: {
+        mode: 'MAP',
+        range: 40,
+        overlays: {
+          wpt: true,
+          arpt: true,
+          sta: true,
+          data: true,
+          pos: false,
+          terr: false,
+          wxr: false,
+          tfc: true,
+          cstr: false,
+        },
+        centered: false,
+        side: 'L',
       },
     });
 

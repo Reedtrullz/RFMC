@@ -22,19 +22,21 @@ This plan outlines the integration of fully interactive physical controls direct
   - Left-click on knob: Decrements the ND range.
   - Right-click on knob: Increments the ND range.
   - Scroll wheel over knob: Increments/decrements the range.
-  - *Rationale*: Mimics physical rotary behavior accurately on desktop systems while maintaining simple left/right tap zone support for iPad touch surfaces.
-  - *Rotational Angles*: Map the 8 ranges (`5, 10, 20, 40, 80, 160, 320, 640` NM) to specific rotation steps on the knob (`-135deg` to `135deg`).
+  - _Rationale_: Mimics physical rotary behavior accurately on desktop systems while maintaining simple left/right tap zone support for iPad touch surfaces.
+  - _Rotational Angles_: Map the 8 ranges (`5, 10, 20, 40, 80, 160, 320, 640` NM) to specific rotation steps on the knob (`-135deg` to `135deg`).
 - **Airbus Compatibility**: Conditionally render the `<NDControls />` bottom panel only for Airbus displays, keeping the Boeing display 100% self-contained and clean.
 
 ## 3. Scope Boundaries
 
 ### In Scope
+
 - Refactoring `src/components/ND/frame/BoeingNDFrame.tsx` to handle state-aware clicks, scroll wheel, touch zones, and context menu suppression.
 - Conditionally mounting `<NDControls />` based on `model.style` inside `src/components/ND/NavigationDisplay.tsx`.
 - Adding visual "Green LED Indicator" dots on the physical buttons to show when an overlay is active.
 - Dynamic rotation of the Range knob visual marker.
 
 ### Out of Scope
+
 - Modifying underlying autopilot LNAV/VNAV state models.
 - Redesigning Airbus A320 MCDU/ND physical bezels.
 
@@ -43,6 +45,7 @@ This plan outlines the integration of fully interactive physical controls direct
 The integration will be carried out across these specific steps:
 
 ### [x] Step 1: Update `BoeingNDFrame.tsx` to handle Interactivity and Zustand Integration
+
 - [x] Connect `useFMCStore` inside the component.
 - [x] Accept an optional `side` prop (defaulting to `'L'`).
 - [x] Upgrade visual styling of the physical bezel console:
@@ -57,18 +60,19 @@ The integration will be carried out across these specific steps:
   - [x] Add interactive wheel listener via React ref (with passive false and `e.preventDefault()`) to increment/decrement range steps using `setNDRange`.
   - [x] Add `onContextMenu={(e) => e.preventDefault()}` to suppress browser menu, and map left/right clicks (or touch regions) to increment/decrement.
   - [x] Apply `transform: rotate(...)` styles to rotate the inner marker of the knob based on the selected range level.
- 
+
 ### [x] Step 2: Conditionally render `<NDControls />` inside `NavigationDisplay.tsx`
+
 - [x] Modify `src/components/ND/NavigationDisplay.tsx`.
 - [x] Only mount `<NDControls model={model} side={side} />` when `model.style === 'airbus'`.
 - [x] Pass the dynamic `side` state value to `BoeingNDFrame` (`<BoeingNDFrame model={model} side={side}>`).
- 
+
 ### [x] Step 3: Add support for Mode Cycling and display interactions
+
 - [x] Support cycling the flight modes (APP, VOR, MAP, PLN) when double clicking the screen background.
- 
+
 ## 5. Final Verification Wave
- 
+
 - [x] **E2E Automation Gate**: Run and update existing visual regressions to match the borderless full-screen Boeing ND layout.
 - [x] **Type Checking**: Verify that `npm run typecheck:all` compiles successfully.
 - [x] **Functional Check**: Verify the buttons toggle and knob turns correctly under all views.
-

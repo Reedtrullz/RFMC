@@ -54,16 +54,16 @@ Instead of the legacy `DisplayLine[]` approach (padding strings to exact width),
 
 The state is split across 8 purpose-focused Zustand stores:
 
-| Store | Purpose | Key State |
-|-------|---------|-----------|
-| `fmcStore` | FMC page state and input handling | scratchpad, route, performance, takeoff |
-| `aircraftStore` | Aircraft configuration and mode | Boeing/Airbus selection, annunciators |
-| `autopilotStore` | Autopilot modes and state | Boeing MCP or Airbus FCU state |
-| `cockpitLayoutStore` | Layout and display configuration | mode, zoom, brightness, hidden panels |
-| `connectionStore` | Simulator connection status | WebSocket state, adapter health |
-| `alertStore` | Central alert/event bus | Message queue, warning state |
-| `trainingStore` | Tutorial and training state | active scenario, highlighted steps |
-| `displaySettingsStore` | Display render settings | renderer choice, effect intensity |
+| Store                  | Purpose                           | Key State                               |
+| ---------------------- | --------------------------------- | --------------------------------------- |
+| `fmcStore`             | FMC page state and input handling | scratchpad, route, performance, takeoff |
+| `aircraftStore`        | Aircraft configuration and mode   | Boeing/Airbus selection, annunciators   |
+| `autopilotStore`       | Autopilot modes and state         | Boeing MCP or Airbus FCU state          |
+| `cockpitLayoutStore`   | Layout and display configuration  | mode, zoom, brightness, hidden panels   |
+| `connectionStore`      | Simulator connection status       | WebSocket state, adapter health         |
+| `alertStore`           | Central alert/event bus           | Message queue, warning state            |
+| `trainingStore`        | Tutorial and training state       | active scenario, highlighted steps      |
+| `displaySettingsStore` | Display render settings           | renderer choice, effect intensity       |
 
 ### Selector Pattern
 
@@ -73,18 +73,19 @@ All stores use selector-based subscriptions to prevent unnecessary re-renders in
 
 The application supports two aircraft families with strict separation:
 
-| Layer | Boeing 737 CDU | Airbus A320 MCDU |
-|-------|---------------|------------------|
-| **Component shell** | `Boeing737CDU.tsx` | `AirbusMCDU.tsx` |
-| **Hardware** | `BoeingCDUShell`, `BoeingDisplayBay`, `BoeingAlphaNumericKeypad` | `AirbusMCDUShell`, `AirbusDisplayBay`, `AirbusKeypad` |
-| **Display colors** | Green-on-black CRT | Amber/green-on-black LCD-CRT hybrid |
-| **Token file** | `boeing-cdu.tokens.ts` | `airbus-mcdu.tokens.ts` |
-| **Page functions** | `shared/src/fmc/pages/boeing/*.grid.ts` | `shared/src/fmc/pages/airbus/*.grid.ts` |
-| **Terminology** | FMC, CDU, EXEC, VNAV, LNAV | FMGC, MCDU, INSERT, MANAGED, SELECTED |
+| Layer               | Boeing 737 CDU                                                   | Airbus A320 MCDU                                      |
+| ------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| **Component shell** | `Boeing737CDU.tsx`                                               | `AirbusMCDU.tsx`                                      |
+| **Hardware**        | `BoeingCDUShell`, `BoeingDisplayBay`, `BoeingAlphaNumericKeypad` | `AirbusMCDUShell`, `AirbusDisplayBay`, `AirbusKeypad` |
+| **Display colors**  | Green-on-black CRT                                               | Amber/green-on-black LCD-CRT hybrid                   |
+| **Token file**      | `boeing-cdu.tokens.ts`                                           | `airbus-mcdu.tokens.ts`                               |
+| **Page functions**  | `shared/src/fmc/pages/boeing/*.grid.ts`                          | `shared/src/fmc/pages/airbus/*.grid.ts`               |
+| **Terminology**     | FMC, CDU, EXEC, VNAV, LNAV                                       | FMGC, MCDU, INSERT, MANAGED, SELECTED                 |
 
 ### Shared Primitives Only
 
 The following are shared between aircraft families:
+
 - `CDUDisplayGrid` — CSS grid rendering engine
 - `InstrumentShell` — bezel, screws, edge highlighting
 - `ScreenGlass` — CRT/LCD post-processing effects
@@ -98,21 +99,21 @@ Page definitions, colors, terminology, workflows, validation rules, and scratchp
 
 The shared workspace contains the core FMC logic:
 
-| Module | Purpose |
-|--------|---------|
-| `fmc/displayGrid.ts` | Segment-to-grid conversion (displayDataToGrid, buildCells) |
-| `fmc/displayBuilder.ts` | DisplayData construction from FMC state |
-| `fmc/displayColors.ts` | Boeing/Airbus color tokens |
-| `fmc/validation.ts` | ICAO, altitude, speed, V-speed, wind validation |
-| `fmc/scratchpadEngine.ts` | 8-level MessagePriority queue with validation lifecycle |
-| `fmc/routeModel.ts` | Route discontinuity as first-class typed object |
-| `fmc/routeModification.ts` | EXEC lifecycle state machine (NONE → MODIFIED → EXECUTED) |
-| `fmc/FmsRuntimeEngine.ts` | Main FMC tick loop |
-| `fmc/LegSequencer.ts` | Route waypoint sequencing |
-| `fmc/PhaseManager.ts` | Flight phase inference |
-| `fmc/VerticalProfileEngine.ts` | VNAV path computation (TOD, deviation) |
-| `fmc/PerformanceEngine.ts` | Takeoff speed, fuel flow calculations |
-| `fmc/NavDatabaseService.ts` | Demo navdata (airports, runways, fixes, navaids) |
+| Module                         | Purpose                                                    |
+| ------------------------------ | ---------------------------------------------------------- |
+| `fmc/displayGrid.ts`           | Segment-to-grid conversion (displayDataToGrid, buildCells) |
+| `fmc/displayBuilder.ts`        | DisplayData construction from FMC state                    |
+| `fmc/displayColors.ts`         | Boeing/Airbus color tokens                                 |
+| `fmc/validation.ts`            | ICAO, altitude, speed, V-speed, wind validation            |
+| `fmc/scratchpadEngine.ts`      | 8-level MessagePriority queue with validation lifecycle    |
+| `fmc/routeModel.ts`            | Route discontinuity as first-class typed object            |
+| `fmc/routeModification.ts`     | EXEC lifecycle state machine (NONE → MODIFIED → EXECUTED)  |
+| `fmc/FmsRuntimeEngine.ts`      | Main FMC tick loop                                         |
+| `fmc/LegSequencer.ts`          | Route waypoint sequencing                                  |
+| `fmc/PhaseManager.ts`          | Flight phase inference                                     |
+| `fmc/VerticalProfileEngine.ts` | VNAV path computation (TOD, deviation)                     |
+| `fmc/PerformanceEngine.ts`     | Takeoff speed, fuel flow calculations                      |
+| `fmc/NavDatabaseService.ts`    | Demo navdata (airports, runways, fixes, navaids)           |
 
 ## Route Model and Navdata
 
@@ -139,11 +140,11 @@ The `NavDatabaseService` provides demo navdata (airports, runways, fixes, navaid
 
 ## Guidance System
 
-| System | Module | Responsibility |
-|--------|--------|----------------|
-| **LNAV** | `LegSequencer` | Active waypoint tracking, route sequencing, direct-to |
-| **VNAV** | `VerticalProfileEngine` | Top of descent, path deviation, required vertical speed |
-| **RNP/ANP** | `fmc/fmsNavigation.ts` | Navigation accuracy modeling, alert when ANP exceeds RNP |
+| System      | Module                  | Responsibility                                           |
+| ----------- | ----------------------- | -------------------------------------------------------- |
+| **LNAV**    | `LegSequencer`          | Active waypoint tracking, route sequencing, direct-to    |
+| **VNAV**    | `VerticalProfileEngine` | Top of descent, path deviation, required vertical speed  |
+| **RNP/ANP** | `fmc/fmsNavigation.ts`  | Navigation accuracy modeling, alert when ANP exceeds RNP |
 
 ## Simulator Integration
 
@@ -152,6 +153,7 @@ Browser (React) ←→ WebSocket (port 8080) ←→ Node.js Bridge ←→ SimCon
 ```
 
 The bridge runs as a Node.js Express + WebSocket server. It uses an aircraft adapter pattern:
+
 - `IAircraftAdapter` — contract interface
 - `PMDG737Adapter` — PMDG 737-specific SimConnect mapping
 - Future adapters for FBW A320, Working Title CJ4

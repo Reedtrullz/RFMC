@@ -21,21 +21,21 @@ export function ConnectionStatus() {
   const [showSettings, setShowSettings] = useState(false);
   const [serverUrl, setServerUrl] = useState(getServerUrl());
   const { connect, disconnect } = useWebSocket({ autoConnect: false });
-  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('connection'));
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
-  const configuredAircraft = useAircraftStore(s => s.aircraft);
-  const aircraftState = useAircraftStore(s => s.aircraftState);
-  const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const connectionMode = useConnectionStore(s => s.connectionMode);
-  const connectedAircraft = useConnectionStore(s => s.connectedAircraft);
-  const lastError = useConnectionStore(s => s.lastError);
-  const adapterHealth = useConnectionStore(s => s.adapterHealth);
-  
-  const connectedAircraftType = useConnectionStore(s => s.connectedAircraftType);
-  const connectedCapabilities = useConnectionStore(s => s.connectedCapabilities);
-  const structuredCapabilities = useConnectionStore(s => s.structuredCapabilities);
-  const latency = useConnectionStore(s => s.latency);
-  const sessionStartTime = useConnectionStore(s => s.sessionStartTime);
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('connection'));
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
+  const configuredAircraft = useAircraftStore((s) => s.aircraft);
+  const aircraftState = useAircraftStore((s) => s.aircraftState);
+  const connectionStatus = useConnectionStore((s) => s.connectionStatus);
+  const connectionMode = useConnectionStore((s) => s.connectionMode);
+  const connectedAircraft = useConnectionStore((s) => s.connectedAircraft);
+  const lastError = useConnectionStore((s) => s.lastError);
+  const adapterHealth = useConnectionStore((s) => s.adapterHealth);
+
+  const connectedAircraftType = useConnectionStore((s) => s.connectedAircraftType);
+  const connectedCapabilities = useConnectionStore((s) => s.connectedCapabilities);
+  const structuredCapabilities = useConnectionStore((s) => s.structuredCapabilities);
+  const latency = useConnectionStore((s) => s.latency);
+  const sessionStartTime = useConnectionStore((s) => s.sessionStartTime);
   const [uptime, setUptime] = useState('00:00:00');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -58,9 +58,15 @@ export function ConnectionStatus() {
 
     const interval = setInterval(() => {
       const seconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-      const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-      const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      const h = Math.floor(seconds / 3600)
+        .toString()
+        .padStart(2, '0');
+      const m = Math.floor((seconds % 3600) / 60)
+        .toString()
+        .padStart(2, '0');
+      const s = Math.floor(seconds % 60)
+        .toString()
+        .padStart(2, '0');
       setUptime(`${h}:${m}:${s}`);
     }, 1000);
 
@@ -108,9 +114,7 @@ export function ConnectionStatus() {
 
       {showSettings && (
         <div className="absolute bottom-full right-0 mb-2 p-3 rounded-lg bg-cdu-bezel border border-cdu-bezel-light shadow-lg min-w-[300px] max-w-[340px]">
-          <h3 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">
-            MSFS Connection Diagnostics
-          </h3>
+          <h3 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">MSFS Connection Diagnostics</h3>
 
           <div className="mb-3 space-y-1 rounded bg-cdu-screen/80 border border-cdu-bezel-light/60 p-2 font-cdu text-[10px]">
             <DiagnosticRow label="STATUS" value={status.label} className={status.text} />
@@ -119,17 +123,29 @@ export function ConnectionStatus() {
             {connectionStatus === 'CONNECTED' && (
               <>
                 <DiagnosticRow label="AIRCRAFT" value={aircraftType} />
-                <DiagnosticRow label="HEALTH" value={adapterHealth?.state ?? connectionStatus} className={adapterHealth?.state === 'CONNECTED' ? 'text-cdu-exec' : 'text-cdu-amber'} />
+                <DiagnosticRow
+                  label="HEALTH"
+                  value={adapterHealth?.state ?? connectionStatus}
+                  className={adapterHealth?.state === 'CONNECTED' ? 'text-cdu-exec' : 'text-cdu-amber'}
+                />
                 <DiagnosticRow label="PROFILE" value={adapterHealth?.profileVersion ?? '---'} />
                 <DiagnosticRow label="CAPS" value={capabilities.length ? capabilities.join(', ') : '---'} />
-                <DiagnosticRow label="DATA" value={structuredCapabilities?.data.length ? structuredCapabilities.data.join(', ') : '---'} />
-                <DiagnosticRow label="LATENCY" value={`${latency} MS`} className={latency > 100 ? 'text-cdu-amber' : 'text-cdu-exec'} />
+                <DiagnosticRow
+                  label="DATA"
+                  value={structuredCapabilities?.data.length ? structuredCapabilities.data.join(', ') : '---'}
+                />
+                <DiagnosticRow
+                  label="LATENCY"
+                  value={`${latency} MS`}
+                  className={latency > 100 ? 'text-cdu-amber' : 'text-cdu-exec'}
+                />
                 <DiagnosticRow label="UPTIME" value={uptime} className="text-cdu-cyan" />
               </>
             )}
             {lastError && (
               <div className="pt-1 text-cdu-error leading-tight">
-                <span className="text-cdu-text/50">LAST ERROR </span>{lastError}
+                <span className="text-cdu-text/50">LAST ERROR </span>
+                {lastError}
               </div>
             )}
             {isOffline && (
@@ -139,7 +155,8 @@ export function ConnectionStatus() {
             )}
             {integrationNote && (
               <div className="pt-1 text-cdu-amber leading-tight">
-                <span className="text-cdu-text/50">LIMIT </span>{integrationNote}
+                <span className="text-cdu-text/50">LIMIT </span>
+                {integrationNote}
               </div>
             )}
           </div>
@@ -155,9 +172,7 @@ export function ConnectionStatus() {
             </div>
           )}
 
-          <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">
-            Server URL (WebSocket)
-          </label>
+          <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">Server URL (WebSocket)</label>
           <input
             type="text"
             value={serverUrl}
@@ -195,7 +210,15 @@ export function ConnectionStatus() {
   );
 }
 
-function DiagnosticRow({ label, value, className = 'text-cdu-text' }: { label: string; value: string; className?: string }) {
+function DiagnosticRow({
+  label,
+  value,
+  className = 'text-cdu-text',
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
     <div className="flex justify-between gap-2 min-w-0">
       <span className="text-cdu-text/50 shrink-0">{label}</span>

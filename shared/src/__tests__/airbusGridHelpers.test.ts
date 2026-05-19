@@ -160,13 +160,7 @@ describe('airbusGridHelpers', () => {
     });
 
     it('supports right-aligned selectable fields', () => {
-      const segment = airbusSelectableField(
-        'SELECT',
-        1,
-        14,
-        'R1',
-        'select_fmcg',
-      );
+      const segment = airbusSelectableField('SELECT', 1, 14, 'R1', 'select_fmcg');
       expect(segment).toMatchObject({
         row: 1,
         col: 14,

@@ -61,17 +61,19 @@ describe('PFD display models', () => {
   });
 
   it('sets Boeing unavailable flags from IRS state', () => {
-    const pfd = buildBoeingPFDState(createBaseState({
-      position: {
-        refAirport: '',
-        gate: '',
-        lat: 0,
-        lon: 0,
-        irsState: 'OFF',
-        irsTimeRemaining: 0,
-        irsAlignmentProgress: 0,
-      },
-    }));
+    const pfd = buildBoeingPFDState(
+      createBaseState({
+        position: {
+          refAirport: '',
+          gate: '',
+          lat: 0,
+          lon: 0,
+          irsState: 'OFF',
+          irsTimeRemaining: 0,
+          irsAlignmentProgress: 0,
+        },
+      }),
+    );
 
     expect(pfd.failureFlags?.attitude).toBe(true);
     expect(pfd.failureFlags?.navigation).toBe(true);

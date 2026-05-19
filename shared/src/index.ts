@@ -33,14 +33,8 @@ export {
   getAirway,
   getSidStar,
 } from './fmc/airFMCData';
-export {
-  validateIcao,
-  validateRouteFixture,
-} from './fmc/navdataSchema';
-export {
-  inferAirbusSemantic,
-  inferBoeingSemantic,
-} from './fmc/pageLineSemantics';
+export { validateIcao, validateRouteFixture } from './fmc/navdataSchema';
+export { inferAirbusSemantic, inferBoeingSemantic } from './fmc/pageLineSemantics';
 export type {
   AirportRecord,
   NavdataCycle,
@@ -54,11 +48,7 @@ export type {
 } from './fmc/navdataSchema';
 export { airbusTutorialScenarios } from './fmc/tutorials/airbus-tutorials';
 export { buildTrainingProgress } from './training/trainingProgress';
-export type {
-  BuildTrainingProgressInput,
-  TrainingProgress,
-  TrainingProgressStep,
-} from './training/trainingProgress';
+export type { BuildTrainingProgressInput, TrainingProgress, TrainingProgressStep } from './training/trainingProgress';
 export { AIRBUS_KEYS, AIRBUS_FUNCTION_KEYS } from './fmc/airbusKeys';
 export {
   getColorClass,
@@ -103,10 +93,7 @@ export {
   isValidADF,
 } from './fmc/validation';
 export type { ValidationResult } from './fmc/validation';
-export {
-  BOEING_737NG_AIRCRAFT_PROFILE,
-  BOEING_737NG_DISPLAY_PROFILE,
-} from './avionics/profiles';
+export { BOEING_737NG_AIRCRAFT_PROFILE, BOEING_737NG_DISPLAY_PROFILE } from './avionics/profiles';
 export type {
   AdapterCapabilities,
   AdapterHealth,
@@ -200,9 +187,14 @@ export * from './fmc/actionHandlers/atsuActions';
 
 // New FMC engine modules introduced in feat/canvas-renderer
 export { buildInitialFMCState } from './fmc/initialState';
-export { processFMCKey }        from './fmc/keyProcessor';
-export { buildDisplayData }     from './fmc/displayBuilder';
+export { processFMCKey } from './fmc/keyProcessor';
+export { buildDisplayData } from './fmc/displayBuilder';
 
 // Database caching & dynamic loader
-export { loadIntoCache, loadProceduresIntoCache, getAirportCoordinates, getWaypointCoordinates } from './fmc/navDatabase';
+export {
+  loadIntoCache,
+  loadProceduresIntoCache,
+  getAirportCoordinates,
+  getWaypointCoordinates,
+} from './fmc/navDatabase';
 export { populateNavDb } from './db/navDataLoader';

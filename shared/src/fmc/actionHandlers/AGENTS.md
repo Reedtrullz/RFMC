@@ -4,9 +4,11 @@
 **Area:** shared/src/fmc/actionHandlers/
 
 ## OVERVIEW
+
 Extracted LSK action handlers — pure functions mapping LSK actions to typed `FmcActionResult`. Isolated from store for testability. 18 modules, ~2,500 lines.
 
 ## STRUCTURE
+
 ```
 actionHandlers/
 ├── actionResult.ts         # FmcActionResult, FmcActionFailure, FmcActionSuccess types
@@ -30,14 +32,16 @@ actionHandlers/
 ```
 
 ## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| Handler result types | `actionResult.ts` | `FmcActionResult` + 13 failure codes |
-| Page navigation dispatch | `navigationActions.ts` | Resolves page → action map |
-| Boeing-specific handlers | `routeActions.ts`, `performanceActions.ts`, `takeoffActions.ts` | |
-| Airbus-specific handlers | `airbusActions.ts` | |
-| Common validation | Import from `../validation.ts` | |
-| Scratchpad integration | Import from `../fmcScratchpadAdapter.ts` | `applyFmcActionResult()` |
+
+| Task                     | Location                                                        | Notes                                |
+| ------------------------ | --------------------------------------------------------------- | ------------------------------------ |
+| Handler result types     | `actionResult.ts`                                               | `FmcActionResult` + 13 failure codes |
+| Page navigation dispatch | `navigationActions.ts`                                          | Resolves page → action map           |
+| Boeing-specific handlers | `routeActions.ts`, `performanceActions.ts`, `takeoffActions.ts` |                                      |
+| Airbus-specific handlers | `airbusActions.ts`                                              |                                      |
+| Common validation        | Import from `../validation.ts`                                  |                                      |
+| Scratchpad integration   | Import from `../fmcScratchpadAdapter.ts`                        | `applyFmcActionResult()`             |
+
 |
 | LSK dispatcher | `lskDispatcher.ts` | dispatchLskAction() routes to 16 handler families |
 | Position entry | `positionActions.ts` | POS INIT gate/lat/lon |
@@ -45,6 +49,7 @@ actionHandlers/
 | ATSU messaging | `atsuActions.ts` | Airbus ATSU uplink messages |
 
 ## CONVENTIONS
+
 - **Pure functions**: Every handler is `(action: string, state: FMCState, scratchpad: string) => FmcActionResult`
 - **Typed failures**: Never return raw error strings — always use `FmcActionFailure { code, text, source }`
 - **No side effects**: Handlers return patches/messages; store applies them via `applyFmcActionResult()`
@@ -54,6 +59,7 @@ actionHandlers/
 - **Dispatcher**: dispatchLskAction() is the single entry point → routes to handler families by priority
 
 ## ANTI-PATTERNS
+
 - **No direct `scratchpadError` writes** — return `failure` with typed code instead
 - **No direct store mutations** — return patches to be applied by store wrapper
 - **No inline validation** — delegate to shared validation modules (`validation.ts`)

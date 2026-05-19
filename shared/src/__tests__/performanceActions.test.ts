@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { handleSetCrzAlt, handleSetCostIndex, handleSetZfw, handleSetReserve, handlePerformanceAction } from '../fmc/actionHandlers/performanceActions';
+import {
+  handleSetCrzAlt,
+  handleSetCostIndex,
+  handleSetZfw,
+  handleSetReserve,
+  handlePerformanceAction,
+} from '../fmc/actionHandlers/performanceActions';
 import { buildInitialFMCState } from '../fmc/initialState';
 import type { FMCState } from '../types/fmc';
 

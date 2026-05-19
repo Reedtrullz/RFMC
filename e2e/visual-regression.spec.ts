@@ -17,28 +17,28 @@ test.describe('Visual Regression', () => {
   test('IDENT Page Visual Match', async ({ page }) => {
     await page.goto('/visual/boeing/ident');
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-ident.png', {
-      maxDiffPixelRatio: 0.05
+      maxDiffPixelRatio: 0.05,
     });
   });
 
   test('POS INIT Page Visual Match', async ({ page }) => {
     await page.goto('/visual/boeing/pos-init');
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-pos-init.png', {
-      maxDiffPixelRatio: 0.05
+      maxDiffPixelRatio: 0.05,
     });
   });
 
   test('RTE Page Visual Match', async ({ page }) => {
     await page.goto('/visual/boeing/rte-1');
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-rte.png', {
-      maxDiffPixelRatio: 0.05
+      maxDiffPixelRatio: 0.05,
     });
   });
 
   test('N1 LIMIT Page Visual Match', async ({ page }) => {
     await page.goto('/visual/boeing/n1-limit');
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-n1-limit.png', {
-      maxDiffPixelRatio: 0.05
+      maxDiffPixelRatio: 0.05,
     });
   });
 
@@ -49,7 +49,7 @@ test.describe('Visual Regression', () => {
     }
     await expect(page.locator('.cockpit-grid')).toBeVisible();
     await expect(page.locator('.cockpit-grid')).toHaveScreenshot('cockpit-full-layout.png', {
-      maxDiffPixelRatio: 0.1
+      maxDiffPixelRatio: 0.1,
     });
   });
 });

@@ -30,19 +30,19 @@ describe('FMCEngine', () => {
 
     const state = engine.getState();
     expect(state.pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(state.pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(state.pendingFlightPlan?.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
     expect(state.legsPageCount).toBe(1);
     expect(state.execLit).toBe(true);
 
     engine.processInput('EXEC');
     expect(engine.getState().route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(engine.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(engine.getState().flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
   });
 
   it('triggers ROUTE/SID MISMATCH when entered route procedure conflicts with route.sid', () => {
     const engine = new FMCEngine();
     engine.getState().route.sid = 'DEEZZ1';
-    
+
     engine.processInput('RTE');
     engine.processInput('NEXT_PAGE');
     enter(engine, 'KJFK LENDY1 KDCA');
@@ -91,16 +91,16 @@ describe('FMCEngine', () => {
     const engine = new FMCEngine();
     engine.processInput('DEP_ARR');
     engine.processInput('L6'); // Go to ARR page (while not modified)
-    
+
     for (const key of 'CAMRN1') engine.processInput(key);
     engine.processInput('L2'); // Set STAR
-    
+
     for (const key of 'ILS19') engine.processInput(key);
     engine.processInput('L3'); // Set APPR
-    
+
     for (const key of '04L') engine.processInput(key);
     engine.processInput('L4'); // Set RWY
-    
+
     expect(engine.getState().pendingRoute).toMatchObject({
       star: 'CAMRN1',
       approach: 'ILS19',
@@ -260,7 +260,7 @@ describe('FMCEngine', () => {
     const display = engine.getDisplayData();
 
     expect(engine.getState().takeoff.toMode).toBe('TO 1');
-    expect(display.lines.some(line => line.text.includes('94.0'))).toBe(true);
+    expect(display.lines.some((line) => line.text.includes('94.0'))).toBe(true);
   });
 
   it('arms DES NOW from the backend DES page', () => {
@@ -275,21 +275,21 @@ describe('FMCEngine', () => {
 
   it('sets CLB, CRZ, and DES wind and ISA dev parameters', () => {
     const engine = new FMCEngine();
-    
+
     // CLB page
     engine.processInput('CLB');
     enter(engine, '250/15');
     engine.processInput('L2');
     enter(engine, '+10');
     engine.processInput('L3');
-    
+
     expect(engine.getState().performance.clbWindDir).toBe(250);
     expect(engine.getState().performance.clbWindSpeed).toBe(15);
     expect(engine.getState().performance.isaDev).toBe(10);
-    
+
     let display = engine.getDisplayData();
-    expect(display.lines.some(l => l.text.includes('250/015'))).toBe(true);
-    expect(display.lines.some(l => l.text.includes('+10°C'))).toBe(true);
+    expect(display.lines.some((l) => l.text.includes('250/015'))).toBe(true);
+    expect(display.lines.some((l) => l.text.includes('+10°C'))).toBe(true);
 
     // CRZ page
     engine.processInput('CRZ');
@@ -297,25 +297,25 @@ describe('FMCEngine', () => {
     engine.processInput('L4');
     enter(engine, '-05');
     engine.processInput('L5');
-    
+
     expect(engine.getState().performance.crzWindDir).toBe(270);
     expect(engine.getState().performance.crzWindSpeed).toBe(45);
     expect(engine.getState().performance.isaDev).toBe(-5);
-    
+
     display = engine.getDisplayData();
-    expect(display.lines.some(l => l.text.includes('270/045'))).toBe(true);
-    expect(display.lines.some(l => l.text.includes('-5°C'))).toBe(true);
+    expect(display.lines.some((l) => l.text.includes('270/045'))).toBe(true);
+    expect(display.lines.some((l) => l.text.includes('-5°C'))).toBe(true);
 
     // DES page
     engine.processInput('DES');
     enter(engine, '180/10');
     engine.processInput('L2');
-    
+
     expect(engine.getState().performance.desWindDir).toBe(180);
     expect(engine.getState().performance.desWindSpeed).toBe(10);
-    
+
     display = engine.getDisplayData();
-    expect(display.lines.some(l => l.text.includes('180/010'))).toBe(true);
+    expect(display.lines.some((l) => l.text.includes('180/010'))).toBe(true);
   });
 
   it('discards pending modifications with CLR when scratchpad is empty', () => {
@@ -390,9 +390,9 @@ describe('FMCEngine', () => {
     };
 
     const display = engine.getDisplayData();
-    const originDestination = display.segments?.find(segment => segment.text === 'EHAM / EGLL');
-    const distance = display.segments?.find(segment => segment.row === 5 && segment.col === 17);
-    const efob = display.segments?.find(segment => segment.row === 7 && segment.col === 19);
+    const originDestination = display.segments?.find((segment) => segment.text === 'EHAM / EGLL');
+    const distance = display.segments?.find((segment) => segment.row === 5 && segment.col === 17);
+    const efob = display.segments?.find((segment) => segment.row === 7 && segment.col === 19);
 
     expect(originDestination).toBeDefined();
     expect(distance?.text).toMatch(/\d+ NM/);
@@ -452,10 +452,10 @@ describe('FMCEngine', () => {
     };
 
     const display = engine.getDisplayData();
-    const originDestination = display.segments?.find(segment => segment.text === 'EHAM / EGLL');
-    const extra = display.segments?.find(segment => segment.row === 4 && segment.col === 1);
-    const minDestinationFuel = display.segments?.find(segment => segment.row === 6 && segment.col === 1);
-    const reserve = display.segments?.find(segment => segment.row === 10 && segment.col === 18);
+    const originDestination = display.segments?.find((segment) => segment.text === 'EHAM / EGLL');
+    const extra = display.segments?.find((segment) => segment.row === 4 && segment.col === 1);
+    const minDestinationFuel = display.segments?.find((segment) => segment.row === 6 && segment.col === 1);
+    const reserve = display.segments?.find((segment) => segment.row === 10 && segment.col === 18);
 
     expect(originDestination).toBeDefined();
     expect(extra?.text).toMatch(/^ \d+\.\d$/);

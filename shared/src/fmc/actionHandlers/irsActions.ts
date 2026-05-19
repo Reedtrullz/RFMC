@@ -4,11 +4,7 @@ import { distanceNm } from '../ndGeometry';
 import { getWaypoint, getAirport } from '../airFMCData';
 import type { FmcActionResult } from './actionResult';
 
-export function handleIrsAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleIrsAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_irs_pos':
       return handleSetIrsPos(state, scratchpad);
@@ -38,10 +34,7 @@ function handleSetIrsPos(state: FMCState, scratchpad: string): FmcActionResult {
   if (state.route.origin) {
     const origin = getAirport(state.route.origin);
     if (origin) {
-      const dist = distanceNm(
-        { lat: parsed.lat, lon: parsed.lon },
-        { lat: origin.lat, lon: origin.lon }
-      );
+      const dist = distanceNm({ lat: parsed.lat, lon: parsed.lon }, { lat: origin.lat, lon: origin.lon });
       if (dist > 50) {
         return {
           handled: true,

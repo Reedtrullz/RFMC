@@ -22,8 +22,11 @@ describe('handleHoldAction — set_hold_fix', () => {
   it('rejects waypoint not in route', () => {
     const state = makeState({
       flightPlan: {
-        origin: 'KJFK', destination: 'KDCA', flightNumber: '',
-        route: '', waypoints: [{ ident: 'RBV', lat: 0, lon: 0, discontinuity: false }],
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [{ ident: 'RBV', lat: 0, lon: 0, discontinuity: false }],
       },
     });
     const result = handleHoldAction('set_hold_fix', state, 'SEA');
@@ -34,8 +37,11 @@ describe('handleHoldAction — set_hold_fix', () => {
   it('accepts waypoint in route', () => {
     const state = makeState({
       flightPlan: {
-        origin: 'KJFK', destination: 'KDCA', flightNumber: '',
-        route: '', waypoints: [{ ident: 'RBV', lat: 0, lon: 0, discontinuity: false }],
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [{ ident: 'RBV', lat: 0, lon: 0, discontinuity: false }],
       },
     });
     const result = handleHoldAction('set_hold_fix', state, 'RBV');
@@ -51,8 +57,11 @@ describe('handleHoldAction — set_hold_fix', () => {
       hold: { fix: '', inboundCourse: 90, legTime: 1.5, legDist: 0, direction: 'R' },
       holdPending: null,
       flightPlan: {
-        origin: '', destination: '', flightNumber: '',
-        route: '', waypoints: [{ ident: 'OLM', lat: 0, lon: 0, discontinuity: false }],
+        origin: '',
+        destination: '',
+        flightNumber: '',
+        route: '',
+        waypoints: [{ ident: 'OLM', lat: 0, lon: 0, discontinuity: false }],
       },
     });
     const result = handleHoldAction('set_hold_fix', state, 'OLM');

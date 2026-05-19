@@ -14,17 +14,10 @@ export function AirbusNDFrame({ model: _model, children }: AirbusNDFrameProps) {
   const { screenRect } = AIRBUS_ND_GEOMETRY;
 
   return (
-    <div
-      data-aircraft="airbus"
-      className="airbus-nd-surface relative h-full w-full rounded-md"
-    >
+    <div data-aircraft="airbus" className="airbus-nd-surface relative h-full w-full rounded-md">
       <InstrumentBezel variant="airbus-nd" className="h-full w-full">
-        <ScreenGlass 
-          className="h-full w-full" 
-          variant="airbus"
-          effectProfile={EffectProfiles.AIRBUS_ND}
-        >
-          <svg 
+        <ScreenGlass className="h-full w-full" variant="airbus" effectProfile={EffectProfiles.AIRBUS_ND}>
+          <svg
             viewBox={`0 0 ${screenRect.width} ${screenRect.height}`}
             className="h-full w-full font-avionics select-none"
           >
@@ -46,13 +39,11 @@ export function AirbusNDFrame({ model: _model, children }: AirbusNDFrameProps) {
                 <circle cx="1.5" cy="1.5" r="0.35" fill="rgba(255,176,0,0.04)" />
               </pattern>
             </defs>
-            
+
             <rect width={screenRect.width} height={screenRect.height} fill="#020403" />
-            
+
             <g filter="url(#airbus-bloom)">
-              <g transform="scale(1.58)">
-                {children}
-              </g>
+              <g transform="scale(1.58)">{children}</g>
             </g>
 
             <rect

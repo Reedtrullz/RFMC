@@ -8,14 +8,7 @@
  * Falls back to mock data when MSFS/SimConnect is unavailable.
  */
 
-import {
-  open,
-  Protocol,
-  SimConnectConstants,
-  SimConnectDataType,
-  SimConnectPeriod,
-  EventFlag,
-} from 'node-simconnect';
+import { open, Protocol, SimConnectConstants, SimConnectDataType, SimConnectPeriod, EventFlag } from 'node-simconnect';
 import type { SimConnectConnection } from 'node-simconnect';
 import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './IAircraftAdapter';
 import type { AircraftType, ConnectionStatus } from '@virtual-cdu/shared';
@@ -24,53 +17,96 @@ import { devLog, devError, devWarn } from '@virtual-cdu/shared';
 export type PMDGVariant = '737-600' | '737-700' | '737-800' | '737-900';
 
 const PMDG_KEY_MAP: Record<string, string> = {
-  '0': 'PMDG_CDU_1_BTN_0', '1': 'PMDG_CDU_1_BTN_1', '2': 'PMDG_CDU_1_BTN_2',
-  '3': 'PMDG_CDU_1_BTN_3', '4': 'PMDG_CDU_1_BTN_4', '5': 'PMDG_CDU_1_BTN_5',
-  '6': 'PMDG_CDU_1_BTN_6', '7': 'PMDG_CDU_1_BTN_7', '8': 'PMDG_CDU_1_BTN_8',
+  '0': 'PMDG_CDU_1_BTN_0',
+  '1': 'PMDG_CDU_1_BTN_1',
+  '2': 'PMDG_CDU_1_BTN_2',
+  '3': 'PMDG_CDU_1_BTN_3',
+  '4': 'PMDG_CDU_1_BTN_4',
+  '5': 'PMDG_CDU_1_BTN_5',
+  '6': 'PMDG_CDU_1_BTN_6',
+  '7': 'PMDG_CDU_1_BTN_7',
+  '8': 'PMDG_CDU_1_BTN_8',
   '9': 'PMDG_CDU_1_BTN_9',
-  'A': 'PMDG_CDU_1_BTN_A', 'B': 'PMDG_CDU_1_BTN_B', 'C': 'PMDG_CDU_1_BTN_C',
-  'D': 'PMDG_CDU_1_BTN_D', 'E': 'PMDG_CDU_1_BTN_E', 'F': 'PMDG_CDU_1_BTN_F',
-  'G': 'PMDG_CDU_1_BTN_G', 'H': 'PMDG_CDU_1_BTN_H', 'I': 'PMDG_CDU_1_BTN_I',
-  'J': 'PMDG_CDU_1_BTN_J', 'K': 'PMDG_CDU_1_BTN_K', 'L': 'PMDG_CDU_1_BTN_L',
-  'M': 'PMDG_CDU_1_BTN_M', 'N': 'PMDG_CDU_1_BTN_N', 'O': 'PMDG_CDU_1_BTN_O',
-  'P': 'PMDG_CDU_1_BTN_P', 'Q': 'PMDG_CDU_1_BTN_Q', 'R': 'PMDG_CDU_1_BTN_R',
-  'S': 'PMDG_CDU_1_BTN_S', 'T': 'PMDG_CDU_1_BTN_T', 'U': 'PMDG_CDU_1_BTN_U',
-  'V': 'PMDG_CDU_1_BTN_V', 'W': 'PMDG_CDU_1_BTN_W', 'X': 'PMDG_CDU_1_BTN_X',
-  'Y': 'PMDG_CDU_1_BTN_Y', 'Z': 'PMDG_CDU_1_BTN_Z',
-  '.': 'PMDG_CDU_1_BTN_DOT', '+': 'PMDG_CDU_1_BTN_PLUSMINUS',
-  '-': 'PMDG_CDU_1_BTN_PLUSMINUS', ' ': 'PMDG_CDU_1_BTN_SP',
+  A: 'PMDG_CDU_1_BTN_A',
+  B: 'PMDG_CDU_1_BTN_B',
+  C: 'PMDG_CDU_1_BTN_C',
+  D: 'PMDG_CDU_1_BTN_D',
+  E: 'PMDG_CDU_1_BTN_E',
+  F: 'PMDG_CDU_1_BTN_F',
+  G: 'PMDG_CDU_1_BTN_G',
+  H: 'PMDG_CDU_1_BTN_H',
+  I: 'PMDG_CDU_1_BTN_I',
+  J: 'PMDG_CDU_1_BTN_J',
+  K: 'PMDG_CDU_1_BTN_K',
+  L: 'PMDG_CDU_1_BTN_L',
+  M: 'PMDG_CDU_1_BTN_M',
+  N: 'PMDG_CDU_1_BTN_N',
+  O: 'PMDG_CDU_1_BTN_O',
+  P: 'PMDG_CDU_1_BTN_P',
+  Q: 'PMDG_CDU_1_BTN_Q',
+  R: 'PMDG_CDU_1_BTN_R',
+  S: 'PMDG_CDU_1_BTN_S',
+  T: 'PMDG_CDU_1_BTN_T',
+  U: 'PMDG_CDU_1_BTN_U',
+  V: 'PMDG_CDU_1_BTN_V',
+  W: 'PMDG_CDU_1_BTN_W',
+  X: 'PMDG_CDU_1_BTN_X',
+  Y: 'PMDG_CDU_1_BTN_Y',
+  Z: 'PMDG_CDU_1_BTN_Z',
+  '.': 'PMDG_CDU_1_BTN_DOT',
+  '+': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  '-': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  ' ': 'PMDG_CDU_1_BTN_SP',
   '/': 'PMDG_CDU_1_BTN_SLASH',
-  'CLR': 'PMDG_CDU_1_BTN_CLR', 'DEL': 'PMDG_CDU_1_BTN_DEL',
-  'EXEC': 'PMDG_CDU_1_BTN_EXEC',
-  'PREV_PAGE': 'PMDG_CDU_1_BTN_PREV_PAGE', 'NEXT_PAGE': 'PMDG_CDU_1_BTN_NEXT_PAGE',
-  'INIT': 'PMDG_CDU_1_BTN_INIT', 'INIT_REF': 'PMDG_CDU_1_BTN_INIT',
-  'RTE': 'PMDG_CDU_1_BTN_RTE',
-  'DEP': 'PMDG_CDU_1_BTN_DEP', 'ARR': 'PMDG_CDU_1_BTN_ARR',
-  'DEP_ARR': 'PMDG_CDU_1_BTN_DEP', 'DIR_INTC': 'PMDG_CDU_1_BTN_DIR_INTC',
-  'CLB': 'PMDG_CDU_1_BTN_CLB', 'CRZ': 'PMDG_CDU_1_BTN_CRZ',
-  'DES': 'PMDG_CDU_1_BTN_DES', 'PERF': 'PMDG_CDU_1_BTN_PERF',
-  'LEGS': 'PMDG_CDU_1_BTN_LEGS', 'PROG': 'PMDG_CDU_1_BTN_PROG',
-  'FIX': 'PMDG_CDU_1_BTN_FIX', 'HOLD': 'PMDG_CDU_1_BTN_HOLD',
-  'FMC_COMM': 'PMDG_CDU_1_BTN_FMC_COMM', 'MENU': 'PMDG_CDU_1_BTN_MENU',
-  'N1_LIMIT': 'PMDG_CDU_1_BTN_N1_LIMIT',
-  'L1': 'PMDG_CDU_1_BTN_L1', 'L2': 'PMDG_CDU_1_BTN_L2', 'L3': 'PMDG_CDU_1_BTN_L3',
-  'L4': 'PMDG_CDU_1_BTN_L4', 'L5': 'PMDG_CDU_1_BTN_L5', 'L6': 'PMDG_CDU_1_BTN_L6',
-  'R1': 'PMDG_CDU_1_BTN_R1', 'R2': 'PMDG_CDU_1_BTN_R2', 'R3': 'PMDG_CDU_1_BTN_R3',
-  'R4': 'PMDG_CDU_1_BTN_R4', 'R5': 'PMDG_CDU_1_BTN_R5', 'R6': 'PMDG_CDU_1_BTN_R6',
-  'DOT': 'PMDG_CDU_1_BTN_DOT',
-  'PLUS_MINUS': 'PMDG_CDU_1_BTN_PLUSMINUS',
+  CLR: 'PMDG_CDU_1_BTN_CLR',
+  DEL: 'PMDG_CDU_1_BTN_DEL',
+  EXEC: 'PMDG_CDU_1_BTN_EXEC',
+  PREV_PAGE: 'PMDG_CDU_1_BTN_PREV_PAGE',
+  NEXT_PAGE: 'PMDG_CDU_1_BTN_NEXT_PAGE',
+  INIT: 'PMDG_CDU_1_BTN_INIT',
+  INIT_REF: 'PMDG_CDU_1_BTN_INIT',
+  RTE: 'PMDG_CDU_1_BTN_RTE',
+  DEP: 'PMDG_CDU_1_BTN_DEP',
+  ARR: 'PMDG_CDU_1_BTN_ARR',
+  DEP_ARR: 'PMDG_CDU_1_BTN_DEP',
+  DIR_INTC: 'PMDG_CDU_1_BTN_DIR_INTC',
+  CLB: 'PMDG_CDU_1_BTN_CLB',
+  CRZ: 'PMDG_CDU_1_BTN_CRZ',
+  DES: 'PMDG_CDU_1_BTN_DES',
+  PERF: 'PMDG_CDU_1_BTN_PERF',
+  LEGS: 'PMDG_CDU_1_BTN_LEGS',
+  PROG: 'PMDG_CDU_1_BTN_PROG',
+  FIX: 'PMDG_CDU_1_BTN_FIX',
+  HOLD: 'PMDG_CDU_1_BTN_HOLD',
+  FMC_COMM: 'PMDG_CDU_1_BTN_FMC_COMM',
+  MENU: 'PMDG_CDU_1_BTN_MENU',
+  N1_LIMIT: 'PMDG_CDU_1_BTN_N1_LIMIT',
+  L1: 'PMDG_CDU_1_BTN_L1',
+  L2: 'PMDG_CDU_1_BTN_L2',
+  L3: 'PMDG_CDU_1_BTN_L3',
+  L4: 'PMDG_CDU_1_BTN_L4',
+  L5: 'PMDG_CDU_1_BTN_L5',
+  L6: 'PMDG_CDU_1_BTN_L6',
+  R1: 'PMDG_CDU_1_BTN_R1',
+  R2: 'PMDG_CDU_1_BTN_R2',
+  R3: 'PMDG_CDU_1_BTN_R3',
+  R4: 'PMDG_CDU_1_BTN_R4',
+  R5: 'PMDG_CDU_1_BTN_R5',
+  R6: 'PMDG_CDU_1_BTN_R6',
+  DOT: 'PMDG_CDU_1_BTN_DOT',
+  PLUS_MINUS: 'PMDG_CDU_1_BTN_PLUSMINUS',
   '+/-': 'PMDG_CDU_1_BTN_PLUSMINUS',
-  'SLASH': 'PMDG_CDU_1_BTN_SLASH',
-  'SPACE': 'PMDG_CDU_1_BTN_SP',
-  'INIT_A': 'PMDG_CDU_1_BTN_INIT',
-  'INIT_B': 'PMDG_CDU_1_BTN_INIT',
-  'F_PLN': 'PMDG_CDU_1_BTN_RTE',
-  'PERF_TAKEOFF': 'PMDG_CDU_1_BTN_PERF',
-  'PROG_A': 'PMDG_CDU_1_BTN_PROG',
-  'DEP_ARR_A': 'PMDG_CDU_1_BTN_DEP',
-  'MCDU_MENU': 'PMDG_CDU_1_BTN_MENU',
-  'DATA_INDEX': 'PMDG_CDU_1_BTN_MENU',
-  'RAD_NAV': 'PMDG_CDU_1_BTN_MENU',
+  SLASH: 'PMDG_CDU_1_BTN_SLASH',
+  SPACE: 'PMDG_CDU_1_BTN_SP',
+  INIT_A: 'PMDG_CDU_1_BTN_INIT',
+  INIT_B: 'PMDG_CDU_1_BTN_INIT',
+  F_PLN: 'PMDG_CDU_1_BTN_RTE',
+  PERF_TAKEOFF: 'PMDG_CDU_1_BTN_PERF',
+  PROG_A: 'PMDG_CDU_1_BTN_PROG',
+  DEP_ARR_A: 'PMDG_CDU_1_BTN_DEP',
+  MCDU_MENU: 'PMDG_CDU_1_BTN_MENU',
+  DATA_INDEX: 'PMDG_CDU_1_BTN_MENU',
+  RAD_NAV: 'PMDG_CDU_1_BTN_MENU',
 };
 
 const PMDG_EVENT_BASE = 1000;
@@ -211,7 +247,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
         eventId,
         0,
         PMDG_NOTIFY_GROUP,
-        EventFlag.EVENT_FLAG_DEFAULT
+        EventFlag.EVENT_FLAG_DEFAULT,
       );
       devLog(`[PMDG] Sent keypress: ${key} (${eventName})`);
     } catch (err) {
@@ -241,11 +277,17 @@ export class PMDG737Adapter implements IAircraftAdapter {
   async readAircraftState(): Promise<AdapterAircraftState> {
     if (!this.simState) {
       return {
-        lat: 40.6413, lon: -73.7781,
+        lat: 40.6413,
+        lon: -73.7781,
         heading: 45,
         track: 45,
         altitude: 0,
-        ias: 0, tas: 0, gs: 0, vs: 0, fuelTotal: 0, gw: 0,
+        ias: 0,
+        tas: 0,
+        gs: 0,
+        vs: 0,
+        fuelTotal: 0,
+        gw: 0,
         headingDeg: 45,
         trackDeg: 45,
         altitudeFt: 0,
@@ -285,17 +327,12 @@ export class PMDG737Adapter implements IAircraftAdapter {
             DEF_CDU,
             `L:PMDG_CDU_Screen_1_Row_${row}_Col_${col}`,
             null,
-            SimConnectDataType.INT32
+            SimConnectDataType.INT32,
           );
         }
       }
 
-      handle.requestDataOnSimObject(
-        REQ_CDU,
-        DEF_CDU,
-        SimConnectConstants.OBJECT_ID_USER,
-        SimConnectPeriod.SECOND
-      );
+      handle.requestDataOnSimObject(REQ_CDU, DEF_CDU, SimConnectConstants.OBJECT_ID_USER, SimConnectPeriod.SECOND);
 
       handle.on('simObjectData', (recvSimObjectData) => {
         if (recvSimObjectData.requestID !== REQ_CDU) return;
@@ -328,64 +365,24 @@ export class PMDG737Adapter implements IAircraftAdapter {
     const REQUEST_ID = 0;
 
     try {
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Plane Latitude',
-        'degrees',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Plane Longitude',
-        'degrees',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Plane Altitude',
-        'feet',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Plane Heading Degrees True',
-        'degrees',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Airspeed Indicated',
-        'knots',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Airspeed True',
-        'knots',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Ground Velocity',
-        'knots',
-        SimConnectDataType.FLOAT64
-      );
-      handle.addToDataDefinition(
-        DEFINITION_ID,
-        'Vertical Speed',
-        'feet per minute',
-        SimConnectDataType.FLOAT64
-      );
+      handle.addToDataDefinition(DEFINITION_ID, 'Plane Latitude', 'degrees', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Plane Longitude', 'degrees', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Plane Altitude', 'feet', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Plane Heading Degrees True', 'degrees', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Airspeed Indicated', 'knots', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Airspeed True', 'knots', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Ground Velocity', 'knots', SimConnectDataType.FLOAT64);
+      handle.addToDataDefinition(DEFINITION_ID, 'Vertical Speed', 'feet per minute', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT MASTER', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT LNAV ACTIVE', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT VNAV ACTIVE', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT HEADING LOCK', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK', 'bool', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'AUTOPILOT ALTITUDE LOCK VAR', 'feet', SimConnectDataType.FLOAT64);
-      
+
       handle.addToDataDefinition(DEFINITION_ID, 'FUEL TOTAL QUANTITY', 'gallons', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'TOTAL WEIGHT', 'pounds', SimConnectDataType.FLOAT64);
-      
+
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:1', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'NAV ACTIVE FREQUENCY:2', 'MHz', SimConnectDataType.FLOAT64);
       handle.addToDataDefinition(DEFINITION_ID, 'ADF ACTIVE FREQUENCY:1', 'KHz', SimConnectDataType.FLOAT64);
@@ -394,7 +391,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
         REQUEST_ID,
         DEFINITION_ID,
         SimConnectConstants.OBJECT_ID_USER,
-        SimConnectPeriod.SECOND
+        SimConnectPeriod.SECOND,
       );
 
       handle.on('simObjectData', (recvSimObjectData) => {
@@ -433,26 +430,26 @@ export class PMDG737Adapter implements IAircraftAdapter {
               apHeadingActive,
               apAltitudeActive,
               apTargetAltitude,
-              
+
               fuelTotal: Math.round(recvSimObjectData.data.readFloat64() * 6.7),
               gw: Math.round(recvSimObjectData.data.readFloat64()),
- 
-               // Legacy
-               altitude,
-               heading,
-               ias,
-               tas,
-               gs,
-               vs,
-               track: heading,
-             };
-             this.simState.fuelTotal = this.simState.fuelTotal;
-             this.simState.gw = this.simState.gw;
-             
-             const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
+
+              // Legacy
+              altitude,
+              heading,
+              ias,
+              tas,
+              gs,
+              vs,
+              track: heading,
+            };
+            this.simState.fuelTotal = this.simState.fuelTotal;
+            this.simState.gw = this.simState.gw;
+
+            const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
-            
+
             (this.simState as any).radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[PMDG] Error reading aircraft state:', readErr);

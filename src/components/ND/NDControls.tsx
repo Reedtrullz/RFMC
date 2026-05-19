@@ -14,7 +14,14 @@ interface NDControlsProps {
 
 export function NDControls({ model, side }: NDControlsProps) {
   const { efisL, efisR, setNDMode, setNDRange, toggleNDOverlay, toggleNDCenter } = useFMCStore(
-    useShallow(s => ({ efisL: s.efisL, efisR: s.efisR, setNDMode: s.setNDMode, setNDRange: s.setNDRange, toggleNDOverlay: s.toggleNDOverlay, toggleNDCenter: s.toggleNDCenter }))
+    useShallow((s) => ({
+      efisL: s.efisL,
+      efisR: s.efisR,
+      setNDMode: s.setNDMode,
+      setNDRange: s.setNDRange,
+      toggleNDOverlay: s.toggleNDOverlay,
+      toggleNDCenter: s.toggleNDCenter,
+    })),
   );
   const efis = side === 'L' ? efisL : efisR;
   const modes = model.style === 'airbus' ? AIRBUS_MODES : BOEING_MODES;
@@ -27,7 +34,7 @@ export function NDControls({ model, side }: NDControlsProps) {
         <div className="flex flex-col items-center gap-1">
           <span className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Mode</span>
           <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-full border border-white/5">
-            {modes.map(m => (
+            {modes.map((m) => (
               <button
                 key={m}
                 onClick={() => setNDMode(side, m as any)}
@@ -43,7 +50,7 @@ export function NDControls({ model, side }: NDControlsProps) {
         <div className="flex flex-col items-center gap-1">
           <span className="text-[7px] text-gray-500 uppercase font-bold tracking-widest">Range</span>
           <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-full border border-white/5">
-            {RANGES.map(r => (
+            {RANGES.map((r) => (
               <button
                 key={r}
                 onClick={() => setNDRange(side, r)}
@@ -58,7 +65,7 @@ export function NDControls({ model, side }: NDControlsProps) {
 
       {/* Lower Panel: Overlays */}
       <div className="grid grid-cols-4 gap-1">
-        {['WPT', 'ARPT', 'STA', 'DATA', 'POS', 'TERR', 'WXR', 'TFC'].map(ov => (
+        {['WPT', 'ARPT', 'STA', 'DATA', 'POS', 'TERR', 'WXR', 'TFC'].map((ov) => (
           <AvionicsKey
             key={ov}
             label={ov}
@@ -70,7 +77,7 @@ export function NDControls({ model, side }: NDControlsProps) {
           />
         ))}
         {model.style === 'boeing' && (
-           <AvionicsKey
+          <AvionicsKey
             label="CTR"
             active={efis.centered}
             lit={efis.centered}

@@ -102,7 +102,10 @@ describe('handleSetOrigin (via dispatcher)', () => {
   });
 
   it('preserves existing pending route fields when setting origin', () => {
-    const state = { ...makeState(), pendingRoute: { ...makeState().route, destination: 'KDCA', flightNumber: 'AAL123' } };
+    const state = {
+      ...makeState(),
+      pendingRoute: { ...makeState().route, destination: 'KDCA', flightNumber: 'AAL123' },
+    };
     const result = handleRouteAction('set_origin', state, 'KJFK');
     const patch = result.success?.patch as any;
     expect(patch.pendingRoute.origin).toBe('KJFK');

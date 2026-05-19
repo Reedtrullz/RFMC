@@ -83,13 +83,8 @@ function handleAtsuLoadRoute(state: FMCState): FmcActionResult {
 }
 
 /** View a specific ATSU message detail. */
-function handleViewMessage(
-  state: FMCState,
-  msgId: string,
-): FmcActionResult {
-  const msgs: AcarsMessage[] = state.atsu.messages.map((m) =>
-    m.id === msgId ? { ...m, read: true } : m,
-  );
+function handleViewMessage(state: FMCState, msgId: string): FmcActionResult {
+  const msgs: AcarsMessage[] = state.atsu.messages.map((m) => (m.id === msgId ? { ...m, read: true } : m));
 
   return {
     handled: true,
@@ -105,11 +100,7 @@ function handleViewMessage(
 }
 
 /** Dispatch ATSU-related LSK actions. */
-export function handleAtsuAction(
-  action: string,
-  state: FMCState,
-  _scratchpad: string,
-): FmcActionResult {
+export function handleAtsuAction(action: string, state: FMCState, _scratchpad: string): FmcActionResult {
   switch (action) {
     case 'atsu_uplink':
       return handleAtsuUplink(state);

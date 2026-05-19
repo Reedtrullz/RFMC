@@ -18,7 +18,11 @@ interface SimBriefData {
  * Parse SimBrief XML content into a flight plan.
  * SimBrief exports contain <origin>, <destination>, <route>, etc.
  */
-export function parseSimBriefXML(xml: string): Partial<FlightPlan> & { route: string; waypoints?: FlightPlanWaypoint[]; performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number } } {
+export function parseSimBriefXML(xml: string): Partial<FlightPlan> & {
+  route: string;
+  waypoints?: FlightPlanWaypoint[];
+  performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number };
+} {
   const getTag = (tag: string): string | undefined => {
     const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, 'i'));
     return match?.[1]?.trim();
@@ -38,7 +42,8 @@ export function parseSimBriefXML(xml: string): Partial<FlightPlan> & { route: st
   const waypoints: FlightPlanWaypoint[] = [];
   const navlogMatches = xml.match(/<navlog>[\s\S]*?<\/navlog>/i);
   if (navlogMatches) {
-    const fixRegex = /<fix>[\s\S]*?<ident>([^<]+)<\/ident>[\s\S]*?<pos_lat>([^<]+)<\/pos_lat>[\s\S]*?<pos_long>([^<]+)<\/pos_long>[\s\S]*?<\/fix>/ig;
+    const fixRegex =
+      /<fix>[\s\S]*?<ident>([^<]+)<\/ident>[\s\S]*?<pos_lat>([^<]+)<\/pos_lat>[\s\S]*?<pos_long>([^<]+)<\/pos_long>[\s\S]*?<\/fix>/gi;
     let match;
     while ((match = fixRegex.exec(navlogMatches[0])) !== null) {
       waypoints.push({
@@ -46,7 +51,7 @@ export function parseSimBriefXML(xml: string): Partial<FlightPlan> & { route: st
         lat: parseFloat(match[2]),
         lon: parseFloat(match[3]),
         coordinateSource: 'simbrief',
-        discontinuity: false
+        discontinuity: false,
       });
     }
   }
@@ -65,7 +70,11 @@ export function parseSimBriefXML(xml: string): Partial<FlightPlan> & { route: st
 /**
  * Parse SimBrief JSON into a flight plan.
  */
-export function parseSimBriefJSON(json: string): Partial<FlightPlan> & { route: string; waypoints?: FlightPlanWaypoint[]; performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number } } {
+export function parseSimBriefJSON(json: string): Partial<FlightPlan> & {
+  route: string;
+  waypoints?: FlightPlanWaypoint[];
+  performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number };
+} {
   const data = JSON.parse(json) as SimBriefData;
   return {
     origin: data.origin?.toUpperCase(),
@@ -73,12 +82,12 @@ export function parseSimBriefJSON(json: string): Partial<FlightPlan> & { route: 
     flightNumber: data.flightNumber,
     alternate: data.alternate?.toUpperCase(),
     route: data.route || '',
-    waypoints: data.navlog?.fix?.map(f => ({
+    waypoints: data.navlog?.fix?.map((f) => ({
       ident: f.ident,
       lat: parseFloat(f.pos_lat),
       lon: parseFloat(f.pos_long),
       coordinateSource: 'simbrief',
-      discontinuity: false
+      discontinuity: false,
     })),
     performance: {
       crzAlt: data.crzAlt,
@@ -92,7 +101,11 @@ export function parseSimBriefJSON(json: string): Partial<FlightPlan> & { route: 
 /**
  * Attempt to parse SimBrief data from either XML or JSON.
  */
-export function parseSimBrief(raw: string): Partial<FlightPlan> & { route: string; waypoints?: FlightPlanWaypoint[]; performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number } } {
+export function parseSimBrief(raw: string): Partial<FlightPlan> & {
+  route: string;
+  waypoints?: FlightPlanWaypoint[];
+  performance?: { crzAlt?: number; costIndex?: number; zfw?: number; fuel?: number };
+} {
   const trimmed = raw.trim();
   if (trimmed.startsWith('<')) {
     return parseSimBriefXML(trimmed);

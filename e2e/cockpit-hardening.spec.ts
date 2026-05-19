@@ -12,7 +12,7 @@ test.describe('Cockpit Hardening & Automation', () => {
       await enterButton.waitFor({ state: 'visible', timeout: 5000 });
       await enterButton.click();
     } catch (e) {}
-    
+
     await expect(page.getByTestId('cockpit-panel-toolbar')).toBeVisible({ timeout: 10000 });
   });
 
@@ -20,17 +20,17 @@ test.describe('Cockpit Hardening & Automation', () => {
     // Switch to Navigation layout first
     // Switch to Navigation layout first (Route Verification)
     await page.getByTestId('layout-mode-navigation').click();
-    
+
     // Check if ND is visible initially
     await expect(page.getByTestId('nd-panel')).toBeVisible({ timeout: 10000 });
-    
+
     // Toggle ND via toolbar
     const ndToggle = page.getByRole('button', { name: 'ND', exact: true });
     await ndToggle.click();
-    
+
     // ND should be hidden
     await expect(page.getByTestId('nd-panel')).not.toBeVisible();
-    
+
     // Toggle back
     await ndToggle.click();
     await expect(page.getByTestId('nd-panel')).toBeVisible();
@@ -39,10 +39,10 @@ test.describe('Cockpit Hardening & Automation', () => {
   test('Focus mode via Esc key', async ({ page }) => {
     const focusButton = page.getByLabel('Focus CDU').first();
     await focusButton.click();
-    
+
     // Check if focus overlay is present
     await expect(page.locator('.focus-overlay')).toBeVisible();
-    
+
     // Press Esc to exit focus
     await page.keyboard.press('Escape');
     await expect(page.locator('.focus-overlay')).not.toBeVisible();
@@ -52,9 +52,9 @@ test.describe('Cockpit Hardening & Automation', () => {
     // Switch to Automation layout
     // Switch to Automation layout (MCP/FCU Mode Training)
     await page.getByTestId('layout-mode-automation').click();
-    
+
     await expect(page.getByTestId('autoflight-panel')).toBeVisible();
-    
+
     // Verify Rotary Knob interaction
     const altitudeKnob = page.getByTestId('mcp-altitude-knob').first();
     await altitudeKnob.focus();

@@ -8,12 +8,6 @@
     "rangeRingRadii": [],
     "clipBoundary": "display frame"
   },
-  "symbolTargets": [
-    "waypoint",
-    "airport",
-    "constraint",
-    "heading bug",
-    "track line"
-  ],
+  "symbolTargets": ["waypoint", "airport", "constraint", "heading bug", "track line"],
   "modeTargets": ["ARC", "ROSE NAV", "PLAN", "constraints on/off", "approach display"]
 }

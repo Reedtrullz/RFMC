@@ -18,11 +18,13 @@ export function RouteLine({ model }: RouteLineProps) {
     <g>
       {/* Active Route */}
       {model.activeRouteSegments.map((segment, i) => {
-        const strokeColor = segment.modified 
-          ? colors.pending 
-          : (model.lnavActive && segment.active ? colors.active : colors.inactive);
-          
-        const width = segment.active ? (isAirbus ? '2.4' : '2.6') : (isAirbus ? '1.4' : '1.5');
+        const strokeColor = segment.modified
+          ? colors.pending
+          : model.lnavActive && segment.active
+            ? colors.active
+            : colors.inactive;
+
+        const width = segment.active ? (isAirbus ? '2.4' : '2.6') : isAirbus ? '1.4' : '1.5';
         const dashes = segment.dashed ? '3 3' : undefined;
 
         return segment.arcPath ? (
@@ -39,8 +41,10 @@ export function RouteLine({ model }: RouteLineProps) {
         ) : (
           <line
             key={`active-seg-${i}`}
-            x1={segment.x1} y1={segment.y1}
-            x2={segment.x2} y2={segment.y2}
+            x1={segment.x1}
+            y1={segment.y1}
+            x2={segment.x2}
+            y2={segment.y2}
             stroke={strokeColor}
             strokeWidth={width}
             strokeDasharray={dashes}
@@ -51,7 +55,7 @@ export function RouteLine({ model }: RouteLineProps) {
       })}
 
       {/* Pending Route (dashed white/amber) */}
-      {model.pendingRouteSegments.map((segment, i) => (
+      {model.pendingRouteSegments.map((segment, i) =>
         segment.arcPath ? (
           <path
             key={`pending-seg-${i}`}
@@ -65,15 +69,17 @@ export function RouteLine({ model }: RouteLineProps) {
         ) : (
           <line
             key={`pending-seg-${i}`}
-            x1={segment.x1} y1={segment.y1}
-            x2={segment.x2} y2={segment.y2}
+            x1={segment.x1}
+            y1={segment.y1}
+            x2={segment.x2}
+            y2={segment.y2}
             stroke={colors.pending}
             strokeWidth="1.2"
             strokeDasharray="6 3"
             opacity={0.9}
           />
-        )
-      ))}
+        ),
+      )}
     </g>
   );
 }

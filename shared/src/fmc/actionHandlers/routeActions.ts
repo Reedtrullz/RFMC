@@ -8,24 +8,27 @@ import type { FmcActionResult } from './actionResult';
 export function handleRouteAction(
   action: string,
   state: FMCState,
-  scratchpad: string
+  scratchpad: string,
 ): FmcActionResult & { sideEffect?: string } {
   switch (action) {
-    case 'set_origin':     return handleSetOrigin(state, scratchpad);
-    case 'set_dest':       return handleSetDest(state, scratchpad);
-    case 'set_flt_no':     return handleSetFltNo(state, scratchpad);
-    case 'set_route':      return handleSetRoute(state, scratchpad);
-    case 'set_direct_to':  return handleSetDirectTo(state, scratchpad);
-    default:               return { handled: false };
+    case 'set_origin':
+      return handleSetOrigin(state, scratchpad);
+    case 'set_dest':
+      return handleSetDest(state, scratchpad);
+    case 'set_flt_no':
+      return handleSetFltNo(state, scratchpad);
+    case 'set_route':
+      return handleSetRoute(state, scratchpad);
+    case 'set_direct_to':
+      return handleSetDirectTo(state, scratchpad);
+    default:
+      return { handled: false };
   }
 }
 
 // ── Existing ────────────────────────────────────────────────────────────────
 
-export function handleSetFromTo(
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleSetFromTo(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const parts = scratchpad.split('/');
@@ -80,10 +83,15 @@ export function handleSetFromTo(
 function handleSetOrigin(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const result = isValidICAO(scratchpad.toUpperCase());
-  if (!result.valid) return {
-    handled: true,
-    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_origin' },
-  };
+  if (!result.valid)
+    return {
+      handled: true,
+      failure: {
+        code: 'INVALID_FORMAT' as const,
+        text: result.error || 'INVALID ENTRY',
+        source: 'routeActions.set_origin',
+      },
+    };
   const route = state.pendingRoute ?? state.route;
   const fp = state.pendingFlightPlan ?? state.flightPlan;
   return {
@@ -94,7 +102,8 @@ function handleSetOrigin(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, origin: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, origin: scratchpad.toUpperCase() },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -103,10 +112,15 @@ function handleSetOrigin(state: FMCState, scratchpad: string): FmcActionResult {
 function handleSetDest(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const result = isValidICAO(scratchpad.toUpperCase());
-  if (!result.valid) return {
-    handled: true,
-    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_dest' },
-  };
+  if (!result.valid)
+    return {
+      handled: true,
+      failure: {
+        code: 'INVALID_FORMAT' as const,
+        text: result.error || 'INVALID ENTRY',
+        source: 'routeActions.set_dest',
+      },
+    };
   const route = state.pendingRoute ?? state.route;
   const fp = state.pendingFlightPlan ?? state.flightPlan;
   return {
@@ -117,7 +131,8 @@ function handleSetDest(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, destination: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, destination: scratchpad.toUpperCase() },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -126,10 +141,15 @@ function handleSetDest(state: FMCState, scratchpad: string): FmcActionResult {
 function handleSetFltNo(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const result = isValidFlightNumber(scratchpad);
-  if (!result.valid) return {
-    handled: true,
-    failure: { code: 'INVALID_FORMAT' as const, text: result.error || 'INVALID ENTRY', source: 'routeActions.set_flt_no' },
-  };
+  if (!result.valid)
+    return {
+      handled: true,
+      failure: {
+        code: 'INVALID_FORMAT' as const,
+        text: result.error || 'INVALID ENTRY',
+        source: 'routeActions.set_flt_no',
+      },
+    };
   const route = state.pendingRoute ?? state.route;
   const fp = state.pendingFlightPlan ?? state.flightPlan;
   return {
@@ -139,7 +159,8 @@ function handleSetFltNo(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, flightNumber: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, flightNumber: scratchpad.toUpperCase() },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -151,12 +172,13 @@ function handleSetRoute(state: FMCState, scratchpad: string): FmcActionResult {
   const parsed = parseRouteString(routeStr);
   const route = state.pendingRoute ?? state.route;
   const fp = state.pendingFlightPlan ?? state.flightPlan;
-  const waypoints = parsed.waypoints.length > 0
-    ? parsed.waypoints
-    : [
-        { ident: parsed.origin, discontinuity: false },
-        { ident: parsed.destination, discontinuity: false },
-      ].filter(w => w.ident);
+  const waypoints =
+    parsed.waypoints.length > 0
+      ? parsed.waypoints
+      : [
+          { ident: parsed.origin, discontinuity: false },
+          { ident: parsed.destination, discontinuity: false },
+        ].filter((w) => w.ident);
   return {
     handled: true,
     success: {
@@ -165,7 +187,8 @@ function handleSetRoute(state: FMCState, scratchpad: string): FmcActionResult {
         pendingRoute: { ...route, routeString: routeStr },
         pendingFlightPlan: { ...fp, waypoints, route: routeStr },
         legsPageCount: Math.max(1, Math.ceil(waypoints.length / 5)),
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -174,10 +197,15 @@ function handleSetRoute(state: FMCState, scratchpad: string): FmcActionResult {
 function handleSetDirectTo(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const result = isValidWaypoint(scratchpad.toUpperCase());
-  if (!result.valid) return {
-    handled: true,
-    failure: { code: 'NOT_IN_DATABASE' as const, text: result.error || 'NOT IN DATABASE', source: 'routeActions.set_direct_to' },
-  };
+  if (!result.valid)
+    return {
+      handled: true,
+      failure: {
+        code: 'NOT_IN_DATABASE' as const,
+        text: result.error || 'NOT IN DATABASE',
+        source: 'routeActions.set_direct_to',
+      },
+    };
   const route = state.pendingRoute ?? state.route;
   return {
     handled: true,
@@ -185,7 +213,8 @@ function handleSetDirectTo(state: FMCState, scratchpad: string): FmcActionResult
       clearScratchpad: true,
       patch: {
         pendingRoute: { ...route, directTo: scratchpad.toUpperCase() },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };

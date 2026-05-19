@@ -1,4 +1,9 @@
-import type { AircraftType, ConnectionStatus, AircraftState as SharedAircraftState, RadioData } from '@virtual-cdu/shared';
+import type {
+  AircraftType,
+  ConnectionStatus,
+  AircraftState as SharedAircraftState,
+  RadioData,
+} from '@virtual-cdu/shared';
 
 /**
  * Generic aircraft adapter interface for reading/writing CDU state.
@@ -14,13 +19,11 @@ export interface CDUDisplayData {
   /** Brightness level from 0.0 to 1.0 */
   brightness: number;
 }
- 
+
 /** Aircraft dynamic state (position, heading, speed, etc.) */
 export interface AdapterAircraftState extends SharedAircraftState {
   radios?: RadioData;
 }
-
-
 
 export interface IAircraftAdapter {
   /** Human-readable name for logging and UI */

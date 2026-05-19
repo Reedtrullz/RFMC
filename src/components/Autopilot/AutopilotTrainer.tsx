@@ -6,15 +6,15 @@ import { AirbusFCU } from '../instruments/airbus/AirbusFCU/AirbusFCU';
 import { useFMCStore } from '../../store/useFMCStore';
 
 export function AutopilotTrainer() {
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const boeing = useAutopilotStore(s => s.boeing);
-  const airbus = useAutopilotStore(s => s.airbus);
-  const pressAutopilotButton = useAutopilotStore(s => s.pressButton);
-  const updateBoeing = useAutopilotStore(s => s.updateBoeing);
-  const updateAirbus = useAutopilotStore(s => s.updateAirbus);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const boeing = useAutopilotStore((s) => s.boeing);
+  const airbus = useAutopilotStore((s) => s.airbus);
+  const pressAutopilotButton = useAutopilotStore((s) => s.pressButton);
+  const updateBoeing = useAutopilotStore((s) => s.updateBoeing);
+  const updateAirbus = useAutopilotStore((s) => s.updateAirbus);
 
-  const flightPlan = useFMCStore(s => s.flightPlan);
-  const performance = useFMCStore(s => s.performance);
+  const flightPlan = useFMCStore((s) => s.flightPlan);
+  const performance = useFMCStore((s) => s.performance);
 
   const guardedPressButton = (action: string) => {
     if (aircraft === 'BOEING_737') {

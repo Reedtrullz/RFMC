@@ -30,13 +30,15 @@ export class LessonProgressManager {
   }
 
   getProgress(scenarioId: string): LessonProgress {
-    return this.progress[scenarioId] || {
-      scenarioId,
-      completed: false,
-      bestScore: 0,
-      lastAttempt: 0,
-      locked: false // Logic for locking could be added here
-    };
+    return (
+      this.progress[scenarioId] || {
+        scenarioId,
+        completed: false,
+        bestScore: 0,
+        lastAttempt: 0,
+        locked: false, // Logic for locking could be added here
+      }
+    );
   }
 
   completeLesson(scenarioId: string, score: number) {
@@ -45,7 +47,7 @@ export class LessonProgressManager {
       ...current,
       completed: true,
       bestScore: Math.max(current.bestScore, score),
-      lastAttempt: Date.now()
+      lastAttempt: Date.now(),
     };
     this.save();
   }

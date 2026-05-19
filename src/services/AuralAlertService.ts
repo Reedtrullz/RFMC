@@ -81,22 +81,22 @@ export class AuralAlertService {
 
     // Select a male voice if available
     const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find(v => v.name.toLowerCase().includes('male')) || voices[0];
+    const voice = voices.find((v) => v.name.toLowerCase().includes('male')) || voices[0];
     if (voice) utterance.voice = voice;
 
     window.speechSynthesis.speak(utterance);
   }
 
   public static playTerrain() {
-    this.playVoice("TERRAIN, TERRAIN", 1.2);
+    this.playVoice('TERRAIN, TERRAIN', 1.2);
   }
 
   public static playPullUp() {
-    this.playVoice("PULL UP, PULL UP", 1.3);
+    this.playVoice('PULL UP, PULL UP', 1.3);
   }
 
   public static playSinkRate() {
-    this.playVoice("SINK RATE", 1.1);
+    this.playVoice('SINK RATE', 1.1);
   }
 
   public static playDontSink() {
@@ -104,23 +104,23 @@ export class AuralAlertService {
   }
 
   public static playGlideslope() {
-    this.playVoice("GLIDESLOPE", 0.9);
+    this.playVoice('GLIDESLOPE', 0.9);
   }
 
   public static playTooLowGear() {
-    this.playVoice("TOO LOW, GEAR", 1.1);
+    this.playVoice('TOO LOW, GEAR', 1.1);
   }
 
   public static playTooLowFlaps() {
-    this.playVoice("TOO LOW, FLAPS", 1.1);
+    this.playVoice('TOO LOW, FLAPS', 1.1);
   }
 
   public static playWindshear() {
-    this.playVoice("WINDSHEAR, WINDSHEAR", 1.3);
+    this.playVoice('WINDSHEAR, WINDSHEAR', 1.3);
   }
 
   public static playTraffic() {
-    this.playVoice("TRAFFIC, TRAFFIC", 1.2);
+    this.playVoice('TRAFFIC, TRAFFIC', 1.2);
   }
 
   private static playPulse(ctx: AudioContext, freq: number, duration: number, time: number, volume: number = 0.15) {
@@ -168,9 +168,19 @@ export class AuralAlertService {
   }
 
   // Legacy compatibility
-  public static playChime() { this.playBoeingCaution(); }
-  public static playTripleClick() { this.playAirbusTripleClick(); }
-  public static playCavalryCharge() { this.playBoeingWarning(); }
-  public static playSingleChime() { this.playAirbusCaution(); }
-  public static playContinuousChime(durationSec: number = 3) { this.playAirbusWarning(durationSec); }
+  public static playChime() {
+    this.playBoeingCaution();
+  }
+  public static playTripleClick() {
+    this.playAirbusTripleClick();
+  }
+  public static playCavalryCharge() {
+    this.playBoeingWarning();
+  }
+  public static playSingleChime() {
+    this.playAirbusCaution();
+  }
+  public static playContinuousChime(durationSec: number = 3) {
+    this.playAirbusWarning(durationSec);
+  }
 }

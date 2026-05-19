@@ -1,10 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import {
-  handleSelectTo, handleSelectTo1, handleSelectTo2,
-  handleSetRunway, handleSetToMode,
-  handleSetV1, handleSetVr, handleSetV2,
-  handleSetTrim, handleSetOat, handleSetAssumedTemp,
-  handleTakeoffWind, handleTakeoffAction
+  handleSelectTo,
+  handleSelectTo1,
+  handleSelectTo2,
+  handleSetRunway,
+  handleSetToMode,
+  handleSetV1,
+  handleSetVr,
+  handleSetV2,
+  handleSetTrim,
+  handleSetOat,
+  handleSetAssumedTemp,
+  handleTakeoffWind,
+  handleTakeoffAction,
 } from '../fmc/actionHandlers/takeoffActions';
 import { buildInitialFMCState } from '../fmc/initialState';
 import type { FMCState } from '../types/fmc';
@@ -67,7 +75,7 @@ describe('handleSetRunway', () => {
 
   it('sets same runway (no speed deletion)', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, runway: '27L', v1: 140, vr: 145, v2: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, runway: '27L', v1: 140, vr: 145, v2: 150 },
     });
     const result = handleSetRunway(state, '27L');
     expect(result.handled).toBe(true);
@@ -77,7 +85,7 @@ describe('handleSetRunway', () => {
 
   it('deletes V speeds when runway changes with speeds entered', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, runway: '27L', v1: 140, vr: 145, v2: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, runway: '27L', v1: 140, vr: 145, v2: 150 },
     });
     const result = handleSetRunway(state, '18R');
     expect(result.handled).toBe(true);
@@ -139,7 +147,7 @@ describe('handleSetV1', () => {
 
   it('rejects V1 >= VR', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, vr: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, vr: 150 },
     });
     const result = handleSetV1(state, '150');
     expect(result.handled).toBe(true);
@@ -148,7 +156,7 @@ describe('handleSetV1', () => {
 
   it('uses suggestedV1 when scratchpad empty', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, suggestedV1: 142 }
+      takeoff: { ...buildInitialFMCState().takeoff, suggestedV1: 142 },
     });
     const result = handleSetV1(state, '');
     expect(result.handled).toBe(true);
@@ -159,7 +167,7 @@ describe('handleSetV1', () => {
 describe('handleSetVr', () => {
   it('accepts valid VR', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 140 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 140 },
     });
     const result = handleSetVr(state, '145');
     expect(result.handled).toBe(true);
@@ -168,7 +176,7 @@ describe('handleSetVr', () => {
 
   it('rejects VR <= V1', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 150 },
     });
     const result = handleSetVr(state, '140');
     expect(result.handled).toBe(true);
@@ -177,7 +185,7 @@ describe('handleSetVr', () => {
 
   it('uses suggestedVr when scratchpad empty', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, suggestedVr: 145 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, suggestedVr: 145 },
     });
     const result = handleSetVr(state, '');
     expect(result.handled).toBe(true);
@@ -188,7 +196,7 @@ describe('handleSetVr', () => {
 describe('handleSetV2', () => {
   it('accepts valid V2', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 145 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 145 },
     });
     const result = handleSetV2(state, '155');
     expect(result.handled).toBe(true);
@@ -197,7 +205,7 @@ describe('handleSetV2', () => {
 
   it('rejects V2 <= VR', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 150 },
     });
     const result = handleSetV2(state, '150');
     expect(result.handled).toBe(true);
@@ -206,7 +214,7 @@ describe('handleSetV2', () => {
 
   it('uses suggestedV2 when scratchpad empty', () => {
     const state = makeState({
-      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 145, suggestedV2: 150 }
+      takeoff: { ...buildInitialFMCState().takeoff, v1: 140, vr: 145, suggestedV2: 150 },
     });
     const result = handleSetV2(state, '');
     expect(result.handled).toBe(true);

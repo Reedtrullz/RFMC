@@ -37,7 +37,7 @@ const PATTERNS = {
  */
 export function parseWaypointInput(
   input: string,
-  getWaypointCoords: (ident: string) => LatLon | null
+  getWaypointCoords: (ident: string) => LatLon | null,
 ): ParsedWaypoint | null {
   const upperInput = input.toUpperCase().replace(/\s/g, '');
 
@@ -120,15 +120,15 @@ function parseCoordPart(val: string, dir: string): number {
     const parts = val.split('.');
     const degMin = parts[0];
     const decimal = parseFloat(`0.${parts[1]}`);
-    
+
     if (degMin.length <= 3) {
-       // Degrees only with decimal
-       degrees = parseInt(degMin);
-       minutes = decimal * 60;
+      // Degrees only with decimal
+      degrees = parseInt(degMin);
+      minutes = decimal * 60;
     } else {
-       // Degrees and minutes with decimal
-       minutes = parseInt(degMin.substring(degMin.length - 2)) + decimal;
-       degrees = parseInt(degMin.substring(0, degMin.length - 2));
+      // Degrees and minutes with decimal
+      minutes = parseInt(degMin.substring(degMin.length - 2)) + decimal;
+      degrees = parseInt(degMin.substring(0, degMin.length - 2));
     }
   } else {
     if (val.length <= 3) {

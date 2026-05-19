@@ -32,7 +32,7 @@ export function InstrumentSlot({
     >
       <div
         className={`instrument-slot__content ${contentClassName}`}
-        style={(scale === undefined ? undefined : { '--instrument-slot-scale': scale } as CSSProperties)}
+        style={scale === undefined ? undefined : ({ '--instrument-slot-scale': scale } as CSSProperties)}
       >
         {children}
       </div>
@@ -40,18 +40,10 @@ export function InstrumentSlot({
   );
 }
 
-export function InstrumentFrameSlot({
-  children,
-  scale = 1,
-  className = '',
-  dataTestId,
-}: InstrumentFrameSlotProps) {
+export function InstrumentFrameSlot({ children, scale = 1, className = '', dataTestId }: InstrumentFrameSlotProps) {
   return (
     <div className={`cockpit-instrument ${className}`} data-testid={dataTestId}>
-      <div
-        className="cockpit-scale"
-        style={{ '--scale': scale } as CSSProperties}
-      >
+      <div className="cockpit-scale" style={{ '--scale': scale } as CSSProperties}>
         {children}
       </div>
     </div>

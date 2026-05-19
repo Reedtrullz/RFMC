@@ -67,13 +67,13 @@ describe('FMC Store', () => {
 
     const state = useFMCStore.getState();
     expect(state.pendingRoute?.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(state.pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(state.pendingFlightPlan?.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
     expect(state.legsPageCount).toBe(1);
     expect(state.execLit).toBe(true);
 
     store.pressEXEC();
     expect(useFMCStore.getState().route.routeString).toBe('KJFK DCT RBV DIXIE KDCA');
-    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE', 'KDCA']);
   });
 
   it('inserts and deletes LEGS waypoints through LSK actions', () => {
@@ -94,21 +94,21 @@ describe('FMC Store', () => {
 
     for (const key of 'LENDY') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 2);
-    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
-    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
+    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map((w) => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE']);
     expect(useFMCStore.getState().execLit).toBe(true);
 
     store.pressEXEC();
-    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
 
     store.pressKey('DEL');
     store.pressLSK('L', 2);
-    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
-    expect(useFMCStore.getState().flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
-    
+    expect(useFMCStore.getState().pendingFlightPlan?.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE']);
+    expect(useFMCStore.getState().flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'LENDY', 'DIXIE']);
+
     store.pressEXEC();
     const state = useFMCStore.getState();
-    expect(state.flightPlan.waypoints.map(w => w.ident)).toEqual(['RBV', 'DIXIE']);
+    expect(state.flightPlan.waypoints.map((w) => w.ident)).toEqual(['RBV', 'DIXIE']);
     expect(state.deleteMode).toBe(false);
   });
 
@@ -320,18 +320,21 @@ describe('FMC Store', () => {
 
   it('sets DEP/ARR procedures, DIR INTC, and N1 LIMIT values', () => {
     const store = useFMCStore.getState();
-    useFMCStore.setState({ currentPage: 'DEP_ARR', route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' } });
+    useFMCStore.setState({
+      currentPage: 'DEP_ARR',
+      route: { origin: 'KJFK', destination: 'KDCA', flightNumber: '', companyRoute: '', routeString: '' },
+    });
 
     store.pressKey('DEP_ARR');
     store.pressLSK('L', 6); // Go to ARR page (while not modified)
-    
+
     for (const key of 'CAMRN1') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 2); // Set STAR
     for (const key of 'ILS19') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 3); // Set APPR
     for (const key of '04L') store.pressKey(key as Parameters<typeof store.pressKey>[0]);
     store.pressLSK('L', 4); // Set RWY
-    
+
     let state = useFMCStore.getState();
     expect(state.pendingRoute).toMatchObject({
       star: 'CAMRN1',
@@ -351,7 +354,7 @@ describe('FMC Store', () => {
     useFMCStore.setState({ takeoff: { ...useFMCStore.getState().takeoff, toMode: 'TO 2' } });
     store.setPage('N1_LIMIT');
     const display = useFMCStore.getState().getDisplayData();
-    expect(display.lines.some(line => line.text.includes('88.0'))).toBe(true);
+    expect(display.lines.some((line) => line.text.includes('88.0'))).toBe(true);
   });
 
   it('arms DES NOW from the DES page instead of exposing an unsupported LSK', () => {
@@ -383,7 +386,7 @@ describe('FMC Store', () => {
     store.setFailureMode('FAIL');
     const data = store.getDisplayData();
     expect(data.title).toBe('FAIL');
-    expect(data.lines.some(l => l.text.includes('FAIL'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('FAIL'))).toBe(true);
   });
 
   it('discards pending modifications with CLR when scratchpad is empty', () => {
@@ -487,7 +490,7 @@ describe('FMC Store', () => {
     it('simulates IRS alignment over time', () => {
       const store = useFMCStore.getState();
       useFMCStore.setState({
-        position: { ...store.position, irsState: 'ALIGNING', irsTimeRemaining: 10 }
+        position: { ...store.position, irsState: 'ALIGNING', irsTimeRemaining: 10 },
       });
 
       // One tick
@@ -505,18 +508,36 @@ describe('FMC Store', () => {
       // Directly check updateFmsEcosystem logic for RNP alerts
       useFMCStore.setState({
         sensors: [{ source: 'GPS', available: true, positionErrorNm: 2.1 }],
-        navPerformance: { anp: 2.1, rnp: 1.0, anpNm: 2.1, rnpNm: 1.0, phase: 'ENROUTE', rnpManual: false, activeSource: 'GPS', xteNm: 0 }
+        navPerformance: {
+          anp: 2.1,
+          rnp: 1.0,
+          anpNm: 2.1,
+          rnpNm: 1.0,
+          phase: 'ENROUTE',
+          rnpManual: false,
+          activeSource: 'GPS',
+          xteNm: 0,
+        },
       });
-      
+
       useFMCStore.getState().updateFmsEcosystem();
-      expect(useFMCStore.getState().alerts.some(a => a.id === 'unable-rnp')).toBe(true);
+      expect(useFMCStore.getState().alerts.some((a) => a.id === 'unable-rnp')).toBe(true);
 
       useFMCStore.setState({
         sensors: [{ source: 'GPS', available: true, positionErrorNm: 0.1 }],
-        navPerformance: { anp: 0.1, rnp: 1.0, anpNm: 0.1, rnpNm: 1.0, phase: 'ENROUTE', rnpManual: false, activeSource: 'GPS', xteNm: 0 }
+        navPerformance: {
+          anp: 0.1,
+          rnp: 1.0,
+          anpNm: 0.1,
+          rnpNm: 1.0,
+          phase: 'ENROUTE',
+          rnpManual: false,
+          activeSource: 'GPS',
+          xteNm: 0,
+        },
       });
       useFMCStore.getState().updateFmsEcosystem();
-      expect(useFMCStore.getState().alerts.some(a => a.id === 'unable-rnp')).toBe(false);
+      expect(useFMCStore.getState().alerts.some((a) => a.id === 'unable-rnp')).toBe(false);
     });
   });
 });

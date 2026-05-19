@@ -6,8 +6,8 @@ interface BezelScrewProps {
 
 export function BezelScrew({ className = '', rotation = 0, style = {} }: BezelScrewProps) {
   return (
-    <div 
-      className={`bezel-screw ${className}`} 
+    <div
+      className={`bezel-screw ${className}`}
       style={{ ...style, transform: style.transform || `rotate(${rotation}deg)` }}
       aria-hidden="true"
     >

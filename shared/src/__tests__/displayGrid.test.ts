@@ -15,14 +15,17 @@ describe('displayGrid', () => {
   });
 
   it('converts line metadata into character-grid segments', () => {
-    const [segment] = displayLineToSegments({
-      text: 'IDENT',
-      color: 'cyan',
-      inverse: true,
-      small: true,
-      blinking: true,
-      semantic: 'title',
-    }, 3);
+    const [segment] = displayLineToSegments(
+      {
+        text: 'IDENT',
+        color: 'cyan',
+        inverse: true,
+        small: true,
+        blinking: true,
+        semantic: 'title',
+      },
+      3,
+    );
 
     expect(segment).toMatchObject({
       row: 3,

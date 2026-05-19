@@ -11,12 +11,7 @@ interface AirbusMCDUShellProps {
 
 export function AirbusMCDUShell({ annunciators, children }: AirbusMCDUShellProps) {
   return (
-    <InstrumentShell
-      variant="airbus-mcdu"
-      className="airbus-mcdu-shell"
-      data-testid="airbus-mcdu"
-    >
-
+    <InstrumentShell variant="airbus-mcdu" className="airbus-mcdu-shell" data-testid="airbus-mcdu">
       <div className="mb-2 flex w-full items-center justify-between px-5 h-8">
         <PanelLabel tone="amber">AIRBUS A320</PanelLabel>
         <div className="flex gap-3">
@@ -27,10 +22,8 @@ export function AirbusMCDUShell({ annunciators, children }: AirbusMCDUShellProps
           <AnnunciatorLight label="RDY" active={annunciators.rdy} color="green" />
         </div>
       </div>
-      
-      <div className="instrument-shell__content">
-        {children}
-      </div>
+
+      <div className="instrument-shell__content">{children}</div>
     </InstrumentShell>
   );
 }

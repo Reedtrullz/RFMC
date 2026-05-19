@@ -26,7 +26,7 @@ export class NavDatabaseService {
 
     // Navaids
     this.navaids['JFK'] = { ident: 'JFK', type: 'VORDME', frequency: '115.9', lat: 40.6327, lon: -73.7709 };
-    this.navaids['LON'] = { ident: 'LON', type: 'VORDME', frequency: '113.6', lat: 51.4875, lon: -0.4500 };
+    this.navaids['LON'] = { ident: 'LON', type: 'VORDME', frequency: '113.6', lat: 51.4875, lon: -0.45 };
     this.navaids['SEA'] = { ident: 'SEA', type: 'VORTAC', frequency: '116.8', lat: 47.4354, lon: -122.3113 };
 
     // Procedures (KSEA ELMAA4 SID)
@@ -39,9 +39,7 @@ export class NavDatabaseService {
         { type: 'VA' as any, courseDeg: 161, altitudeConstraint: { value: 1500, type: 'AT' } }, // Heading to Altitude
         { type: 'DF', fixIdent: 'ELMAA', altitudeConstraint: { value: 5000, type: 'AT' } }, // Direct to Fix
       ],
-      transitions: [
-        { ident: 'HQM', legs: [{ type: 'TF', fixIdent: 'HQM' }] }
-      ]
+      transitions: [{ ident: 'HQM', legs: [{ type: 'TF', fixIdent: 'HQM' }] }],
     });
 
     // Procedures (KSEA HAWKZ7 STAR)
@@ -50,13 +48,34 @@ export class NavDatabaseService {
       type: 'STAR',
       ident: 'HAWKZ7',
       commonLegs: [
-        { type: 'IF', fixIdent: 'HAWKZ', altitudeConstraint: { value: 12000, type: 'AT' }, speedConstraint: { value: 250, type: 'AT' } },
-        { type: 'TF', fixIdent: 'LIYTE', altitudeConstraint: { value: 8000, type: 'AT' }, speedConstraint: { value: 230, type: 'AT' } },
-        { type: 'TF', fixIdent: 'CHINS', altitudeConstraint: { value: 6000, type: 'AT' }, speedConstraint: { value: 210, type: 'AT' } },
+        {
+          type: 'IF',
+          fixIdent: 'HAWKZ',
+          altitudeConstraint: { value: 12000, type: 'AT' },
+          speedConstraint: { value: 250, type: 'AT' },
+        },
+        {
+          type: 'TF',
+          fixIdent: 'LIYTE',
+          altitudeConstraint: { value: 8000, type: 'AT' },
+          speedConstraint: { value: 230, type: 'AT' },
+        },
+        {
+          type: 'TF',
+          fixIdent: 'CHINS',
+          altitudeConstraint: { value: 6000, type: 'AT' },
+          speedConstraint: { value: 210, type: 'AT' },
+        },
       ],
       transitions: [
-        { ident: 'YKM', legs: [{ type: 'TF', fixIdent: 'TITUS' }, { type: 'TF', fixIdent: 'HAWKZ' }] }
-      ]
+        {
+          ident: 'YKM',
+          legs: [
+            { type: 'TF', fixIdent: 'TITUS' },
+            { type: 'TF', fixIdent: 'HAWKZ' },
+          ],
+        },
+      ],
     });
 
     // Procedures (Simplified demo)
@@ -66,7 +85,10 @@ export class NavDatabaseService {
       ident: 'BETTE3',
       runway: '31L',
       transitions: [{ ident: 'BETTE', legs: [{ type: 'TF', fixIdent: 'BETTE' }] }],
-      commonLegs: [{ type: 'IF', fixIdent: 'KJFK' }, { type: 'TF', fixIdent: 'CANAR' }],
+      commonLegs: [
+        { type: 'IF', fixIdent: 'KJFK' },
+        { type: 'TF', fixIdent: 'CANAR' },
+      ],
     });
   }
 
@@ -79,19 +101,19 @@ export class NavDatabaseService {
   }
 
   public getProcedures(airportIcao: string): Procedure[] {
-    return this.procedures.filter(p => p.airportIcao === airportIcao.toUpperCase());
+    return this.procedures.filter((p) => p.airportIcao === airportIcao.toUpperCase());
   }
 
   public getActiveNavDataCycle(): string {
-    return "FMC21A1";
+    return 'FMC21A1';
   }
 
   public getEffectiveDate(): string {
-    return "OCT05/26";
+    return 'OCT05/26';
   }
 
   public getExpiryDate(): string {
-    return "NOV01/26";
+    return 'NOV01/26';
   }
 }
 

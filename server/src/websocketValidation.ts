@@ -36,7 +36,8 @@ export function validateClientMessage(data: unknown): ClientMessage | null {
 function isValidCDUKey(key: string): boolean {
   // Simple check against a known set or pattern
   // This can be expanded as needed
-  const validKeys = /^[A-Z0-9]$|^L[1-6]$|^R[1-6]$|^DOT$|^PLUS_MINUS$|^SLASH$|^SPACE$|^CLR$|^DEL$|^EXEC$|^NEXT_PAGE$|^PREV_PAGE$|^INIT_REF$|^RTE$|^CLB$|^CRZ$|^DES$|^DIR_INTC$|^LEGS$|^DEP_ARR$|^HOLD$|^PERF$|^PROG$|^N1_LIMIT$|^FIX$|^MENU$/;
+  const validKeys =
+    /^[A-Z0-9]$|^L[1-6]$|^R[1-6]$|^DOT$|^PLUS_MINUS$|^SLASH$|^SPACE$|^CLR$|^DEL$|^EXEC$|^NEXT_PAGE$|^PREV_PAGE$|^INIT_REF$|^RTE$|^CLB$|^CRZ$|^DES$|^DIR_INTC$|^LEGS$|^DEP_ARR$|^HOLD$|^PERF$|^PROG$|^N1_LIMIT$|^FIX$|^MENU$/;
   return validKeys.test(key);
 }
 
@@ -52,8 +53,8 @@ export class WSRateLimiter {
 
   isAllowed(): boolean {
     const now = Date.now();
-    this.messages = this.messages.filter(t => now - t < this.windowMs);
-    this.totalMessagesInWindow = this.totalMessagesInWindow.filter(t => now - t < this.windowMs);
+    this.messages = this.messages.filter((t) => now - t < this.windowMs);
+    this.totalMessagesInWindow = this.totalMessagesInWindow.filter((t) => now - t < this.windowMs);
     this.totalMessagesInWindow.push(now);
     if (this.messages.length >= this.maxMessages) return false;
     this.messages.push(now);
@@ -62,7 +63,7 @@ export class WSRateLimiter {
 
   isAbused(): boolean {
     const now = Date.now();
-    this.totalMessagesInWindow = this.totalMessagesInWindow.filter(t => now - t < this.windowMs);
+    this.totalMessagesInWindow = this.totalMessagesInWindow.filter((t) => now - t < this.windowMs);
     return this.totalMessagesInWindow.length > this.abuseThreshold;
   }
 }

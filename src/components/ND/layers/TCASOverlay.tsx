@@ -3,7 +3,7 @@ import type { TCASTarget } from '@shared';
 export function TCASOverlay({ targets }: { targets: TCASTarget[] }) {
   return (
     <g data-testid="nd-tcas-overlay">
-      {targets.map(t => (
+      {targets.map((t) => (
         <g key={t.id} transform={`translate(${t.x} ${t.y})`}>
           {/* Symbol based on threat level */}
           {t.threatLevel === 'resolution' ? (
@@ -15,7 +15,7 @@ export function TCASOverlay({ targets }: { targets: TCASTarget[] }) {
           ) : (
             <path d="M0 -3 L3 0 L0 3 L-3 0 Z" fill="none" stroke="#ffffff" strokeWidth="0.6" />
           )}
-          
+
           {/* Altitude Tag */}
           <text
             y={t.relativeAltitude > 0 ? -5 : 7}
@@ -26,7 +26,7 @@ export function TCASOverlay({ targets }: { targets: TCASTarget[] }) {
           >
             {t.relativeAltitude > 0 ? `+${t.relativeAltitude}` : t.relativeAltitude}
           </text>
-          
+
           {/* Trend Arrow */}
           {t.trend !== 'level' && (
             <path

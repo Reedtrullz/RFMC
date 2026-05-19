@@ -4,7 +4,7 @@ import { AirbusFMAState, PFDState } from './pfdTypes';
 
 export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): AirbusFMAState {
   const { truth, airbus: fcu } = autopilot;
-  
+
   let autothrustMode: AirbusFMAState['autothrustMode'] = '';
   if (truth.thrustActive !== 'OFF') {
     autothrustMode = truth.thrustActive as any;
@@ -57,7 +57,7 @@ export function buildAirbusFMAState(autopilot: AutopilotState, fmc: FMCState): A
       fd2: fcu.fd2,
       athr: fcu.athr,
     },
-    approachCapability: "" // Placeholder
+    approachCapability: '', // Placeholder
   };
 }
 
@@ -78,7 +78,7 @@ export function buildAirbusPFDState(state: FMCState): PFDState {
     managedSpeed: state.autopilot.airbus.speedManaged,
     managedHeading: state.autopilot.airbus.headingManaged,
     managedAltitude: state.autopilot.airbus.altitudeManaged,
-    radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,
+    radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? aircraft?.altitudeFt || 0 : null,
     failureFlags: {
       attitude: state.position.irsState === 'OFF',
       airData: false,
@@ -92,9 +92,9 @@ export function buildAirbusPFDState(state: FMCState): PFDState {
     flightDirector: {
       visible: state.autopilot.airbus.fd1 || state.autopilot.airbus.fd2,
       pitch: 0,
-      roll: 0
+      roll: 0,
     },
-    alertText: state.gpwsAlert !== 'NONE' ? state.gpwsAlert.replace('_', ' ') : (state.tcasAlert ? 'TRAFFIC' : undefined),
-    alertLevel: (state.gpwsAlert === 'PULL_UP' || state.gpwsAlert === 'TERRAIN') ? 'WARNING' : 'CAUTION'
+    alertText: state.gpwsAlert !== 'NONE' ? state.gpwsAlert.replace('_', ' ') : state.tcasAlert ? 'TRAFFIC' : undefined,
+    alertLevel: state.gpwsAlert === 'PULL_UP' || state.gpwsAlert === 'TERRAIN' ? 'WARNING' : 'CAUTION',
   };
 }

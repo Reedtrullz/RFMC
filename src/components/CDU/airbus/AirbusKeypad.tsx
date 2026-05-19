@@ -32,13 +32,7 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
         {numKeys.map((row, ri) => (
           <div key={ri} className="flex gap-1">
             {row.map((k) => (
-              <AvionicsKey
-                key={k}
-                label={k}
-                variant="airbus"
-                onPress={() => onPress(k)}
-                className="flex-1 h-11"
-              />
+              <AvionicsKey key={k} label={k} variant="airbus" onPress={() => onPress(k)} className="flex-1 h-11" />
             ))}
           </div>
         ))}
@@ -57,9 +51,27 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
           ))}
         </div>
         <div className="flex gap-1 mt-1">
-          <AvionicsKey label="/" variant="airbus" ariaLabel="Slash" onPress={() => onPress('SLASH')} className="flex-1 h-11" />
-          <AvionicsKey label="CLR" variant="airbus" ariaLabel="Clear" onPress={() => onPress('CLR')} className="flex-[2] h-11" />
-          <AvionicsKey label="DEL" variant="airbus" ariaLabel="Delete" onPress={() => onPress('DEL')} className="flex-1 h-11" />
+          <AvionicsKey
+            label="/"
+            variant="airbus"
+            ariaLabel="Slash"
+            onPress={() => onPress('SLASH')}
+            className="flex-1 h-11"
+          />
+          <AvionicsKey
+            label="CLR"
+            variant="airbus"
+            ariaLabel="Clear"
+            onPress={() => onPress('CLR')}
+            className="flex-[2] h-11"
+          />
+          <AvionicsKey
+            label="DEL"
+            variant="airbus"
+            ariaLabel="Delete"
+            onPress={() => onPress('DEL')}
+            className="flex-1 h-11"
+          />
           <AvionicsKey
             label="EXEC"
             variant="exec"

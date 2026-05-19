@@ -1,4 +1,5 @@
-# VirtualCDU Master Work Plan  
+# VirtualCDU Master Work Plan
+
 ## Visual Realism + Audit Fixes
 
 This is the combined implementation plan for improving **https://fmc.reidar.tech/**. It merges the visual realism work plan with the strict visual/setup audit findings into one actionable backlog.
@@ -20,12 +21,12 @@ Use these as implementation references when defining visual rules, screen layout
 
 ## Priority map
 
-| Priority | Meaning | Apply to |
-|---|---|---|
-| **P0** | Current behaviour is misleading, confusing, or blocks training value. Fix first. | Wrong aircraft labels, Full Deck mismatch, unreadable controls, missing mode setup rules. |
-| **P1** | Major realism and usability improvement. | CDU/MCDU grid renderer, MCP/FCU rebuild, PFD/ND layering, checklist integration. |
-| **P2** | Polish, atmosphere, and fidelity. | Glass effects, wear, reflections, sound, animation. |
-| **P3** | Advanced quality/lifecycle work. | Storybook states, visual regression, mobile-specific layouts, reference review process. |
+| Priority | Meaning                                                                          | Apply to                                                                                  |
+| -------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **P0**   | Current behaviour is misleading, confusing, or blocks training value. Fix first. | Wrong aircraft labels, Full Deck mismatch, unreadable controls, missing mode setup rules. |
+| **P1**   | Major realism and usability improvement.                                         | CDU/MCDU grid renderer, MCP/FCU rebuild, PFD/ND layering, checklist integration.          |
+| **P2**   | Polish, atmosphere, and fidelity.                                                | Glass effects, wear, reflections, sound, animation.                                       |
+| **P3**   | Advanced quality/lifecycle work.                                                 | Storybook states, visual regression, mobile-specific layouts, reference review process.   |
 
 ---
 
@@ -151,7 +152,7 @@ Use these as implementation references when defining visual rules, screen layout
      defaultZoom: Record<PanelId, number>;
      defaultOverlays: OverlayId[];
      beginnerHint: string;
-   }
+   };
    ```
 3. Replace mode-specific conditional rendering with this configuration.
 4. Add a one-line mode description under the selected tab or in a hover card.
@@ -350,7 +351,7 @@ Use these as implementation references when defining visual rules, screen layout
      relatedControlIds: string[];
      helpText: string;
      autoCheck?: () => boolean;
-   }
+   };
    ```
 3. Use “B737” only for 737 checklists.
 4. Use “A320” or “A320neo” for Airbus checklists.
@@ -576,8 +577,8 @@ Use these as implementation references when defining visual rules, screen layout
      title: GridTextRun[];
      rows: GridRow[];
      scratchpad: GridTextRun[];
-     lskBindings: Record<'1L'|'2L'|'3L'|'4L'|'5L'|'6L'|'1R'|'2R'|'3R'|'4R'|'5R'|'6R', ActionId>;
-   }
+     lskBindings: Record<'1L' | '2L' | '3L' | '4L' | '5L' | '6L' | '1R' | '2R' | '3R' | '4R' | '5R' | '6R', ActionId>;
+   };
    ```
 6. Replace hand-positioned page text with renderer output.
 7. Add unit tests for row/column placement.

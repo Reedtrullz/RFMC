@@ -12,9 +12,7 @@ describe('PwaUpdatePrompt', () => {
   });
 
   it('announces offline-ready state without a reload action', () => {
-    render(
-      <PwaUpdatePrompt offlineReady needRefresh={false} onClose={vi.fn()} onReload={vi.fn()} />,
-    );
+    render(<PwaUpdatePrompt offlineReady needRefresh={false} onClose={vi.fn()} onReload={vi.fn()} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('App successfully configured for offline flight operations.');
     expect(screen.queryByRole('button', { name: 'Update Now' })).not.toBeInTheDocument();
@@ -22,9 +20,7 @@ describe('PwaUpdatePrompt', () => {
 
   it('announces refresh state and runs reload action', () => {
     const onReload = vi.fn();
-    render(
-      <PwaUpdatePrompt offlineReady={false} needRefresh onClose={vi.fn()} onReload={onReload} />,
-    );
+    render(<PwaUpdatePrompt offlineReady={false} needRefresh onClose={vi.fn()} onReload={onReload} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('New database update is available for VirtualCDU.');
     fireEvent.click(screen.getByRole('button', { name: 'Update Now' }));
@@ -33,9 +29,7 @@ describe('PwaUpdatePrompt', () => {
 
   it('runs close action from either prompt state', () => {
     const onClose = vi.fn();
-    render(
-      <PwaUpdatePrompt offlineReady needRefresh={false} onClose={onClose} onReload={vi.fn()} />,
-    );
+    render(<PwaUpdatePrompt offlineReady needRefresh={false} onClose={onClose} onReload={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(onClose).toHaveBeenCalledTimes(1);

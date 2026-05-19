@@ -40,14 +40,14 @@ async function enterText(page: Page, value: string) {
 async function capture(page: Page, testInfo: TestInfo, records: CaptureRecord[], name: string) {
   // Ensure network is idle and styles are applied
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1000); 
-  
+  await page.waitForTimeout(1000);
+
   // Wait for either the screen or the welcome title
   await Promise.race([
     page.waitForSelector('.bg-cdu-screen', { timeout: 30000 }),
-    page.waitForSelector('text=VirtualCDU', { timeout: 30000 })
+    page.waitForSelector('text=VirtualCDU', { timeout: 30000 }),
   ]);
-  
+
   const path = testInfo.outputPath(`${name}.png`);
   await page.screenshot({
     path,
@@ -58,8 +58,17 @@ async function capture(page: Page, testInfo: TestInfo, records: CaptureRecord[],
     name,
     path,
     viewport: page.viewportSize(),
-    aircraft: await page.locator('text=/BOEING 737-800|AIRBUS A320/').first().textContent().catch(() => null),
-    pageTitle: await page.locator('.bg-cdu-screen').first().innerText().then(text => text.split('\n')[0] ?? '').catch(() => ''),
+    aircraft: await page
+      .locator('text=/BOEING 737-800|AIRBUS A320/')
+      .first()
+      .textContent()
+      .catch(() => null),
+    pageTitle: await page
+      .locator('.bg-cdu-screen')
+      .first()
+      .innerText()
+      .then((text) => text.split('\n')[0] ?? '')
+      .catch(() => ''),
   });
 }
 

@@ -15,11 +15,11 @@ import { AIRBUS_A320_MCDU_TOKENS } from '../../instruments/common/tokens/airbus-
 export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPressLSK }: AirbusDisplayBayProps) {
   const tokens = AIRBUS_A320_MCDU_TOKENS;
   const mmToPx = 3.8;
-  
+
   const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
   const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
   const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`;
-  const totalWidth = `${tokens.screen.widthMm * mmToPx + (tokens.lsk.insetMm * mmToPx * 8)}px`;
+  const totalWidth = `${tokens.screen.widthMm * mmToPx + tokens.lsk.insetMm * mmToPx * 8}px`;
 
   return (
     <div className="instrument-display-recess">
@@ -37,7 +37,10 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
         <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
         <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
-          <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30">
+          <ScreenGlass
+            brightness={brightness}
+            className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30"
+          >
             <div className="w-full" style={{ height: `calc(${tokens.screen.rows - 1} * ${rowHeight})` }}>
               <Display variant="airbus" />
             </div>

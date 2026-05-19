@@ -11,31 +11,37 @@ export function useDraggable(initialPosition?: Position) {
   const dragStart = useRef<Position>({ x: 0, y: 0 });
   const initialDragPosition = useRef<Position>({ x: 0, y: 0 });
 
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only drag with left click
-    if (e.button !== 0) return;
-    
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY };
-    initialDragPosition.current = { ...position };
-    
-    e.preventDefault();
-  }, [position]);
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      // Only drag with left click
+      if (e.button !== 0) return;
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setIsDragging(true);
-    dragStart.current = { x: touch.clientX, y: touch.clientY };
-    initialDragPosition.current = { ...position };
-  }, [position]);
+      setIsDragging(true);
+      dragStart.current = { x: e.clientX, y: e.clientY };
+      initialDragPosition.current = { ...position };
+
+      e.preventDefault();
+    },
+    [position],
+  );
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      dragStart.current = { x: touch.clientX, y: touch.clientY };
+      initialDragPosition.current = { ...position };
+    },
+    [position],
+  );
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      
+
       const dx = e.clientX - dragStart.current.x;
       const dy = e.clientY - dragStart.current.y;
-      
+
       setPosition({
         x: initialDragPosition.current.x + dx,
         y: initialDragPosition.current.y + dy,
@@ -44,11 +50,11 @@ export function useDraggable(initialPosition?: Position) {
 
     const onTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
-      
+
       const touch = e.touches[0];
       const dx = touch.clientX - dragStart.current.x;
       const dy = touch.clientY - dragStart.current.y;
-      
+
       setPosition({
         x: initialDragPosition.current.x + dx,
         y: initialDragPosition.current.y + dy,

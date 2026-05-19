@@ -16,10 +16,12 @@ This plan outlines the sizing adjustments to make the Autopilot Mode Control Pan
 ## 3. Scope Boundaries
 
 ### In Scope
+
 - Adjusting CSS Grid template structures in `src/styles/cockpit-layout.css`.
 - Updating visual snapshots for Cockpit views to verify that the larger MCP matches perfectly.
 
 ### Out of Scope
+
 - Redesigning internal MCP knob or display positions.
 
 ## 4. Implementation Steps
@@ -27,6 +29,7 @@ This plan outlines the sizing adjustments to make the Autopilot Mode Control Pan
 The layout optimization will be carried out across these specific steps:
 
 ### [x] Step 1: Update Grid Preset Row Heights and Stage Max-Width
+
 - [x] Edit `src/styles/cockpit-layout.css`.
 - [x] Update `.cockpit-stage--automation`:
   - [x] Change `grid-template-rows: 160px 1fr;` to `grid-template-rows: clamp(140px, 18vh, 240px) 1fr;`.
@@ -39,6 +42,7 @@ The layout optimization will be carried out across these specific steps:
   - [x] Change `max-width: 1600px;` to `max-width: 100%;`.
 
 ### [x] Step 2: Refine Interactive Fitting behavior (if needed)
+
 - [x] Verify `InstrumentFit.tsx` dynamically monitors the bounds and scales correctly based on the new grid template sizes.
 
 ## 5. Final Verification Wave
@@ -46,4 +50,3 @@ The layout optimization will be carried out across these specific steps:
 - [x] **Visual Baseline Checks**: Run `playwright` visual checks and update visual snapshots for `highres-boeing-automation`, `highres-boeing-approach`, and `highres-boeing-full-deck` in the `e2e` workspace.
 - [x] **Type Checking**: Verify that `npm run typecheck:all` compiles cleanly.
 - [x] **Functional Check**: Ensure dials, displays, and annunciators remain perfectly interactive on the scaled-up MCP.
-

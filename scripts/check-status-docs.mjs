@@ -56,10 +56,7 @@ const forbiddenPatterns = [
   },
   {
     file: 'README.md',
-    patterns: [
-      /looks and behaves like the real unit/i,
-      /certified trainer/i,
-    ],
+    patterns: [/looks and behaves like the real unit/i, /certified trainer/i],
   },
 ];
 

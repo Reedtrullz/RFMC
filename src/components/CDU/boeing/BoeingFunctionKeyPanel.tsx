@@ -38,7 +38,7 @@ export function BoeingFunctionKeyPanel({ onPress, isHighlighted, hintLevel }: Bo
     <div className="mt-2 w-full rounded-[5px] border border-black/50 bg-black/20 p-1.5">
       {[row1, row2].map((row, rowIndex) => (
         <div key={rowIndex} className={`grid grid-cols-7 gap-1 ${rowIndex > 0 ? 'mt-1' : ''}`}>
-          {row.map(item => (
+          {row.map((item) => (
             <AvionicsKey
               key={item.key}
               label={item.label}

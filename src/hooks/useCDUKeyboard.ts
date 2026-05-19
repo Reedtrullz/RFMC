@@ -7,9 +7,9 @@ import type { CDUKey } from '@shared';
  * Captures physical keyboard events and routes them to the FMC pressKey action.
  */
 export function useCDUKeyboard() {
-  const pressKey = useFMCStore(s => s.pressKey);
-  const pressLSK = useFMCStore(s => s.pressLSK);
-  const toggleKeyboardHelp = useCockpitLayoutStore(s => s.toggleKeyboardHelp);
+  const pressKey = useFMCStore((s) => s.pressKey);
+  const pressLSK = useFMCStore((s) => s.pressLSK);
+  const toggleKeyboardHelp = useCockpitLayoutStore((s) => s.toggleKeyboardHelp);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -17,10 +17,32 @@ export function useCDUKeyboard() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       const key = e.key.toUpperCase();
-      
+
       // Prevent browser shortcuts
-      if (['Backspace', 'Delete', 'Enter', '/', ' ', '+', '-', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'].includes(e.key)) {
-        e.preventDefault(); 
+      if (
+        [
+          'Backspace',
+          'Delete',
+          'Enter',
+          '/',
+          ' ',
+          '+',
+          '-',
+          'F1',
+          'F2',
+          'F3',
+          'F4',
+          'F5',
+          'F6',
+          'F7',
+          'F8',
+          'F9',
+          'F10',
+          'F11',
+          'F12',
+        ].includes(e.key)
+      ) {
+        e.preventDefault();
       }
 
       // Help toggle (Shift + / = ?)
@@ -72,14 +94,23 @@ export function useCDUKeyboard() {
         case 'ArrowDown':
           pressKey('NEXT_PAGE');
           break;
-        
 
         // LSK Mapping: F1-F6 left side, Shift+F1-F6 or F7-F12 right side.
-        case 'F1': case 'F2': case 'F3': case 'F4': case 'F5': case 'F6':
+        case 'F1':
+        case 'F2':
+        case 'F3':
+        case 'F4':
+        case 'F5':
+        case 'F6':
           e.preventDefault();
           pressLSK(e.shiftKey ? 'R' : 'L', parseInt(e.key.substring(1), 10));
           break;
-        case 'F7': case 'F8': case 'F9': case 'F10': case 'F11': case 'F12':
+        case 'F7':
+        case 'F8':
+        case 'F9':
+        case 'F10':
+        case 'F11':
+        case 'F12':
           e.preventDefault();
           pressLSK('R', parseInt(e.key.substring(1), 10) - 6);
           break;

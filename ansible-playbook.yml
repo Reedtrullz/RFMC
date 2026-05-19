@@ -2,58 +2,58 @@
   hosts: vps
   gather_facts: false
   vars:
-    repo_url: "https://github.com/Reedtrullz/RFMC.git"
-    app_dir: "/home/deploy/virtual-cdu"
-    container_name: "virtual-cdu"
-    host_port: "8082"
-    container_port: "8080"
-    public_origin: "https://fmc.reidar.tech"
+    repo_url: 'https://github.com/Reedtrullz/RFMC.git'
+    app_dir: '/home/deploy/virtual-cdu'
+    container_name: 'virtual-cdu'
+    host_port: '8082'
+    container_port: '8080'
+    public_origin: 'https://fmc.reidar.tech'
 
   tasks:
     - name: Ensure app directory exists
       file:
-        path: "{{ app_dir }}"
+        path: '{{ app_dir }}'
         state: directory
         owner: deploy
         group: deploy
-        mode: "0755"
+        mode: '0755'
 
     - name: Clone or pull repository
       git:
-        repo: "{{ repo_url }}"
-        dest: "{{ app_dir }}"
+        repo: '{{ repo_url }}'
+        dest: '{{ app_dir }}'
         version: main
         force: true
       register: git_result
 
     - name: Build Docker image
       community.docker.docker_image:
-        name: "{{ container_name }}"
+        name: '{{ container_name }}'
         source: build
         build:
-          path: "{{ app_dir }}"
+          path: '{{ app_dir }}'
         force_source: true
       register: build_result
 
     - name: Stop any stale canary container
       community.docker.docker_container:
-        name: "{{ container_name }}_canary"
+        name: '{{ container_name }}_canary'
         state: absent
 
     - name: Start canary container for health check
       community.docker.docker_container:
-        name: "{{ container_name }}_canary"
-        image: "{{ container_name }}"
+        name: '{{ container_name }}_canary'
+        image: '{{ container_name }}'
         state: started
         ports:
-          - "127.0.0.1:8083:{{ container_port }}"
+          - '127.0.0.1:8083:{{ container_port }}'
         env:
           NODE_ENV: production
-          PORT: "{{ container_port }}"
-          AIRCRAFT_ADAPTER: "mock"
-          WS_ALLOWED_ORIGINS: "{{ public_origin }}"
+          PORT: '{{ container_port }}'
+          AIRCRAFT_ADAPTER: 'mock'
+          WS_ALLOWED_ORIGINS: '{{ public_origin }}'
         healthcheck:
-          test: ["CMD-SHELL", "curl -f http://localhost:{{ container_port }}/health || exit 1"]
+          test: ['CMD-SHELL', 'curl -f http://localhost:{{ container_port }}/health || exit 1']
           interval: 10s
           timeout: 5s
           retries: 5
@@ -63,7 +63,7 @@
       block:
         - name: Poll canary health endpoint
           uri:
-            url: "http://localhost:8083/health"
+            url: 'http://localhost:8083/health'
             return_content: true
             timeout: 5
           register: canary_health
@@ -83,51 +83,51 @@
 
         - name: Print canary diagnostics
           debug:
-            msg: 
-              - "Canary Health Failed!"
+            msg:
+              - 'Canary Health Failed!'
               - "Status: {{ canary_inspect.stdout | default('unknown') }}"
-              - "Logs: {{ canary_logs.stdout_lines | default([]) }}"
+              - 'Logs: {{ canary_logs.stdout_lines | default([]) }}'
 
         - name: Cleanup canary
           community.docker.docker_container:
-            name: "{{ container_name }}_canary"
+            name: '{{ container_name }}_canary'
             state: absent
 
         - name: Fail deployment (Old container is still running)
           fail:
-            msg: "Deployment aborted: New image failed health check."
+            msg: 'Deployment aborted: New image failed health check.'
 
     - name: Promote canary to production
       block:
         - name: Stop existing production container
           community.docker.docker_container:
-            name: "{{ container_name }}"
+            name: '{{ container_name }}'
             state: absent
 
         - name: Start production container
           community.docker.docker_container:
-            name: "{{ container_name }}"
-            image: "{{ container_name }}"
+            name: '{{ container_name }}'
+            image: '{{ container_name }}'
             state: started
             restart_policy: unless-stopped
             ports:
-              - "127.0.0.1:{{ host_port }}:{{ container_port }}"
-            memory: "512m"
+              - '127.0.0.1:{{ host_port }}:{{ container_port }}'
+            memory: '512m'
             cpus: 1.0
-            log_driver: "json-file"
+            log_driver: 'json-file'
             log_options:
-              max-size: "10m"
-              max-file: "3"
+              max-size: '10m'
+              max-file: '3'
             env:
               NODE_ENV: production
-              PORT: "{{ container_port }}"
-              AIRCRAFT_ADAPTER: "mock"
-              WS_ALLOWED_ORIGINS: "{{ public_origin }}"
-              WS_MAX_MESSAGE_BYTES: "65536"
+              PORT: '{{ container_port }}'
+              AIRCRAFT_ADAPTER: 'mock'
+              WS_ALLOWED_ORIGINS: '{{ public_origin }}'
+              WS_MAX_MESSAGE_BYTES: '65536'
 
         - name: Remove canary container
           community.docker.docker_container:
-            name: "{{ container_name }}_canary"
+            name: '{{ container_name }}_canary'
             state: absent
 
     - name: Ensure Caddy config includes fmc.reidar.tech
@@ -138,7 +138,7 @@
           fmc.reidar.tech {
             reverse_proxy localhost:{{ host_port }}
           }
-        marker: "# {mark} ANSIBLE MANAGED - VirtualCDU"
+        marker: '# {mark} ANSIBLE MANAGED - VirtualCDU'
         create: false
 
     - name: Reload Caddy
@@ -149,9 +149,9 @@
 
     - name: Verify container is running
       community.docker.docker_container_info:
-        name: "{{ container_name }}"
+        name: '{{ container_name }}'
       register: container_info
 
     - name: Report deployment status
       debug:
-        msg: "VirtualCDU deployed: {{ container_info.container.State.Status }} -> https://fmc.reidar.tech"
+        msg: 'VirtualCDU deployed: {{ container_info.container.State.Status }} -> https://fmc.reidar.tech'

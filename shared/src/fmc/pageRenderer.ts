@@ -38,25 +38,37 @@ export function renderAirbusMcduPage(page: McduPage, lskActions: Record<string, 
   page.lines.forEach((line, rowIndex) => {
     // Left aligned tokens
     let leftOffset = 0;
-    line.left?.forEach(token => {
-      segments.push(seg(rowIndex, leftOffset, token.text, token.color as any, { size: token.font === 'small' ? 'small' : 'normal' }));
+    line.left?.forEach((token) => {
+      segments.push(
+        seg(rowIndex, leftOffset, token.text, token.color as any, {
+          size: token.font === 'small' ? 'small' : 'normal',
+        }),
+      );
       leftOffset += token.text.length;
     });
 
     // Right aligned tokens
     let rightOffset = PAGE_WIDTH;
-    line.right?.reverse().forEach(token => {
+    line.right?.reverse().forEach((token) => {
       rightOffset -= token.text.length;
-      segments.push(seg(rowIndex, rightOffset, token.text, token.color as any, { size: token.font === 'small' ? 'small' : 'normal' }));
+      segments.push(
+        seg(rowIndex, rightOffset, token.text, token.color as any, {
+          size: token.font === 'small' ? 'small' : 'normal',
+        }),
+      );
     });
 
     // Center aligned tokens (simplistic implementation: centered in available space or overall)
     if (line.center) {
-      const centerText = line.center.map(t => t.text).join('');
+      const centerText = line.center.map((t) => t.text).join('');
       const centerOffset = Math.floor((PAGE_WIDTH - centerText.length) / 2);
       let currentOffset = centerOffset;
-      line.center.forEach(token => {
-        segments.push(seg(rowIndex, currentOffset, token.text, token.color as any, { size: token.font === 'small' ? 'small' : 'normal' }));
+      line.center.forEach((token) => {
+        segments.push(
+          seg(rowIndex, currentOffset, token.text, token.color as any, {
+            size: token.font === 'small' ? 'small' : 'normal',
+          }),
+        );
         currentOffset += token.text.length;
       });
     }

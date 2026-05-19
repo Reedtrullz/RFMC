@@ -19,7 +19,7 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint,
-      'react': reactPlugin,
+      react: reactPlugin,
       'react-hooks': reactHooksPlugin,
     },
     settings: {

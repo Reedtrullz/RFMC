@@ -14,40 +14,41 @@ Current executable visual-fidelity manifest/report:
 The report separates app-owned snapshot protection from measured reference fidelity, pilot review, and live validation. It currently records hardware pixel accuracy as not measured because no rights-cleared hardware reference crops have been approved for measurement.
 
 Full token-derived measurements are documented in:
+
 - `docs/reference-library/boeing-737-cdu/measurements.md`
 - `docs/reference-library/airbus-a320-mcdu/measurements.md`
 
 ### Quick Reference — Boeing 737 CDU
 
-| Measurement | Value |
-|-------------|-------|
-| Shell (W×H) | 146 × 228 mm |
-| Bezel corner radius | 6 mm |
-| Bezel thickness | 12 mm |
-| Screen (W×H) | 102 × 78 mm |
-| Screen aspect ratio | 1.308:1 |
-| Screen recess depth | 8 mm |
-| Display grid | 14 rows × 24 columns |
-| Row height | 5.5 mm |
-| Character width | 4.25 mm |
-| Keypad | 5 × 7 grid, 12 mm keys, 16 mm spacing |
-| Annunciators | 18 × 8 mm, 4 mm spacing |
+| Measurement         | Value                                 |
+| ------------------- | ------------------------------------- |
+| Shell (W×H)         | 146 × 228 mm                          |
+| Bezel corner radius | 6 mm                                  |
+| Bezel thickness     | 12 mm                                 |
+| Screen (W×H)        | 102 × 78 mm                           |
+| Screen aspect ratio | 1.308:1                               |
+| Screen recess depth | 8 mm                                  |
+| Display grid        | 14 rows × 24 columns                  |
+| Row height          | 5.5 mm                                |
+| Character width     | 4.25 mm                               |
+| Keypad              | 5 × 7 grid, 12 mm keys, 16 mm spacing |
+| Annunciators        | 18 × 8 mm, 4 mm spacing               |
 
 ### Quick Reference — Airbus A320 MCDU
 
-| Measurement | Value |
-|-------------|-------|
-| Shell (W×H) | 146 × 228 mm |
-| Bezel corner radius | 4 mm |
-| Bezel thickness | 10 mm |
-| Screen (W×H) | 116 × 86 mm |
-| Screen area vs Boeing | +25.4% |
-| Screen recess depth | 4 mm |
-| Display grid | 14 rows × 24 columns |
-| Row height | 6.1 mm |
-| Character width | 4.8 mm |
-| Keypad | 6 × 6 grid, 11 mm keys, 15 mm spacing |
-| Annunciators | 15 × 6 mm |
+| Measurement           | Value                                 |
+| --------------------- | ------------------------------------- |
+| Shell (W×H)           | 146 × 228 mm                          |
+| Bezel corner radius   | 4 mm                                  |
+| Bezel thickness       | 10 mm                                 |
+| Screen (W×H)          | 116 × 86 mm                           |
+| Screen area vs Boeing | +25.4%                                |
+| Screen recess depth   | 4 mm                                  |
+| Display grid          | 14 rows × 24 columns                  |
+| Row height            | 6.1 mm                                |
+| Character width       | 4.8 mm                                |
+| Keypad                | 6 × 6 grid, 11 mm keys, 15 mm spacing |
+| Annunciators          | 15 × 6 mm                             |
 
 ## Design Token Philosophy
 
@@ -65,6 +66,7 @@ Token files: `src/components/instruments/common/tokens/boeing-cdu.tokens.ts` and
 The `ScreenGlass` component applies post-processing effects to the display surface:
 
 ### CRT Effects (Boeing CDU)
+
 - **Scanlines**: Horizontal lines emulating CRT raster scan
 - **Phosphor glow**: Subtle green glow around bright characters
 - **Vignette**: Darkening toward screen edges
@@ -72,12 +74,15 @@ The `ScreenGlass` component applies post-processing effects to the display surfa
 - **Phosphor persistence**: Faint after-image of previous frame content
 
 ### LCD Effects (Airbus MCDU)
+
 - **LCD bloom**: Subtle light bleed around characters
 - **Reduced scanlines**: Less pronounced than CRT (Airbus uses LCD-CRT hybrid)
 - **Color temperature**: Warmer amber-white balance
 
 ### Night Glow System
+
 When cockpit brightness is reduced:
+
 - Screen brightness decreases proportionally
 - Bezel edge glow increases (backlight bleed simulation)
 - Keycap backlight intensity increases
@@ -87,36 +92,36 @@ When cockpit brightness is reduced:
 
 The `InstrumentShell` component applies multiple layers to create depth:
 
-| Layer | Purpose |
-|-------|---------|
-| Base chassis | Dark gray/black body with subtle texture |
-| Bezel | Thick raised frame around display area |
-| Edge highlight | Subtle light catch on bezel edges |
-| Wear texture | Microscopic scratches and wear marks |
-| Screw heads | 4+ corner fasteners with slight rotation variation |
-| Inner screen recess | Shadow gradient showing screen depth |
-| Cockpit mounting | Contextual background for instrument placement |
+| Layer               | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| Base chassis        | Dark gray/black body with subtle texture           |
+| Bezel               | Thick raised frame around display area             |
+| Edge highlight      | Subtle light catch on bezel edges                  |
+| Wear texture        | Microscopic scratches and wear marks               |
+| Screw heads         | 4+ corner fasteners with slight rotation variation |
+| Inner screen recess | Shadow gradient showing screen depth               |
+| Cockpit mounting    | Contextual background for instrument placement     |
 
 ## Visual Gaps Tracking
 
 Currently identified gaps between rendered output and reference hardware:
 
-| Gap | Status | Notes |
-|-----|--------|-------|
-| Flat display surface | Addressed | ScreenGlass provides recess depth |
-| Insufficient bezel depth | Addressed | InstrumentShell with GeometryProfiles |
-| Generic button styling | Addressed | AvionicsKey with aircraft-specific shapes |
-| Weak screen glass/reflection | Addressed | ScreenGlass reflection overlay |
-| Weak night glow | Addressed | Brightness-responsive glow system |
-| LSK-to-row alignment | Addressed | BoeingDisplayBay/AirbusDisplayBay grid layout |
-| Large-desktop scaling | Protected | 3456x2234 and Retina-equivalent cockpit baselines now protect major Boeing/Airbus modes |
-| Mobile/tablet scaling | In progress | Desktop, Retina, 3456x2234, tablet-landscape baselines, and portrait fallback behavior now protect major layouts; mobile Safari remains caveated |
-| CRT scanline density | Needs tuning | Scanline frequency vs pixel density |
-| ND aircraft-family separation | Addressed in PR #24 | Boeing MAP and Airbus ARC baselines now verify distinct visual treatment |
-| PFD realism | Protected follow-up states | Boeing/Airbus PFDs now have distinct attitude, tapes, FMA, VSI, selected bugs, and automation/focused/approach/failure baselines |
-| MCP/FCU realism | Initial hardware pass implemented | Boeing MCP and Airbus FCU now have distinct panel geometry, display windows, button/knob treatment, and autoflight/FMA coupling |
-| Focused/tablet baselines | Expanded | Focused CDU/MCDU, ND, PFD, MCP/FCU, and tablet-landscape cockpit modes are covered |
-| Visual-fidelity manifest | Implemented | `npm run measure:visual` checks reference metadata, measurement profile presence, and app-owned baseline coverage |
+| Gap                           | Status                            | Notes                                                                                                                                            |
+| ----------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Flat display surface          | Addressed                         | ScreenGlass provides recess depth                                                                                                                |
+| Insufficient bezel depth      | Addressed                         | InstrumentShell with GeometryProfiles                                                                                                            |
+| Generic button styling        | Addressed                         | AvionicsKey with aircraft-specific shapes                                                                                                        |
+| Weak screen glass/reflection  | Addressed                         | ScreenGlass reflection overlay                                                                                                                   |
+| Weak night glow               | Addressed                         | Brightness-responsive glow system                                                                                                                |
+| LSK-to-row alignment          | Addressed                         | BoeingDisplayBay/AirbusDisplayBay grid layout                                                                                                    |
+| Large-desktop scaling         | Protected                         | 3456x2234 and Retina-equivalent cockpit baselines now protect major Boeing/Airbus modes                                                          |
+| Mobile/tablet scaling         | In progress                       | Desktop, Retina, 3456x2234, tablet-landscape baselines, and portrait fallback behavior now protect major layouts; mobile Safari remains caveated |
+| CRT scanline density          | Needs tuning                      | Scanline frequency vs pixel density                                                                                                              |
+| ND aircraft-family separation | Addressed in PR #24               | Boeing MAP and Airbus ARC baselines now verify distinct visual treatment                                                                         |
+| PFD realism                   | Protected follow-up states        | Boeing/Airbus PFDs now have distinct attitude, tapes, FMA, VSI, selected bugs, and automation/focused/approach/failure baselines                 |
+| MCP/FCU realism               | Initial hardware pass implemented | Boeing MCP and Airbus FCU now have distinct panel geometry, display windows, button/knob treatment, and autoflight/FMA coupling                  |
+| Focused/tablet baselines      | Expanded                          | Focused CDU/MCDU, ND, PFD, MCP/FCU, and tablet-landscape cockpit modes are covered                                                               |
+| Visual-fidelity manifest      | Implemented                       | `npm run measure:visual` checks reference metadata, measurement profile presence, and app-owned baseline coverage                                |
 
 ## Current Instrument Baseline Coverage
 
@@ -152,6 +157,7 @@ The source of truth for the latest command results is `docs/STATUS.md`.
 ## Visual Baseline Snapshots
 
 Required baselines for fidelity tracking:
+
 - Boeing CDU default cockpit mode
 - Boeing IDENT, POS INIT, RTE, LEGS (with discontinuity), PERF INIT, TAKEOFF REF (complete)
 - Boeing EXEC pending state

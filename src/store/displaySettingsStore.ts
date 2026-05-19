@@ -40,7 +40,7 @@ interface DisplaySettings {
 
 export const useDisplaySettings = create<DisplaySettings>((set) => ({
   displayStyle: 'ng-lcd',
-  crtIntensity:  65,
+  crtIntensity: 65,
   wearIntensity: 35,
 
   setDisplayStyle: (style) => set({ displayStyle: style }),

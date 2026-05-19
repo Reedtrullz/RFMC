@@ -93,7 +93,7 @@ npx vitest --run -t "route discontinuity"
 ### Coverage targets
 
 | Metric     | Minimum threshold |
-|------------|-------------------|
+| ---------- | ----------------- |
 | Lines      | 50%               |
 | Functions  | 50%               |
 | Branches   | 50%               |
@@ -168,12 +168,12 @@ E2E tests verify complete user workflows in a real browser. They start the Vite 
 
 `playwright.config.ts` defines four projects:
 
-| Project            | Device              | Purpose                    |
-|--------------------|---------------------|----------------------------|
-| desktop-chromium   | Desktop Chrome      | Primary test target        |
-| ipad-landscape     | iPad Pro 11 landscape | Tablet layout verification |
-| ipad-portrait      | iPad Pro 11 portrait  | Cockpit mount layout       |
-| mobile-safari      | iPhone 14           | Mobile PWA layout          |
+| Project          | Device                | Purpose                    |
+| ---------------- | --------------------- | -------------------------- |
+| desktop-chromium | Desktop Chrome        | Primary test target        |
+| ipad-landscape   | iPad Pro 11 landscape | Tablet layout verification |
+| ipad-portrait    | iPad Pro 11 portrait  | Cockpit mount layout       |
+| mobile-safari    | iPhone 14             | Mobile PWA layout          |
 
 ### Test organization
 
@@ -227,11 +227,11 @@ npx playwright test --debug
 
 ### CI split strategy
 
-| Gate         | Command              | Scope                | Expected time |
-|--------------|----------------------|----------------------|---------------|
-| PR smoke     | `test:e2e:smoke`     | `@smoke` tests, desktop Chromium only | Fast (<2 min) |
-| Full matrix  | `test:e2e`           | All tests, all 4 projects | Slower |
-| Visual only  | `test:visual`        | Tests tagged `Visual Regression` | Medium |
+| Gate        | Command          | Scope                                 | Expected time |
+| ----------- | ---------------- | ------------------------------------- | ------------- |
+| PR smoke    | `test:e2e:smoke` | `@smoke` tests, desktop Chromium only | Fast (<2 min) |
+| Full matrix | `test:e2e`       | All tests, all 4 projects             | Slower        |
+| Visual only | `test:visual`    | Tests tagged `Visual Regression`      | Medium        |
 
 ---
 
@@ -338,22 +338,22 @@ test('Boeing IDENT page @Visual Regression', async ({ page }) => {
 
 ## 5. Test Commands Reference
 
-| Command | Category | Description |
-|---------|----------|-------------|
-| `npm test` | Unit | Watch mode — all Vitest tests |
-| `npm test -- --run` | Unit | Single run — all Vitest tests |
-| `npm run test:coverage` | Unit | Single run with coverage report |
-| `npm run test:ui` | Unit | Vitest UI dashboard (interactive) |
-| `npm run test:e2e` | E2E | Full Playwright suite, all projects |
-| `npm run test:e2e:ci` | E2E | Smoke-only for CI (desktop Chromium, `@smoke`) |
-| `npm run test:e2e:smoke` | E2E | Same as CI — smoke tests only |
-| `npm run test:e2e:full` | E2E | Full Playwright suite (alias) |
-| `npm run test:visual` | Visual | Tests tagged `Visual Regression` |
-| `npm run test:visual:update` | Visual | Update all visual baselines |
-| `npm run capture:baseline` | Visual | Capture fresh baseline screenshots |
-| `npm run test:e2e:visual` | Visual | Legacy — ND visual tests only |
-| `npm run typecheck:all` | Type | TypeScript check all 3 workspaces |
-| `npm run build` | Build | Production bundle |
+| Command                      | Category | Description                                    |
+| ---------------------------- | -------- | ---------------------------------------------- |
+| `npm test`                   | Unit     | Watch mode — all Vitest tests                  |
+| `npm test -- --run`          | Unit     | Single run — all Vitest tests                  |
+| `npm run test:coverage`      | Unit     | Single run with coverage report                |
+| `npm run test:ui`            | Unit     | Vitest UI dashboard (interactive)              |
+| `npm run test:e2e`           | E2E      | Full Playwright suite, all projects            |
+| `npm run test:e2e:ci`        | E2E      | Smoke-only for CI (desktop Chromium, `@smoke`) |
+| `npm run test:e2e:smoke`     | E2E      | Same as CI — smoke tests only                  |
+| `npm run test:e2e:full`      | E2E      | Full Playwright suite (alias)                  |
+| `npm run test:visual`        | Visual   | Tests tagged `Visual Regression`               |
+| `npm run test:visual:update` | Visual   | Update all visual baselines                    |
+| `npm run capture:baseline`   | Visual   | Capture fresh baseline screenshots             |
+| `npm run test:e2e:visual`    | Visual   | Legacy — ND visual tests only                  |
+| `npm run typecheck:all`      | Type     | TypeScript check all 3 workspaces              |
+| `npm run build`              | Build    | Production bundle                              |
 
 ---
 
@@ -381,15 +381,15 @@ Current verified command results and any local suite caveats live in [`docs/STAT
 
 ## 7. Coverage Expectations
 
-| Area | Target | Current | Notes |
-|------|--------|---------|-------|
-| Shared logic (scratchpad, route model, validation) | 90%+ | ~85%* | Primary focus for new tests |
-| Page grid functions (Boeing + Airbus) | 85%+ | ~80%* | Per-page segment + LSK action tests |
-| Component rendering | 70%+ | ~60%* | CharacterGrid, renderers, keycaps |
-| E2E critical paths | 100% of workflows | See STATUS.md | Boeing + Airbus preflight flows |
-| Visual regressions | Key pages covered | ~15 snapshots* | Expanding with each milestone |
+| Area                                               | Target            | Current         | Notes                               |
+| -------------------------------------------------- | ----------------- | --------------- | ----------------------------------- |
+| Shared logic (scratchpad, route model, validation) | 90%+              | ~85%\*          | Primary focus for new tests         |
+| Page grid functions (Boeing + Airbus)              | 85%+              | ~80%\*          | Per-page segment + LSK action tests |
+| Component rendering                                | 70%+              | ~60%\*          | CharacterGrid, renderers, keycaps   |
+| E2E critical paths                                 | 100% of workflows | See STATUS.md   | Boeing + Airbus preflight flows     |
+| Visual regressions                                 | Key pages covered | ~15 snapshots\* | Expanding with each milestone       |
 
-*\* Approximate — see [`docs/STATUS.md`](STATUS.md) for precise live counts.*
+_\* Approximate — see [`docs/STATUS.md`](STATUS.md) for precise live counts._
 
 ### Where to focus new tests
 

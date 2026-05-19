@@ -8,9 +8,5 @@ interface CockpitLayoutGridProps {
 }
 
 export function CockpitLayoutGrid({ preset, modeClass, children }: CockpitLayoutGridProps) {
-  return (
-    <div className={`cockpit-stage cockpit-stage--${preset} ${modeClass}`}>
-      {children}
-    </div>
-  );
+  return <div className={`cockpit-stage cockpit-stage--${preset} ${modeClass}`}>{children}</div>;
 }

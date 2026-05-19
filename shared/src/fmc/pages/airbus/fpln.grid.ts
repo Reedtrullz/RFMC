@@ -1,10 +1,6 @@
 import type { FMCState, DisplayData } from '../../../types/fmc';
 import type { DisplaySegment } from '../../../types/display';
-import {
-  airbusDisplaySegment,
-  airbusTitleRow,
-  airbusPage,
-} from './airbusGridHelpers';
+import { airbusDisplaySegment, airbusTitleRow, airbusPage } from './airbusGridHelpers';
 import { formatAltitudeConstraint } from '../../../navdata/constraints';
 
 /**
@@ -17,14 +13,8 @@ import { formatAltitudeConstraint } from '../../../navdata/constraints';
  *   Row 12-13: Bottom actions
  */
 export function renderFplnGrid(state: FMCState): DisplayData {
-  const flightPlan =
-    state.isModified && state.pendingFlightPlan
-      ? state.pendingFlightPlan
-      : state.flightPlan;
-  const route =
-    state.isModified && state.pendingRoute
-      ? state.pendingRoute
-      : state.route;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
   const waypoints = flightPlan.waypoints;
   const { legsPageIndex } = state;
 
@@ -37,9 +27,7 @@ export function renderFplnGrid(state: FMCState): DisplayData {
   const fromTo = `${route.origin || '----'} / ${route.destination || '----'}`;
   const titleText = `${title}  ${fromTo}`.slice(0, 18);
 
-  const segments: DisplaySegment[] = [
-    ...airbusTitleRow(titleText, `${legsPageIndex + 1}/${totalPages}`),
-  ];
+  const segments: DisplaySegment[] = [...airbusTitleRow(titleText, `${legsPageIndex + 1}/${totalPages}`)];
 
   segments.push(airbusDisplaySegment(1, 1, ' SPD/ALT', 'white'));
 
@@ -51,14 +39,7 @@ export function renderFplnGrid(state: FMCState): DisplayData {
     if (baseRow >= 13) break;
 
     if (wp.discontinuity) {
-      segments.push(
-        airbusDisplaySegment(
-          baseRow,
-          1,
-          '----- F-PLN DISCONTINUITY -----',
-          'amber',
-        ),
-      );
+      segments.push(airbusDisplaySegment(baseRow, 1, '----- F-PLN DISCONTINUITY -----', 'amber'));
       segments.push(airbusDisplaySegment(baseRow + 1, 1, '', 'amber'));
       wpDisplayIdx++;
       continue;
@@ -99,10 +80,7 @@ function buildFplnActions(state: FMCState): Record<string, string | null> {
   }
   actions['L1'] = 'fpln_dep_arr';
 
-  const flightPlan =
-    state.isModified && state.pendingFlightPlan
-      ? state.pendingFlightPlan
-      : state.flightPlan;
+  const flightPlan = state.isModified && state.pendingFlightPlan ? state.pendingFlightPlan : state.flightPlan;
   const wpts = flightPlan.waypoints;
   const deleteMode = state.deleteMode;
 

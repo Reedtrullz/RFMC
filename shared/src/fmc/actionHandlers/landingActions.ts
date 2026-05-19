@@ -3,25 +3,34 @@ import { PerformanceEngine } from '../PerformanceEngine';
 import { NAV_CACHE } from '../navDatabase';
 import type { FmcActionResult } from './actionResult';
 
-export function handleLandingAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleLandingAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
-    case 'set_qnh':            return handleSetQnh(state, scratchpad);
-    case 'set_landing_runway': return handleSetLandingRunway(state, scratchpad);
-    case 'set_landing_flaps':  return handleSetLandingFlaps(state, scratchpad);
-    case 'set_landing_vref':   return handleSetLandingVref(state, scratchpad);
-    case 'set_ils_frequency':  return handleSetIlsFrequency(state, scratchpad);
-    case 'set_ils_course':     return handleSetIlsCourse(state, scratchpad);
-    case 'set_flaps':          return handleSetFlaps(state, scratchpad);
-    case 'set_landing_temp':   return handleSetLandingTemp(state, scratchpad);
-    case 'set_landing_wind':   return handleSetLandingWind(state, scratchpad);
-    case 'set_mda':            return handleSetMda(state, scratchpad);
-    case 'set_dh':             return handleSetDh(state, scratchpad);
-    case 'toggle_ldg_conf':    return handleToggleLdgConf(state, scratchpad);
-    default:                   return { handled: false };
+    case 'set_qnh':
+      return handleSetQnh(state, scratchpad);
+    case 'set_landing_runway':
+      return handleSetLandingRunway(state, scratchpad);
+    case 'set_landing_flaps':
+      return handleSetLandingFlaps(state, scratchpad);
+    case 'set_landing_vref':
+      return handleSetLandingVref(state, scratchpad);
+    case 'set_ils_frequency':
+      return handleSetIlsFrequency(state, scratchpad);
+    case 'set_ils_course':
+      return handleSetIlsCourse(state, scratchpad);
+    case 'set_flaps':
+      return handleSetFlaps(state, scratchpad);
+    case 'set_landing_temp':
+      return handleSetLandingTemp(state, scratchpad);
+    case 'set_landing_wind':
+      return handleSetLandingWind(state, scratchpad);
+    case 'set_mda':
+      return handleSetMda(state, scratchpad);
+    case 'set_dh':
+      return handleSetDh(state, scratchpad);
+    case 'toggle_ldg_conf':
+      return handleToggleLdgConf(state, scratchpad);
+    default:
+      return { handled: false };
   }
 }
 
@@ -41,8 +50,9 @@ function handleSetQnh(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         takeoff: { ...state.takeoff, qnh: qnh * 100 },
         landing: { ...state.landing, qnh },
-          isModified: true, execLit: true,
-        },
+        isModified: true,
+        execLit: true,
+      },
     },
   };
 }
@@ -57,15 +67,19 @@ function handleSetLandingRunway(state: FMCState, scratchpad: string): FmcActionR
   }
   const runway = scratchpad.toUpperCase();
   const route = state.pendingRoute ?? state.route;
-  
+
   if (route.destination) {
     const cachedAirport = NAV_CACHE.airports[route.destination.toUpperCase()];
     if (cachedAirport && cachedAirport.runways) {
-      const exists = cachedAirport.runways.some(r => r.toUpperCase() === runway);
+      const exists = cachedAirport.runways.some((r) => r.toUpperCase() === runway);
       if (!exists) {
         return {
           handled: true,
-          failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_landing_runway' },
+          failure: {
+            code: 'INVALID_ENTRY' as const,
+            text: 'INVALID ENTRY',
+            source: 'landingActions.set_landing_runway',
+          },
         };
       }
     }
@@ -78,7 +92,8 @@ function handleSetLandingRunway(state: FMCState, scratchpad: string): FmcActionR
       patch: {
         landing: { ...state.landing, runway },
         route: { ...state.route, runway },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -99,7 +114,8 @@ function handleSetLandingFlaps(state: FMCState, scratchpad: string): FmcActionRe
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, flaps },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -120,7 +136,8 @@ function handleSetLandingVref(state: FMCState, scratchpad: string): FmcActionRes
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, vref },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -141,7 +158,8 @@ function handleSetIlsFrequency(state: FMCState, scratchpad: string): FmcActionRe
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, ilsFrequency: frequency.toFixed(2) },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -162,7 +180,8 @@ function handleSetIlsCourse(state: FMCState, scratchpad: string): FmcActionResul
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, course },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -172,10 +191,7 @@ function handleSetFlaps(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const flaps = scratchpad.toUpperCase();
   const takeoff = { ...state.takeoff, flaps };
-  const speeds = PerformanceEngine.calculateTakeoffSpeeds(
-    state.performance.grossWeight || 140000,
-    flaps
-  );
+  const speeds = PerformanceEngine.calculateTakeoffSpeeds(state.performance.grossWeight || 140000, flaps);
   takeoff.suggestedV1 = speeds.v1;
   takeoff.suggestedVr = speeds.vr;
   takeoff.suggestedV2 = speeds.v2;
@@ -185,7 +201,8 @@ function handleSetFlaps(state: FMCState, scratchpad: string): FmcActionResult {
       clearScratchpad: true,
       patch: {
         takeoff,
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -206,7 +223,8 @@ function handleSetLandingTemp(state: FMCState, scratchpad: string): FmcActionRes
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, temp },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -235,7 +253,8 @@ function handleSetLandingWind(state: FMCState, scratchpad: string): FmcActionRes
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, windDir, windSpeed },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -256,7 +275,8 @@ function handleSetMda(state: FMCState, scratchpad: string): FmcActionResult {
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, mda },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -277,7 +297,8 @@ function handleSetDh(state: FMCState, scratchpad: string): FmcActionResult {
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, dh },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };
@@ -307,7 +328,8 @@ function handleToggleLdgConf(state: FMCState, scratchpad: string): FmcActionResu
       clearScratchpad: true,
       patch: {
         landing: { ...state.landing, ldgConf: nextVal, flaps: nextVal },
-        isModified: true, execLit: true,
+        isModified: true,
+        execLit: true,
       },
     },
   };

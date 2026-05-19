@@ -92,10 +92,8 @@ describe('SimBrief Parser', () => {
       origin: 'KJFK',
       destination: 'KDCA',
       navlog: {
-        fix: [
-          { ident: 'RBV', pos_lat: '40.202333', pos_long: '-74.494722' }
-        ]
-      }
+        fix: [{ ident: 'RBV', pos_lat: '40.202333', pos_long: '-74.494722' }],
+      },
     });
     const result = parseSimBriefJSON(json);
     expect(result.waypoints).toBeDefined();
@@ -105,4 +103,3 @@ describe('SimBrief Parser', () => {
     expect(result.waypoints![0].coordinateSource).toBe('simbrief');
   });
 });
-

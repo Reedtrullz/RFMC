@@ -40,22 +40,22 @@ export const useAlertStore = create<AlertStore>((set, get) => ({
       severity,
       timestamp: Date.now(),
       aircraft,
-      type
+      type,
     };
-    set(state => ({
-      scratchpadMessages: [newMessage, ...state.scratchpadMessages]
+    set((state) => ({
+      scratchpadMessages: [newMessage, ...state.scratchpadMessages],
     }));
   },
 
   clearActiveMessage: () => {
-    set(state => ({
-      scratchpadMessages: state.scratchpadMessages.slice(1)
+    set((state) => ({
+      scratchpadMessages: state.scratchpadMessages.slice(1),
     }));
   },
 
   clearAlert: (id: string) => {
-    set(state => ({
-      alerts: state.alerts.filter(a => a.id !== id)
+    set((state) => ({
+      alerts: state.alerts.filter((a) => a.id !== id),
     }));
   },
 
@@ -66,13 +66,13 @@ export const useAlertStore = create<AlertStore>((set, get) => ({
       text,
       timestamp: Date.now(),
       read: false,
-      type: 'AOC'
+      type: 'AOC',
     };
-    set(state => ({
+    set((state) => ({
       atsu: {
         ...state.atsu,
-        messages: [msg, ...state.atsu.messages]
-      }
+        messages: [msg, ...state.atsu.messages],
+      },
     }));
   },
 

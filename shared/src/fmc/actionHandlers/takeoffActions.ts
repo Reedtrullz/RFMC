@@ -48,7 +48,8 @@ export function handleSetRunway(state: FMCState, scratchpad: string): FmcActionR
         patch: {
           takeoff: { ...state.takeoff, runway, v1: 0, vr: 0, v2: 0 },
           msgLight: true,
-          isModified: true, execLit: true,
+          isModified: true,
+          execLit: true,
         },
       },
     };
@@ -56,7 +57,10 @@ export function handleSetRunway(state: FMCState, scratchpad: string): FmcActionR
 
   return {
     handled: true,
-    success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, runway }, isModified: true, execLit: true } },
+    success: {
+      clearScratchpad: true,
+      patch: { takeoff: { ...state.takeoff, runway }, isModified: true, execLit: true },
+    },
   };
 }
 
@@ -81,7 +85,10 @@ export function handleSetV1(state: FMCState, scratchpad: string): FmcActionResul
     if (state.takeoff.suggestedV1) {
       return {
         handled: true,
-        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v1: state.takeoff.suggestedV1 }, isModified: true, execLit: true } },
+        success: {
+          clearScratchpad: true,
+          patch: { takeoff: { ...state.takeoff, v1: state.takeoff.suggestedV1 }, isModified: true, execLit: true },
+        },
       };
     }
     return { handled: false };
@@ -113,7 +120,10 @@ export function handleSetVr(state: FMCState, scratchpad: string): FmcActionResul
     if (state.takeoff.suggestedVr) {
       return {
         handled: true,
-        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, vr: state.takeoff.suggestedVr }, isModified: true, execLit: true } },
+        success: {
+          clearScratchpad: true,
+          patch: { takeoff: { ...state.takeoff, vr: state.takeoff.suggestedVr }, isModified: true, execLit: true },
+        },
       };
     }
     return { handled: false };
@@ -145,7 +155,10 @@ export function handleSetV2(state: FMCState, scratchpad: string): FmcActionResul
     if (state.takeoff.suggestedV2) {
       return {
         handled: true,
-        success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, v2: state.takeoff.suggestedV2 }, isModified: true, execLit: true } },
+        success: {
+          clearScratchpad: true,
+          patch: { takeoff: { ...state.takeoff, v2: state.takeoff.suggestedV2 }, isModified: true, execLit: true },
+        },
       };
     }
     return { handled: false };
@@ -251,11 +264,7 @@ export function handleTakeoffWind(state: FMCState, scratchpad: string): FmcActio
   };
 }
 
-export function handleTakeoffAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleTakeoffAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'select_to':
       return handleSelectTo(state, scratchpad);

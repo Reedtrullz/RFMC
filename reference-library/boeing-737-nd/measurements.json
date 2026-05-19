@@ -9,14 +9,6 @@
     "routeLineThickness": null,
     "clipBoundary": "display frame"
   },
-  "symbolTargets": [
-    "waypoint",
-    "airport",
-    "fix",
-    "hold",
-    "heading bug",
-    "selected course",
-    "track line"
-  ],
+  "symbolTargets": ["waypoint", "airport", "fix", "hold", "heading bug", "selected course", "track line"],
   "modeTargets": ["MAP", "PLAN", "VOR", "APP", "FIX overlay", "HOLD overlay", "route discontinuity"]
 }

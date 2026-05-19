@@ -16,7 +16,7 @@ export function createMistake(
   type: string,
   stepId: string,
   description: string,
-  severity: 'low' | 'medium' | 'high' = 'medium'
+  severity: 'low' | 'medium' | 'high' = 'medium',
 ): TrainingMistake {
   return {
     id: Math.random().toString(36).substr(2, 9),

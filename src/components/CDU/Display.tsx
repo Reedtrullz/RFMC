@@ -9,8 +9,8 @@ interface DisplayProps {
 }
 
 export function Display({ variant = 'boeing' }: DisplayProps) {
-  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
-  const aircraft = useAircraftStore(s => s.aircraft);
+  const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
+  const aircraft = useAircraftStore((s) => s.aircraft);
   const isAirbus = variant === 'airbus' || aircraft === 'AIRBUS_A320';
   const grid = displayDataToGrid(displayData);
 
@@ -19,10 +19,8 @@ export function Display({ variant = 'boeing' }: DisplayProps) {
   const contentGrid = {
     ...grid,
     rows: PAGE_LINES - 1,
-    segments: grid.segments.filter(s => s.row !== SCRATCHPAD_ROW),
+    segments: grid.segments.filter((s) => s.row !== SCRATCHPAD_ROW),
   };
 
-  return (
-    <CDUDisplayGrid grid={contentGrid} variant={isAirbus ? 'airbus' : 'boeing'} testId="main-cdu-display" />
-  );
+  return <CDUDisplayGrid grid={contentGrid} variant={isAirbus ? 'airbus' : 'boeing'} testId="main-cdu-display" />;
 }

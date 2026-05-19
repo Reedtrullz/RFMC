@@ -8,9 +8,15 @@ import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
 import { TrainingReport } from './components/Training/TrainingReport';
 
-const AutopilotTrainer = React.lazy(() => import('./components/Autopilot/AutopilotTrainer').then(m => ({ default: m.AutopilotTrainer })));
-const FmsInspector = React.lazy(() => import('./components/Training/FmsInspector').then(m => ({ default: m.FmsInspector })));
-const TrainingOverlay = React.lazy(() => import('./components/Training/TrainingOverlay').then(m => ({ default: m.TrainingOverlay })));
+const AutopilotTrainer = React.lazy(() =>
+  import('./components/Autopilot/AutopilotTrainer').then((m) => ({ default: m.AutopilotTrainer })),
+);
+const FmsInspector = React.lazy(() =>
+  import('./components/Training/FmsInspector').then((m) => ({ default: m.FmsInspector })),
+);
+const TrainingOverlay = React.lazy(() =>
+  import('./components/Training/TrainingOverlay').then((m) => ({ default: m.TrainingOverlay })),
+);
 import { devLog } from '@shared';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { PrimaryFlightDisplay } from './components/instruments/common/PFD';
@@ -93,20 +99,20 @@ const visualFailureAircraftState = {
 export default function App() {
   const isKiosk = useKioskMode();
   const [showNd, setShowNd] = useState(true);
-  const mode = useFMCStore(s => s.mode);
-  const tutorialActive = useFMCStore(s => s.tutorialActive);
-  const tutorialCompleted = useFMCStore(s => s.tutorialCompleted);
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const setAircraft = useAircraftStore(s => s.setAircraft);
-  const setPage = useFMCStore(s => s.setPage);
-  const setRteSubPage = useFMCStore(s => s.setRteSubPage);
-  const setTakeoffRefPageIndex = useFMCStore(s => s.setTakeoffRefPageIndex);
-  const setNDMode = useFMCStore(s => s.setNDMode);
-  
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
-  const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
-  
-  const tick = useFMCStore(s => s.tick);
+  const mode = useFMCStore((s) => s.mode);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+  const tutorialCompleted = useFMCStore((s) => s.tutorialCompleted);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const setAircraft = useAircraftStore((s) => s.setAircraft);
+  const setPage = useFMCStore((s) => s.setPage);
+  const setRteSubPage = useFMCStore((s) => s.setRteSubPage);
+  const setTakeoffRefPageIndex = useFMCStore((s) => s.setTakeoffRefPageIndex);
+  const setNDMode = useFMCStore((s) => s.setNDMode);
+
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
+  const setCockpitMode = useCockpitLayoutStore((s) => s.setCockpitMode);
+
+  const tick = useFMCStore((s) => s.tick);
 
   useEffect(() => {
     let lastTime = performance.now();
@@ -114,7 +120,8 @@ export default function App() {
 
     const runTick = (time: number) => {
       const dt = (time - lastTime) / 1000;
-      if (dt >= 0.1) { // 10Hz tick rate
+      if (dt >= 0.1) {
+        // 10Hz tick rate
         tick(dt);
         lastTime = time;
       }
@@ -138,7 +145,12 @@ export default function App() {
         mode: 'ACTIVE',
         gpwsAlert: 'NONE',
         tcasAlert: false,
-        position: { ...useFMCStore.getState().position, irsState: 'NAV', irsAlignmentProgress: 100, irsTimeRemaining: 0 },
+        position: {
+          ...useFMCStore.getState().position,
+          irsState: 'NAV',
+          irsAlignmentProgress: 100,
+          irsTimeRemaining: 0,
+        },
       });
       useCockpitLayoutStore.setState({
         cockpitLayoutMode: 'automation',
@@ -150,7 +162,7 @@ export default function App() {
 
     const setBoeingPfdAutomation = () => {
       setVisualPfdBase('BOEING_737');
-      useAutopilotStore.setState(state => ({
+      useAutopilotStore.setState((state) => ({
         boeing: {
           ...state.boeing,
           speed: 240,
@@ -174,7 +186,7 @@ export default function App() {
 
     const setAirbusPfdAutomation = () => {
       setVisualPfdBase('AIRBUS_A320');
-      useAutopilotStore.setState(state => ({
+      useAutopilotStore.setState((state) => ({
         airbus: {
           ...state.airbus,
           speed: 240,
@@ -233,7 +245,9 @@ export default function App() {
     } else if (path === '/visual/airbus/init-a-aligning') {
       setAircraft('AIRBUS_A320');
       setPage('INIT_A');
-      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'ALIGNING', irsTimeRemaining: 360 } });
+      useFMCStore.setState({
+        position: { ...useFMCStore.getState().position, irsState: 'ALIGNING', irsTimeRemaining: 360 },
+      });
     } else if (path === '/visual/airbus/f-pln') {
       setAircraft('AIRBUS_A320');
       setPage('F_PLN');
@@ -275,12 +289,15 @@ export default function App() {
       setBoeingPfdAutomation();
     } else if (path === '/visual/pfd/boeing-focused') {
       setBoeingPfdAutomation();
-      useCockpitLayoutStore.setState({ focusedPanel: 'pfd', instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 } });
+      useCockpitLayoutStore.setState({
+        focusedPanel: 'pfd',
+        instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 },
+      });
     } else if (path === '/visual/pfd/boeing-approach') {
       setVisualPfdBase('BOEING_737');
       useAircraftStore.setState({ aircraftState: visualApproachAircraftState });
       useCockpitLayoutStore.setState({ cockpitLayoutMode: 'approach', hiddenPanels: [], focusedPanel: null });
-      useAutopilotStore.setState(state => ({
+      useAutopilotStore.setState((state) => ({
         boeing: {
           ...state.boeing,
           speed: 142,
@@ -305,22 +322,33 @@ export default function App() {
       }));
     } else if (path === '/visual/pfd/boeing-failure') {
       setVisualPfdBase('BOEING_737');
-      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 } });
+      useFMCStore.setState({
+        position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 },
+      });
       useAircraftStore.setState({ aircraftState: visualFailureAircraftState });
-      useAutopilotStore.setState(state => ({
+      useAutopilotStore.setState((state) => ({
         boeing: { ...state.boeing, speed: null, verticalSpeed: null, fdLeft: false, fdRight: false },
-        truth: { ...state.truth, thrustActive: 'OFF', lateralActive: 'OFF', verticalActive: 'OFF', autopilotStatus: 'OFF' },
+        truth: {
+          ...state.truth,
+          thrustActive: 'OFF',
+          lateralActive: 'OFF',
+          verticalActive: 'OFF',
+          autopilotStatus: 'OFF',
+        },
       }));
     } else if (path === '/visual/pfd/airbus-automation') {
       setAirbusPfdAutomation();
     } else if (path === '/visual/pfd/airbus-focused') {
       setAirbusPfdAutomation();
-      useCockpitLayoutStore.setState({ focusedPanel: 'pfd', instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 } });
+      useCockpitLayoutStore.setState({
+        focusedPanel: 'pfd',
+        instrumentZoom: { ...useCockpitLayoutStore.getState().instrumentZoom, pfd: 1.45 },
+      });
     } else if (path === '/visual/pfd/airbus-approach') {
       setVisualPfdBase('AIRBUS_A320');
       useAircraftStore.setState({ aircraftState: visualApproachAircraftState });
       useCockpitLayoutStore.setState({ cockpitLayoutMode: 'approach', hiddenPanels: [], focusedPanel: null });
-      useAutopilotStore.setState(state => ({
+      useAutopilotStore.setState((state) => ({
         airbus: {
           ...state.airbus,
           speed: 142,
@@ -349,17 +377,44 @@ export default function App() {
       }));
     } else if (path === '/visual/pfd/airbus-failure') {
       setVisualPfdBase('AIRBUS_A320');
-      useFMCStore.setState({ position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 } });
+      useFMCStore.setState({
+        position: { ...useFMCStore.getState().position, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 0 },
+      });
       useAircraftStore.setState({ aircraftState: visualFailureAircraftState });
-      useAutopilotStore.setState(state => ({
-        airbus: { ...state.airbus, speed: null, heading: null, verticalSpeed: null, fd1: false, fd2: false, athr: false, ap1: false, ap2: false },
-        truth: { ...state.truth, thrustActive: 'OFF', lateralActive: 'OFF', verticalActive: 'OFF', autopilotStatus: 'OFF' },
+      useAutopilotStore.setState((state) => ({
+        airbus: {
+          ...state.airbus,
+          speed: null,
+          heading: null,
+          verticalSpeed: null,
+          fd1: false,
+          fd2: false,
+          athr: false,
+          ap1: false,
+          ap2: false,
+        },
+        truth: {
+          ...state.truth,
+          thrustActive: 'OFF',
+          lateralActive: 'OFF',
+          verticalActive: 'OFF',
+          autopilotStatus: 'OFF',
+        },
       }));
     } else if (path === '/visual/boeing/scratchpad-caution') {
       setAircraft('BOEING_737');
       setPage('LEGS');
-      useFMCStore.setState({ 
-        alerts: [{ id: 'test-caution', text: 'UNABLE RNP', level: 'CAUTION', source: 'FMC', timestamp: Date.now(), clearable: true }] 
+      useFMCStore.setState({
+        alerts: [
+          {
+            id: 'test-caution',
+            text: 'UNABLE RNP',
+            level: 'CAUTION',
+            source: 'FMC',
+            timestamp: Date.now(),
+            clearable: true,
+          },
+        ],
       });
     }
   }, [setAircraft, setPage, setNDMode, setRteSubPage, setTakeoffRefPageIndex, setCockpitMode]);
@@ -372,9 +427,12 @@ export default function App() {
     onRegistered(r: ServiceWorkerRegistration | undefined) {
       // Setup interval to check for updates every hour
       if (r) {
-        setInterval(() => {
-          r.update();
-        }, 60 * 60 * 1000);
+        setInterval(
+          () => {
+            r.update();
+          },
+          60 * 60 * 1000,
+        );
       }
     },
     onRegisterError(error: any) {
@@ -388,7 +446,9 @@ export default function App() {
   };
 
   const content = cockpitMode ? (
-    <ErrorBoundary fallback={<SectionErrorFallback title="COCKPIT ERROR" message="Cockpit layout encountered an error" />}>
+    <ErrorBoundary
+      fallback={<SectionErrorFallback title="COCKPIT ERROR" message="Cockpit layout encountered an error" />}
+    >
       <CockpitLayout />
       <SettingsPanel />
       <ChecklistPanel />
@@ -406,7 +466,7 @@ export default function App() {
         <button
           type="button"
           aria-pressed={showNd}
-          onClick={() => setShowNd(value => !value)}
+          onClick={() => setShowNd((value) => !value)}
           className={`ml-4 px-3 py-2 rounded font-cdu text-xs font-bold uppercase transition-colors ${
             showNd
               ? 'bg-cdu-cyan/20 text-cdu-cyan border border-cdu-cyan/40'
@@ -415,7 +475,7 @@ export default function App() {
         >
           {showNd ? 'Hide ND' : 'Show ND'}
         </button>
-        <button 
+        <button
           onClick={() => setCockpitMode(true)}
           className="ml-3 px-4 py-2 bg-cdu-cyan text-cdu-bezel rounded font-cdu text-xs font-bold uppercase hover:bg-cdu-cyan/80 transition-colors"
         >
@@ -425,13 +485,19 @@ export default function App() {
 
       <main className="grid flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden bg-black p-2 lg:p-4 gap-2 lg:gap-4">
         <div className="flex min-h-0 flex-col items-center justify-center gap-4 lg:flex-row">
-          <ErrorBoundary fallback={<SectionErrorFallback title="PFD ERROR" message="Primary Flight Display encountered an error" />}>
+          <ErrorBoundary
+            fallback={<SectionErrorFallback title="PFD ERROR" message="Primary Flight Display encountered an error" />}
+          >
             <InstrumentSlot className="h-full w-full max-w-[360px]" dataTestId="pfd-panel">
               <PrimaryFlightDisplay />
             </InstrumentSlot>
           </ErrorBoundary>
 
-          <ErrorBoundary fallback={<SectionErrorFallback title="NAV DISPLAY ERROR" message="Navigation Display encountered an error" />}>
+          <ErrorBoundary
+            fallback={
+              <SectionErrorFallback title="NAV DISPLAY ERROR" message="Navigation Display encountered an error" />
+            }
+          >
             <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`} dataTestId="nd-panel">
               <NavigationDisplay />
             </InstrumentSlot>
@@ -457,7 +523,9 @@ export default function App() {
     <ErrorBoundary>
       {content}
       {showWelcome && <DemoWelcome />}
-      <ErrorBoundary fallback={<SectionErrorFallback title="TRAINING ERROR" message="Training overlay encountered an error" />}>
+      <ErrorBoundary
+        fallback={<SectionErrorFallback title="TRAINING ERROR" message="Training overlay encountered an error" />}
+      >
         <React.Suspense fallback={null}>
           {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
           <TrainingOverlay />

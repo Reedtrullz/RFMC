@@ -4,9 +4,11 @@
 **Focus:** server/src/
 
 ## OVERVIEW
+
 Node.js backend. Express + WebSocket. SimConnect to MSFS 2020.
 
 ## STRUCTURE
+
 ```
 server/src/
 ├── index.ts              # Express + WS server
@@ -19,18 +21,21 @@ server/src/
 ```
 
 ## WHERE TO LOOK
-| Task | Location |
-|------|----------|
-| SimConnect | `bridge-server.ts` |
-| WS endpoints | `index.ts` |
+
+| Task             | Location             |
+| ---------------- | -------------------- |
+| SimConnect       | `bridge-server.ts`   |
+| WS endpoints     | `index.ts`           |
 | Aircraft adapter | `aircraft-adapters/` |
-| FMC engine | `fmc-engine.ts` |
+| FMC engine       | `fmc-engine.ts`      |
 
 ## CONVENTIONS
+
 - Port 8080 default
 - `@virtual-cdu/shared` imports
 - TypeScript strict
 
 ## ANTI-PATTERNS
+
 - No database (in-memory only)
 - No auth (standalone mode)

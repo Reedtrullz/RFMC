@@ -6,7 +6,7 @@ export interface AutopilotStore {
   boeing: BoeingMCPState;
   airbus: AirbusFCUState;
   truth: AutopilotState['truth'];
-  
+
   updateBoeing: (update: Partial<BoeingMCPState>) => void;
   updateAirbus: (update: Partial<AirbusFCUState>) => void;
   pressButton: (action: string) => void;
@@ -70,7 +70,7 @@ const defaultTruth: AutopilotState['truth'] = {
     thrust: 0,
     lateral: 0,
     vertical: 0,
-  }
+  },
 };
 
 const BOEING_ACTION_MAP: Record<string, string> = {
@@ -96,15 +96,15 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
   airbus: defaultAirbusFCU,
   truth: defaultTruth,
 
-  updateBoeing: (update) => set(state => ({ boeing: { ...state.boeing, ...update } })),
-  updateAirbus: (update) => set(state => ({ airbus: { ...state.airbus, ...update } })),
+  updateBoeing: (update) => set((state) => ({ boeing: { ...state.boeing, ...update } })),
+  updateAirbus: (update) => set((state) => ({ airbus: { ...state.airbus, ...update } })),
 
   pressButton: (action) => {
     const normalizedAction = BOEING_ACTION_MAP[action] ?? action;
 
     const boeingUpdate = processBoeingMCPAction(get().boeing, normalizedAction as any);
     if (Object.keys(boeingUpdate).length > 0) {
-      set(state => ({
+      set((state) => ({
         boeing: { ...state.boeing, ...boeingUpdate },
         truth: {
           ...state.truth,
@@ -134,7 +134,7 @@ export const useAutopilotStore = create<AutopilotStore>((set, get) => ({
 
     const update = airbusActions[action];
     if (update) {
-      set(state => ({
+      set((state) => ({
         airbus: { ...state.airbus, ...update },
         truth: {
           ...state.truth,
@@ -152,7 +152,9 @@ function truthUpdateForBoeingAction(action: string, truth: AutopilotState['truth
   if (action === 'VOR_LOC') return { lateralActive: truth.lateralActive === 'VOR_LOC' ? 'OFF' : 'VOR_LOC' };
   if (action === 'APP') {
     const active = truth.lateralActive === 'APP' || truth.verticalActive === 'G_S';
-    return active ? { lateralActive: 'OFF', verticalActive: 'OFF' } : { lateralActive: 'APP', lateralArmed: 'APP', verticalActive: 'G_S', verticalArmed: 'G_S' };
+    return active
+      ? { lateralActive: 'OFF', verticalActive: 'OFF' }
+      : { lateralActive: 'APP', lateralArmed: 'APP', verticalActive: 'G_S', verticalArmed: 'G_S' };
   }
   if (action === 'ALT_HLD') return { verticalActive: truth.verticalActive === 'ALT_HOLD' ? 'OFF' : 'ALT_HOLD' };
   if (action === 'LVL_CHG') return { verticalActive: truth.verticalActive === 'LVL_CHG' ? 'OFF' : 'LVL_CHG' };
@@ -173,7 +175,9 @@ function truthUpdateForAirbusAction(action: string, truth: AutopilotState['truth
   if (action === 'LOC') return { lateralActive: truth.lateralActive === 'LOC' ? 'OFF' : 'LOC' };
   if (action === 'APPR') {
     const active = truth.lateralActive === 'APP' || truth.verticalActive === 'G_S';
-    return active ? { lateralActive: 'OFF', verticalActive: 'OFF' } : { lateralActive: 'APP', lateralArmed: 'LOC', verticalActive: 'G_S', verticalArmed: 'G_S' };
+    return active
+      ? { lateralActive: 'OFF', verticalActive: 'OFF' }
+      : { lateralActive: 'APP', lateralArmed: 'LOC', verticalActive: 'G_S', verticalArmed: 'G_S' };
   }
   if (action === 'EXPED') return { verticalActive: truth.verticalActive === 'OP_CLB' ? 'OFF' : 'OP_CLB' };
   if (action === 'SPD_MANAGED') return { thrustActive: 'SPEED' };

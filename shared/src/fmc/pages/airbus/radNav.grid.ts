@@ -1,10 +1,5 @@
 import type { FMCState, DisplayData } from '../../../types/fmc';
-import {
-  airbusPage,
-  airbusTitleRow,
-  airbusDisplaySegment,
-  airbusSelectableField,
-} from './airbusGridHelpers';
+import { airbusPage, airbusTitleRow, airbusDisplaySegment, airbusSelectableField } from './airbusGridHelpers';
 
 /**
  * Render the Airbus RAD NAV page as a DisplaySegment grid.

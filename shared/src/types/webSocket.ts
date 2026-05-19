@@ -2,7 +2,15 @@
 // WebSocket protocol types shared between frontend and backend
 // ============================================================
 
-import type { CDUKey, DisplayData, ConnectionMode, AircraftType, ConnectionStatus, AircraftState, RadioData } from './fmc';
+import type {
+  CDUKey,
+  DisplayData,
+  ConnectionMode,
+  AircraftType,
+  ConnectionStatus,
+  AircraftState,
+  RadioData,
+} from './fmc';
 import type { AdapterCapabilities, AdapterHealth } from '../avionics/profiles';
 
 // ---- Client → Server Messages ----
@@ -25,11 +33,7 @@ export interface ModeChangeMessage {
   mode: ConnectionMode;
 }
 
-export type ClientMessage = 
-  | FmcInputMessage 
-  | SimConnectMessage 
-  | SimDisconnectMessage 
-  | ModeChangeMessage;
+export type ClientMessage = FmcInputMessage | SimConnectMessage | SimDisconnectMessage | ModeChangeMessage;
 
 // ---- Server → Client Messages ----
 
@@ -71,10 +75,10 @@ export interface ErrorMessage {
   message: string;
 }
 
-export type ServerMessage = 
-  | FmcDisplayMessage 
-  | SimConnectedMessage 
-  | SimDisconnectedMessage 
-  | SimDataMessage 
+export type ServerMessage =
+  | FmcDisplayMessage
+  | SimConnectedMessage
+  | SimDisconnectedMessage
+  | SimDataMessage
   | SimHeartbeatMessage
   | ErrorMessage;

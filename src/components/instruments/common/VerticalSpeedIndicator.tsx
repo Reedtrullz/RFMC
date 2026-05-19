@@ -6,17 +6,24 @@ interface VerticalSpeedIndicatorProps {
   variant?: 'boeing' | 'airbus';
 }
 
-export const VerticalSpeedIndicator = React.memo(function VerticalSpeedIndicator({ verticalSpeed, targetVerticalSpeed, variant = 'boeing' }: VerticalSpeedIndicatorProps) {
+export const VerticalSpeedIndicator = React.memo(function VerticalSpeedIndicator({
+  verticalSpeed,
+  targetVerticalSpeed,
+  variant = 'boeing',
+}: VerticalSpeedIndicatorProps) {
   const maxFpm = 6000;
   const clamped = Math.max(-maxFpm, Math.min(maxFpm, verticalSpeed));
   const pointerY = 50 - (clamped / maxFpm) * 42;
   const bugColor = variant === 'airbus' ? '#39ffef' : '#ff00ff';
 
   return (
-    <div className="relative h-full w-9 shrink-0 border-l border-white/10 bg-black/80" data-testid={`${variant}-vertical-speed`}>
+    <div
+      className="relative h-full w-9 shrink-0 border-l border-white/10 bg-black/80"
+      data-testid={`${variant}-vertical-speed`}
+    >
       <div className="absolute right-1 top-2 text-[7px] font-black text-white/50">V/S</div>
       <div className="absolute inset-y-8 left-1/2 w-px -translate-x-1/2 bg-white/25" />
-      {[-6, -4, -2, 0, 2, 4, 6].map(mark => (
+      {[-6, -4, -2, 0, 2, 4, 6].map((mark) => (
         <div
           key={mark}
           className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1"

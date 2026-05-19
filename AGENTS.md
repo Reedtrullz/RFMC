@@ -7,9 +7,11 @@
 **Stack:** React 18 + TypeScript + Vite + Zustand (frontend), Node.js + Express + WebSocket (backend), TypeScript shared
 
 ## OVERVIEW
+
 A web-based Boeing 737 NG Flight Management Computer (FMC) / Control Display Unit (CDU) simulator with MSFS 2020 integration. Monorepo with 3 workspaces: `shared`, `src` (React frontend), `server` (Node.js bridge).
 
 ## STRUCTURE
+
 ```
 RFMS/
 ├── shared/                  # Types + FMC logic (workspace)
@@ -40,25 +42,27 @@ RFMS/
 ```
 
 ## WHERE TO LOOK
-| Task | Location | Notes |
-|------|----------|-------|
-| FMC page logic | `shared/src/fmc/pages/` | Boeing/Airbus page functions |
-| LSK action handlers | `shared/src/fmc/actionHandlers/` | Extracted from store (18 modules) |
-| LSK dispatcher | `shared/src/fmc/actionHandlers/lskDispatcher.ts` | Typed `dispatchLskAction()` → 16 handler families |
-| Action result types | `shared/src/fmc/actionHandlers/actionResult.ts` | FmcActionResult, FmcActionFailure, FmcActionSuccess |
-| Scratchpad engine | `shared/src/fmc/scratchpadEngine.ts` | 8-level priority queue, message factories |
-| Scratchpad adapter | `shared/src/fmc/fmcScratchpadAdapter.ts` | applyFmcActionResult, applyDispatchResult, failScratchpad |
-| EXEC lifecycle | `shared/src/fmc/routeModification.ts` | MOD/EXEC state machine + adapter |
-| Display grid validation | `shared/src/fmc/displayGridValidation.ts` | Strict 24×14 grid validation |
-| FMC state machine | `src/store/` | Zustand stores (10 modules) |
-| React components | `src/components/CDU/` | CDU display/inputs |
-| Navigation Display | `src/components/ND/` | ND symbology + layers + frame |
-| Cockpit layout | `src/components/CockpitMode/` | CSS grid layout presets |
-| WebSocket bridge | `server/src/` | MSFS integration |
-| Aircraft adapters | `server/src/aircraft-adapters/` | SimConnect adapters |
-| Playwright tests | `e2e/` | Visual regression + e2e |
+
+| Task                    | Location                                         | Notes                                                     |
+| ----------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| FMC page logic          | `shared/src/fmc/pages/`                          | Boeing/Airbus page functions                              |
+| LSK action handlers     | `shared/src/fmc/actionHandlers/`                 | Extracted from store (18 modules)                         |
+| LSK dispatcher          | `shared/src/fmc/actionHandlers/lskDispatcher.ts` | Typed `dispatchLskAction()` → 16 handler families         |
+| Action result types     | `shared/src/fmc/actionHandlers/actionResult.ts`  | FmcActionResult, FmcActionFailure, FmcActionSuccess       |
+| Scratchpad engine       | `shared/src/fmc/scratchpadEngine.ts`             | 8-level priority queue, message factories                 |
+| Scratchpad adapter      | `shared/src/fmc/fmcScratchpadAdapter.ts`         | applyFmcActionResult, applyDispatchResult, failScratchpad |
+| EXEC lifecycle          | `shared/src/fmc/routeModification.ts`            | MOD/EXEC state machine + adapter                          |
+| Display grid validation | `shared/src/fmc/displayGridValidation.ts`        | Strict 24×14 grid validation                              |
+| FMC state machine       | `src/store/`                                     | Zustand stores (10 modules)                               |
+| React components        | `src/components/CDU/`                            | CDU display/inputs                                        |
+| Navigation Display      | `src/components/ND/`                             | ND symbology + layers + frame                             |
+| Cockpit layout          | `src/components/CockpitMode/`                    | CSS grid layout presets                                   |
+| WebSocket bridge        | `server/src/`                                    | MSFS integration                                          |
+| Aircraft adapters       | `server/src/aircraft-adapters/`                  | SimConnect adapters                                       |
+| Playwright tests        | `e2e/`                                           | Visual regression + e2e                                   |
 
 ## CONVENTIONS (THIS PROJECT)
+
 - **Monorepo**: npm workspaces — `shared`, `src`, `server` (order matters for install)
 - **TypeScript strict**: All packages use strict TypeScript, run `typecheck` per workspace
 - **Workspace imports**: `@virtual-cdu/shared` for shared package
@@ -68,6 +72,7 @@ RFMS/
 - **Airbus vs Boeing**: Parallel directories for each variant
 
 ## ANTI-PATTERNS (THIS PROJECT)
+
 - **No auth**: No authentication — standalone/offline mode works
 - **No database**: FMC state is ephemeral (Zustand), server stores in-memory only
 - **No router**: Single-page app, no React Router
@@ -76,12 +81,14 @@ RFMS/
 - **No barrel exports**: Import from specific files, not index
 
 ## UNIQUE STYLES
+
 - **Aviation validation**: ICAO airports, V1<VR<V2 cross-field check, QNH 900-1100
 - **Visual realism**: Green-on-black AMOLED display, amber select highlight, CRT scanlines
 - **PWA-first**: Service worker, offline kiosk mode, add-to-homescreen
 - **SimConnect bridge**: Named pipe to MSFS, not direct HTTP
 
 ## COMMANDS
+
 ```bash
 npm run dev           # Vite dev server :5173
 npm run server        # Node.js WS bridge :8080
@@ -97,6 +104,7 @@ npm run capture:baseline   # Capture Playwright baselines
 ```
 
 ## NOTES
+
 - `docs/STATUS.md` — current validation status (don't copy test counts to README)
 - `docs/ARCHITECTURE.md` — system architecture and design decisions
 - `docs/IMPLEMENTATION_STATUS.md` — recent changes and transitional state

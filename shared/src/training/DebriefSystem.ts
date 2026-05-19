@@ -1,19 +1,19 @@
 export type TrainingEventType =
-  | "PAGE_OPENED"
-  | "DATA_ENTERED"
-  | "INVALID_ENTRY"
-  | "MODE_CHANGED"
-  | "ALERT_TRIGGERED"
-  | "ALERT_CLEARED"
-  | "CHECKLIST_ITEM_COMPLETED"
-  | "PHASE_CHANGED"
-  | "DISCONTINUITY_REACHED";
+  | 'PAGE_OPENED'
+  | 'DATA_ENTERED'
+  | 'INVALID_ENTRY'
+  | 'MODE_CHANGED'
+  | 'ALERT_TRIGGERED'
+  | 'ALERT_CLEARED'
+  | 'CHECKLIST_ITEM_COMPLETED'
+  | 'PHASE_CHANGED'
+  | 'DISCONTINUITY_REACHED';
 
 export interface TrainingEvent {
   timestamp: number;
   eventType: TrainingEventType;
   detail: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
+  severity: 'INFO' | 'WARNING' | 'CRITICAL';
 }
 
 export interface ScenarioScore {
@@ -30,7 +30,7 @@ export class DebriefSystem {
   private events: TrainingEvent[] = [];
   private startTime: number = Date.now();
 
-  public logEvent(type: TrainingEventType, detail: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO"): void {
+  public logEvent(type: TrainingEventType, detail: string, severity: 'INFO' | 'WARNING' | 'CRITICAL' = 'INFO'): void {
     this.events.push({
       timestamp: Date.now(),
       eventType: type,
@@ -40,11 +40,9 @@ export class DebriefSystem {
   }
 
   public generateScore(): ScenarioScore {
-    const criticalFailures = this.events
-      .filter(e => e.severity === "CRITICAL")
-      .map(e => e.detail);
-    
-    const errors = this.events.filter(e => e.severity === "WARNING").length;
+    const criticalFailures = this.events.filter((e) => e.severity === 'CRITICAL').map((e) => e.detail);
+
+    const errors = this.events.filter((e) => e.severity === 'WARNING').length;
     const duration = (Date.now() - this.startTime) / 1000;
 
     let totalScore = 100;
@@ -53,8 +51,8 @@ export class DebriefSystem {
     totalScore = Math.max(0, totalScore);
 
     const recommendations: string[] = [];
-    if (criticalFailures.length > 0) recommendations.push("Review critical failure items immediately.");
-    if (errors > 3) recommendations.push("Try to minimize manual data entry errors.");
+    if (criticalFailures.length > 0) recommendations.push('Review critical failure items immediately.');
+    if (errors > 3) recommendations.push('Try to minimize manual data entry errors.');
 
     return {
       completed: criticalFailures.length === 0,

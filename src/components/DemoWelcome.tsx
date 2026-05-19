@@ -5,12 +5,12 @@ import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 import { tutorialScenarios, airbusTutorialScenarios, parseSimBriefJSON } from '@shared';
 
 export function DemoWelcome() {
-  const tutorialActive = useFMCStore(s => s.tutorialActive);
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const setAircraft = useAircraftStore(s => s.setAircraft);
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
-  const setCockpitMode = useCockpitLayoutStore(s => s.setCockpitMode);
-  const startTutorial = useFMCStore(s => s.startTutorial);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const setAircraft = useAircraftStore((s) => s.setAircraft);
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
+  const setCockpitMode = useCockpitLayoutStore((s) => s.setCockpitMode);
+  const startTutorial = useFMCStore((s) => s.startTutorial);
 
   const [showSimBrief, setShowSimBrief] = useState(false);
   const [tab, setTab] = useState<'demos' | 'training'>('training');
@@ -63,12 +63,12 @@ export function DemoWelcome() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-cdu-screen/90 backdrop-blur-sm">
       <div className="w-full max-w-[420px] mx-4 p-5 bg-cdu-bezel border border-cdu-cyan/20 rounded-xl shadow-2xl">
         <div className="text-center mb-5">
-          <h1 className={`${titleColor} text-2xl font-cdu font-bold ${isAirbus ? 'text-glow-amber' : 'text-glow'} mb-1`}>
+          <h1
+            className={`${titleColor} text-2xl font-cdu font-bold ${isAirbus ? 'text-glow-amber' : 'text-glow'} mb-1`}
+          >
             VirtualCDU
           </h1>
-          <p className="text-cdu-cyan/70 text-xs font-cdu uppercase tracking-[0.2em]">
-            {subtitle}
-          </p>
+          <p className="text-cdu-cyan/70 text-xs font-cdu uppercase tracking-[0.2em]">{subtitle}</p>
         </div>
 
         <div className="mb-4 flex gap-1">
@@ -118,14 +118,18 @@ export function DemoWelcome() {
             <h2 className="text-cdu-cyan text-xs font-cdu uppercase tracking-wider mb-2">Choose a Demo</h2>
             <div className="flex flex-col gap-1.5 mb-4">
               {scenarios.map((s) => (
-                <button key={s.name} onClick={() => startTutorial(s.name)}
+                <button
+                  key={s.name}
+                  onClick={() => startTutorial(s.name)}
                   className="flex items-start gap-3 w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors group"
                 >
                   <div className="flex-shrink-0 w-8 h-8 rounded bg-cdu-cyan/10 border border-cdu-cyan/20 flex items-center justify-center mt-0.5">
                     <span className="text-cdu-cyan text-sm font-cdu font-bold">?</span>
                   </div>
                   <div>
-                    <div className="text-cdu-text text-sm font-cdu font-bold group-hover:text-cdu-cyan transition-colors">{s.name}</div>
+                    <div className="text-cdu-text text-sm font-cdu font-bold group-hover:text-cdu-cyan transition-colors">
+                      {s.name}
+                    </div>
                     <div className="text-cdu-text/40 text-[10px] font-cdu mt-0.5">{s.description}</div>
                   </div>
                 </button>
@@ -137,7 +141,7 @@ export function DemoWelcome() {
           </>
         ) : (
           <div className="mb-4 max-h-[300px] overflow-y-auto pr-1">
-             <LessonSelectorInlined aircraft={aircraft} />
+            <LessonSelectorInlined aircraft={aircraft} />
           </div>
         )}
 
@@ -155,9 +159,7 @@ export function DemoWelcome() {
 
           {showSimBrief && (
             <div className="mt-2 p-3 bg-cdu-screen border border-cdu-bezel-light rounded">
-              <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">
-                SimBrief Pilot ID
-              </label>
+              <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">SimBrief Pilot ID</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -190,7 +192,8 @@ export function DemoWelcome() {
             useFMCStore.getState().setMode('ACTIVE');
             useFMCStore.getState().setDemoMode(true);
           }}
-          className="w-full p-2.5 bg-transparent border border-cdu-text/20 hover:border-cdu-text/50 rounded text-cdu-text/50 hover:text-cdu-text text-xs font-cdu uppercase tracking-wider transition-colors">
+          className="w-full p-2.5 bg-transparent border border-cdu-text/20 hover:border-cdu-text/50 rounded text-cdu-text/50 hover:text-cdu-text text-xs font-cdu uppercase tracking-wider transition-colors"
+        >
           Skip Demo — Explore Freely
         </button>
       </div>
@@ -202,32 +205,37 @@ import { boeingLessons, airbusLessons } from '@shared';
 
 function LessonSelectorInlined({ aircraft }: { aircraft: string }) {
   const lessons = aircraft === 'BOEING_737' ? boeingLessons : airbusLessons;
-  const startTraining = useFMCStore(s => s.startTraining);
-  const levels = Array.from(new Set(lessons.map(l => l.level))).sort((a, b) => a - b);
+  const startTraining = useFMCStore((s) => s.startTraining);
+  const levels = Array.from(new Set(lessons.map((l) => l.level))).sort((a, b) => a - b);
 
   return (
     <div className="space-y-4">
-      {levels.map(level => (
+      {levels.map((level) => (
         <div key={level} className="space-y-2">
           <h3 className="text-cdu-text/40 font-cdu uppercase text-[9px] tracking-widest px-2">Level {level}</h3>
           <div className="space-y-1">
-            {lessons.filter(l => l.level === level).map(lesson => (
-              <button
-                key={lesson.id}
-                onClick={() => startTraining(lesson.id)}
-                className="w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors flex items-center gap-3 group"
-              >
-                <div className="w-2 h-2 rounded-full bg-cdu-cyan/30 group-hover:bg-cdu-cyan transition-colors" />
-                <div>
-                  <div className="text-cdu-text text-[11px] font-cdu font-bold group-hover:text-cdu-cyan">{lesson.title}</div>
-                  <div className="text-cdu-text/40 text-[9px] font-cdu">{lesson.estimatedMinutes} MIN • {lesson.difficulty}</div>
-                </div>
-              </button>
-            ))}
+            {lessons
+              .filter((l) => l.level === level)
+              .map((lesson) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => startTraining(lesson.id)}
+                  className="w-full p-3 bg-cdu-screen border border-cdu-bezel-light hover:border-cdu-cyan/40 hover:bg-cdu-bezel-light/30 rounded text-left transition-colors flex items-center gap-3 group"
+                >
+                  <div className="w-2 h-2 rounded-full bg-cdu-cyan/30 group-hover:bg-cdu-cyan transition-colors" />
+                  <div>
+                    <div className="text-cdu-text text-[11px] font-cdu font-bold group-hover:text-cdu-cyan">
+                      {lesson.title}
+                    </div>
+                    <div className="text-cdu-text/40 text-[9px] font-cdu">
+                      {lesson.estimatedMinutes} MIN • {lesson.difficulty}
+                    </div>
+                  </div>
+                </button>
+              ))}
           </div>
         </div>
       ))}
     </div>
   );
 }
-

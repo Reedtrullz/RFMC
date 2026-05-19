@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { FMCState, HoldEntry, RouteData, FlightPlan } from '../types/fmc';
-import {
-  applyPendingRouteChanges,
-  cancelPendingRouteChanges,
-} from '../fmc/fmcModificationAdapter';
+import { applyPendingRouteChanges, cancelPendingRouteChanges } from '../fmc/fmcModificationAdapter';
 
 function makeRoute(overrides: Partial<RouteData> = {}): RouteData {
   return {

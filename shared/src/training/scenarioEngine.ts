@@ -13,7 +13,7 @@ export class TrainingScenarioEngine {
     this.scenario = scenario;
     this.isHintsEnabled = options.hintsEnabled ?? true;
   }
-  
+
   loadScenario(scenario: TrainingScenario) {
     this.scenario = scenario;
     this.currentStepIndex = 0;
@@ -30,17 +30,18 @@ export class TrainingScenarioEngine {
     return this.scenario.steps[this.currentStepIndex];
   }
 
-  processAction(action: ExpectedAction, currentState: Record<string, unknown>): { 
-    success: boolean; 
-    completed: boolean; 
+  processAction(
+    action: ExpectedAction,
+    currentState: Record<string, unknown>,
+  ): {
+    success: boolean;
+    completed: boolean;
     mistake?: TrainingMistake;
     nextStep?: TrainingStep;
   } {
     const step = this.getCurrentStep();
     const isCorrectAction = this.validateAction(action, step.expectedAction);
-    const isStateCorrect = step.stateValidation 
-      ? this.validateState(currentState, step.stateValidation)
-      : true;
+    const isStateCorrect = step.stateValidation ? this.validateState(currentState, step.stateValidation) : true;
 
     if (isCorrectAction && isStateCorrect) {
       this.currentStepIndex++;
@@ -48,21 +49,23 @@ export class TrainingScenarioEngine {
       return {
         success: true,
         completed,
-        nextStep: completed ? undefined : this.getCurrentStep()
+        nextStep: completed ? undefined : this.getCurrentStep(),
       };
     } else {
       let description = `Expected ${this.formatAction(step.expectedAction)}`;
       let diagnosticHint: string | undefined;
 
       if (!isStateCorrect && step.stateValidation) {
-        const failed = step.stateValidation.find(v => !this.checkCondition(this.getNestedValue(currentState, v.path), v.expected, v.operator));
+        const failed = step.stateValidation.find(
+          (v) => !this.checkCondition(this.getNestedValue(currentState, v.path), v.expected, v.operator),
+        );
         if (failed) {
-           description = `Condition failed: ${failed.path} should be ${failed.expected}`;
-           
-           // Diagnostic logic
-           if (failed.path.includes('autopilot.truth')) {
-             diagnosticHint = this.getDiagnosticHint(failed, currentState);
-           }
+          description = `Condition failed: ${failed.path} should be ${failed.expected}`;
+
+          // Diagnostic logic
+          if (failed.path.includes('autopilot.truth')) {
+            diagnosticHint = this.getDiagnosticHint(failed, currentState);
+          }
         }
       } else if (!isCorrectAction) {
         description += ` but got ${this.formatAction(action)}`;
@@ -72,13 +75,13 @@ export class TrainingScenarioEngine {
         this.getMistakeType(action),
         step.id,
         diagnosticHint ? `${description}. Hint: ${diagnosticHint}` : description,
-        'medium'
+        'medium',
       );
       this.mistakes.push(mistake);
       return {
         success: false,
         completed: false,
-        mistake
+        mistake,
       };
     }
   }
@@ -86,19 +89,19 @@ export class TrainingScenarioEngine {
   private getDiagnosticHint(failed: StateValidation, state: Record<string, unknown>): string | undefined {
     if (failed.path.includes('lateralActive') && failed.expected === 'LNAV') {
       const waypoints = this.getNestedValue(state, 'flightPlan.waypoints');
-      if (!Array.isArray(waypoints) || waypoints.length === 0) return "LNAV requires an active flight plan.";
+      if (!Array.isArray(waypoints) || waypoints.length === 0) return 'LNAV requires an active flight plan.';
       const irsState = this.getNestedValue(state, 'position.irsState');
-      if (irsState !== 'NAV') return "LNAV requires aligned IRS.";
+      if (irsState !== 'NAV') return 'LNAV requires aligned IRS.';
     }
     if (failed.path.includes('verticalActive') && failed.expected === 'VNAV_PTH') {
       const zfw = this.getNestedValue(state, 'performance.zfw');
-      if (!zfw) return "VNAV requires performance data (ZFW).";
+      if (!zfw) return 'VNAV requires performance data (ZFW).';
     }
     return undefined;
   }
 
   validateState(state: Record<string, unknown>, validations: StateValidation[]): boolean {
-    return validations.every(v => {
+    return validations.every((v) => {
       const actual = this.getNestedValue(state, v.path);
       return this.checkCondition(actual, v.expected, v.operator);
     });
@@ -106,11 +109,16 @@ export class TrainingScenarioEngine {
 
   private checkCondition(actual: unknown, expected: unknown, operator: string = '=='): boolean {
     switch (operator) {
-      case '!=': return actual != expected;
-      case '>': return (actual as number) > (expected as number);
-      case '<': return (actual as number) < (expected as number);
-      case 'includes': return Array.isArray(actual) && actual.includes(expected);
-      default: return actual == expected;
+      case '!=':
+        return actual != expected;
+      case '>':
+        return (actual as number) > (expected as number);
+      case '<':
+        return (actual as number) < (expected as number);
+      case 'includes':
+        return Array.isArray(actual) && actual.includes(expected);
+      default:
+        return actual == expected;
     }
   }
 
@@ -131,13 +139,17 @@ export class TrainingScenarioEngine {
       case 'press_key':
         return actual.key === (expected as { key: string }).key;
       case 'press_lsk':
-        return actual.side === (expected as { side: 'L' | 'R'; index: number }).side
-            && actual.index === (expected as { side: 'L' | 'R'; index: number }).index;
+        return (
+          actual.side === (expected as { side: 'L' | 'R'; index: number }).side &&
+          actual.index === (expected as { side: 'L' | 'R'; index: number }).index
+        );
       case 'enter_scratchpad':
         return actual.value === (expected as { value: string }).value;
       case 'set_mcp':
-        return actual.field === (expected as { field: string; value: string | number | boolean }).field
-            && actual.value === (expected as { field: string; value: string | number | boolean }).value;
+        return (
+          actual.field === (expected as { field: string; value: string | number | boolean }).field &&
+          actual.value === (expected as { field: string; value: string | number | boolean }).value
+        );
       case 'verify_fma':
         return true;
       default:
@@ -147,21 +159,31 @@ export class TrainingScenarioEngine {
 
   private getMistakeType(action: ExpectedAction): string {
     switch (action.type) {
-      case 'press_key': return MISTAKE_TYPES.WRONG_KEY;
-      case 'press_lsk': return MISTAKE_TYPES.WRONG_LSK;
-      case 'enter_scratchpad': return MISTAKE_TYPES.INVALID_DATA;
-      default: return MISTAKE_TYPES.MODE_ERROR;
+      case 'press_key':
+        return MISTAKE_TYPES.WRONG_KEY;
+      case 'press_lsk':
+        return MISTAKE_TYPES.WRONG_LSK;
+      case 'enter_scratchpad':
+        return MISTAKE_TYPES.INVALID_DATA;
+      default:
+        return MISTAKE_TYPES.MODE_ERROR;
     }
   }
 
   private formatAction(action: ExpectedAction): string {
     switch (action.type) {
-      case 'press_key': return `Key ${action.key}`;
-      case 'press_lsk': return `LSK ${action.side}${action.index}`;
-      case 'enter_scratchpad': return `Input "${action.value}"`;
-      case 'set_mcp': return `Set MCP ${action.field} to ${action.value}`;
-      case 'verify_fma': return `Verify FMA ${action.mode}`;
-      default: return action.type;
+      case 'press_key':
+        return `Key ${action.key}`;
+      case 'press_lsk':
+        return `LSK ${action.side}${action.index}`;
+      case 'enter_scratchpad':
+        return `Input "${action.value}"`;
+      case 'set_mcp':
+        return `Set MCP ${action.field} to ${action.value}`;
+      case 'verify_fma':
+        return `Verify FMA ${action.mode}`;
+      default:
+        return action.type;
     }
   }
 
@@ -171,7 +193,7 @@ export class TrainingScenarioEngine {
       this.mistakes,
       timeSeconds,
       this.scenario.steps.length,
-      this.scenario.estimatedMinutes
+      this.scenario.estimatedMinutes,
     );
 
     return {
@@ -179,13 +201,13 @@ export class TrainingScenarioEngine {
       score,
       passed: score.total >= this.scenario.passCriteria.minScore,
       mistakes: this.mistakes,
-      timeSeconds
+      timeSeconds,
     };
   }
 }
 
 // Singleton for easier integration with existing components
-export const scenarioEngine = new TrainingScenarioEngine({ 
+export const scenarioEngine = new TrainingScenarioEngine({
   id: 'placeholder',
   aircraft: 'BOEING_737',
   title: 'Placeholder',
@@ -194,7 +216,7 @@ export const scenarioEngine = new TrainingScenarioEngine({
   category: 'fmc',
   difficulty: 'basic',
   setup: {},
-  steps: [], 
+  steps: [],
   estimatedMinutes: 5,
-  passCriteria: { minScore: 80, maxMistakes: 5 } 
+  passCriteria: { minScore: 80, maxMistakes: 5 },
 });

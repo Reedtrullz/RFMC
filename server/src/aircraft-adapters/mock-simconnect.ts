@@ -116,7 +116,7 @@ export class MockSimConnectAdapter implements IAircraftAdapter {
       pitchDeg: 0,
       bankDeg: 0,
       radioAltitudeFt: 12000,
-      
+
       // Legacy compatibility
       heading: 270,
       track: 270,
@@ -156,6 +156,6 @@ export class MockSimConnectAdapter implements IAircraftAdapter {
 
   private delay(): Promise<void> {
     if (this.latencyMs <= 0) return Promise.resolve();
-    return new Promise(resolve => setTimeout(resolve, this.latencyMs));
+    return new Promise((resolve) => setTimeout(resolve, this.latencyMs));
   }
 }

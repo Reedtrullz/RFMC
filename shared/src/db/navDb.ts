@@ -143,8 +143,11 @@ export async function getWaypointsByIdent(ident: string): Promise<WaypointRecord
   return db.getAllFromIndex('waypoints', 'by-ident', ident);
 }
 
-export async function getProceduresForAirport(icao: string, type: 'SID' | 'STAR' | 'APPROACH'): Promise<ProcedureRecord[]> {
+export async function getProceduresForAirport(
+  icao: string,
+  type: 'SID' | 'STAR' | 'APPROACH',
+): Promise<ProcedureRecord[]> {
   const db = await getNavDb();
   const allProcs = await db.getAllFromIndex('procedures', 'by-airport', icao);
-  return allProcs.filter(p => p.type === type);
+  return allProcs.filter((p) => p.type === type);
 }

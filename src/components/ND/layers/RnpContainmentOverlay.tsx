@@ -15,26 +15,26 @@ export function RnpContainmentOverlay({ model }: RnpContainmentOverlayProps) {
   return (
     <g data-testid="nd-rnp-containment">
       {/* RNP Boundary Circle (Dashed White) */}
-      <circle 
-        cx="50" 
-        cy={cy} 
-        r={radius} 
-        fill="none" 
-        stroke="white" 
-        strokeWidth="0.2" 
-        strokeDasharray="1 1" 
+      <circle
+        cx="50"
+        cy={cy}
+        r={radius}
+        fill="none"
+        stroke="white"
+        strokeWidth="0.2"
+        strokeDasharray="1 1"
         opacity="0.3"
       />
-      
+
       {/* ANP Current Position Confidence (Solid White) */}
-      <circle 
-        cx="50" 
-        cy={cy} 
-        r={anpRadius} 
-        fill="white" 
+      <circle
+        cx="50"
+        cy={cy}
+        r={anpRadius}
+        fill="white"
         fillOpacity="0.05"
-        stroke="white" 
-        strokeWidth="0.3" 
+        stroke="white"
+        strokeWidth="0.3"
         opacity="0.6"
       />
 

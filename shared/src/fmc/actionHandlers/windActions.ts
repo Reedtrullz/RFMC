@@ -37,11 +37,7 @@ function handleSetTakeoffWind(state: FMCState, scratchpad: string): FmcActionRes
  * Handle CLB/CRZ/DES wind LSK actions.
  * Sets performance.{clb,crz,des}WindDir/WindSpeed.
  */
-function handlePhaseWind(
-  action: string,
-  state: FMCState,
-  scratchpad: string,
-): FmcActionResult {
+function handlePhaseWind(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const wRes = isValidWind(scratchpad);
@@ -99,11 +95,7 @@ function handleSetIsaDev(state: FMCState, scratchpad: string): FmcActionResult {
 }
 
 /** Dispatch wind-related LSK actions. */
-export function handleWindAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string,
-): FmcActionResult {
+export function handleWindAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_wind':
       return handleSetTakeoffWind(state, scratchpad);

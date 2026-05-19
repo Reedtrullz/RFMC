@@ -26,7 +26,7 @@ describe('AutoflightModeManager', () => {
         waypoints: [
           { ident: 'KSEA', lat: 47.4489, lon: -122.3093, discontinuity: false },
           { ident: 'UNRESOLVED_FIX', coordinateSource: 'UNRESOLVED', discontinuity: false },
-        ]
+        ],
       },
       position: { irsState: 'NAV' },
     } as unknown as FMCState;

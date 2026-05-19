@@ -242,9 +242,7 @@ describe('renderFplnGrid', () => {
     const state = makeState();
     const data = renderFplnGrid(state);
 
-    const titleSegments = data.segments?.filter(
-      (s) => s.semantic === 'title',
-    );
+    const titleSegments = data.segments?.filter((s) => s.semantic === 'title');
     expect(titleSegments).toHaveLength(1);
     expect(titleSegments![0].text).toContain('F-PLN');
     expect(titleSegments![0].text).toContain('KJFK');
@@ -255,9 +253,7 @@ describe('renderFplnGrid', () => {
     const state = makeState();
     const data = renderFplnGrid(state);
 
-    const pageIndicatorSegments = data.segments?.filter(
-      (s) => s.semantic === 'pageIndicator',
-    );
+    const pageIndicatorSegments = data.segments?.filter((s) => s.semantic === 'pageIndicator');
     expect(pageIndicatorSegments).toHaveLength(1);
     expect(pageIndicatorSegments![0].text).toMatch(/^\d+\/\d+$/);
   });
@@ -266,9 +262,7 @@ describe('renderFplnGrid', () => {
     const state = makeState({ isModified: true });
     const data = renderFplnGrid(state);
 
-    const titleSegments = data.segments?.filter(
-      (s) => s.semantic === 'title',
-    );
+    const titleSegments = data.segments?.filter((s) => s.semantic === 'title');
     expect(titleSegments![0].text).toContain('TMPY F-PLN');
   });
 
@@ -276,9 +270,7 @@ describe('renderFplnGrid', () => {
     const state = makeState();
     const data = renderFplnGrid(state);
 
-    const headerSegments = data.segments?.filter(
-      (s) => s.row === 1 && s.text === ' SPD/ALT',
-    );
+    const headerSegments = data.segments?.filter((s) => s.row === 1 && s.text === ' SPD/ALT');
     expect(headerSegments).toHaveLength(1);
     expect(headerSegments![0].color).toBe('white');
   });
@@ -316,9 +308,7 @@ describe('renderFplnGrid', () => {
     expect(rbvSeg).toBeDefined();
     expect(rbvSeg!.color).toBe('white');
 
-    const constraintSegments = data.segments?.filter(
-      (s) => s.color === 'green' && s.row > 1,
-    );
+    const constraintSegments = data.segments?.filter((s) => s.color === 'green' && s.row > 1);
     expect(constraintSegments!.length).toBeGreaterThan(0);
     constraintSegments!.forEach((seg) => {
       expect(seg.color).toBe('green');
@@ -350,9 +340,7 @@ describe('renderFplnGrid', () => {
     });
     const data = renderFplnGrid(state);
 
-    const discoSegment = data.segments?.find((s) =>
-      s.text.includes('DISCONTINUITY'),
-    );
+    const discoSegment = data.segments?.find((s) => s.text.includes('DISCONTINUITY'));
     expect(discoSegment).toBeDefined();
     expect(discoSegment!.color).toBe('amber');
     expect(discoSegment!.text).toBe('----- F-PLN DISCONTINUITY -----');
@@ -515,9 +503,7 @@ describe('renderFplnGrid', () => {
     });
     const data = renderFplnGrid(state);
 
-    const pageIndicator = data.segments?.find(
-      (s) => s.semantic === 'pageIndicator',
-    );
+    const pageIndicator = data.segments?.find((s) => s.semantic === 'pageIndicator');
     expect(pageIndicator!.text).toBe('2/2');
   });
 
@@ -539,9 +525,7 @@ describe('renderFplnGrid', () => {
     });
     const data = renderFplnGrid(state);
 
-    const wptSegments = data.segments?.filter(
-      (s) => s.text.startsWith('WPT') && s.color === 'white',
-    );
+    const wptSegments = data.segments?.filter((s) => s.text.startsWith('WPT') && s.color === 'white');
     expect(wptSegments).toHaveLength(4);
     expect(wptSegments![0].text).toBe('WPT01');
     expect(wptSegments![3].text).toBe('WPT04');

@@ -23,20 +23,17 @@ export interface PerformancePrediction {
 export function buildPerformancePrediction(state: FMCState): PerformancePrediction {
   const grossWeight = resolveGrossWeight(state);
   const lnav = buildLnavState(state);
-  const estimatedTripFuel = lnav.distanceToDestinationNm !== null
-    ? estimateTripFuel(grossWeight, lnav.distanceToDestinationNm)
-    : null;
-  const estimatedFuelAtDestination = estimatedTripFuel !== null
-    ? Math.max(0, state.performance.fuel - estimatedTripFuel)
-    : null;
+  const estimatedTripFuel =
+    lnav.distanceToDestinationNm !== null ? estimateTripFuel(grossWeight, lnav.distanceToDestinationNm) : null;
+  const estimatedFuelAtDestination =
+    estimatedTripFuel !== null ? Math.max(0, state.performance.fuel - estimatedTripFuel) : null;
   const runwayLengthFt = estimateRunwayLength(state.takeoff.runway || state.route.runway || null);
-  const requiredRunwayLengthFt = grossWeight > 0
-    ? estimateRequiredRunwayLength(grossWeight, state.takeoff.flaps, state.takeoff.oat, state.takeoff.windSpeed)
-    : null;
+  const requiredRunwayLengthFt =
+    grossWeight > 0
+      ? estimateRequiredRunwayLength(grossWeight, state.takeoff.flaps, state.takeoff.oat, state.takeoff.windSpeed)
+      : null;
   const warnings: string[] = [];
-  const notes: string[] = [
-    'Trainer-grade approximation only. Not for dispatch or operational use.',
-  ];
+  const notes: string[] = ['Trainer-grade approximation only. Not for dispatch or operational use.'];
 
   if (!hasPerformanceBasics(state)) {
     warnings.push('PERF/VNAV UNAVAILABLE');
@@ -50,17 +47,14 @@ export function buildPerformancePrediction(state: FMCState): PerformancePredicti
     warnings.push('INSUFFICIENT FUEL');
   }
 
-  if (
-    runwayLengthFt !== null &&
-    requiredRunwayLengthFt !== null &&
-    runwayLengthFt < requiredRunwayLengthFt
-  ) {
+  if (runwayLengthFt !== null && requiredRunwayLengthFt !== null && runwayLengthFt < requiredRunwayLengthFt) {
     warnings.push('RUNWAY TOO SHORT');
   }
 
-  const speeds = grossWeight > 0 && state.takeoff.flaps
-    ? PerformanceEngine.calculateTakeoffSpeeds(grossWeight, state.takeoff.flaps)
-    : null;
+  const speeds =
+    grossWeight > 0 && state.takeoff.flaps
+      ? PerformanceEngine.calculateTakeoffSpeeds(grossWeight, state.takeoff.flaps)
+      : null;
 
   return {
     aircraft: state.aircraft,
@@ -82,10 +76,12 @@ export function buildPerformancePrediction(state: FMCState): PerformancePredicti
 }
 
 function hasPerformanceBasics(state: FMCState): boolean {
-  return resolveGrossWeight(state) > 0 &&
+  return (
+    resolveGrossWeight(state) > 0 &&
     state.performance.fuel > 0 &&
     state.performance.crzAlt > 0 &&
-    state.performance.costIndex >= 0;
+    state.performance.costIndex >= 0
+  );
 }
 
 function resolveGrossWeight(state: FMCState): number {
@@ -111,7 +107,7 @@ function estimateRequiredRunwayLength(
 ): number {
   const flapSetting = parseInt(flaps ?? '5', 10) || 5;
   const flapFactor = flapSetting <= 1 ? 1.12 : flapSetting >= 15 ? 0.92 : 1;
-  const temperatureFactor = oatC > 15 ? 1 + ((oatC - 15) * 0.007) : 1;
+  const temperatureFactor = oatC > 15 ? 1 + (oatC - 15) * 0.007 : 1;
   const headwindCredit = Math.min(0.1, Math.max(0, windSpeedKt) * 0.004);
   const base = 5200 + Math.max(0, grossWeight - 120000) * 0.045;
   return Math.round(base * flapFactor * temperatureFactor * (1 - headwindCredit));

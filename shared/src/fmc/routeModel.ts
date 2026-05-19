@@ -95,10 +95,7 @@ export function insertDiscontinuity(
  * @param discontinuityId The `id` of the discontinuity to clear.
  * @returns A new route array with the targeted discontinuity cleared.
  */
-export function clearDiscontinuity(
-  route: RouteEntry[],
-  discontinuityId: string,
-): RouteEntry[] {
+export function clearDiscontinuity(route: RouteEntry[], discontinuityId: string): RouteEntry[] {
   return route.map((entry) => {
     if (isRouteDiscontinuity(entry) && entry.id === discontinuityId) {
       return { ...entry, cleared: true };
@@ -115,9 +112,7 @@ export function clearDiscontinuity(
  * @returns `true` if any uncleared `RouteDiscontinuity` exists in the route.
  */
 export function hasActiveDiscontinuity(route: RouteEntry[]): boolean {
-  return route.some(
-    (entry) => isRouteDiscontinuity(entry) && !entry.cleared,
-  );
+  return route.some((entry) => isRouteDiscontinuity(entry) && !entry.cleared);
 }
 
 /**
@@ -142,9 +137,7 @@ export function resolveDiscontinuity(
   route: RouteEntry[],
   connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'>,
 ): RouteEntry[] {
-  const targetIndex = route.findIndex(
-    (entry) => isRouteDiscontinuity(entry) && entry.cleared,
-  );
+  const targetIndex = route.findIndex((entry) => isRouteDiscontinuity(entry) && entry.cleared);
 
   if (targetIndex === -1) {
     throw new Error('No cleared discontinuity found in route');

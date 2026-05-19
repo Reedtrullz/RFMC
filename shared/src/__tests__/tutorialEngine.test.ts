@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { 
-  calculateTutorialGrade, 
-  preflightScenario, 
-  isStepComplete
-} from '../fmc/tutorialEngine';
+import { calculateTutorialGrade, preflightScenario, isStepComplete } from '../fmc/tutorialEngine';
 import { airbusTutorialScenarios } from '../fmc/tutorials/airbus-tutorials';
 import type { FMCState } from '../types/fmc';
 
@@ -32,7 +28,7 @@ describe('tutorialEngine', () => {
   it('identifies completed steps correctly', () => {
     const state: Partial<FMCState> = {
       currentPage: 'POS_INIT',
-      scratchpad: 'KJFK'
+      scratchpad: 'KJFK',
     };
     const step = preflightScenario.steps[1]; // KJFK entry on POS_INIT
     expect(isStepComplete(step as any, state as FMCState)).toBe(true);

@@ -1,20 +1,6 @@
-export type BoeingColor =
-  | 'cyan'
-  | 'green'
-  | 'magenta'
-  | 'white'
-  | 'black'
-  | 'shaded'
-  | 'amber'
-  | 'red';
+export type BoeingColor = 'cyan' | 'green' | 'magenta' | 'white' | 'black' | 'shaded' | 'amber' | 'red';
 
-export type AirbusColor =
-  | 'white'
-  | 'blue'
-  | 'green'
-  | 'amber'
-  | 'magenta'
-  | 'cyan';
+export type AirbusColor = 'white' | 'blue' | 'green' | 'amber' | 'magenta' | 'cyan';
 
 export type DisplayColor = BoeingColor | AirbusColor;
 

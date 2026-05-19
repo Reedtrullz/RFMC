@@ -82,6 +82,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Updated `buildTrainingProgress()` so blocking shared performance predictions such as `INSUFFICIENT FUEL` and `RUNWAY TOO SHORT` send the user back to performance review before takeoff setup can be treated as complete.
 
 ## Coverage Hardening Update
+
 - Added backend `FMCEngine` regression tests for null renderer fallback, route parsing into LEGS, DEP/ARR procedure entry, HOLD staging/EXEC commit, V-speed ordering rejection, DIR INTC, and N1 LIMIT mode output.
 - Added frontend Zustand store regressions for route parsing, LEGS insert/delete, HOLD staging/commit, V-speed ordering, DEP/ARR, DIR INTC, and N1 LIMIT.
 - Expanded Playwright coverage from smoke-only to include the Boeing IDENT → TAKEOFF REF flow, Airbus INIT/F-PLN/DEP-ARR/PERF TO flow, mocked SimBrief import, and screenshot-backed nonblank rendering checks for Boeing and Airbus displays.
@@ -89,6 +90,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - V-speed validation now reports the specific failed ordering constraint (`V1 MUST BE < VR` or `VR MUST BE < V2`) instead of only the generic all-field ordering message.
 
 ## Consolidated Masterplan Implementation Update
+
 - Added current execution artifacts: `ROADMAP.md`, `METRICS.md`, `TEST_MATRIX.md`, `PILOT_REVIEW_RUBRIC.md`, `KNOWN_LIMITATIONS.md`, `SCOPE.md`, `CHANGELOG.md`, and ADR 0001.
 - Marked older overlapping planning documents as superseded or planning-baseline-only so they no longer compete with the current tracker.
 - Added `reference-library/references.json` to track real CDU/MCDU reference provenance, usage rights, crop rules, and measurement purpose.
@@ -127,16 +129,19 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 ## Oracle Round 28 Critical Blockers — FIXED
 
 ### BLOCKER 1+2: WebSocket connection sharing
+
 - **Problem**: Each `CDU`/`AirbusCDU` component created separate `useWebSocket()` instance with its own `wsRef`. CONTROL mode input sent on unconnected socket. `connectionStatus` local to hook, never set to CONNECTED.
 - **Fix**: Read `connectionStatus` from Zustand store (single source of truth). Added `setConnectionStatus('CONNECTED')` in `onopen` handler. Both CDU and AirbusCDU components now use store-based status.
 - **Files**: `src/hooks/useWebSocket.ts`, `src/components/CDU/CDU.tsx`, `src/components/CDU/AirbusCDU.tsx`
 
 ### BLOCKER 3: Route parsing into waypoints
+
 - **Problem**: RTE page `set_route` only stored `routeString`; `parseRouteString` was never called, `flightPlan.waypoints` never populated, `legsPageCount` never updated.
 - **Fix**: `set_route` action now calls `parseRouteString()`, extracts waypoints, populates `flightPlan.waypoints`, recalculates `legsPageCount`. Works on both frontend and backend.
 - **Files**: `src/store/useFMCStore.ts`, `server/src/fmc-engine.ts`
 
 ### BLOCKER 4: DEP/ARR terminal procedure selection
+
 - **Problem**: DEP/ARR displayed SIDs, STARS, approaches as static text but every selectable LSK was `null`. Terminal procedures could not be selected.
 - **Fix**: Rewired DEP page (SID, RUNWAY editable), ARR page (STAR, APPROACH, RUNWAY editable) with `set_sid`, `set_rwy`, `set_star`, `set_appr` handlers in both frontend and backend.
 - **Files**: `shared/src/fmc/pages/route.ts`, `src/store/useFMCStore.ts`, `server/src/fmc-engine.ts`
@@ -144,16 +149,19 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 ## Oracle Round 29 Major Issues — FIXED
 
 ### MAJOR 5: THRUST LIM assumed temperature
+
 - **Problem**: SEL OAT row showed assumed temperature but had no action to set it.
 - **Fix**: Added `set_assumed_temp` action (`L2` on THRUST LIM page) with frontend/backend handlers. Updates `takeoff.assumedTemp`.
 - **Files**: `shared/src/fmc/pages/setup.ts`, `src/store/useFMCStore.ts`, `server/src/fmc-engine.ts`
 
 ### MAJOR 6: DIR INTC / N1 LIMIT pages
+
 - **Problem**: DIR INTC had no action for DIRECT TO entry. N1 LIMIT displayed static `---.-%` values.
 - **Fix**: Added `set_direct_to` action with `directTo` field in `RouteData` type. N1 LIMIT page now shows mode-dependent N1 percentages (TO/TO 1/TO 2 presets).
 - **Files**: `shared/src/types/fmc.ts`, `shared/src/fmc/pages/direct.ts`, `shared/src/fmc/pages/n1limit.ts`, `src/store/useFMCStore.ts`, `server/src/fmc-engine.ts`
 
 ### MAJOR 7: V-speed cross-field validation
+
 - **Problem**: V1, VR, V2 validated individually but V1<VR<V2 ordering not enforced.
 - **Fix**: `isValidVSpeeds()` updated to allow partial entry (0 values pass) and check ordering incrementally. `set_v1`, `set_vr`, `set_v2` now call cross-field validation on each entry. Detailed error messages: "V1<VR<V2 REQUIRED", "V1 MUST BE < VR", "VR MUST BE < V2".
 - **Files**: `shared/src/fmc/validation.ts`, `src/store/useFMCStore.ts`, `server/src/fmc-engine.ts`
@@ -161,6 +169,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 ## Oracle Rounds 1-27 Summary (Previously Fixed)
 
 ### Core Infrastructure
+
 - Server-side Airbus page rendering with `getAirbusPageRenderer()` fallback
 - Backend LSK handling for CONTROL mode (L1-R6, page navigation, sub-pages, next/prev)
 - `scratchpadError` field propagated through WebSocket to frontend display
@@ -174,9 +183,10 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - `handleDataEntry()` returns `boolean | 'error'` to distinguish validation failures
 
 ### Boeing Pages
+
 - 7 missing function keys added (CLB, CRZ, DES, DIR_INTC, N1_LIMIT)
 - 5 new page renderers: CLB, CRZ, DES, DIR INTC, N1 LIMIT
-- LEGS delete flow (delete_wp_* actions, deleteMode indicator)
+- LEGS delete flow (delete*wp*\* actions, deleteMode indicator)
 - HOLD page with full staging (fix, inbound CRS, leg time/dist, direction)
 - FIX page with radial/distance and ref fix input
 - PROGRESS page with live aircraft state interpolation
@@ -184,12 +194,14 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - SimBrief XML/JSON import
 
 ### Airbus MCDU
+
 - Full page suite: INIT A/B, F-PLN, PERF TO/APPR, PROG A, DEP/ARR A, SEC F-PLN, FUEL PRED, RAD NAV, DATA INDEX, MCDU MENU
 - Airbus-specific function key mapping (DIR→DIR_INTC, DATA→DATA_INDEX)
 - Airbus validation parity (from_to ICAO, crz_fl altitude, altn ICAO, block fuel, flex temp, CG)
 - DisplayLine color support across all pages
 
 ### MSFS Integration
+
 - PMDG 737 adapter via node-simconnect (SimConnect named pipe)
 - FBW A320 adapter (mock data, documented limitation)
 - Connection diagnostics panel with live aircraft state
@@ -199,6 +211,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - Server fmc.display broadcasting with CDCDisplayData→DisplayData conversion
 
 ### Type Fixes
+
 - `DisplayLine.color` changed from `string` to `DisplayColor` across all page renderers
 - `TutorialState` interface added to FMCStore type
 - `StoreAPI` type fixed to `import('zustand').StoreApi<FMCStore>`
@@ -211,6 +224,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 ## Phase-by-Phase Completion
 
 ### Phase 0 (Bug Fixes) — COMPLETE
+
 - [x] T0.1: Airbus MENU crash fixed
 - [x] T0.2: Server FMCState fields added
 - [x] T0.3: Null renderer check added
@@ -218,16 +232,20 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] T0.5: Build verification passing
 
 ### Phase 1 (Display Engine) — COMPLETE
+
 - [x] T1.1-T1.5: Color tokens, DisplayLine color support, Tailwind config, shared exports
 
 ### Phase 2 (Boeing Multi-Color) — COMPLETE
+
 - [x] T2.1-T2.3: Cyan headers, white labels, green data applied to all pages
 - [x] 7 missing function keys added
 
 ### Phase 3 (Airbus Accuracy) — COMPLETE
+
 - [x] T3.1-T3.5: Corrected function key labels, MCDU MENU styling
 
 ### Phase 4 (Input Validation & Wiring) — COMPLETE
+
 - [x] T4.1-T4.2: Input validation framework (9 validators) + store integration
 - [x] T4.3: LEGS page waypoint editing (insert, delete, update constraints)
 - [x] T4.4: HOLD page with staged changes
@@ -236,6 +254,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] T4.7: SimBrief import UI
 
 ### Phase 5 (MSFS Integration) — MOSTLY COMPLETE
+
 - [x] T5.1: node-simconnect installed
 - [x] T5.2: Basic SimConnect connection in PMDG adapter
 - [x] T5.3: Adapter interface updated
@@ -245,6 +264,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] T5.7: MSFS data sync verified (server broadcasts, frontend receives)
 
 ### Phase 6 (Polish) — COMPLETE
+
 - [x] T6.1: Failure mode annunciations (FAIL/OFF modes)
 - [x] T6.2: Contextual LSK labels
 - [x] T6.3: Button press animations
@@ -252,6 +272,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] T6.5: Performance metrics (time tracking, localStorage, completion screen)
 
 ### Phase 7 (Testing, CI & Quality) — COMPLETE
+
 - [x] T7.1: Vitest installed and configured with coverage thresholds.
 - [x] T7.2-T7.6: Automated unit, E2E, and visual-regression baselines established. Current counts live in `docs/STATUS.md`.
 - [x] T7.7: Audit Policy established in AUDIT_POLICY.md.
@@ -259,36 +280,42 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 ## Post-Oracle Fixes Applied
 
 ### Round 1
+
 - [x] Missing Boeing page renderers created (CLB, CRZ, DES, DIR_INTC, N1_LIMIT)
 - [x] Airbus color support added to all 12 pages
-- [x] LEGS delete flow fixed (delete_wp_* actions, visual indicator)
+- [x] LEGS delete flow fixed (delete*wp*\* actions, visual indicator)
 - [x] WebSocket fmc.display wired in frontend
 - [x] Production console.log replaced with devLog/devError
 - [x] `as any` usage removed from store and server
 
 ### Round 2
-- [x] Remaining console.* calls in useWebSocket.ts replaced
-- [x] Server console.* calls replaced (index.ts, PMDG adapter, FBW adapter)
+
+- [x] Remaining console.\* calls in useWebSocket.ts replaced
+- [x] Server console.\* calls replaced (index.ts, PMDG adapter, FBW adapter)
 - [x] Server fmc.display broadcasting added (converts CDUDisplayData → DisplayData)
 - [x] FBW adapter stub comments removed
 - [x] Airbus function key mapping fixed (DIR→DIR_INTC, DATA→DATA_INDEX)
 - [x] Backend FMC engine support added for new Boeing pages
 
 ### Round 3
+
 - [x] TypeScript compilation clean.
 - [x] Automated unit and E2E tests passing at the time of that round.
 - [x] Build successful.
 
 ### Round 4
+
 - [x] 5 empty catch blocks replaced with devError logging
 - [x] Airbus keys added to CDUKey type
 - [x] Server fmc-engine.ts routes Airbus keys in processInput() and setPage()
 
 ### Round 5
+
 - [x] Server-side Airbus page rendering fixed: `shared/src/fmc/pages/index.ts` getPageRenderer() now falls back to getAirbusPageRenderer() for Airbus pages
 - [x] Verified: pressing Airbus keys (INIT_A, F_PLN, DATA_INDEX, etc.) in backend-authoritative/WebSocket CONTROL mode renders correct Airbus page instead of falling back to Boeing MENU
 
 ### Round 6
+
 - [x] Backend LSK handling implemented in `server/src/fmc-engine.ts`
 - [x] LSK actions (L1-R6) are now processed in CONTROL mode by looking up current page's lskActions
 - [x] Page navigation actions mapped for both Boeing (pos_init, rte, legs, etc.) and Airbus (init_a, init_b, f_pln, perf_to, perf_appr, fuel_pred, sec_fpln, rad_nav, data_index, mcdu_menu, fpln_dep_arr)
@@ -299,14 +326,17 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] Code refactored to remove comments — advancePage(), rewindPage(), handleLskAction() are self-documenting
 
 ### Round 7
+
 - [x] Added `fpln_next` and `fpln_prev` action handling in backend handleLskAction (maps to advancePage/rewindPage)
 - [x] Verified all Airbus lskActions have backend handlers
 
 ### Round 8
+
 - [x] Backend `handleLskAction()` tracks `handled` flag
 - [x] Unhandled actions set `scratchpadError = 'NOT SUPPORTED'` instead of silently no-oping
 
 ### Round 9
+
 - [x] Added `scratchpadError` field to `DisplayData` shared type (`shared/src/types/fmc.ts`)
 - [x] Server `getDisplayData()` includes `scratchpadError` from backend state
 - [x] Frontend `setExternalDisplayData()` updates store `scratchpadError` from received display data
@@ -315,6 +345,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] Fixed `fpln_next` / `next_page` false positives on unsupported pages (e.g., PERF_INIT, TAKEOFF_REF, F_PLN)
 
 ### Round 11
+
 - [x] Added HOLD and FIX to backend functionKeys and pageMap
 - [x] Backend DEL key toggles deleteMode on LEGS when scratchpad is empty
 - [x] Added `handleDataEntry()` method with 25+ data-entry action handlers:
@@ -328,6 +359,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] TypeScript compilation clean (fixed `result.error` optional type with nullish coalescing)
 
 ### Round 12
+
 - [x] EXEC key commits `holdPending` to `hold` (staged HOLD changes applied on EXEC)
 - [x] HOLD staged edits use `holdPending ?? hold` as base — successive fields no longer overwrite each other
 - [x] Added validation: set_cost_index (0-500), set_zfw (>0), set_reserve (>=0), set_runway (min 2 chars), set_to_mode (TO/TO 1/TO 2 only), set_trim (numeric), set_qnh (900-1100)
@@ -335,6 +367,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] Fixed set_fix_radial_distance: validates format "RADIAL/DISTANCE", both parts numeric and in range
 
 ### Round 13
+
 - [x] Frontend validation parity with backend:
   - set_cost_index: 0-500 range
   - set_zfw: > 0
@@ -349,6 +382,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
   - set_hold_direction: validates L/R from scratchpad (was blind toggle)
 
 ### Round 14
+
 - [x] Frontend set_flt_no: added isValidFlightNumber validation
 - [x] Backend set_fix_radial_distance: distance upper bound 999
 - [x] Backend set_leg_dist: upper bound 999
@@ -357,6 +391,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] Imported isValidWaypoint in server/src/fmc-engine.ts
 
 ### Round 15
+
 - [x] Added isValidFlightNumber import to frontend useFMCStore.ts
 - [x] Fixed src/tsconfig.json include path to properly typecheck frontend files
 - [x] Added backend Airbus data-entry handlers: set_from_to, set_crz_fl, set_altn, set_flt_nbr, set_block, set_sid, set_rwy, set_star, set_appr, set_flaps, set_flex, set_cg
@@ -367,12 +402,14 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] Fixed connectedCapabilities type (string[] | null)
 
 ### Round 16
+
 - [x] TypeScript: 0 errors in all 3 workspaces after fixing frontend tsconfig include
 - [x] All unit tests pass (43/43)
 - [x] All E2E tests pass (5/5)
 - [x] Build successful
 
 ### Round 17
+
 - [x] Frontend Airbus validation parity:
   - set_from_to: validates both ICAOs
   - set_crz_fl: validates with isValidAltitude
@@ -383,6 +420,7 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
   - set_cg: rejects NaN
 
 ### Round 18
+
 - [x] Removed unsupported Airbus lskActions from page renderers:
   - PERF_APPR: set_temp, set_mda, set_dh → null
   - FUEL_PRED: set_extra → null
@@ -391,11 +429,13 @@ The dispatcher/store cleanup and visible-polish cockpit slice are complete enoug
 - [x] These actions were exposed but had no handlers; now they don't appear as interactive buttons
 
 ### Round 19
+
 - [x] Removed remaining exposed but unhandled actions from all page renderers
-- [x] Added backend handlers for select_to, select_to1, select_to2, atc, edit_wp_*
+- [x] Added backend handlers for select*to, select_to1, select_to2, atc, edit_wp*\*
 - [x] All exposed lskActions now have corresponding frontend/backend handlers
 
 ### Round 21
+
 - [x] Fixed INIT_REF mapping: backend now maps to POS_INIT (was IDENT), matching frontend
 - [x] Backend special character keys: DOT→'.', SLASH→'/', SPACE→' ', PLUS_MINUS→'-'
 - [x] Backend data entry sets isModified=true and execLit=true on successful entry
@@ -424,6 +464,7 @@ These are documented limitations and scope boundaries, not hidden completed work
 ## What's Implemented and Working
 
 ### Automated Boeing Preflight Flow (IDENT → TAKEOFF REF)
+
 1. IDENT page → LSK1 → POS INIT
 2. POS INIT → REF AIRPORT (ICAO), GATE → LSK5 → RTE
 3. RTE page 1 → ORIGIN (ICAO), DEST (ICAO), FLT NO, CO ROUTE → NEXT → page 2
@@ -435,6 +476,7 @@ These are documented limitations and scope boundaries, not hidden completed work
 9. TAKEOFF REF → RUNWAY, TO MODE, V1/VR/V2 (cross-field validated: V1<VR<V2), TRIM, OAT, WIND, QNH; page 2 supports landing runway, landing flaps, VREF, ILS frequency, and course → EXEC
 
 ### Secondary Flows
+
 - HOLD page: set hold fix (waypoint), inbound course (1-360), leg time (0-9.9), leg dist (0-999), direction (L/R) → EXEC commits
 - FIX page: set ref fix (ICAO), radial/distance (RADIAL/DIST format, radial 1-360, dist 0-999) → display radial/distance + abeam points
 - PROGRESS page: shows live altitude, speed, heading, VS, DTG to next waypoint when MSFS connected
@@ -452,13 +494,13 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ### What changed
 
-| Workstream | Deliverable | Status |
-|-----------|------------|--------|
-| Strict 24x14 display-grid validation | `displayGridValidation.ts` — validates rows, cols, bounds, overflow, cell overlap | **Complete** |
-| Renderer grammar conformance | 18 validation tests + 19 renderer conformance tests (8 Boeing + 11 Airbus pages) | **Complete** |
-| Scratchpad engine expansion | Fixed `PERF/VNAV UNAVAILABLE` spelling; added 5 message factories; added adapter helpers | **Complete** |
-| EXEC lifecycle helpers | `fmcModificationAdapter.ts` — `deriveExecLit`, `deriveIsModified`, `isModificationActive`, `hasPendingChanges` | **Complete** |
-| Grid bug fixes | 6 overflow/overlap bugs in IDENT, POS_INIT, TAKEOFF_REF, F-PLN | **Fixed** |
+| Workstream                           | Deliverable                                                                                                    | Status       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ------------ |
+| Strict 24x14 display-grid validation | `displayGridValidation.ts` — validates rows, cols, bounds, overflow, cell overlap                              | **Complete** |
+| Renderer grammar conformance         | 18 validation tests + 19 renderer conformance tests (8 Boeing + 11 Airbus pages)                               | **Complete** |
+| Scratchpad engine expansion          | Fixed `PERF/VNAV UNAVAILABLE` spelling; added 5 message factories; added adapter helpers                       | **Complete** |
+| EXEC lifecycle helpers               | `fmcModificationAdapter.ts` — `deriveExecLit`, `deriveIsModified`, `isModificationActive`, `hasPendingChanges` | **Complete** |
+| Grid bug fixes                       | 6 overflow/overlap bugs in IDENT, POS_INIT, TAKEOFF_REF, F-PLN                                                 | **Fixed**    |
 
 ### What remains transitional
 
@@ -486,12 +528,12 @@ These are documented limitations and scope boundaries, not hidden completed work
 
 ### What changed
 
-| Cleanup | Detail | Status |
-|---------|--------|--------|
-| Blind MOD/EXEC removed | Store-level `set({ isModified: true, execLit: true, ...patch })` eliminated; handlers now explicitly declare MOD/EXEC in their patches | **Complete** |
-| Result application centralized | `applyDispatchResult()` added to `fmcScratchpadAdapter.ts`; side effects (`expand_active_route`, `step_plan`, `print_message`) and `scratchpadMessage` handling moved from store into shared module | **Complete** |
-| Handler MOD/EXEC audit | Verified `routeActions` (set_origin, set_dest, set_flt_no, set_route), `procedureActions` (set_sid, set_rwy, set_star, set_appr), and `takeoffActions` (set_v1, set_vr, set_v2, set_runway) explicitly set `isModified: true, execLit: true` in their patches | **Complete** |
-| Docs updated | `STATUS.md` and `IMPLEMENTATION_STATUS.md` updated to reflect dispatcher milestone and post-stabilization state | **Complete** |
+| Cleanup                        | Detail                                                                                                                                                                                                                                                        | Status       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| Blind MOD/EXEC removed         | Store-level `set({ isModified: true, execLit: true, ...patch })` eliminated; handlers now explicitly declare MOD/EXEC in their patches                                                                                                                        | **Complete** |
+| Result application centralized | `applyDispatchResult()` added to `fmcScratchpadAdapter.ts`; side effects (`expand_active_route`, `step_plan`, `print_message`) and `scratchpadMessage` handling moved from store into shared module                                                           | **Complete** |
+| Handler MOD/EXEC audit         | Verified `routeActions` (set_origin, set_dest, set_flt_no, set_route), `procedureActions` (set_sid, set_rwy, set_star, set_appr), and `takeoffActions` (set_v1, set_vr, set_v2, set_runway) explicitly set `isModified: true, execLit: true` in their patches | **Complete** |
+| Docs updated                   | `STATUS.md` and `IMPLEMENTATION_STATUS.md` updated to reflect dispatcher milestone and post-stabilization state                                                                                                                                               | **Complete** |
 
 ### Rationale
 
@@ -504,12 +546,12 @@ With the dispatcher extraction complete, each handler is responsible for declari
 **Branch**: `main`
 **Date**: 2026-05-16
 
-| PR | Detail | Status |
-|----|--------|--------|
-| #18 | Centralized dispatcher result application — removed duplicate `set({ isModified, execLit })` from store | **Merged** |
-| #19 | Centralized HOLD field staging pattern — `stageHoldField()` shared helper | **Merged** |
-| #20 | Added `atsu_uplink_received` side effect to `applyDispatchResult()` | **Merged** |
-| #21 | Navigation result handling moved into `applyDispatchResult`; remaining `scratchpadError` writes migrated to `failScratchpad` | **Merged** |
+| PR  | Detail                                                                                                                             | Status     |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| #18 | Centralized dispatcher result application — removed duplicate `set({ isModified, execLit })` from store                            | **Merged** |
+| #19 | Centralized HOLD field staging pattern — `stageHoldField()` shared helper                                                          | **Merged** |
+| #20 | Added `atsu_uplink_received` side effect to `applyDispatchResult()`                                                                | **Merged** |
+| #21 | Navigation result handling moved into `applyDispatchResult`; remaining `scratchpadError` writes migrated to `failScratchpad`       | **Merged** |
 | #22 | Removed duplicate patch application in `applyDispatchResult`; fixed `clearScratchpad` order bug (must clear BEFORE applying patch) | **Merged** |
 
 ### Key fixes
@@ -523,13 +565,13 @@ With the dispatcher extraction complete, each handler is responsible for declari
 **Commit**: `5f46b79`
 **Date**: 2026-05-17
 
-| Deliverable | Detail | Status |
-|------------|--------|--------|
-| Test file | `e2e/visual/cockpit-layouts.spec.ts` — 195 lines | **Merged** |
-| Boeing tests | FMC focus, navigation, automation, approach, full deck (5 tests) | **Merged** |
-| Airbus tests | FMC focus, navigation, automation, approach, full deck (5 tests) | **Merged** |
-| Layout assertions | Full deck panel completeness, help sidebar docking, panel tray visibility (3 tests) | **Merged** |
-| Baselines | 2 initial screenshots captured (approach + automation modes) | **Captured** |
+| Deliverable       | Detail                                                                              | Status       |
+| ----------------- | ----------------------------------------------------------------------------------- | ------------ |
+| Test file         | `e2e/visual/cockpit-layouts.spec.ts` — 195 lines                                    | **Merged**   |
+| Boeing tests      | FMC focus, navigation, automation, approach, full deck (5 tests)                    | **Merged**   |
+| Airbus tests      | FMC focus, navigation, automation, approach, full deck (5 tests)                    | **Merged**   |
+| Layout assertions | Full deck panel completeness, help sidebar docking, panel tray visibility (3 tests) | **Merged**   |
+| Baselines         | 2 initial screenshots captured (approach + automation modes)                        | **Captured** |
 
 ### Test conventions
 
@@ -544,13 +586,13 @@ With the dispatcher extraction complete, each handler is responsible for declari
 **Commit**: `4c87e84`
 **Date**: 2026-05-17
 
-| Deliverable | Detail | Status |
-|------------|--------|--------|
-| Boeing ND style | MAP frame sharpened with Boeing-oriented green CRT treatment and data-dense route context | **Merged** |
-| Airbus ND style | ARC presentation separated with Airbus LCD/bloom treatment and family-specific labeling | **Merged** |
-| Route context | Active waypoint, segment, discontinuity, constraint, FIX/HOLD, procedure, and range context remain visible | **Merged** |
-| Failure/aligning states | Boeing MAP failure and Airbus ARC aligning states have visual baselines | **Merged** |
-| Visual validation | Current command result lives in `docs/STATUS.md` | **Verified** |
+| Deliverable             | Detail                                                                                                     | Status       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ------------ |
+| Boeing ND style         | MAP frame sharpened with Boeing-oriented green CRT treatment and data-dense route context                  | **Merged**   |
+| Airbus ND style         | ARC presentation separated with Airbus LCD/bloom treatment and family-specific labeling                    | **Merged**   |
+| Route context           | Active waypoint, segment, discontinuity, constraint, FIX/HOLD, procedure, and range context remain visible | **Merged**   |
+| Failure/aligning states | Boeing MAP failure and Airbus ARC aligning states have visual baselines                                    | **Merged**   |
+| Visual validation       | Current command result lives in `docs/STATUS.md`                                                           | **Verified** |
 
 ### Next visible gaps
 
@@ -563,16 +605,16 @@ With the dispatcher extraction complete, each handler is responsible for declari
 **Base commit**: `4268f7d`
 **Date**: 2026-05-17
 
-| Deliverable | Detail | Status |
-|------------|--------|--------|
-| Shared PFD model | Added selected heading, selected vertical speed, managed cues, and failure flags to the shared PFD state | **Implemented** |
-| Boeing PFD | Added brighter attitude sphere, pitch ladder, bank scale, flight-director cue, speed/altitude tapes, VSI, selected heading/speed/altitude bugs, and Boeing-style bottom row | **Implemented** |
-| Airbus PFD | Wired Airbus PFD to `useAutopilotStore` FCU state, added Airbus colors, managed cue dots, cyan FD, speed/altitude tapes, VSI, and Airbus-style bottom row | **Implemented** |
-| PFD follow-up baselines | Added deterministic Boeing/Airbus focused, approach, and failure/unavailable PFD routes and snapshots | **Captured** |
-| MCP/FCU hardware pass | Refined Boeing MCP and Airbus FCU with distinct panel surfaces, display windows, annunciators, knobs, and push/pull affordances | **Implemented** |
-| Autoflight coupling | Standalone cockpit MCP/FCU button presses now update the autoflight truth state that feeds the PFD FMA | **Covered** |
-| Focused/tablet baselines | Added focused-panel baselines for CDU/MCDU, ND, PFD, MCP/FCU plus tablet-landscape full-deck and automation layouts | **Captured** |
-| Unit/E2E coverage | Added PFD/FMA model tests and cockpit behavior checks for selected heading and Airbus managed/selected state | **Covered** |
+| Deliverable              | Detail                                                                                                                                                                      | Status          |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| Shared PFD model         | Added selected heading, selected vertical speed, managed cues, and failure flags to the shared PFD state                                                                    | **Implemented** |
+| Boeing PFD               | Added brighter attitude sphere, pitch ladder, bank scale, flight-director cue, speed/altitude tapes, VSI, selected heading/speed/altitude bugs, and Boeing-style bottom row | **Implemented** |
+| Airbus PFD               | Wired Airbus PFD to `useAutopilotStore` FCU state, added Airbus colors, managed cue dots, cyan FD, speed/altitude tapes, VSI, and Airbus-style bottom row                   | **Implemented** |
+| PFD follow-up baselines  | Added deterministic Boeing/Airbus focused, approach, and failure/unavailable PFD routes and snapshots                                                                       | **Captured**    |
+| MCP/FCU hardware pass    | Refined Boeing MCP and Airbus FCU with distinct panel surfaces, display windows, annunciators, knobs, and push/pull affordances                                             | **Implemented** |
+| Autoflight coupling      | Standalone cockpit MCP/FCU button presses now update the autoflight truth state that feeds the PFD FMA                                                                      | **Covered**     |
+| Focused/tablet baselines | Added focused-panel baselines for CDU/MCDU, ND, PFD, MCP/FCU plus tablet-landscape full-deck and automation layouts                                                         | **Captured**    |
+| Unit/E2E coverage        | Added PFD/FMA model tests and cockpit behavior checks for selected heading and Airbus managed/selected state                                                                | **Covered**     |
 
 ### Remaining PFD scope
 

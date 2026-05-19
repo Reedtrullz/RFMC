@@ -43,11 +43,7 @@ function handleSetGate(state: FMCState, scratchpad: string): FmcActionResult {
 }
 
 /** Dispatch position-related LSK actions. */
-export function handlePositionAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string,
-): FmcActionResult {
+export function handlePositionAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_ref_airport':
       return handleSetRefAirport(state, scratchpad);

@@ -12,7 +12,7 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
   const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
-    const interval = setInterval(() => setCursorVisible(v => !v), 500);
+    const interval = setInterval(() => setCursorVisible((v) => !v), 500);
     return () => clearInterval(interval);
   }, []);
 
@@ -30,8 +30,8 @@ export function ScratchpadRow({ text, level, variant = 'boeing' }: ScratchpadRow
   });
 
   return (
-    <div 
-      className="relative" 
+    <div
+      className="relative"
       data-testid="scratchpad"
       aria-live="assertive"
       aria-atomic="true"

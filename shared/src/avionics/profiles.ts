@@ -128,8 +128,8 @@ const boeingShell: ShellGeometry = {
   displayAperture: { x: 0.2, y: 0.08, width: 0.6, height: 0.39 },
   functionKeyBounds: { x: 0.08, y: 0.5, width: 0.84, height: 0.12 },
   keyMatrixBounds: { x: 0.09, y: 0.64, width: 0.82, height: 0.28 },
-  leftLskCenters: [0.14, 0.19, 0.24, 0.29, 0.34, 0.39].map(y => ({ x: 0.12, y })),
-  rightLskCenters: [0.14, 0.19, 0.24, 0.29, 0.34, 0.39].map(y => ({ x: 0.88, y })),
+  leftLskCenters: [0.14, 0.19, 0.24, 0.29, 0.34, 0.39].map((y) => ({ x: 0.12, y })),
+  rightLskCenters: [0.14, 0.19, 0.24, 0.29, 0.34, 0.39].map((y) => ({ x: 0.88, y })),
   screwCenters: [
     { x: 0.04, y: 0.04 },
     { x: 0.96, y: 0.04 },
@@ -172,7 +172,13 @@ export const BOEING_737NG_DISPLAY_PROFILE: DisplayProfile = {
     day: { mode: 'day', displayBrightness: 100, reflectionOpacity: 0.04, vignetteOpacity: 0.05, keyBacklight: 0.8 },
     dusk: { mode: 'dusk', displayBrightness: 80, reflectionOpacity: 0.03, vignetteOpacity: 0.06, keyBacklight: 0.7 },
     night: { mode: 'night', displayBrightness: 45, reflectionOpacity: 0.01, vignetteOpacity: 0.08, keyBacklight: 0.45 },
-    'dim-night': { mode: 'dim-night', displayBrightness: 25, reflectionOpacity: 0, vignetteOpacity: 0.08, keyBacklight: 0.3 },
+    'dim-night': {
+      mode: 'dim-night',
+      displayBrightness: 25,
+      reflectionOpacity: 0,
+      vignetteOpacity: 0.08,
+      keyBacklight: 0.3,
+    },
   },
   typography: {
     fontFamily: 'B612 Mono',

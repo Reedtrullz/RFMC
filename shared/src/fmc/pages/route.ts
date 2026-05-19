@@ -2,14 +2,35 @@ import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color'], semantic?: DisplayLine['semantic']): DisplayLine {
-  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: semantic ?? inferBoeingSemantic(color) };
+function fmt(
+  text: string,
+  left: string = '',
+  right: string = '',
+  color?: DisplayLine['color'],
+  semantic?: DisplayLine['semantic'],
+): DisplayLine {
+  return {
+    text: text.padEnd(PAGE_WIDTH, ' '),
+    leftLabel: left,
+    rightLabel: right,
+    inverse: false,
+    color,
+    semantic: semantic ?? inferBoeingSemantic(color),
+  };
 }
 function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
-function blank() { return fmt('', '', ''); }
-function modData(text: string, isModified: boolean, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
+function blank() {
+  return fmt('', '', '');
+}
+function modData(
+  text: string,
+  isModified: boolean,
+  left: string = '',
+  right: string = '',
+  color?: DisplayLine['color'],
+): DisplayLine {
   return fmt(text, left, right, color, isModified ? 'modified' : undefined);
 }
 
@@ -57,7 +78,10 @@ export function renderRtePage(state: FMCState): DisplayData {
 
   // RTE page 2 — route entry
   const routeLines = route.routeString || '----';
-  const waypointPreview = flightPlan.waypoints.slice(0, 4).map(w => w.ident).join(' ');
+  const waypointPreview = flightPlan.waypoints
+    .slice(0, 4)
+    .map((w) => w.ident)
+    .join(' ');
 
   return {
     title,

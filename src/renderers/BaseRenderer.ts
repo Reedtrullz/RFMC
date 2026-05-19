@@ -67,8 +67,8 @@ export abstract class BaseRenderer {
 
   /** Y coordinate of the top edge of `rowIndex` (0-based; 14 = scratchpad). */
   protected rowTop(canvas: HTMLCanvasElement, rowIndex: number): number {
-    const h      = this.cssHeight(canvas);
-    const vPad   = h * V_PAD_FRACTION;
+    const h = this.cssHeight(canvas);
+    const vPad = h * V_PAD_FRACTION;
     const usable = h - vPad * 2;
     let y = vPad;
     for (let i = 0; i < rowIndex; i++) {
@@ -79,8 +79,8 @@ export abstract class BaseRenderer {
 
   /** Pixel height of `rowIndex` (CSS logical px). */
   protected rowHeight(canvas: HTMLCanvasElement, rowIndex: number): number {
-    const h      = this.cssHeight(canvas);
-    const vPad   = h * V_PAD_FRACTION;
+    const h = this.cssHeight(canvas);
+    const vPad = h * V_PAD_FRACTION;
     const usable = h - vPad * 2;
     return (ROW_WEIGHTS[rowIndex] / WEIGHT_SUM) * usable;
   }
@@ -100,13 +100,9 @@ export abstract class BaseRenderer {
    * 'small' rows (label rows) get ~55 % of the row height;
    * 'normal'/'large' rows get ~70 %.
    */
-  protected fontSize(
-    canvas: HTMLCanvasElement,
-    rowIndex: number,
-    size: DisplaySegment['size']
-  ): number {
+  protected fontSize(canvas: HTMLCanvasElement, rowIndex: number, size: DisplaySegment['size']): number {
     const h = this.rowHeight(canvas, rowIndex);
-    return Math.round(h * (size === 'small' ? 0.55 : 0.70));
+    return Math.round(h * (size === 'small' ? 0.55 : 0.7));
   }
 
   /**
@@ -117,18 +113,14 @@ export abstract class BaseRenderer {
     canvas: HTMLCanvasElement,
     rowIndex: number,
     size: DisplaySegment['size'],
-    fontFamily = '"B612 Mono", "Courier New", monospace'
+    fontFamily = '"B612 Mono", "Courier New", monospace',
   ): string {
     return `${this.fontSize(canvas, rowIndex, size)}px ${fontFamily}`;
   }
 
   // ── Abstract contract ──────────────────────────────────────────────────────
 
-  abstract render(
-    data: RendererDisplayData,
-    canvas: HTMLCanvasElement,
-    options?: RenderOptions
-  ): void;
+  abstract render(data: RendererDisplayData, canvas: HTMLCanvasElement, options?: RenderOptions): void;
 
   abstract getName(): string;
 }

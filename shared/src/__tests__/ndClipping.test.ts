@@ -7,7 +7,8 @@ function pt(x: number, y: number, visible = true, clipped = false): NDRoutePoint
   return {
     id: `pt-${x}-${y}`,
     label: 'TEST',
-    x, y,
+    x,
+    y,
     active: false,
     discontinuity: false,
     airport: false,
@@ -20,7 +21,9 @@ function pt(x: number, y: number, visible = true, clipped = false): NDRoutePoint
 
 describe('clipLineToCircle', () => {
   // Circle at (50, 84) with r=45 — standard ND expanded-center geometry
-  const CX = 50, CY = 84, R = 45;
+  const CX = 50,
+    CY = 84,
+    R = 45;
 
   it('returns full segment for a line fully inside the circle', () => {
     // A short segment near the center, both points clearly inside
@@ -122,7 +125,7 @@ describe('clipRouteSegment', () => {
   it('returns clipped=true when a segment crosses the ND boundary', () => {
     // From inside to outside
     const from = pt(50, 84); // center
-    const to = pt(50, 10);   // way above the ND
+    const to = pt(50, 10); // way above the ND
     const result = clipRouteSegment(from, to, false);
     expect(result.visible).toBe(true);
     expect(result.clipped).toBe(true);
@@ -133,7 +136,7 @@ describe('clipRouteSegment', () => {
   it('uses centered=true geometry (cy=50, r=45)', () => {
     // In centered mode, circle is at (50,50). A point at (50,50) is center.
     const from = pt(50, 50); // center
-    const to = pt(50, -10);  // below SVG viewport, outside circle
+    const to = pt(50, -10); // below SVG viewport, outside circle
     const result = clipRouteSegment(from, to, true);
     expect(result.visible).toBe(true);
     expect(result.clipped).toBe(true);

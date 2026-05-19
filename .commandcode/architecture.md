@@ -3,12 +3,14 @@
 ## Mode Architecture
 
 **Backend-Authoritative (MSFS Connected)** — Primary mode:
+
 - Server owns FMC state machine, computes DisplayData
 - Sends DisplayData to client via WebSocket
 - Client is thin display + input relay
 - Server connects to MSFS via per-aircraft adapter
 
 **Frontend-Authoritative (Standalone/Training)** — Secondary mode:
+
 - Client owns FMC state (Zustand)
 - Computes DisplayData locally using same shared page functions
 - Fully offline, no server needed

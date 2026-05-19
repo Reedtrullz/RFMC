@@ -135,7 +135,7 @@ export function fmcDelKey(set: ZustandSet, get: ZustandGet): void {
 export function applyFmcActionResult(
   set: ZustandSet,
   get: ZustandGet,
-  result: FmcActionResult
+  result: FmcActionResult,
 ): { shouldReturn: boolean } {
   if (!result.handled) return { shouldReturn: false };
 
@@ -163,11 +163,7 @@ export function failScratchpad(set: ZustandSet, get: ZustandGet, text: string): 
   set({ scratchpadError: text } as Partial<FMCState>);
 }
 
-export function applyDispatchResult(
-  set: ZustandSet,
-  get: ZustandGet,
-  result: DispatchLskActionResult
-): boolean {
+export function applyDispatchResult(set: ZustandSet, get: ZustandGet, result: DispatchLskActionResult): boolean {
   const success = result.success as ExtendedDispatchSuccess | undefined;
   const store = get() as FMCState & StoreMethods;
 
@@ -190,7 +186,10 @@ export function applyDispatchResult(
   // Side effects
   for (const effect of result.sideEffects || []) {
     if (effect === 'expand_active_route') store.expandActiveRoute();
-    if (effect === 'step_plan') { store.stepPlanForward(); return true; }
+    if (effect === 'step_plan') {
+      store.stepPlanForward();
+      return true;
+    }
     if (effect === 'print_message') setTimeout(() => set({ scratchpad: 'PRINT COMPLETE' } as Partial<FMCState>), 1500);
     if (effect === 'atsu_uplink_received') {
       store.addMessage?.('RTE UPLINK', 'IMPORTANT');

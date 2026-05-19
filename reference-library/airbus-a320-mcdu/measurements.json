@@ -14,12 +14,5 @@
     "keypadStyle": "airbus-specific",
     "titleBarStyle": "amber/yellow"
   },
-  "layoutTargets": [
-    "INIT A",
-    "INIT B",
-    "F-PLN",
-    "DIR",
-    "PERF TO",
-    "RAD NAV"
-  ]
+  "layoutTargets": ["INIT A", "INIT B", "F-PLN", "DIR", "PERF TO", "RAD NAV"]
 }

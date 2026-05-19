@@ -2,7 +2,7 @@ import { FMCState, DisplayData, AcarsMessage } from '../../../types/fmc';
 import { inv, fmt, blank } from './formatting';
 
 export function renderAtsuMenu(state: FMCState): DisplayData {
-  const unreadCount = state.atsu.messages.filter(m => !m.read).length;
+  const unreadCount = state.atsu.messages.filter((m) => !m.read).length;
   const msgLabel = unreadCount > 0 ? `*RCVD MSGS[${unreadCount}]` : ' RCVD MSGS';
 
   return {
@@ -34,10 +34,8 @@ export function renderAtsuMenu(state: FMCState): DisplayData {
 
 export function renderAtsuMessages(state: FMCState): DisplayData {
   const msgs = state.atsu.messages;
-  
-  const lines = [
-    inv('  RECEIVED MSGS', '', '', 'cyan'),
-  ];
+
+  const lines = [inv('  RECEIVED MSGS', '', '', 'cyan')];
 
   const actions: Record<string, string> = { L6: 'atsu' };
 
@@ -47,7 +45,7 @@ export function renderAtsuMessages(state: FMCState): DisplayData {
       const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       lines.push(fmt(` ${msg.from} ${time}`, '<', '', msg.read ? 'white' : 'amber'));
       lines.push(fmt(`  ${msg.text.substring(0, 20)}...`, '', '', 'white', true));
-      actions[`L${i+1}`] = `view_msg_${msg.id}`;
+      actions[`L${i + 1}`] = `view_msg_${msg.id}`;
     } else {
       lines.push(blank());
       lines.push(blank());
@@ -65,7 +63,7 @@ export function renderAtsuMessages(state: FMCState): DisplayData {
 }
 
 export function renderAtsuMessageDetail(state: FMCState): DisplayData {
-  const msg = state.atsu.messages.find(m => m.id === state.selectedMessageId);
+  const msg = state.atsu.messages.find((m) => m.id === state.selectedMessageId);
   if (!msg) return renderAtsuMessages(state);
 
   const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -102,6 +100,6 @@ export function renderAtsuMessageDetail(state: FMCState): DisplayData {
     lskActions: {
       L6: 'atsu_msgs',
       R6: 'print_msg',
-    }
+    },
   };
 }

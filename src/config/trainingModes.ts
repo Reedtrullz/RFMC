@@ -36,7 +36,6 @@ export const allPanelIds: PanelId[] = [
   'settings',
 ];
 
-
 export const trainingModes: TrainingModeConfig[] = [
   {
     id: 'fmc-focus',
@@ -131,20 +130,20 @@ export const trainingModes: TrainingModeConfig[] = [
 ];
 
 export function getTrainingModeConfig(mode: CockpitLayoutMode): TrainingModeConfig {
-  return trainingModes.find(item => item.id === mode) ?? trainingModes[0];
+  return trainingModes.find((item) => item.id === mode) ?? trainingModes[0];
 }
 
 export function getRecommendedHiddenPanels(mode: CockpitLayoutMode, pinnedPanels: PanelId[] = []): PanelId[] {
   const config = getTrainingModeConfig(mode);
   const visible = new Set<PanelId>([...config.visiblePanels, ...pinnedPanels]);
-  return allPanelIds.filter(panel => !visible.has(panel));
+  return allPanelIds.filter((panel) => !visible.has(panel));
 }
 
 export function validateVisiblePanels(mode: CockpitLayoutMode, hiddenPanels: PanelId[]) {
   const config = getTrainingModeConfig(mode);
   const hidden = new Set(hiddenPanels);
-  const missingRequired = config.minimumRequiredPanels.filter(panel => hidden.has(panel));
-  const visibleRequired = config.minimumRequiredPanels.filter(panel => !hidden.has(panel));
+  const missingRequired = config.minimumRequiredPanels.filter((panel) => hidden.has(panel));
+  const visibleRequired = config.minimumRequiredPanels.filter((panel) => !hidden.has(panel));
 
   return {
     valid: missingRequired.length === 0 && visibleRequired.length > 0,

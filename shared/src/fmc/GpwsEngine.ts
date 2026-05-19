@@ -23,8 +23,15 @@ const GS_DEVIATION_THRESHOLD = 1.3; // dots
 export class GpwsEngine {
   private lastCalloutAlt: number | null = null;
   private alertCooldowns: Record<GpwsAlert, number> = {
-    NONE: 0, SINK_RATE: 0, PULL_UP: 0, TERRAIN: 0, DONT_SINK: 0,
-    TOO_LOW_GEAR: 0, TOO_LOW_FLAPS: 0, GLIDESLOPE: 0, WINDSHEAR: 0,
+    NONE: 0,
+    SINK_RATE: 0,
+    PULL_UP: 0,
+    TERRAIN: 0,
+    DONT_SINK: 0,
+    TOO_LOW_GEAR: 0,
+    TOO_LOW_FLAPS: 0,
+    GLIDESLOPE: 0,
+    WINDSHEAR: 0,
   };
 
   // Mode 3 cumulative-altitude-loss tracker
@@ -91,7 +98,8 @@ export class GpwsEngine {
     // Trigger: radio alt dropping faster than 4000fpm in descent
     // outside takeoff/go-around phases.  More conservative than Mode 1B.
     if (activeAlert === 'NONE') {
-      const isClimbPhase = state.flightPhase === 'TAKEOFF' || state.flightPhase === 'GO_AROUND' || state.flightPhase === 'CLIMB';
+      const isClimbPhase =
+        state.flightPhase === 'TAKEOFF' || state.flightPhase === 'GO_AROUND' || state.flightPhase === 'CLIMB';
       if (!isClimbPhase && radioAlt < 2500 && radioAlt > 100) {
         if (radioAltRateFpm < -4000 && vs < -500) {
           activeAlert = 'TERRAIN';
@@ -173,12 +181,7 @@ export class GpwsEngine {
       this.wsIasHistory.push({ t: radioAlt, ias: ac.ias ?? ac.indicatedAirspeedKt ?? 0 });
       if (this.wsIasHistory.length > 5) this.wsIasHistory.shift();
 
-      if (
-        this.wsIasHistory.length >= 3 &&
-        radioAlt < 1500 &&
-        radioAlt > 50 &&
-        vs < -100
-      ) {
+      if (this.wsIasHistory.length >= 3 && radioAlt < 1500 && radioAlt > 50 && vs < -100) {
         const first = this.wsIasHistory[0].ias;
         const last = this.wsIasHistory[this.wsIasHistory.length - 1].ias;
         const iasDrop = first - last;

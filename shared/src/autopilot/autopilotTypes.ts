@@ -63,7 +63,19 @@ export type AutopilotState = {
 };
 
 export type LateralMode = 'HDG_SEL' | 'LNAV' | 'VOR_LOC' | 'LOC' | 'APP' | 'NAV' | 'ROLL' | 'HDG' | 'OFF';
-export type VerticalMode = 'ALT_HOLD' | 'VNAV_PTH' | 'LVL_CHG' | 'VS' | 'G_S' | 'CLB' | 'DES' | 'OP_CLB' | 'OP_DES' | 'VNAV' | 'OFF' | 'ALT*';
+export type VerticalMode =
+  | 'ALT_HOLD'
+  | 'VNAV_PTH'
+  | 'LVL_CHG'
+  | 'VS'
+  | 'G_S'
+  | 'CLB'
+  | 'DES'
+  | 'OP_CLB'
+  | 'OP_DES'
+  | 'VNAV'
+  | 'OFF'
+  | 'ALT*';
 export type ThrustMode = 'N1' | 'SPEED' | 'THR_CLB' | 'IDLE' | 'MAN_TOGA' | 'MAN_FLEX' | 'RETARD' | 'OFF';
 
 export interface AutoflightTruthState {
@@ -85,7 +97,7 @@ export type FMAState = {
   thrust: ThrustMode;
   lateral: LateralMode;
   vertical: VerticalMode;
-  approachCapability: "CAT1" | "CAT2" | "CAT3 SINGLE" | "CAT3 DUAL" | "NONE";
+  approachCapability: 'CAT1' | 'CAT2' | 'CAT3 SINGLE' | 'CAT3 DUAL' | 'NONE';
   armedLateral?: LateralMode;
   armedVertical?: VerticalMode;
 };

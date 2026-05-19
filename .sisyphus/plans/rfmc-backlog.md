@@ -15,11 +15,13 @@
 ## Context
 
 ### Current State
+
 - **PR #1-6**: Merged — display grid validation, scratchpad engine, EXEC helpers, cockpit layout, ND frames
 - **PR #7**: Open — LSK navigation action extraction to shared handler. Needs cleanup (unused import, duplicate case, tests)
 - `useFMCStore.ts` still ~2800 lines and acts as FMC brain, cockpit orchestrator, training dispatcher, scratchpad handler, route modifier, and validation layer
 
 ### Remaining Gaps
+
 - `scratchpadError` still set directly in many validation handlers
 - `pendingRoute`/`pendingFlightPlan`/`isModified`/`execLit` still set manually
 - PressLSK has 800+ lines of inline action handling
@@ -31,9 +33,11 @@
 ## Work Objectives
 
 ### Core Objective
+
 Turn `useFMCStore` from a monolithic FMC brain into a thin Zustand orchestration layer by extracting all LSK action families into shared pure handlers, canonicalizing the scratchpad and EXEC lifecycle, and adding regression coverage.
 
 ### Concrete Deliverables
+
 - 6 action handler modules extracted from `useFMCStore`
 - Typed `FmcActionResult` dispatcher replacing inline LSK logic
 - Canonical scratchpad engine (zero direct `scratchpadError` writes)
@@ -43,6 +47,7 @@ Turn `useFMCStore` from a monolithic FMC brain into a thin Zustand orchestration
 - Comprehensive test coverage for all extracted handlers
 
 ### Definition of Done
+
 - [ ] `useFMCStore.ts` is < 1000 lines (down from ~2800)
 - [ ] Zero direct `scratchpadError` writes
 - [ ] `execLit` and `isModified` are derived, not manually set
@@ -57,11 +62,13 @@ Turn `useFMCStore` from a monolithic FMC brain into a thin Zustand orchestration
 ## Verification Strategy
 
 ### Test Decision
+
 - **Infrastructure exists**: YES (Vitest + Playwright)
 - **Automated tests**: YES (TDD for new handlers, regression for existing)
 - **Framework**: Vitest (unit) + Playwright (visual)
 
 ### QA Policy
+
 Every extracted handler must have unit tests. Visual changes must have Playwright screenshot baselines.
 
 ---

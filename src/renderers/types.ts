@@ -62,11 +62,7 @@ export interface DisplayRenderer {
    * Render a complete display frame onto `canvas`.
    * Called on every React render that produces new RendererDisplayData.
    */
-  render(
-    data: RendererDisplayData,
-    canvas: HTMLCanvasElement,
-    options?: RenderOptions
-  ): void;
+  render(data: RendererDisplayData, canvas: HTMLCanvasElement, options?: RenderOptions): void;
 
   /** Human-readable name shown in the settings UI. */
   getName(): string;

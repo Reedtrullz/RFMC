@@ -2,11 +2,7 @@ import type { FMCState } from '../../types/fmc';
 import { isValidAltitude, isValidICAO, isValidFlightNumber } from '../validation';
 import type { FmcActionResult } from './actionResult';
 
-export function handleAirbusAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleAirbusAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_crz_fl':
       return handleSetCrzFl(state, scratchpad);

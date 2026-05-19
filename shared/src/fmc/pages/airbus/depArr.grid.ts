@@ -1,25 +1,16 @@
 import type { FMCState, DisplayData } from '../../../types/fmc';
-import {
-  airbusPage,
-  airbusDisplaySegment,
-} from './airbusGridHelpers';
+import { airbusPage, airbusDisplaySegment } from './airbusGridHelpers';
 
 export function renderDepArrA320Grid(state: FMCState): DisplayData {
-  const route =
-    state.isModified && state.pendingRoute
-      ? state.pendingRoute
-      : state.route;
+  const route = state.isModified && state.pendingRoute ? state.pendingRoute : state.route;
   const title = state.isModified ? 'TMPY DEP/ARR' : 'DEP/ARR';
 
   return airbusPage(
     [
-      airbusDisplaySegment(
-        0,
-        2,
-        `  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`,
-        'white',
-        { inverse: true, semantic: 'title' },
-      ),
+      airbusDisplaySegment(0, 2, `  ${title}     ${route.origin || '----'} / ${route.destination || '----'}`, 'white', {
+        inverse: true,
+        semantic: 'title',
+      }),
 
       airbusDisplaySegment(1, 1, ' DEPARTURE', 'white'),
       airbusDisplaySegment(2, 1, ` ${route.origin || '----'}`, 'green'),

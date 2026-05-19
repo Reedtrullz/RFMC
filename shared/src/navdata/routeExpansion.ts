@@ -10,33 +10,35 @@ export function expandRoute(
   approachIdent?: string,
   enrouteWaypoints: string[] = [],
   runway?: string,
-  transition?: string
+  transition?: string,
 ): ExpandedLeg[] {
   let legs: ExpandedLeg[] = [];
-  
+
   const findProcedure = (airportIcao: string, ident: string, type: ProcedureType): Procedure | undefined => {
     const cachedProcs = NAV_CACHE.procedures[airportIcao.toUpperCase()];
     if (cachedProcs) {
-      const p = cachedProcs.find(p => p.ident === ident && p.type === type);
+      const p = cachedProcs.find((p) => p.ident === ident && p.type === type);
       if (p) {
         return {
           ident: p.ident,
           type: p.type as ProcedureType,
           airportIcao: p.airport_icao,
-          legs: p.legs.map(leg => ({
+          legs: p.legs.map((leg) => ({
             type: leg.type as any,
             fixIdent: leg.fix,
             courseDeg: leg.course,
             distanceNm: leg.distanceNm,
             altitudeConstraint: leg.altitude ? parseAltitude(leg.altitude) : undefined,
             speedConstraint: leg.speed ? parseSpeed(leg.speed) : undefined,
-            isFlyOver: leg.turnDirection === 'L' || leg.turnDirection === 'R'
-          }))
+            isFlyOver: leg.turnDirection === 'L' || leg.turnDirection === 'R',
+          })),
         };
       }
     }
-    
-    return PROCEDURES.find(p => p.ident === ident && p.type === type && (p.airport === airportIcao || p.airportIcao === airportIcao));
+
+    return PROCEDURES.find(
+      (p) => p.ident === ident && p.type === type && (p.airport === airportIcao || p.airportIcao === airportIcao),
+    );
   };
 
   // 1. SID
@@ -104,7 +106,7 @@ export function expandProcedure(procedure: Procedure, runway?: string, transitio
   let legs: ProcedureLeg[] = [];
 
   if (procedure.transitions && procedure.transitions.length > 0) {
-    const matchingTrans = procedure.transitions.find(t => {
+    const matchingTrans = procedure.transitions.find((t) => {
       const transIdent = t.ident.toUpperCase();
       if (transition && transIdent === transition.toUpperCase()) return true;
       if (runway) {
@@ -130,7 +132,7 @@ export function expandProcedure(procedure: Procedure, runway?: string, transitio
 
   if (runway) {
     const normRunway = runway.toUpperCase().replace(/^RWY|^RW/, '');
-    legs = legs.filter(leg => {
+    legs = legs.filter((leg) => {
       if (leg.fixIdent && (leg.fixIdent.startsWith('RW') || leg.fixIdent.startsWith('RWY'))) {
         const legRwy = leg.fixIdent.replace(/^RWY|^RW/, '');
         return legRwy === normRunway;
@@ -139,7 +141,7 @@ export function expandProcedure(procedure: Procedure, runway?: string, transitio
     });
   }
 
-  return legs.map(leg => {
+  return legs.map((leg) => {
     const fix = leg.fixIdent ? getFix(leg.fixIdent) : null;
     return {
       ident: leg.fixIdent || 'USER',
@@ -148,7 +150,7 @@ export function expandProcedure(procedure: Procedure, runway?: string, transitio
       type: leg.type,
       altitudeConstraint: leg.altitudeConstraint,
       speedConstraint: leg.speedConstraint,
-      isFlyOver: leg.isFlyOver
+      isFlyOver: leg.isFlyOver,
     };
   });
 }

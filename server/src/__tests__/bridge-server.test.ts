@@ -92,7 +92,7 @@ describe('bridge server', () => {
     }
 
     expect(display?.type).toBe('fmc.display');
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(adapter.recordedKeypresses).toContain('RTE');
     ws.close();
   });
@@ -115,16 +115,16 @@ describe('bridge server', () => {
 
     // 2. Simulate disconnection by the aircraft adapter
     (adapter as any).connectionStatus = 'DISCONNECTED';
-    
-    // 3. The watchdog should try to reconnect. 
-    // In our implementation, it retries every 10 seconds. 
+
+    // 3. The watchdog should try to reconnect.
+    // In our implementation, it retries every 10 seconds.
     // For the test, we'll wait for the sim.connected message that indicates the watchdog succeeded.
     // Note: MockSimConnectAdapter.connect() always succeeds in this test.
-    
+
     let reconnected: ServerMessage | null = null;
     // We might get some fmc.display or sim.data messages while polling was active (if it wasn't stopped)
     // But pollInterval stops if !aircraft.isConnected.
-    
+
     for (let i = 0; i < 20; i++) {
       const msg = await messages.next();
       if (msg.type === 'sim.connected') {
@@ -170,13 +170,15 @@ describe('bridge server', () => {
       headers: { Origin: 'https://evil.example.test' },
     });
 
-    await expect(new Promise<void>((resolve, reject) => {
-      ws.once('open', () => resolve());
-      ws.once('unexpected-response', (_request, response) => {
-        reject(new Error(`unexpected-response:${response.statusCode}`));
-      });
-      ws.once('error', reject);
-    })).rejects.toThrow('unexpected-response:403');
+    await expect(
+      new Promise<void>((resolve, reject) => {
+        ws.once('open', () => resolve());
+        ws.once('unexpected-response', (_request, response) => {
+          reject(new Error(`unexpected-response:${response.statusCode}`));
+        });
+        ws.once('error', reject);
+      }),
+    ).rejects.toThrow('unexpected-response:403');
 
     ws.close();
   });

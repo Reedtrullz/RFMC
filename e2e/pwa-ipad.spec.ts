@@ -24,7 +24,9 @@ test.describe('PWA and iPad hardening', () => {
     await expect(page.locator('.cockpit-stage--portrait')).toBeVisible();
     await expect(page.getByTestId('cdu-panel')).toBeVisible();
 
-    const bodyOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    const bodyOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(bodyOverflow).toBeLessThanOrEqual(2);
   });
 });

@@ -18,9 +18,7 @@ export function FCUButton({ label, active, onPress, highlighted = false }: FCUBu
     >
       <div className="pointer-events-none absolute inset-0 rounded-[3px] bg-gradient-to-b from-white/12 to-black/22" />
       <span>{label}</span>
-      {active && (
-        <div className="absolute bottom-1 h-1 w-7 rounded-sm bg-[#39ff14] shadow-[0_0_7px_#39ff14]" />
-      )}
+      {active && <div className="absolute bottom-1 h-1 w-7 rounded-sm bg-[#39ff14] shadow-[0_0_7px_#39ff14]" />}
     </button>
   );
 }

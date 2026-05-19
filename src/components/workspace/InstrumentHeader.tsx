@@ -26,10 +26,10 @@ export function InstrumentHeader({
   onZoomOut,
   onZoomReset,
 }: InstrumentHeaderProps) {
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const layoutMode = useCockpitLayoutStore(s => s.cockpitLayoutMode);
-  const togglePanelPinned = useCockpitLayoutStore(s => s.togglePanelPinned);
-  const pinnedPanels = useCockpitLayoutStore(s => s.pinnedPanels);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
+  const togglePanelPinned = useCockpitLayoutStore((s) => s.togglePanelPinned);
+  const pinnedPanels = useCockpitLayoutStore((s) => s.pinnedPanels);
   let label = panelLabels[panelId];
   if (panelId === 'autoflight') {
     label = aircraft === 'AIRBUS_A320' ? 'FCU' : 'MCP';
@@ -48,7 +48,12 @@ export function InstrumentHeader({
           </button>
         )}
         {zoomLabel && (
-          <button type="button" onClick={() => onZoomReset?.(panelId)} aria-label={`Reset ${label} zoom`} title="Reset zoom">
+          <button
+            type="button"
+            onClick={() => onZoomReset?.(panelId)}
+            aria-label={`Reset ${label} zoom`}
+            title="Reset zoom"
+          >
             {zoomLabel}
           </button>
         )}

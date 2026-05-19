@@ -7,17 +7,17 @@ import { MistakeReview } from './MistakeReview';
 import { LessonSelector } from './LessonSelector';
 
 export function TrainingOverlay() {
-  const trainingActive = useFMCStore(s => s.trainingActive);
-  const trainingCompleted = useFMCStore(s => s.trainingCompleted);
-  const trainingScenario = useFMCStore(s => s.trainingScenario);
-  const trainingStepIndex = useFMCStore(s => s.trainingStepIndex);
-  const trainingMistakes = useFMCStore(s => s.trainingMistakes);
-  const trainingScore = useFMCStore(s => s.trainingScore);
-  const stopTraining = useFMCStore(s => s.stopTraining);
-  const startTraining = useFMCStore(s => s.startTraining);
+  const trainingActive = useFMCStore((s) => s.trainingActive);
+  const trainingCompleted = useFMCStore((s) => s.trainingCompleted);
+  const trainingScenario = useFMCStore((s) => s.trainingScenario);
+  const trainingStepIndex = useFMCStore((s) => s.trainingStepIndex);
+  const trainingMistakes = useFMCStore((s) => s.trainingMistakes);
+  const trainingScore = useFMCStore((s) => s.trainingScore);
+  const stopTraining = useFMCStore((s) => s.stopTraining);
+  const startTraining = useFMCStore((s) => s.startTraining);
 
-  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('instructor'));
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('instructor'));
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
 
   if (!trainingActive && !trainingCompleted) {
     return null;
@@ -34,7 +34,7 @@ export function TrainingOverlay() {
       {trainingActive && currentStep && (
         <div className="pointer-events-auto w-full max-w-xl mb-4 animate-in slide-in-from-bottom-4 duration-300">
           <StepCard step={currentStep} />
-          
+
           <div className="mt-4 flex justify-center">
             <button
               onClick={stopTraining}
@@ -48,12 +48,12 @@ export function TrainingOverlay() {
 
       {trainingCompleted && trainingScore && (
         <div className="pointer-events-auto">
-          <CheckrideSummary 
+          <CheckrideSummary
             score={trainingScore}
             onClose={stopTraining}
             onRetry={() => trainingScenario && startTraining(trainingScenario.id)}
           />
-          
+
           {/* Mistake review is shown inside or below the summary if needed */}
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-lg pointer-events-auto bg-cdu-bezel/95 p-6 rounded-xl border border-cdu-error/30 max-h-[40vh] overflow-y-auto">
             <MistakeReview mistakes={trainingMistakes} />
@@ -69,9 +69,9 @@ export function TrainingOverlay() {
               LEVEL {trainingScenario.level}
             </span>
             <div className="flex-1 h-1 bg-cdu-bezel-light rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-cdu-cyan transition-all duration-500"
-                style={{ width: `${((trainingStepIndex) / trainingScenario.steps.length) * 100}%` }}
+                style={{ width: `${(trainingStepIndex / trainingScenario.steps.length) * 100}%` }}
               />
             </div>
             <span className="text-[10px] font-cdu text-cdu-text/40">

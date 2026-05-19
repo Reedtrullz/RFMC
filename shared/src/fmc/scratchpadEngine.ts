@@ -50,16 +50,14 @@ export function pushMessage(state: ScratchpadState, message: ScratchpadMessage):
 }
 
 export function clearMessage(state: ScratchpadState, messageId: string): ScratchpadState {
-  const target = state.messageQueue.find(m => m.id === messageId);
+  const target = state.messageQueue.find((m) => m.id === messageId);
   if (!target) return state;
 
-  const messageQueue = state.messageQueue.filter(m => m.id !== messageId);
+  const messageQueue = state.messageQueue.filter((m) => m.id !== messageId);
   const history = [...state.history, target];
 
   const currentMessage =
-    state.message?.id === messageId
-      ? (messageQueue.length > 0 ? messageQueue[0] : null)
-      : state.message;
+    state.message?.id === messageId ? (messageQueue.length > 0 ? messageQueue[0] : null) : state.message;
 
   return { ...state, message: currentMessage, messageQueue, history };
 }
@@ -67,13 +65,15 @@ export function clearMessage(state: ScratchpadState, messageId: string): Scratch
 export function typeChar(state: ScratchpadState, char: string): ScratchpadState {
   const buffer = state.buffer + char;
 
-  const cleared = state.messageQueue.filter(m => m.priority > MessagePriority.PERF_UNAVAIL);
-  const messageQueue = state.messageQueue.filter(m => m.priority <= MessagePriority.PERF_UNAVAIL);
+  const cleared = state.messageQueue.filter((m) => m.priority > MessagePriority.PERF_UNAVAIL);
+  const messageQueue = state.messageQueue.filter((m) => m.priority <= MessagePriority.PERF_UNAVAIL);
   const history = [...state.history, ...cleared];
 
   const currentMessage =
     state.message && state.message.priority > MessagePriority.PERF_UNAVAIL
-      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      ? messageQueue.length > 0
+        ? messageQueue[0]
+        : null
       : state.message;
 
   return { ...state, buffer, message: currentMessage, messageQueue, history };
@@ -216,21 +216,21 @@ export function getScratchpadDisplayText(state: ScratchpadState): string {
 }
 
 export function clearScratchpadForPageChange(state: ScratchpadState): ScratchpadState {
-  const cleared = state.messageQueue.filter(m => m.clearsOnPageChange);
-  const messageQueue = state.messageQueue.filter(m => !m.clearsOnPageChange);
+  const cleared = state.messageQueue.filter((m) => m.clearsOnPageChange);
+  const messageQueue = state.messageQueue.filter((m) => !m.clearsOnPageChange);
   const currentMessage =
     state.message && state.message.clearsOnPageChange
-      ? (messageQueue.length > 0 ? messageQueue[0] : null)
+      ? messageQueue.length > 0
+        ? messageQueue[0]
+        : null
       : state.message;
   return { ...state, message: currentMessage, messageQueue, history: [...state.history, ...cleared] };
 }
 
 export function clearScratchpadForExec(state: ScratchpadState): ScratchpadState {
-  const cleared = state.messageQueue.filter(m => m.clearsOnExec);
-  const messageQueue = state.messageQueue.filter(m => !m.clearsOnExec);
+  const cleared = state.messageQueue.filter((m) => m.clearsOnExec);
+  const messageQueue = state.messageQueue.filter((m) => !m.clearsOnExec);
   const currentMessage =
-    state.message && state.message.clearsOnExec
-      ? (messageQueue.length > 0 ? messageQueue[0] : null)
-      : state.message;
+    state.message && state.message.clearsOnExec ? (messageQueue.length > 0 ? messageQueue[0] : null) : state.message;
   return { ...state, message: currentMessage, messageQueue, history: [...state.history, ...cleared] };
 }

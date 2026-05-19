@@ -67,9 +67,7 @@ export class ScenarioEngine {
       case 'SET_FAILURE':
         // Failures like GPS failure
         if (payload.sensor === 'GPS') {
-          updates.sensors = state.sensors.map(s => 
-            s.source === 'GPS' ? { ...s, available: false } : s
-          );
+          updates.sensors = state.sensors.map((s) => (s.source === 'GPS' ? { ...s, available: false } : s));
         }
         break;
       case 'CHANGE_PHASE':
@@ -82,25 +80,29 @@ export class ScenarioEngine {
           text: payload.text,
           timestamp: Date.now(),
           read: false,
-          type: payload.type || 'AOC'
+          type: payload.type || 'AOC',
         };
         updates.atsu = {
           ...state.atsu,
-          messages: [msg, ...state.atsu.messages]
+          messages: [msg, ...state.atsu.messages],
         };
         break;
       case 'UPLINK_ROUTE':
         updates.atsu = {
           ...state.atsu,
-          pendingUplink: payload
+          pendingUplink: payload,
         };
         // Also trigger an ACARS message to notify student
-        this.processAction({
-          id: 'uplink-notify',
-          type: 'MESSAGE',
-          trigger: { type: 'TIME', value: 0 },
-          action: { type: 'SEND_ACARS', payload: { from: 'AOC', text: 'F-PLN UPLINK RECEIVED' } }
-        }, state, updates);
+        this.processAction(
+          {
+            id: 'uplink-notify',
+            type: 'MESSAGE',
+            trigger: { type: 'TIME', value: 0 },
+            action: { type: 'SEND_ACARS', payload: { from: 'AOC', text: 'F-PLN UPLINK RECEIVED' } },
+          },
+          state,
+          updates,
+        );
         break;
     }
   }

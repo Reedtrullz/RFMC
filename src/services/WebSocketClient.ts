@@ -17,12 +17,14 @@ class WebSocketClient {
 
   public subscribe(listener: StatusListener) {
     this.statusListeners.add(listener);
-    return () => { this.statusListeners.delete(listener); };
+    return () => {
+      this.statusListeners.delete(listener);
+    };
   }
 
   private setStatus(status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR') {
     useFMCStore.getState().setConnectionStatus(status);
-    this.statusListeners.forEach(l => l(status));
+    this.statusListeners.forEach((l) => l(status));
   }
 
   public connect(url?: string) {

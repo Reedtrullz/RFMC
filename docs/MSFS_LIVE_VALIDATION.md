@@ -4,30 +4,30 @@ This checklist is required before PMDG connected mode can be called verified. It
 
 ## Environment
 
-| Field | Value |
-| --- | --- |
-| Date |  |
-| VirtualCDU commit |  |
-| Windows version |  |
-| MSFS version |  |
-| PMDG aircraft/version |  |
-| Network topology | Same machine / LAN / other |
+| Field                 | Value                      |
+| --------------------- | -------------------------- |
+| Date                  |                            |
+| VirtualCDU commit     |                            |
+| Windows version       |                            |
+| MSFS version          |                            |
+| PMDG aircraft/version |                            |
+| Network topology      | Same machine / LAN / other |
 
 ## Required PMDG Round Trip
 
-| Check | Pass | Evidence |
-| --- | --- | --- |
-| WebSocket bridge starts cleanly |  |  |
-| PMDG adapter connects |  |  |
-| Adapter reports aircraft type and capabilities |  |  |
-| VirtualCDU sends `RTE` keypress |  |  |
-| PMDG CDU changes page |  |  |
-| VirtualCDU reads back updated display |  |  |
-| Scratchpad input round trip works |  |  |
-| LSK input round trip works |  |  |
-| Reconnect after bridge restart works |  |  |
-| Reconnect after aircraft reload works |  |  |
-| 30-minute connected session has no crash/desync |  |  |
+| Check                                           | Pass | Evidence |
+| ----------------------------------------------- | ---- | -------- |
+| WebSocket bridge starts cleanly                 |      |          |
+| PMDG adapter connects                           |      |          |
+| Adapter reports aircraft type and capabilities  |      |          |
+| VirtualCDU sends `RTE` keypress                 |      |          |
+| PMDG CDU changes page                           |      |          |
+| VirtualCDU reads back updated display           |      |          |
+| Scratchpad input round trip works               |      |          |
+| LSK input round trip works                      |      |          |
+| Reconnect after bridge restart works            |      |          |
+| Reconnect after aircraft reload works           |      |          |
+| 30-minute connected session has no crash/desync |      |          |
 
 ## CONTROL-Mode Mock Coverage Boundary
 
@@ -35,11 +35,11 @@ Local CI and macOS development can validate mock adapter behavior, backend FMC r
 
 Record the exact automated command and commit when citing mock evidence:
 
-| Mock check | Command | Commit | Evidence |
-| --- | --- | --- | --- |
-| Backend FMC parity | `npm test -- --run` |  |  |
-| Bridge/WebSocket mock adapter | `npm test -- --run` |  |  |
-| Smoke E2E with mock adapter | `npm run test:e2e:ci` |  |  |
+| Mock check                    | Command               | Commit | Evidence |
+| ----------------------------- | --------------------- | ------ | -------- |
+| Backend FMC parity            | `npm test -- --run`   |        |          |
+| Bridge/WebSocket mock adapter | `npm test -- --run`   |        |          |
+| Smoke E2E with mock adapter   | `npm run test:e2e:ci` |        |          |
 
 ## Evidence Requirements
 
@@ -51,12 +51,12 @@ Record the exact automated command and commit when citing mock evidence:
 
 ## Metrics
 
-| Metric | Target | Result |
-| --- | ---: | ---: |
-| Connection success rate | >= 98% |  |
-| Average display latency | < 80 ms |  |
-| Dropped messages | 0 critical |  |
-| Desyncs in 30 minutes | 0 |  |
+| Metric                  |     Target | Result |
+| ----------------------- | ---------: | -----: |
+| Connection success rate |     >= 98% |        |
+| Average display latency |    < 80 ms |        |
+| Dropped messages        | 0 critical |        |
+| Desyncs in 30 minutes   |          0 |        |
 
 ## Notes
 

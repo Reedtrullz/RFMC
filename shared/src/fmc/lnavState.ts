@@ -30,7 +30,8 @@ export function buildLnavState(state: FMCState): LnavState {
   const firstDiscontinuityIndex = waypoints.findIndex((waypoint) => waypoint.discontinuity);
   const activeLegIndex = directToIndex ?? findFirstActiveIndex(waypoints);
   const activeWaypoint = activeLegIndex === null ? null : toSummary(waypoints[activeLegIndex], activeLegIndex);
-  const nextWaypoint = activeLegIndex === null ? null : findNextWaypoint(waypoints, activeLegIndex, directToIndex !== null);
+  const nextWaypoint =
+    activeLegIndex === null ? null : findNextWaypoint(waypoints, activeLegIndex, directToIndex !== null);
   const stoppedAtDiscontinuity = isSequencingStoppedByDiscontinuity(
     waypoints,
     activeLegIndex,
@@ -38,15 +39,18 @@ export function buildLnavState(state: FMCState): LnavState {
     firstDiscontinuityIndex,
   );
   const aircraftPosition = getAircraftPosition(state.aircraftState);
-  const bearingToActiveDeg = aircraftPosition && activeWaypoint?.lat !== undefined && activeWaypoint.lon !== undefined
-    ? Math.round(bearingDeg(aircraftPosition, { lat: activeWaypoint.lat, lon: activeWaypoint.lon }))
-    : null;
-  const distanceToActiveNm = aircraftPosition && activeWaypoint?.lat !== undefined && activeWaypoint.lon !== undefined
-    ? roundNm(distanceNm(aircraftPosition, { lat: activeWaypoint.lat, lon: activeWaypoint.lon }))
-    : null;
-  const distanceToDestinationNm = aircraftPosition && activeLegIndex !== null
-    ? calculateDistanceToDestinationNm(aircraftPosition, waypoints, activeLegIndex, directToIndex !== null)
-    : null;
+  const bearingToActiveDeg =
+    aircraftPosition && activeWaypoint?.lat !== undefined && activeWaypoint.lon !== undefined
+      ? Math.round(bearingDeg(aircraftPosition, { lat: activeWaypoint.lat, lon: activeWaypoint.lon }))
+      : null;
+  const distanceToActiveNm =
+    aircraftPosition && activeWaypoint?.lat !== undefined && activeWaypoint.lon !== undefined
+      ? roundNm(distanceNm(aircraftPosition, { lat: activeWaypoint.lat, lon: activeWaypoint.lon }))
+      : null;
+  const distanceToDestinationNm =
+    aircraftPosition && activeLegIndex !== null
+      ? calculateDistanceToDestinationNm(aircraftPosition, waypoints, activeLegIndex, directToIndex !== null)
+      : null;
 
   return {
     activeLegIndex,
@@ -55,11 +59,9 @@ export function buildLnavState(state: FMCState): LnavState {
     destination,
     directToActive: directToIndex !== null,
     stoppedAtDiscontinuity,
-    routeComplete: activeLegIndex === null || (
-      activeLegIndex === waypoints.length - 1 &&
-      distanceToActiveNm !== null &&
-      distanceToActiveNm < 0.2
-    ),
+    routeComplete:
+      activeLegIndex === null ||
+      (activeLegIndex === waypoints.length - 1 && distanceToActiveNm !== null && distanceToActiveNm < 0.2),
     bearingToActiveDeg,
     distanceToActiveNm,
     distanceToDestinationNm,
@@ -72,10 +74,7 @@ function findDirectToIndex(waypoints: FlightPlanWaypoint[], directTo?: string, c
   const normalizedDirectTo = directTo.toUpperCase();
   for (let i = currentLegIndex; i < waypoints.length; i++) {
     const waypoint = waypoints[i];
-    if (
-      !waypoint.discontinuity &&
-      waypoint.ident.toUpperCase() === normalizedDirectTo
-    ) {
+    if (!waypoint.discontinuity && waypoint.ident.toUpperCase() === normalizedDirectTo) {
       return i;
     }
   }
@@ -102,17 +101,13 @@ function findNextWaypoint(
   return null;
 }
 
-function findDestination(
-  waypoints: FlightPlanWaypoint[],
-  destinationIdent: string | null,
-): LnavWaypointSummary | null {
+function findDestination(waypoints: FlightPlanWaypoint[], destinationIdent: string | null): LnavWaypointSummary | null {
   if (waypoints.length === 0) return null;
   if (destinationIdent) {
     const normalizedDestination = destinationIdent.toUpperCase();
-    const index = waypoints.findIndex((waypoint) => (
-      !waypoint.discontinuity &&
-      waypoint.ident.toUpperCase() === normalizedDestination
-    ));
+    const index = waypoints.findIndex(
+      (waypoint) => !waypoint.discontinuity && waypoint.ident.toUpperCase() === normalizedDestination,
+    );
     if (index >= 0) return toSummary(waypoints[index], index);
   }
 
@@ -160,10 +155,7 @@ function calculateDistanceToDestinationNm(
     ) {
       return null;
     }
-    total += distanceNm(
-      { lat: previous.lat, lon: previous.lon },
-      { lat: current.lat, lon: current.lon },
-    );
+    total += distanceNm({ lat: previous.lat, lon: previous.lon }, { lat: current.lat, lon: current.lon });
     previous = current;
   }
 

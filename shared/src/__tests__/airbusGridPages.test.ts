@@ -254,8 +254,16 @@ describe('Airbus Grid Pages', () => {
     it('displays all 8 menu items', () => {
       const state = createMinimalState();
       const result = renderDataIndexGrid(state);
-      const items = ['A/C STATUS', 'POSITION MONITOR', 'IRS MONITOR', 'GPS MONITOR',
-        'WAYPOINTS', 'NAVAIDS', 'RUNWAYS', 'ROUTES'];
+      const items = [
+        'A/C STATUS',
+        'POSITION MONITOR',
+        'IRS MONITOR',
+        'GPS MONITOR',
+        'WAYPOINTS',
+        'NAVAIDS',
+        'RUNWAYS',
+        'ROUTES',
+      ];
       items.forEach((item, i) => {
         checkSegment(result, i + 1, 1, item);
       });
@@ -510,7 +518,18 @@ describe('Airbus Grid Pages', () => {
     });
 
     it('shows LOW accuracy when ANP exceeds RNP', () => {
-      const state = createMinimalState({ navPerformance: { anpNm: 3.5, rnpNm: 1.0, anp: 3.5, rnp: 1.0, rnpManual: false, activeSource: 'GPS', phase: 'ENROUTE', xteNm: 1 } });
+      const state = createMinimalState({
+        navPerformance: {
+          anpNm: 3.5,
+          rnpNm: 1.0,
+          anp: 3.5,
+          rnp: 1.0,
+          rnpManual: false,
+          activeSource: 'GPS',
+          phase: 'ENROUTE',
+          xteNm: 1,
+        },
+      });
       const result = renderProgGrid(state);
       checkSegment(result, 11, 8, 'LOW', 'green');
     });

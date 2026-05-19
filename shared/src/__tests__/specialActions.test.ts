@@ -90,7 +90,13 @@ describe('handleSpecialLskAction', () => {
   it('copy_active returns copy patch with COPIED TO SEC scratchpad', () => {
     const state = makeState({
       route: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'DAL456' },
-      flightPlan: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'DAL456', route: 'VTU5 RZS J501 BSR BSR2', waypoints: [] },
+      flightPlan: {
+        origin: 'KLAX',
+        destination: 'KSFO',
+        flightNumber: 'DAL456',
+        route: 'VTU5 RZS J501 BSR BSR2',
+        waypoints: [],
+      },
     });
     const result = handleSpecialLskAction('copy_active', state, '');
 

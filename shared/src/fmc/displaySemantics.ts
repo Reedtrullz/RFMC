@@ -35,16 +35,10 @@ export const AIRBUS_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
 };
 
 export function getSemanticColor(aircraft: AircraftType, semantic: DisplaySemantic): DisplayColor {
-  return aircraft === 'AIRBUS_A320'
-    ? AIRBUS_SEMANTIC_COLORS[semantic]
-    : BOEING_SEMANTIC_COLORS[semantic];
+  return aircraft === 'AIRBUS_A320' ? AIRBUS_SEMANTIC_COLORS[semantic] : BOEING_SEMANTIC_COLORS[semantic];
 }
 
-export function withDisplaySemantic(
-  aircraft: AircraftType,
-  semantic: DisplaySemantic,
-  line: DisplayLine,
-): DisplayLine {
+export function withDisplaySemantic(aircraft: AircraftType, semantic: DisplaySemantic, line: DisplayLine): DisplayLine {
   return {
     ...line,
     semantic,

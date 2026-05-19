@@ -13,10 +13,16 @@ interface BoeingDisplayBayProps {
 
 import { BOEING_737_CDU_TOKENS } from '../../instruments/common/tokens/boeing-cdu.tokens';
 
-export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintLevel, onPressLSK }: BoeingDisplayBayProps) {
+export function BoeingDisplayBay({
+  brightness,
+  getLSKLabel,
+  isHighlighted,
+  hintLevel,
+  onPressLSK,
+}: BoeingDisplayBayProps) {
   const tokens = BOEING_737_CDU_TOKENS;
   const mmToPx = 3.8; // Approximate conversion for high-fidelity feel
-  
+
   const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
   const lskWidth = `${tokens.lsk.insetMm * mmToPx * 4}px`; // Approximate width for LSK columns
   const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
@@ -41,8 +47,20 @@ export function BoeingDisplayBay({ brightness, getLSKLabel, isHighlighted, hintL
       className="w-full rounded-[5px] border border-black/70 p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] mix-blend-normal"
       style={displayBayStyle}
     >
-      <BoeingLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />
-      <BoeingLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} hintLevel={hintLevel} onPress={onPressLSK} />
+      <BoeingLSKColumn
+        side="L"
+        getLabel={getLSKLabel}
+        isHighlighted={isHighlighted}
+        hintLevel={hintLevel}
+        onPress={onPressLSK}
+      />
+      <BoeingLSKColumn
+        side="R"
+        getLabel={getLSKLabel}
+        isHighlighted={isHighlighted}
+        hintLevel={hintLevel}
+        onPress={onPressLSK}
+      />
 
       <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
         <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full">

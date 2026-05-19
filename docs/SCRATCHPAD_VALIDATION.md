@@ -12,10 +12,10 @@ The scratchpad engine (`shared/src/fmc/scratchpadEngine.ts`) centralizes all inp
 
 ```ts
 interface ScratchpadState {
-  buffer: string;                    // Current scratchpad text buffer
+  buffer: string; // Current scratchpad text buffer
   message: ScratchpadMessage | null; // Currently displayed message (highest priority)
   messageQueue: ScratchpadMessage[]; // Priority-sorted message queue
-  history: ScratchpadMessage[];      // All messages ever displayed
+  history: ScratchpadMessage[]; // All messages ever displayed
 }
 
 interface ScratchpadMessage {
@@ -34,16 +34,16 @@ interface ScratchpadMessage {
 
 Messages are prioritized with lower numbers indicating higher urgency:
 
-| Priority | Level | Example Messages | Persists on Input? |
-|----------|-------|------------------|-------------------|
-| 1 | `SAFETY` | UNABLE NEXT ALT, DRAG REQUIRED | Yes |
-| 2 | `NAV_IMPOSSIBLE` | ROUTE DISCONTINUITY, VERIFY POSITION | Yes |
-| 3 | `PERF_UNAVAIL` | PERF VNAV UNAVAILABLE, INSUFFICIENT FUEL | Yes |
-| 4 | `DB_ERROR` | NOT IN DATABASE | No |
-| 5 | `INVALID_ENTRY` | INVALID ENTRY | No |
-| 6 | `ADVISORY` | Advisory prompts | No |
-| 7 | `INFO` | Informational messages | No |
-| 8 | `USER_INPUT` | User typed input | N/A |
+| Priority | Level            | Example Messages                         | Persists on Input? |
+| -------- | ---------------- | ---------------------------------------- | ------------------ |
+| 1        | `SAFETY`         | UNABLE NEXT ALT, DRAG REQUIRED           | Yes                |
+| 2        | `NAV_IMPOSSIBLE` | ROUTE DISCONTINUITY, VERIFY POSITION     | Yes                |
+| 3        | `PERF_UNAVAIL`   | PERF VNAV UNAVAILABLE, INSUFFICIENT FUEL | Yes                |
+| 4        | `DB_ERROR`       | NOT IN DATABASE                          | No                 |
+| 5        | `INVALID_ENTRY`  | INVALID ENTRY                            | No                 |
+| 6        | `ADVISORY`       | Advisory prompts                         | No                 |
+| 7        | `INFO`           | Informational messages                   | No                 |
+| 8        | `USER_INPUT`     | User typed input                         | N/A                |
 
 **Priority 1-3 (Safety Band)**: Messages in the safety band persist through user typing. The user cannot dismiss these by simply starting to type — they must be acknowledged or resolved.
 
@@ -51,14 +51,14 @@ Messages are prioritized with lower numbers indicating higher urgency:
 
 ### Engine Operations
 
-| Function | Behavior |
-|----------|----------|
-| `pushMessage(state, message)` | Inserts into priority-sorted queue, promotes highest to active |
-| `clearMessage(state, messageId)` | Removes by ID, promotes next highest |
-| `typeChar(state, char)` | Appends to buffer, clears messages with priority > PERF_UNAVAIL |
-| `deleteChar(state)` | Removes last char from buffer |
-| `clearBuffer(state)` | Clears buffer text |
-| `getActiveDisplay(state)` | Returns message text (if active) or buffer text (if non-empty) or '' |
+| Function                         | Behavior                                                             |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `pushMessage(state, message)`    | Inserts into priority-sorted queue, promotes highest to active       |
+| `clearMessage(state, messageId)` | Removes by ID, promotes next highest                                 |
+| `typeChar(state, char)`          | Appends to buffer, clears messages with priority > PERF_UNAVAIL      |
+| `deleteChar(state)`              | Removes last char from buffer                                        |
+| `clearBuffer(state)`             | Clears buffer text                                                   |
+| `getActiveDisplay(state)`        | Returns message text (if active) or buffer text (if non-empty) or '' |
 
 ## Validation Lifecycle
 
@@ -75,6 +75,7 @@ Parse → Validate → Apply (or Reject)
 ### Field Validation Rules
 
 Each field defines:
+
 - **Parser**: Converts raw string to typed value (e.g., `parseInt`, `parseFloat`, `toUpperCase`)
 - **Formatter**: Converts typed value to display string
 - **Validator**: Checks against range, format, and database constraints
@@ -85,6 +86,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 ## Required Messages (8)
 
 ### INVALID ENTRY
+
 - **Priority**: 5 (INVALID_ENTRY)
 - **Source**: validation
 - **Triggers**:
@@ -95,6 +97,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Clears on next valid input or page change
 
 ### NOT IN DATABASE
+
 - **Priority**: 4 (DB_ERROR)
 - **Source**: validation
 - **Triggers**:
@@ -106,6 +109,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Clears on next valid database lookup or page change
 
 ### ROUTE DISCONTINUITY
+
 - **Priority**: 2 (NAV_IMPOSSIBLE)
 - **Source**: route
 - **Triggers**:
@@ -116,6 +120,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Does NOT clear on input (safety band). Clears when discontinuity is resolved.
 
 ### VERIFY POSITION
+
 - **Priority**: 2 (NAV_IMPOSSIBLE)
 - **Source**: nav
 - **Triggers**:
@@ -125,6 +130,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Does NOT clear on input. Clears when position is verified or aligned.
 
 ### INSUFFICIENT FUEL
+
 - **Priority**: 3 (PERF_UNAVAIL)
 - **Source**: performance
 - **Triggers**:
@@ -134,6 +140,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Does NOT clear on input. Clears when fuel/performance values are adjusted.
 
 ### PERF VNAV UNAVAILABLE
+
 - **Priority**: 3 (PERF_UNAVAIL)
 - **Source**: performance
 - **Triggers**:
@@ -143,6 +150,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Does NOT clear on input. Clears when required performance data is provided.
 
 ### UNABLE NEXT ALT
+
 - **Priority**: 1 (SAFETY)
 - **Source**: nav
 - **Triggers**:
@@ -152,6 +160,7 @@ Field validation rules are in `shared/src/fmc/validation.ts`. Aircraft-specific 
 - **Clear behavior**: Does NOT clear on input. Clears when constraint is modified or path is recalculated.
 
 ### DRAG REQUIRED
+
 - **Priority**: 1 (SAFETY)
 - **Source**: nav
 - **Triggers**:

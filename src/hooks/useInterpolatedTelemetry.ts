@@ -5,7 +5,7 @@ const mod360 = (val: number) => ((val % 360) + 360) % 360;
 
 export function useInterpolatedTelemetry(rawState: AircraftState | null): AircraftState | null {
   const [interpolatedState, setInterpolatedState] = useState<AircraftState | null>(rawState);
-  
+
   const rawStateRef = useRef<AircraftState | null>(rawState);
   const currentStateRef = useRef<AircraftState | null>(rawState);
   const animFrameIdRef = useRef<number | null>(null);

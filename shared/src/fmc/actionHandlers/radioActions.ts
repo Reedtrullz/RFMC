@@ -2,11 +2,7 @@ import type { FMCState } from '../../types/fmc';
 import { isValidFrequency, isValidADF } from '../validation';
 import type { FmcActionResult } from './actionResult';
 
-export function handleRadioLskAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleRadioLskAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   if (action === 'set_vor1' || action === 'set_vor2') {

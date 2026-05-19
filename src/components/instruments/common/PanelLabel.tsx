@@ -7,9 +7,5 @@ interface PanelLabelProps {
 }
 
 export function PanelLabel({ children, tone = 'white', className = '' }: PanelLabelProps) {
-  return (
-    <span className={`panel-label panel-label--${tone} ${className}`}>
-      {children}
-    </span>
-  );
+  return <span className={`panel-label panel-label--${tone} ${className}`}>{children}</span>;
 }

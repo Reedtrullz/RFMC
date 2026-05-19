@@ -14,11 +14,22 @@ describe('GpwsEngine', () => {
     it('returns SINK_RATE when descending fast near terrain', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 1000, altitudeFt: 1000,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -3000, vs: -3000,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 1000,
+          altitudeFt: 1000,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -3000,
+          vs: -3000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state, 1);
@@ -28,11 +39,22 @@ describe('GpwsEngine', () => {
     it('returns PULL_UP when descending fast below 500ft', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 400, altitudeFt: 400,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -2000, vs: -2000,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 400,
+          altitudeFt: 400,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -2000,
+          vs: -2000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state, 1);
@@ -42,11 +64,22 @@ describe('GpwsEngine', () => {
     it('returns NONE when descending slowly', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 2000, altitudeFt: 2000,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -500, vs: -500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 2000,
+          altitudeFt: 2000,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state, 1);
@@ -56,11 +89,22 @@ describe('GpwsEngine', () => {
     it('returns NONE above 2500ft regardless of descent rate', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 3500, altitudeFt: 3500,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -10000, vs: -10000,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 3500,
+          altitudeFt: 3500,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -10000,
+          vs: -10000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state, 1);
@@ -68,16 +112,27 @@ describe('GpwsEngine', () => {
     });
   });
 
-  describe('Mode 3 — Don\'t Sink', () => {
+  describe("Mode 3 — Don't Sink", () => {
     function makeTakeoffState(altFt: number, vsFpm: number) {
       return createBaseState({
         flightPhase: 'TAKEOFF',
         aircraftState: {
-          lat: 0, lon: 0, altitude: altFt, altitudeFt: altFt,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: vsFpm, vs: vsFpm,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: altFt,
+          altitudeFt: altFt,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: vsFpm,
+          vs: vsFpm,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
     }
@@ -107,22 +162,44 @@ describe('GpwsEngine', () => {
       const state = createBaseState({
         flightPhase: 'CRUISE',
         aircraftState: {
-          lat: 0, lon: 0, altitude: 800, altitudeFt: 800,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 800,
+          altitudeFt: 800,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       engine.update(state, 1);
       const state2 = createBaseState({
         flightPhase: 'CRUISE',
         aircraftState: {
-          lat: 0, lon: 0, altitude: 600, altitudeFt: 600,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 600,
+          altitudeFt: 600,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state2, 1);
@@ -134,11 +211,22 @@ describe('GpwsEngine', () => {
       const state1 = createBaseState({
         flightPhase: 'TAKEOFF',
         aircraftState: {
-          lat: 0, lon: 0, altitude: 800, altitudeFt: 800,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: 500, vs: 500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 800,
+          altitudeFt: 800,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: 500,
+          vs: 500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       engine.update(state1, 1);
@@ -147,11 +235,22 @@ describe('GpwsEngine', () => {
       const state2 = createBaseState({
         flightPhase: 'GO_AROUND',
         aircraftState: {
-          lat: 0, lon: 0, altitude: 900, altitudeFt: 900,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: 500, vs: 500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 900,
+          altitudeFt: 900,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: 500,
+          vs: 500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       engine.update(state2, 1);
@@ -160,11 +259,22 @@ describe('GpwsEngine', () => {
       const state3 = createBaseState({
         flightPhase: 'GO_AROUND',
         aircraftState: {
-          lat: 0, lon: 0, altitude: 870, altitudeFt: 870,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -50, vs: -50,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 870,
+          altitudeFt: 870,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -50,
+          vs: -50,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state3, 1);
@@ -176,11 +286,22 @@ describe('GpwsEngine', () => {
     function makeState(altFt: number) {
       return createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: altFt, altitudeFt: altFt,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: altFt,
+          altitudeFt: altFt,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
     }
@@ -217,11 +338,22 @@ describe('GpwsEngine', () => {
     it('returns NONE at exactly 2500ft regardless of sink rate', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 2500, altitudeFt: 2500,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -10000, vs: -10000,
-          fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 2500,
+          altitudeFt: 2500,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -10000,
+          vs: -10000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state, 1);
@@ -239,19 +371,43 @@ describe('GpwsEngine', () => {
     it('generates callout at 2500ft', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 2600, altitudeFt: 2600,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 2600,
+          altitudeFt: 2600,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       engine.update(state, 1);
       const state2 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 2450, altitudeFt: 2450,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 2450,
+          altitudeFt: 2450,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state2, 1);
@@ -261,19 +417,43 @@ describe('GpwsEngine', () => {
     it('generates callout at 1000ft', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 1100, altitudeFt: 1100,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 1100,
+          altitudeFt: 1100,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       engine.update(state, 1);
       const state2 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 950, altitudeFt: 950,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 950,
+          altitudeFt: 950,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       const result = engine.update(state2, 1);
@@ -288,10 +468,22 @@ describe('GpwsEngine', () => {
       for (const alt of altSequence) {
         const state = createBaseState({
           aircraftState: {
-            lat: 0, lon: 0, altitude: alt, altitudeFt: alt,
-            heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-            ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-            verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+            lat: 0,
+            lon: 0,
+            altitude: alt,
+            altitudeFt: alt,
+            heading: 0,
+            headingDeg: 0,
+            track: 0,
+            trackDeg: 0,
+            ias: 180,
+            indicatedAirspeedKt: 180,
+            tas: 190,
+            gs: 180,
+            verticalSpeedFpm: -500,
+            vs: -500,
+            fuelTotal: 10000,
+            gw: 140000,
           },
         });
         const result = engine.update(state, 1);
@@ -304,20 +496,44 @@ describe('GpwsEngine', () => {
     it('does not fire same callout twice', () => {
       const state600 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 600, altitudeFt: 600,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 600,
+          altitudeFt: 600,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state600, 1).callout).toBeUndefined();
 
       const state450 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 450, altitudeFt: 450,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 450,
+          altitudeFt: 450,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state450, 1).callout).toBe(500);
@@ -325,10 +541,22 @@ describe('GpwsEngine', () => {
       // Descend to 350 — fires 400 (first threshold below lastCalloutAlt=450)
       const state350 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 350, altitudeFt: 350,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 350,
+          altitudeFt: 350,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state350, 1).callout).toBe(400);
@@ -336,10 +564,22 @@ describe('GpwsEngine', () => {
       // Descend to 150 — fires 300 (first threshold below lastCalloutAlt=350)
       const state150 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 150, altitudeFt: 150,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 150,
+          altitudeFt: 150,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state150, 1).callout).toBe(300);
@@ -347,10 +587,22 @@ describe('GpwsEngine', () => {
       // Now descend to 80 — fires 100 (300>100 && 80<=100 → true; 200 is skipped because 150<200)
       const state80 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 80, altitudeFt: 80,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 80,
+          altitudeFt: 80,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state80, 1).callout).toBe(100);
@@ -358,10 +610,22 @@ describe('GpwsEngine', () => {
       // Further descent to 5 — fires 50 (first threshold below lastCalloutAlt=80)
       const state5 = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 5, altitudeFt: 5,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
-          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 5,
+          altitudeFt: 5,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 180,
+          indicatedAirspeedKt: 180,
+          tas: 190,
+          gs: 180,
+          verticalSpeedFpm: -500,
+          vs: -500,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
       expect(engine.update(state5, 1).callout).toBe(50);
@@ -372,10 +636,22 @@ describe('GpwsEngine', () => {
     it('respects 2-second cooldown between same alerts', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 1000, altitudeFt: 1000,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -3000, vs: -3000, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 1000,
+          altitudeFt: 1000,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -3000,
+          vs: -3000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
 
@@ -391,10 +667,22 @@ describe('GpwsEngine', () => {
     it('fires again after cooldown expires', () => {
       const state = createBaseState({
         aircraftState: {
-          lat: 0, lon: 0, altitude: 1000, altitudeFt: 1000,
-          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-          verticalSpeedFpm: -3000, vs: -3000, fuelTotal: 10000, gw: 140000,
+          lat: 0,
+          lon: 0,
+          altitude: 1000,
+          altitudeFt: 1000,
+          heading: 0,
+          headingDeg: 0,
+          track: 0,
+          trackDeg: 0,
+          ias: 250,
+          indicatedAirspeedKt: 250,
+          tas: 260,
+          gs: 250,
+          verticalSpeedFpm: -3000,
+          vs: -3000,
+          fuelTotal: 10000,
+          gw: 140000,
         },
       });
 
@@ -409,16 +697,40 @@ describe('GpwsEngine', () => {
 });
 
 const aircraftStateData = {
-  lat: 50, lon: 50, altitude: 5000, altitudeFt: 5000,
-  heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
-  ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
-  verticalSpeedFpm: 0, vs: 0, fuelTotal: 10000, gw: 140000,
+  lat: 50,
+  lon: 50,
+  altitude: 5000,
+  altitudeFt: 5000,
+  heading: 0,
+  headingDeg: 0,
+  track: 0,
+  trackDeg: 0,
+  ias: 250,
+  indicatedAirspeedKt: 250,
+  tas: 260,
+  gs: 250,
+  verticalSpeedFpm: 0,
+  vs: 0,
+  fuelTotal: 10000,
+  gw: 140000,
 };
 
 const tcasEfisDefault = {
-  mode: 'MAP' as const, range: 40, centered: true, side: 'L' as const,
-  overlays: { wpt: false, arpt: false, sta: false, data: false,
-    pos: false, terr: false, wxr: false, tfc: false, cstr: false },
+  mode: 'MAP' as const,
+  range: 40,
+  centered: true,
+  side: 'L' as const,
+  overlays: {
+    wpt: false,
+    arpt: false,
+    sta: false,
+    data: false,
+    pos: false,
+    terr: false,
+    wxr: false,
+    tfc: false,
+    cstr: false,
+  },
 };
 
 function tcasState(overrides: Record<string, unknown> = {}) {
@@ -500,7 +812,7 @@ describe('TcasEngine', () => {
 
       for (let i = 0; i < 300; i++) {
         const result = engine.update(state, 1);
-        const target = result.targets.find(t => t.id === targetId);
+        const target = result.targets.find((t) => t.id === targetId);
         if (target && !threatLevels.includes(target.threatLevel)) {
           threatLevels.push(target.threatLevel);
         }

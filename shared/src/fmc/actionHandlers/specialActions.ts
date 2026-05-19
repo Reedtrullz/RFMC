@@ -4,7 +4,7 @@ import type { FmcActionResult } from './actionResult';
 export function handleSpecialLskAction(
   action: string,
   state: FMCState,
-  _scratchpad: string
+  _scratchpad: string,
 ): FmcActionResult & { sideEffect?: string; returnEarly?: boolean } {
   switch (action) {
     case 'des_now':

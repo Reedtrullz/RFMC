@@ -35,11 +35,11 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
   const sideKey = side || 'L';
 
   // Using narrow Zustand selectors to prevent unnecessary re-renders when other store slices change
-  const efis = useFMCStore(s => sideKey === 'L' ? s.efisL : s.efisR);
-  const setNDRange = useFMCStore(s => s.setNDRange);
-  const setNDMode = useFMCStore(s => s.setNDMode);
-  const toggleNDOverlay = useFMCStore(s => s.toggleNDOverlay);
-  const toggleNDCenter = useFMCStore(s => s.toggleNDCenter);
+  const efis = useFMCStore((s) => (sideKey === 'L' ? s.efisL : s.efisR));
+  const setNDRange = useFMCStore((s) => s.setNDRange);
+  const setNDMode = useFMCStore((s) => s.setNDMode);
+  const toggleNDOverlay = useFMCStore((s) => s.toggleNDOverlay);
+  const toggleNDCenter = useFMCStore((s) => s.toggleNDCenter);
 
   const currentRange = efis.range;
   const knobRef = useRef<HTMLDivElement>(null);
@@ -114,11 +114,12 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
       data-aircraft="boeing"
       className="boeing-nd-surface relative h-full w-full rounded-[20px] overflow-hidden bg-[#2c2f32] p-4 flex flex-col justify-between"
       style={{
-        boxShadow: 'inset 0 4px 10px rgba(255,255,255,0.2), inset 0 -4px 10px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.8)',
+        boxShadow:
+          'inset 0 4px 10px rgba(255,255,255,0.2), inset 0 -4px 10px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.8)',
         border: '2px solid #3c3f42',
       }}
     >
-      <div 
+      <div
         className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden cursor-pointer"
         onDoubleClick={handleScreenDoubleClick}
         style={{
@@ -157,9 +158,7 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
             <rect width={screenRect.width} height={screenRect.height} fill="#020505" />
 
             <g filter="url(#boeing-glow)">
-              <g transform="scale(1.54)">
-                {children}
-              </g>
+              <g transform="scale(1.54)">{children}</g>
             </g>
 
             <rect
@@ -179,11 +178,12 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
         </ScreenGlass>
       </div>
 
-      <div 
+      <div
         className="mt-4 mb-2 p-3 rounded-xl flex items-center justify-between gap-4 select-none"
         style={{
           background: 'linear-gradient(to bottom, #383b3e 0%, #222426 50%, #121315 100%)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 8px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(0,0,0,0.6)',
+          boxShadow:
+            'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 8px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(0,0,0,0.6)',
           border: '1px solid #2f3133',
         }}
       >
@@ -194,10 +194,10 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
               <div key={btn.key} className="flex flex-col items-center gap-1.5">
                 <span className="text-[9px] font-bold text-gray-300 select-none tracking-wider">{btn.label}</span>
                 <div className="bg-[#0a0b0c] p-[4px] pt-[6px] rounded-[6px] border border-[#3a3d40] shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] flex flex-col items-center gap-1">
-                  <div 
+                  <div
                     className={`w-1.5 h-1.5 rounded-full transition-all duration-150 ${
-                      isActive 
-                        ? 'bg-[#00ff66] shadow-[0_0_6px_#00ff66]' 
+                      isActive
+                        ? 'bg-[#00ff66] shadow-[0_0_6px_#00ff66]'
                         : 'bg-[#002208] shadow-[inset_0_1px_1px_rgba(0,0,0,0.5)] border border-[#004411]/20'
                     }`}
                   />
@@ -214,14 +214,14 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
               </div>
             );
           })}
-          
+
           <div className="flex flex-col items-center gap-1.5">
             <span className="text-[9px] font-bold text-gray-300 select-none tracking-wider">CTR</span>
             <div className="bg-[#0a0b0c] p-[4px] pt-[6px] rounded-[6px] border border-[#3a3d40] shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)] flex flex-col items-center gap-1">
-              <div 
+              <div
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-150 ${
                   efis.centered
-                    ? 'bg-[#00ff66] shadow-[0_0_6px_#00ff66]' 
+                    ? 'bg-[#00ff66] shadow-[0_0_6px_#00ff66]'
                     : 'bg-[#002208] shadow-[inset_0_1px_1px_rgba(0,0,0,0.5)] border border-[#004411]/20'
                 }`}
               />
@@ -240,7 +240,7 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
 
         <div className="flex flex-col items-center ml-auto">
           <div className="text-[9px] font-bold text-gray-300 mb-1 select-none tracking-wider">RANGE</div>
-          <div 
+          <div
             ref={knobRef}
             data-testid="nd-range-knob"
             onMouseDown={handleKnobMouseDown}
@@ -252,7 +252,7 @@ export function BoeingNDFrame({ model: _model, children, side }: BoeingNDFramePr
             }}
           >
             <div className="absolute inset-1 rounded-full border border-dashed border-[#ffffff30] pointer-events-none" />
-            <div 
+            <div
               data-testid="nd-range-knob-pointer"
               className="w-6 h-6 rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.3)] flex items-center justify-center transition-transform duration-200"
               style={{

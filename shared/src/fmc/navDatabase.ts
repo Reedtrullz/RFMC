@@ -76,7 +76,7 @@ export async function loadProceduresIntoCache(icao: string): Promise<boolean> {
     const sids = await getProceduresForAirport(upper, 'SID');
     const stars = await getProceduresForAirport(upper, 'STAR');
     const approaches = await getProceduresForAirport(upper, 'APPROACH');
-    
+
     const combined = [...sids, ...stars, ...approaches];
     if (combined.length > 0) {
       NAV_CACHE.procedures[upper] = combined;

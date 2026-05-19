@@ -35,7 +35,7 @@ All CDU pages are defined in `shared/src/fmc/pages/`. A page renderer is a funct
         ],
         lskActions: {
           L1: 'my_action',
-        }
+        },
       };
     };
     ```
@@ -50,27 +50,36 @@ Adapters implement the `IAircraftAdapter` interface.
 - **MockAdapter**: Used for CI and development. It simulates aircraft data (altitude, speed) without requiring a running simulator.
 
 To add a new aircraft:
+
 1.  Create a new adapter in `server/src/aircraft-adapters/`.
 2.  Register it in the `AircraftAdapterFactory`.
 
 ## Testing
 
 ### Unit Tests
+
 Run unit tests with Vitest:
+
 ```bash
 npm run test
 ```
+
 Tests are located alongside the source files (e.g., `useFMCStore.test.ts`).
 
 ### E2E and Visual Regression
+
 Run Playwright tests:
+
 ```bash
 npx playwright test
 ```
+
 To update visual baselines:
+
 ```bash
 npm run capture:baseline
 ```
 
 ## UI Semantic Hooks
+
 Rows in the CDU display use `data-semantic` attributes (e.g., `data-semantic="header"`, `data-semantic="lsk-label"`). This allows automated tools to verify the "measured fidelity" of the display without relying on fragile CSS selectors.

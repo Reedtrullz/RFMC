@@ -20,8 +20,6 @@ export type SpeedConstraint = {
   type: 'AT' | 'ABOVE' | 'BELOW';
 };
 
-
-
 export type ArincLegType = 'IF' | 'TF' | 'DF' | 'CF' | 'RF' | 'HM' | 'VA' | 'CA' | 'FA' | 'HA' | 'VM';
 
 export type ProcedureLeg = {
@@ -43,8 +41,6 @@ export type ExpandedLeg = {
   speedConstraint?: SpeedConstraint;
   isFlyOver?: boolean;
 };
-
-
 
 export interface Airport {
   icao: string;
@@ -85,7 +81,7 @@ export interface Procedure {
   airportIcao?: string;
   transitions?: ProcedureTransition[];
   commonLegs?: ProcedureLeg[];
-  
+
   // Backward compatibility fields
   airport?: string;
   legs?: ProcedureLeg[];

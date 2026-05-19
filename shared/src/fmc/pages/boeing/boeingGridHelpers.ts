@@ -82,10 +82,7 @@ export function compileGridLines(segments: DisplaySegment[]): DisplayLine[] {
   return lines;
 }
 
-export function boeingPage(
-  segments: DisplaySegment[],
-  lskActions: Record<string, string | null> = {},
-): DisplayData {
+export function boeingPage(segments: DisplaySegment[], lskActions: Record<string, string | null> = {}): DisplayData {
   return {
     segments,
     lskActions,

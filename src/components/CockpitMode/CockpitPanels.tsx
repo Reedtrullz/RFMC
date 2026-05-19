@@ -8,16 +8,16 @@ import { useDraggable } from '../../hooks/useDraggable';
 import { useSound } from '../../hooks/useSound';
 
 export function SettingsPanel() {
-  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('settings'));
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
-  const brightness = useCockpitLayoutStore(s => s.brightness);
-  const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
-  
-  const signsOn = useAircraftStore(s => s.signsOn);
-  const windowsLocked = useAircraftStore(s => s.windowsLocked);
-  const toggleSigns = useAircraftStore(s => s.toggleSigns);
-  const toggleWindows = useAircraftStore(s => s.toggleWindows);
-  
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('settings'));
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
+  const brightness = useCockpitLayoutStore((s) => s.brightness);
+  const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
+
+  const signsOn = useAircraftStore((s) => s.signsOn);
+  const windowsLocked = useAircraftStore((s) => s.windowsLocked);
+  const toggleSigns = useAircraftStore((s) => s.toggleSigns);
+  const toggleWindows = useAircraftStore((s) => s.toggleWindows);
+
   const { position, dragHandlers, isDragging } = useDraggable();
   const { play } = useSound();
 
@@ -29,14 +29,14 @@ export function SettingsPanel() {
   };
 
   return (
-    <div 
+    <div
       className={`fixed top-24 right-6 w-64 bg-[#121414] rounded border-2 border-[#2a2d2d] p-0 shadow-2xl z-30 pointer-events-auto animate-in fade-in zoom-in duration-200 ${isDragging ? 'scale-[1.01] border-cdu-cyan/40' : ''}`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
       }}
     >
-      <div 
+      <div
         className="cursor-grab active:cursor-grabbing bg-[#1a1c1c] border-b-2 border-[#2a2d2d] px-3 py-2 flex items-center justify-between"
         {...dragHandlers}
       >
@@ -49,24 +49,27 @@ export function SettingsPanel() {
           <div className="w-1 h-1 rounded-full bg-white/10" />
         </div>
       </div>
-      
+
       <div className="p-4 space-y-5">
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-[9px] font-cdu text-white/40 uppercase tracking-tighter">Panel Intensity</label>
             <span className="text-[10px] font-mono text-cdu-cyan">{brightness}%</span>
           </div>
-          <input 
-            type="range" 
-            min="10" max="100" 
-            value={brightness} 
+          <input
+            type="range"
+            min="10"
+            max="100"
+            value={brightness}
             onChange={(e) => setBrightness(parseInt(e.target.value))}
             className="w-full h-1.5 bg-black/60 rounded-full appearance-none accent-cdu-cyan cursor-pointer"
           />
         </div>
 
         <div className="pt-2 border-t border-white/5">
-          <label className="text-[9px] font-cdu text-white/40 uppercase tracking-tighter mb-3 block">Environmental Override</label>
+          <label className="text-[9px] font-cdu text-white/40 uppercase tracking-tighter mb-3 block">
+            Environmental Override
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleToggleSigns}
@@ -84,7 +87,7 @@ export function SettingsPanel() {
             </button>
           </div>
         </div>
-        
+
         <div className="pt-2 border-t border-white/5 bg-black/20 -mx-4 px-4 py-3">
           <p className="text-[8px] font-cdu text-white/30 uppercase leading-tight tracking-tighter italic">
             Reference diagnostic port active. All manual overrides logged to flight data recorder.
@@ -96,16 +99,16 @@ export function SettingsPanel() {
 }
 
 export function ChecklistPanel() {
-  const isHidden = useCockpitLayoutStore(s => s.hiddenPanels.includes('checklist'));
-  const cockpitMode = useCockpitLayoutStore(s => s.cockpitMode);
-  
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const signsOn = useAircraftStore(s => s.signsOn);
-  const windowsLocked = useAircraftStore(s => s.windowsLocked);
-  
-  const mcp = useAutopilotStore(s => s.boeing);
-  const highlightControl = useFMCStore(s => s.highlightControl);
-  
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('checklist'));
+  const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
+
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const signsOn = useAircraftStore((s) => s.signsOn);
+  const windowsLocked = useAircraftStore((s) => s.windowsLocked);
+
+  const mcp = useAutopilotStore((s) => s.boeing);
+  const highlightControl = useFMCStore((s) => s.highlightControl);
+
   const [sectionIndex, setSectionIndex] = useState(0);
   const { position, dragHandlers, isDragging } = useDraggable();
 
@@ -113,29 +116,29 @@ export function ChecklistPanel() {
 
   const checklists = getCockpitChecklists(aircraft);
   const section = checklists[sectionIndex % checklists.length] ?? checklists[0];
-  
-  const items = section.items.map(item => {
+
+  const items = section.items.map((item) => {
     let completed = item.completed;
     if (item.id === 'passenger-signs') completed = signsOn;
     if (item.id === 'windows') completed = windowsLocked;
     if (item.relatedControl === 'LNAV') completed = mcp.lnav;
     if (item.relatedControl === 'VNAV') completed = mcp.vnav;
     if (item.relatedControl === 'AT_ARM') completed = mcp.autothrottleArm;
-    
+
     return { ...item, completed };
   });
 
-  const nextSection = () => setSectionIndex(index => (index + 1) % checklists.length);
+  const nextSection = () => setSectionIndex((index) => (index + 1) % checklists.length);
 
   return (
-    <div 
+    <div
       className={`fixed top-24 left-6 w-80 bg-[#fdfdfd] rounded border-l-8 border-l-[#2c3e50] border-y border-r border-black/10 p-5 shadow-2xl z-30 pointer-events-auto animate-in fade-in slide-in-from-left-4 duration-300 ${isDragging ? 'scale-[1.01] shadow-black/20' : ''}`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         transition: isDragging ? 'none' : 'transform 0.1s ease-out, scale 0.2s ease-out',
       }}
     >
-      <div 
+      <div
         className="cursor-grab active:cursor-grabbing flex items-center justify-between mb-5 pb-3 border-b-2 border-black/5 select-none"
         {...dragHandlers}
       >
@@ -145,9 +148,9 @@ export function ChecklistPanel() {
         </div>
         <span className="text-[9px] font-black bg-[#2c3e50] text-white px-2 py-0.5 rounded-sm">{section.badge}</span>
       </div>
-      
+
       <div className="space-y-2.5">
-        {items.map(item => (
+        {items.map((item) => (
           <ChecklistItem
             key={item.id}
             item={item}
@@ -155,11 +158,13 @@ export function ChecklistPanel() {
           />
         ))}
       </div>
-      
+
       <div className="mt-8 pt-4 border-t-2 border-black/5 flex justify-between items-center">
         <div className="flex flex-col">
           <span className="text-[8px] font-bold text-gray-400 uppercase">Sequence</span>
-          <span className="text-[10px] font-black text-gray-900">{(sectionIndex % checklists.length) + 1} OF {checklists.length}</span>
+          <span className="text-[10px] font-black text-gray-900">
+            {(sectionIndex % checklists.length) + 1} OF {checklists.length}
+          </span>
         </div>
         <button
           type="button"
@@ -182,11 +187,15 @@ function ChecklistItem({ item, onHighlight }: { item: CockpitChecklistItem; onHi
       disabled={!onHighlight}
     >
       <div className="flex items-center gap-3">
-        <div className={`w-3 h-3 rounded-sm border-2 ${item.completed ? 'bg-cdu-exec border-cdu-exec shadow-[0_0_4px_rgba(57,255,20,0.4)]' : 'border-gray-300'}`} />
+        <div
+          className={`w-3 h-3 rounded-sm border-2 ${item.completed ? 'bg-cdu-exec border-cdu-exec shadow-[0_0_4px_rgba(57,255,20,0.4)]' : 'border-gray-300'}`}
+        />
         <span className="text-[10px] font-black text-gray-700 tracking-tighter">{item.label}</span>
       </div>
       <div className="flex-1 border-b border-gray-100 mx-2 mb-1" />
-      <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-sm ${item.completed ? 'bg-gray-100 text-gray-400' : 'bg-gray-800 text-white'}`}>
+      <span
+        className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-sm ${item.completed ? 'bg-gray-100 text-gray-400' : 'bg-gray-800 text-white'}`}
+      >
         {item.expected}
       </span>
     </button>

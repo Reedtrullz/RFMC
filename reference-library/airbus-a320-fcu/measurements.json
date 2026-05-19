@@ -8,13 +8,5 @@
     "pushPullKnobBounds": {},
     "buttonBounds": {}
   },
-  "behaviorTargets": [
-    "selected vs managed mode",
-    "AP1",
-    "AP2",
-    "A/THR",
-    "LOC",
-    "APPR",
-    "EXPED"
-  ]
+  "behaviorTargets": ["selected vs managed mode", "AP1", "AP2", "A/THR", "LOC", "APPR", "EXPED"]
 }

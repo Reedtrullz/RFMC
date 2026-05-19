@@ -25,20 +25,20 @@ VirtualCDU is a high-fidelity, web-based Boeing 737 NG CDU trainer with scoped A
 
 ### Airbus MCDU Page Status
 
-| Page | Status | Interactive Fields |
-|------|--------|--------------------|
-| INIT A | Functional | FROM/TO, COST INDEX, CRZ FL, ALT, FLT NBR, → INIT B |
-| INIT B | Functional | ZFW, BLOCK, CG, → INIT A |
-| F-PLN | Functional | Waypoint display, → DEP/ARR |
-| DEP/ARR | Functional | SID, RWY, STAR, APPR |
-| PERF TO | Functional | V1, VR, V2, FLAPS, FLEX, → PERF APPR |
-| PERF APPR | Partial | QNH, WIND. TEMP/MDA/DH/LDG CONF display-only. |
-| FUEL PRED | Partial | Displays route/performance-derived trainer values; no direct data-entry fields. |
-| SEC F-PLN | Display-only | No interactive fields. |
-| RAD NAV | Display-only | No interactive fields. |
-| PROG | Partial | Displays route/performance-derived trainer values; no direct data-entry fields. |
-| DATA INDEX | Display-only | No interactive fields. |
-| MCDU MENU | Functional | Navigation to all page categories. |
+| Page       | Status       | Interactive Fields                                                              |
+| ---------- | ------------ | ------------------------------------------------------------------------------- |
+| INIT A     | Functional   | FROM/TO, COST INDEX, CRZ FL, ALT, FLT NBR, → INIT B                             |
+| INIT B     | Functional   | ZFW, BLOCK, CG, → INIT A                                                        |
+| F-PLN      | Functional   | Waypoint display, → DEP/ARR                                                     |
+| DEP/ARR    | Functional   | SID, RWY, STAR, APPR                                                            |
+| PERF TO    | Functional   | V1, VR, V2, FLAPS, FLEX, → PERF APPR                                            |
+| PERF APPR  | Partial      | QNH, WIND. TEMP/MDA/DH/LDG CONF display-only.                                   |
+| FUEL PRED  | Partial      | Displays route/performance-derived trainer values; no direct data-entry fields. |
+| SEC F-PLN  | Display-only | No interactive fields.                                                          |
+| RAD NAV    | Display-only | No interactive fields.                                                          |
+| PROG       | Partial      | Displays route/performance-derived trainer values; no direct data-entry fields. |
+| DATA INDEX | Display-only | No interactive fields.                                                          |
+| MCDU MENU  | Functional   | Navigation to all page categories.                                              |
 
 ## Out Of Scope For v1
 

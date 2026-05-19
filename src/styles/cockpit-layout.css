@@ -2,7 +2,7 @@
   display: grid;
   width: 100vw;
   height: 100vh;
-  grid-template-areas: "selector" "main";
+  grid-template-areas: 'selector' 'main';
   grid-template-rows: auto 1fr;
 }
 
@@ -11,7 +11,7 @@
   grid-area: main;
   overflow: hidden;
   display: grid;
-  grid-template-areas: "help stage tray";
+  grid-template-areas: 'help stage tray';
   grid-template-columns: auto 1fr auto;
   padding: 0;
   filter: brightness(var(--cockpit-brightness)) contrast(var(--cockpit-contrast));
@@ -46,14 +46,14 @@
 }
 
 .cockpit-stage--fmc-focus {
-  grid-template-areas: "cduslot";
+  grid-template-areas: 'cduslot';
   grid-template-columns: minmax(480px, 680px);
   grid-template-rows: 1fr;
   width: auto;
 }
 
 .cockpit-stage--navigation {
-  grid-template-areas: "ndslot cduslot";
+  grid-template-areas: 'ndslot cduslot';
   grid-template-columns: minmax(420px, 1fr) minmax(400px, 540px);
   grid-template-rows: 1fr;
   max-width: 1400px;
@@ -61,8 +61,8 @@
 
 .cockpit-stage--automation {
   grid-template-areas:
-    "mcpslot mcpslot"
-    "pfdslot ndslot";
+    'mcpslot mcpslot'
+    'pfdslot ndslot';
   grid-template-columns: 1fr 1fr;
   grid-template-rows: clamp(180px, 22vh, 320px) 1fr;
   max-width: 100%;
@@ -70,8 +70,8 @@
 
 .cockpit-stage--approach {
   grid-template-areas:
-    "mcpslot mcpslot"
-    "pfdslot ndslot";
+    'mcpslot mcpslot'
+    'pfdslot ndslot';
   grid-template-columns: 1fr 1fr;
   grid-template-rows: clamp(160px, 20vh, 290px) 1fr;
   max-width: 100%;
@@ -79,33 +79,42 @@
 
 .cockpit-stage--full-deck {
   grid-template-areas:
-    "mcpslot mcpslot mcpslot"
-    "pfdslot ndslot cduslot";
+    'mcpslot mcpslot mcpslot'
+    'pfdslot ndslot cduslot';
   grid-template-columns: 1fr 1fr 1.2fr;
   grid-template-rows: clamp(160px, 20vh, 280px) 1fr;
   max-width: 100%;
 }
 
 .cockpit-stage--free-practice {
-  grid-template-areas: "left right";
+  grid-template-areas: 'left right';
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
   max-width: 1400px;
 }
 
 .cockpit-stage--cdc-ops {
-  grid-template-areas: "cduslot";
+  grid-template-areas: 'cduslot';
   grid-template-columns: minmax(480px, 680px);
   grid-template-rows: 1fr;
 }
 
 /* ── Slot placement (explicit classes, not child-order hacks) ── */
 
-.cockpit-slot--cdu { grid-area: cduslot; }
-.cockpit-slot--nd { grid-area: ndslot; }
-.cockpit-slot--pfd { grid-area: pfdslot; }
+.cockpit-slot--cdu {
+  grid-area: cduslot;
+}
+.cockpit-slot--nd {
+  grid-area: ndslot;
+}
+.cockpit-slot--pfd {
+  grid-area: pfdslot;
+}
 .cockpit-slot--mcp,
-.cockpit-mcp-slot { grid-area: mcpslot; align-self: center; }
+.cockpit-mcp-slot {
+  grid-area: mcpslot;
+  align-self: center;
+}
 
 /* ── Instrument container ── */
 
@@ -202,22 +211,42 @@
   transform-origin: top center;
 }
 
-.normal-cdu-scale { --instrument-slot-scale: 0.36; }
+.normal-cdu-scale {
+  --instrument-slot-scale: 0.36;
+}
 
-@media (min-width: 1280px) { .normal-cdu-scale { --instrument-slot-scale: 0.38; } }
-@media (min-width: 1536px) { .normal-cdu-scale { --instrument-slot-scale: 0.5; } }
+@media (min-width: 1280px) {
+  .normal-cdu-scale {
+    --instrument-slot-scale: 0.38;
+  }
+}
+@media (min-width: 1536px) {
+  .normal-cdu-scale {
+    --instrument-slot-scale: 0.5;
+  }
+}
 
 /* ── Responsive: collapse sidebar + tray on small screens ── */
 
 @media (max-width: 1024px) {
-  .mode-help-sidebar { display: none; }
-  .panel-tray-dock { width: 40px; }
-  .cockpit-main { grid-template-columns: 1fr auto; }
+  .mode-help-sidebar {
+    display: none;
+  }
+  .panel-tray-dock {
+    width: 40px;
+  }
+  .cockpit-main {
+    grid-template-columns: 1fr auto;
+  }
 }
 
 @media (max-width: 768px) {
-  .cockpit-main { grid-template-columns: 1fr; }
-  .panel-tray-dock { display: none; }
+  .cockpit-main {
+    grid-template-columns: 1fr;
+  }
+  .panel-tray-dock {
+    display: none;
+  }
 }
 
 /* ── Help card: static when in sidebar ── */

@@ -50,28 +50,28 @@ function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPane
 }
 
 export function CockpitLayout() {
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const aircraftState = useAircraftStore(s => s.aircraftState);
-  const autopilotTruth = useAutopilotStore(s => s.truth);
-  const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const connectionMode = useConnectionStore(s => s.connectionMode);
-  
-  const layoutMode = useCockpitLayoutStore(s => s.cockpitLayoutMode);
-  const setLayoutMode = useCockpitLayoutStore(s => s.setCockpitLayoutMode);
-  const focusedPanel = useCockpitLayoutStore(s => s.focusedPanel);
-  const setFocusedPanel = useCockpitLayoutStore(s => s.setFocusedPanel);
-  const hiddenPanels = useCockpitLayoutStore(s => s.hiddenPanels);
-  const pinnedPanels = useCockpitLayoutStore(s => s.pinnedPanels);
-  const togglePanelHidden = useCockpitLayoutStore(s => s.togglePanelHidden);
-  const togglePanelPinned = useCockpitLayoutStore(s => s.togglePanelPinned);
-  const restoreRecommendedLayout = useCockpitLayoutStore(s => s.restoreRecommendedLayout);
-  const instrumentZoom = useCockpitLayoutStore(s => s.instrumentZoom);
-  const adjustInstrumentZoom = useCockpitLayoutStore(s => s.adjustInstrumentZoom);
-  const resetInstrumentZoom = useCockpitLayoutStore(s => s.resetInstrumentZoom);
-  const highContrast = useCockpitLayoutStore(s => s.highContrast);
-  const brightness = useCockpitLayoutStore(s => s.brightness);
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const aircraftState = useAircraftStore((s) => s.aircraftState);
+  const autopilotTruth = useAutopilotStore((s) => s.truth);
+  const connectionStatus = useConnectionStore((s) => s.connectionStatus);
+  const connectionMode = useConnectionStore((s) => s.connectionMode);
+
+  const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
+  const setLayoutMode = useCockpitLayoutStore((s) => s.setCockpitLayoutMode);
+  const focusedPanel = useCockpitLayoutStore((s) => s.focusedPanel);
+  const setFocusedPanel = useCockpitLayoutStore((s) => s.setFocusedPanel);
+  const hiddenPanels = useCockpitLayoutStore((s) => s.hiddenPanels);
+  const pinnedPanels = useCockpitLayoutStore((s) => s.pinnedPanels);
+  const togglePanelHidden = useCockpitLayoutStore((s) => s.togglePanelHidden);
+  const togglePanelPinned = useCockpitLayoutStore((s) => s.togglePanelPinned);
+  const restoreRecommendedLayout = useCockpitLayoutStore((s) => s.restoreRecommendedLayout);
+  const instrumentZoom = useCockpitLayoutStore((s) => s.instrumentZoom);
+  const adjustInstrumentZoom = useCockpitLayoutStore((s) => s.adjustInstrumentZoom);
+  const resetInstrumentZoom = useCockpitLayoutStore((s) => s.resetInstrumentZoom);
+  const highContrast = useCockpitLayoutStore((s) => s.highContrast);
+  const brightness = useCockpitLayoutStore((s) => s.brightness);
   const orientation = useOrientation();
-  
+
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -90,7 +90,7 @@ export function CockpitLayout() {
 
   const aspectRatio = windowSize.width / windowSize.height;
   const isTall = aspectRatio < 1.35;
-  
+
   useWakeLock(true);
 
   const isNight = brightness < 40;
@@ -130,7 +130,7 @@ export function CockpitLayout() {
   } as CSSProperties;
 
   return (
-    <div 
+    <div
       className={`
         cockpit-grid cockpit-lock no-scrollbar bg-black text-white
         ${isNight ? 'cockpit-night' : ''}
@@ -143,11 +143,13 @@ export function CockpitLayout() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
           <div className="flex items-center gap-4">
-             <BrightnessPanel />
-             <div className="hidden lg:flex flex-col items-end">
-               <span className="text-[10px] font-cdu text-cdu-cyan uppercase font-bold tracking-tighter">Cockpit Mode</span>
-               <span className="text-[8px] font-cdu text-white/30 uppercase">v1.3.0-WORKSPACE</span>
-             </div>
+            <BrightnessPanel />
+            <div className="hidden lg:flex flex-col items-end">
+              <span className="text-[10px] font-cdu text-cdu-cyan uppercase font-bold tracking-tighter">
+                Cockpit Mode
+              </span>
+              <span className="text-[8px] font-cdu text-white/30 uppercase">v1.3.0-WORKSPACE</span>
+            </div>
           </div>
         </div>
         <CockpitToolbar />
@@ -168,7 +170,7 @@ export function CockpitLayout() {
           ) : (
             <>
               {renderLayout(layoutMode, orientation, controls)}
-              
+
               {!validation.valid && (
                 <div className="cockpit-layout-warning">
                   <CockpitEmptyState
@@ -190,32 +192,26 @@ export function CockpitLayout() {
   );
 }
 
-function renderLayout(
-  mode: CockpitLayoutMode,
-  orientation: 'portrait' | 'landscape',
-  controls: LayoutControls,
-) {
+function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landscape', controls: LayoutControls) {
   const config = getTrainingModeConfig(mode);
 
   if (orientation === 'portrait') {
     return (
       <CockpitLayoutGrid preset="mobileSwipeDeck" modeClass="cockpit-stage--portrait">
-        {config.visiblePanels
-          .filter(isInstrumentPanelId)
-          .map(panelId => renderInstrumentPanel(panelId, controls))}
+        {config.visiblePanels.filter(isInstrumentPanelId).map((panelId) => renderInstrumentPanel(panelId, controls))}
       </CockpitLayoutGrid>
     );
   }
 
   switch (mode) {
-      case 'fmc-focus':
+    case 'fmc-focus':
       return (
         <CockpitLayoutGrid preset="singleInstrumentFocus" modeClass="cockpit-stage--fmc-focus">
           {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
         </CockpitLayoutGrid>
       );
-    
-      case 'navigation':
+
+    case 'navigation':
       return (
         <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--navigation">
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
@@ -257,7 +253,9 @@ function renderLayout(
           {renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
           {renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
-          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-mcp-slot cockpit-free-practice__optional' })}
+          {renderInstrumentPanel('autoflight', controls, {
+            className: 'cockpit-mcp-slot cockpit-free-practice__optional',
+          })}
         </CockpitLayoutGrid>
       );
   }
@@ -299,9 +297,12 @@ function renderInstrumentPanel(
 }
 
 function renderFocusedPanel(panelId: InstrumentPanelId, controls: LayoutControls) {
-  const focusedScale = panelId === 'autoflight'
-    ? (controls.aircraft === 'BOEING_737' ? 0.58 : 0.72)
-    : Math.max(controls.instrumentZoom[panelId] ?? 1, 1);
+  const focusedScale =
+    panelId === 'autoflight'
+      ? controls.aircraft === 'BOEING_737'
+        ? 0.58
+        : 0.72
+      : Math.max(controls.instrumentZoom[panelId] ?? 1, 1);
 
   return (
     <InstrumentFit
@@ -330,17 +331,25 @@ function renderPanel(panelId: InstrumentPanelId) {
 function targetForPanel(panelId: InstrumentPanelId, aircraft: AircraftType): InstrumentTarget {
   if (aircraft === 'AIRBUS_A320') {
     switch (panelId) {
-      case 'cdu': return 'airbusMcdu';
-      case 'nd': return 'airbusNd';
-      case 'pfd': return 'airbusPfd';
-      case 'autoflight': return 'airbusFcu';
+      case 'cdu':
+        return 'airbusMcdu';
+      case 'nd':
+        return 'airbusNd';
+      case 'pfd':
+        return 'airbusPfd';
+      case 'autoflight':
+        return 'airbusFcu';
     }
   }
 
   switch (panelId) {
-    case 'cdu': return 'boeingCdu';
-    case 'nd': return 'boeingNd';
-    case 'pfd': return 'boeingPfd';
-    case 'autoflight': return 'boeingMcp';
+    case 'cdu':
+      return 'boeingCdu';
+    case 'nd':
+      return 'boeingNd';
+    case 'pfd':
+      return 'boeingPfd';
+    case 'autoflight':
+      return 'boeingMcp';
   }
 }

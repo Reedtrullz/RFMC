@@ -1,9 +1,5 @@
 import type { FMCState, DisplayData } from '../../../types/fmc';
-import {
-  airbusPage,
-  airbusTitleRow,
-  airbusDisplaySegment,
-} from './airbusGridHelpers';
+import { airbusPage, airbusTitleRow, airbusDisplaySegment } from './airbusGridHelpers';
 
 export function renderDataIndexGrid(state: FMCState): DisplayData {
   return airbusPage(

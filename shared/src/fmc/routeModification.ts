@@ -13,9 +13,16 @@ export type RouteModificationState = 'NONE' | 'MODIFIED' | 'EXEC_PENDING' | 'EXE
 
 /** A single pending change record. */
 export type PendingChange = {
-  type: 'origin' | 'destination' | 'waypoint_insert' | 'waypoint_delete' | 
-        'procedure_change' | 'altitude_constraint' | 'speed_constraint' | 
-        'direct_to' | 'hold';
+  type:
+    | 'origin'
+    | 'destination'
+    | 'waypoint_insert'
+    | 'waypoint_delete'
+    | 'procedure_change'
+    | 'altitude_constraint'
+    | 'speed_constraint'
+    | 'direct_to'
+    | 'hold';
   field: string;
   oldValue?: unknown;
   newValue?: unknown;
@@ -111,7 +118,7 @@ export function initiateModification(currentRoute: RouteData): RouteModification
 export function queueChange(modification: RouteModification, change: PendingChange): RouteModification {
   if (!canQueueChange(modification.state)) {
     throw new Error(
-      `Cannot queue change: modification is in state '${modification.state}', expected 'NONE' or 'MODIFIED'`
+      `Cannot queue change: modification is in state '${modification.state}', expected 'NONE' or 'MODIFIED'`,
     );
   }
 
@@ -136,7 +143,7 @@ export function queueChange(modification: RouteModification, change: PendingChan
 export function executeModification(modification: RouteModification): RouteModification {
   if (!canExecuteModification(modification.state)) {
     throw new Error(
-      `Cannot execute modification: modification is in state '${modification.state}', expected 'MODIFIED'`
+      `Cannot execute modification: modification is in state '${modification.state}', expected 'MODIFIED'`,
     );
   }
 
@@ -163,7 +170,7 @@ export function executeModification(modification: RouteModification): RouteModif
 export function cancelModification(modification: RouteModification): RouteModification {
   if (!canCancelModification(modification.state)) {
     throw new Error(
-      `Cannot cancel modification: modification is in state '${modification.state}', expected 'MODIFIED' or 'EXEC_PENDING'`
+      `Cannot cancel modification: modification is in state '${modification.state}', expected 'MODIFIED' or 'EXEC_PENDING'`,
     );
   }
 

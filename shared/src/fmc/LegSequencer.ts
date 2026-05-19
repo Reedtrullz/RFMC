@@ -9,28 +9,30 @@ export class LegSequencer {
   public static shouldSequence(
     currentLeg: FlightPlanWaypoint,
     nextLeg: FlightPlanWaypoint | undefined,
-    acState: AircraftState
+    acState: AircraftState,
   ): { sequence: boolean; reason: string } {
     if (currentLeg.discontinuity) return { sequence: false, reason: 'Discontinuity ahead' };
- 
+
     // Map FlightPlanWaypoint to FmsLeg for the engine
     const currentFmsLeg: FmsLeg = {
       type: (currentLeg.legType as LegType) || 'TF',
       to: { ident: currentLeg.ident, lat: currentLeg.lat!, lon: currentLeg.lon!, type: 'WAYPOINT' },
       altitudeConstraintFt: currentLeg.altitudeConstraint?.altitude,
     };
- 
-    const nextFmsLeg: FmsLeg | undefined = nextLeg ? {
-      type: (nextLeg.legType as LegType) || 'TF',
-      to: { ident: nextLeg.ident, lat: nextLeg.lat!, lon: nextLeg.lon!, type: 'WAYPOINT' },
-      altitudeConstraintFt: nextLeg.altitudeConstraint?.altitude,
-    } : undefined;
- 
+
+    const nextFmsLeg: FmsLeg | undefined = nextLeg
+      ? {
+          type: (nextLeg.legType as LegType) || 'TF',
+          to: { ident: nextLeg.ident, lat: nextLeg.lat!, lon: nextLeg.lon!, type: 'WAYPOINT' },
+          altitudeConstraintFt: nextLeg.altitudeConstraint?.altitude,
+        }
+      : undefined;
+
     const sequence = LegTypeEngine.shouldSequenceLeg(currentFmsLeg, acState, nextFmsLeg);
- 
-    return { 
-      sequence, 
-      reason: sequence ? `Leg termination reached for ${currentLeg.ident}` : 'Continuing leg' 
+
+    return {
+      sequence,
+      reason: sequence ? `Leg termination reached for ${currentLeg.ident}` : 'Continuing leg',
     };
   }
 
@@ -39,7 +41,7 @@ export class LegSequencer {
    */
   public static checkRestrictions(
     waypoint: FlightPlanWaypoint,
-    acState: AircraftState
+    acState: AircraftState,
   ): { ok: boolean; message?: string } {
     const { altitudeConstraint, speedConstraint } = waypoint;
     const { altitude, ias: speed } = acState;
@@ -66,11 +68,7 @@ export class LegSequencer {
     return { ok: true };
   }
 
-  public static findLegIndex(
-    waypoints: FlightPlanWaypoint[],
-    ident: string,
-    currentLegIndex: number
-  ): number {
+  public static findLegIndex(waypoints: FlightPlanWaypoint[], ident: string, currentLegIndex: number): number {
     const normalized = ident.toUpperCase();
     for (let i = currentLegIndex; i < waypoints.length; i++) {
       if (!waypoints[i].discontinuity && waypoints[i].ident.toUpperCase() === normalized) {

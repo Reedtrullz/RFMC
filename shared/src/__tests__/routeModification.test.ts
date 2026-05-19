@@ -98,9 +98,7 @@ describe('RouteModification State Machine', () => {
       const afterQueue = queueChange(mod, change);
       const executed = executeModification(afterQueue);
 
-      expect(() => queueChange(executed, change)).toThrow(
-        /Cannot queue change/
-      );
+      expect(() => queueChange(executed, change)).toThrow(/Cannot queue change/);
     });
 
     it('throws when queuing change in state EXEC_PENDING', () => {
@@ -109,9 +107,7 @@ describe('RouteModification State Machine', () => {
         state: 'EXEC_PENDING',
       };
 
-      expect(() => queueChange(mod, makeChange())).toThrow(
-        /Cannot queue change/
-      );
+      expect(() => queueChange(mod, makeChange())).toThrow(/Cannot queue change/);
     });
   });
 
@@ -152,9 +148,7 @@ describe('RouteModification State Machine', () => {
     it('throws when executing in state NONE', () => {
       const mod = initiateModification(makeRoute());
 
-      expect(() => executeModification(mod)).toThrow(
-        /Cannot execute modification/
-      );
+      expect(() => executeModification(mod)).toThrow(/Cannot execute modification/);
     });
 
     it('throws when executing in state EXECUTED', () => {
@@ -162,9 +156,7 @@ describe('RouteModification State Machine', () => {
       const afterQueue = queueChange(mod, makeChange());
       const executed = executeModification(afterQueue);
 
-      expect(() => executeModification(executed)).toThrow(
-        /Cannot execute modification/
-      );
+      expect(() => executeModification(executed)).toThrow(/Cannot execute modification/);
     });
 
     it('throws when executing in state EXEC_PENDING', () => {
@@ -173,9 +165,7 @@ describe('RouteModification State Machine', () => {
         state: 'EXEC_PENDING',
       };
 
-      expect(() => executeModification(mod)).toThrow(
-        /Cannot execute modification/
-      );
+      expect(() => executeModification(mod)).toThrow(/Cannot execute modification/);
     });
   });
 
@@ -209,10 +199,7 @@ describe('RouteModification State Machine', () => {
     });
 
     it('does not mutate the input modification', () => {
-      const afterQueue = queueChange(
-        initiateModification(makeRoute()),
-        makeChange()
-      );
+      const afterQueue = queueChange(initiateModification(makeRoute()), makeChange());
 
       cancelModification(afterQueue);
 
@@ -223,9 +210,7 @@ describe('RouteModification State Machine', () => {
     it('throws when cancelling in state NONE', () => {
       const mod = initiateModification(makeRoute());
 
-      expect(() => cancelModification(mod)).toThrow(
-        /Cannot cancel modification/
-      );
+      expect(() => cancelModification(mod)).toThrow(/Cannot cancel modification/);
     });
 
     it('throws when cancelling in state EXECUTED', () => {
@@ -233,9 +218,7 @@ describe('RouteModification State Machine', () => {
       const afterQueue = queueChange(mod, makeChange());
       const executed = executeModification(afterQueue);
 
-      expect(() => cancelModification(executed)).toThrow(
-        /Cannot cancel modification/
-      );
+      expect(() => cancelModification(executed)).toThrow(/Cannot cancel modification/);
     });
   });
 
@@ -246,30 +229,17 @@ describe('RouteModification State Machine', () => {
     });
 
     it('returns MODIFIED after queueChange', () => {
-      const mod = queueChange(
-        initiateModification(makeRoute()),
-        makeChange()
-      );
+      const mod = queueChange(initiateModification(makeRoute()), makeChange());
       expect(getModificationState(mod)).toBe('MODIFIED');
     });
 
     it('returns EXECUTED after executeModification', () => {
-      const mod = executeModification(
-        queueChange(
-          initiateModification(makeRoute()),
-          makeChange()
-        )
-      );
+      const mod = executeModification(queueChange(initiateModification(makeRoute()), makeChange()));
       expect(getModificationState(mod)).toBe('EXECUTED');
     });
 
     it('returns NONE after cancelModification', () => {
-      const mod = cancelModification(
-        queueChange(
-          initiateModification(makeRoute()),
-          makeChange()
-        )
-      );
+      const mod = cancelModification(queueChange(initiateModification(makeRoute()), makeChange()));
       expect(getModificationState(mod)).toBe('NONE');
     });
   });

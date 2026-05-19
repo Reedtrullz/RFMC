@@ -51,7 +51,6 @@ async function prepareCockpit(page: Page) {
 }
 
 test.describe('Cockpit Layout Visual Regression', () => {
-
   test('Boeing FMC focus @Visual Regression', async ({ page }) => {
     await prepareCockpit(page);
     await setCockpitMode(page, 'fmc-focus');
@@ -211,7 +210,11 @@ test.describe('Cockpit Layout Visual Regression', () => {
       await prepareCockpit(page);
       await setCockpitMode(page, panel === 'cdu' ? 'fmc-focus' : panel === 'nd' ? 'navigation' : 'automation');
       await focusPanel(page, panel);
-      await expect(page.getByRole('dialog', { name: new RegExp(`${panel === 'autoflight' ? 'Autoflight' : panel.toUpperCase()} focus mode`, 'i') })).toBeVisible();
+      await expect(
+        page.getByRole('dialog', {
+          name: new RegExp(`${panel === 'autoflight' ? 'Autoflight' : panel.toUpperCase()} focus mode`, 'i'),
+        }),
+      ).toBeVisible();
       await expect(page.getByTestId(`focused-${panel}-panel`)).toBeVisible();
       await expect(page.getByTestId(`focused-${panel}-panel`)).toHaveScreenshot(`focused-boeing-${panel}.png`, {
         maxDiffPixelRatio: 0.04,
@@ -223,7 +226,11 @@ test.describe('Cockpit Layout Visual Regression', () => {
       await switchToAirbus(page);
       await setCockpitMode(page, panel === 'cdu' ? 'fmc-focus' : panel === 'nd' ? 'navigation' : 'automation');
       await focusPanel(page, panel);
-      await expect(page.getByRole('dialog', { name: new RegExp(`${panel === 'autoflight' ? 'Autoflight' : panel.toUpperCase()} focus mode`, 'i') })).toBeVisible();
+      await expect(
+        page.getByRole('dialog', {
+          name: new RegExp(`${panel === 'autoflight' ? 'Autoflight' : panel.toUpperCase()} focus mode`, 'i'),
+        }),
+      ).toBeVisible();
       await expect(page.getByTestId(`focused-${panel}-panel`)).toBeVisible();
       await expect(page.getByTestId(`focused-${panel}-panel`)).toHaveScreenshot(`focused-airbus-${panel}.png`, {
         maxDiffPixelRatio: 0.04,

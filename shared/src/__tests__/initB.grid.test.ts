@@ -20,9 +20,9 @@ describe('renderInitBGrid', () => {
     const data = renderInitBGrid(state);
 
     expect(data.segments).toBeDefined();
-    expect(data.segments!.some(s => s.text === 'INIT')).toBe(true);
-    expect(data.segments!.some(s => s.text === 'B')).toBe(true);
-    expect(data.segments!.some(s => s.inverse && s.semantic === 'title')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'INIT')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'B')).toBe(true);
+    expect(data.segments!.some((s) => s.inverse && s.semantic === 'title')).toBe(true);
   });
 
   it('renders placeholder values when no performance data', () => {
@@ -41,8 +41,13 @@ describe('renderInitBGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 0, zfw: 55000, fuel: 0, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 0,
+        zfw: 55000,
+        fuel: 0,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitBGrid(state);
@@ -55,8 +60,13 @@ describe('renderInitBGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 0, zfw: 0, fuel: 12500, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 0,
+        zfw: 0,
+        fuel: 12500,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitBGrid(state);
@@ -69,8 +79,13 @@ describe('renderInitBGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 25.8,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 0,
+        zfw: 0,
+        fuel: 0,
+        cg: 25.8,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitBGrid(state);
@@ -112,12 +127,12 @@ describe('renderInitBGrid', () => {
     const state = createBaseState({ aircraft: 'AIRBUS_A320' });
     const data = renderInitBGrid(state);
 
-    const zfwLabel = data.segments!.find(s => s.text === '< ZFW');
+    const zfwLabel = data.segments!.find((s) => s.text === '< ZFW');
     expect(zfwLabel).toBeDefined();
     expect(zfwLabel!.color).toBe('white');
     expect(zfwLabel!.semantic).toBe('label');
 
-    const zfwValue = data.segments!.find(s => s.text.trimStart().startsWith('---.-'));
+    const zfwValue = data.segments!.find((s) => s.text.trimStart().startsWith('---.-'));
     expect(zfwValue).toBeDefined();
     expect(zfwValue!.color).toBe('magenta');
     expect(zfwValue!.semantic).toBe('activeData');
@@ -127,8 +142,13 @@ describe('renderInitBGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 0, zfw: 55000, fuel: 12500, cg: 25.8,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 0,
+        zfw: 55000,
+        fuel: 12500,
+        cg: 25.8,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitBGrid(state);

@@ -36,7 +36,10 @@ export function log(context: LogContext) {
     // Human readable in dev
     const { level, event, message, timestamp, ...rest } = output;
     const color = level === 'error' ? '\x1b[31m' : level === 'warn' ? '\x1b[33m' : '\x1b[32m';
-    console.log(`${timestamp} [${color}${level.toUpperCase()}\x1b[0m] ${event}: ${message || ''}`, Object.keys(rest).length ? rest : '');
+    console.log(
+      `${timestamp} [${color}${level.toUpperCase()}\x1b[0m] ${event}: ${message || ''}`,
+      Object.keys(rest).length ? rest : '',
+    );
   }
 }
 

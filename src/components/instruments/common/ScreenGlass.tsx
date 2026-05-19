@@ -9,7 +9,13 @@ interface ScreenGlassProps {
   effectProfile?: Partial<ScreenEffectProfile>;
 }
 
-export function ScreenGlass({ children, variant = 'boeing', brightness = 100, className = '', effectProfile }: ScreenGlassProps) {
+export function ScreenGlass({
+  children,
+  variant = 'boeing',
+  brightness = 100,
+  className = '',
+  effectProfile,
+}: ScreenGlassProps) {
   const defaults: Record<string, ScreenEffectProfile> = {
     boeing: EffectProfiles.CRT,
     airbus: EffectProfiles.LCD,
@@ -34,9 +40,7 @@ export function ScreenGlass({ children, variant = 'boeing', brightness = 100, cl
   return (
     <div className={`screen-glass screen-glass--${variant} ${className}`} style={style}>
       <div className="instrument-shell__inner-bevel" />
-      <div className="screen-glass__content">
-        {children}
-      </div>
+      <div className="screen-glass__content">{children}</div>
       <div className="screen-glass__scanlines" />
       <div className="screen-glass__reflection" />
       <div className="screen-glass__vignette" />

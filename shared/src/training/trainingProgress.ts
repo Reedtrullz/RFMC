@@ -1,10 +1,4 @@
-import type {
-  AircraftType,
-  CDUKey,
-  FMCState,
-  LSKId,
-  PageType,
-} from '../types/fmc';
+import type { AircraftType, CDUKey, FMCState, LSKId, PageType } from '../types/fmc';
 import type { CockpitLayoutMode, PanelId } from '../types/cockpit';
 import type { AutopilotState } from '../autopilot/autopilotTypes';
 import { buildPerformancePrediction } from '../fmc/performancePrediction';
@@ -119,8 +113,8 @@ function buildFmcSetupProgress(
   const missingFields = preflightMissingFields(state);
   const hasDiscontinuity = routeHasDiscontinuity(state);
   const performancePrediction = buildPerformancePrediction(state);
-  const blockingPerformanceWarning = performancePrediction.warnings.find((warning) =>
-    warning === 'INSUFFICIENT FUEL' || warning === 'RUNWAY TOO SHORT',
+  const blockingPerformanceWarning = performancePrediction.warnings.find(
+    (warning) => warning === 'INSUFFICIENT FUEL' || warning === 'RUNWAY TOO SHORT',
   );
 
   if (!isPositionInitialized(state)) {
@@ -128,9 +122,10 @@ function buildFmcSetupProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'initialize-position',
       completedSteps,
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Initialize the FMGC position before building the flight plan.'
-        : 'Initialize IRS position before route entry.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Initialize the FMGC position before building the flight plan.'
+          : 'Initialize IRS position before route entry.',
       expectedPage: aircraft === 'AIRBUS_A320' ? 'INIT_A' : 'POS_INIT',
       expectedKey: aircraft === 'AIRBUS_A320' ? 'INIT_A' : 'INIT_REF',
       expectedLSK: 'R4',
@@ -167,9 +162,10 @@ function buildFmcSetupProgress(
       expectedPanel: 'cdu',
       missingFields,
       warning: 'Route discontinuity blocks completion.',
-      hint: aircraft === 'AIRBUS_A320'
-        ? 'Review the TMPY F-PLN gap and insert a connected path when correct.'
-        : 'Use LEGS to connect the route, then EXEC the modification when correct.',
+      hint:
+        aircraft === 'AIRBUS_A320'
+          ? 'Review the TMPY F-PLN gap and insert a connected path when correct.'
+          : 'Use LEGS to connect the route, then EXEC the modification when correct.',
     };
   }
 
@@ -193,9 +189,10 @@ function buildFmcSetupProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'enter-performance',
       completedSteps,
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Complete INIT B fuel and weight data.'
-        : 'Complete PERF INIT weight, fuel, cost index, and cruise altitude.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Complete INIT B fuel and weight data.'
+          : 'Complete PERF INIT weight, fuel, cost index, and cruise altitude.',
       expectedPage: aircraft === 'AIRBUS_A320' ? 'INIT_B' : 'PERF_INIT',
       expectedKey: aircraft === 'AIRBUS_A320' ? 'INIT_B' : 'PERF',
       expectedLSK: 'L1',
@@ -210,9 +207,10 @@ function buildFmcSetupProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'enter-performance',
       completedSteps,
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Review fuel prediction and performance data before continuing.'
-        : 'Review PERF INIT fuel, reserves, runway, and takeoff assumptions before continuing.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Review fuel prediction and performance data before continuing.'
+          : 'Review PERF INIT fuel, reserves, runway, and takeoff assumptions before continuing.',
       expectedPage: aircraft === 'AIRBUS_A320' ? 'FUEL_PRED' : 'PERF_INIT',
       expectedKey: aircraft === 'AIRBUS_A320' ? null : 'PERF',
       expectedLSK: null,
@@ -228,9 +226,10 @@ function buildFmcSetupProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'enter-takeoff-data',
       completedSteps,
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Complete PERF TAKEOFF runway, flap/THS, and V-speeds.'
-        : 'Complete TAKEOFF REF runway, flap, trim, and V-speeds.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Complete PERF TAKEOFF runway, flap/THS, and V-speeds.'
+          : 'Complete TAKEOFF REF runway, flap, trim, and V-speeds.',
       expectedPage: aircraft === 'AIRBUS_A320' ? 'PERF_TAKEOFF' : 'TAKEOFF_REF',
       expectedKey: aircraft === 'AIRBUS_A320' ? 'PERF_TAKEOFF' : 'INIT_REF',
       expectedLSK: 'L1',
@@ -329,9 +328,10 @@ function buildAutomationProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'engage-autoflight-mode',
       completedSteps: [...collectCompletedPreflightSteps(state), 'set-autoflight-values'],
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Select or manage a lateral/vertical mode and verify the Airbus FMA.'
-        : 'Engage HDG SEL, LNAV, VNAV, or another MCP mode and verify the Boeing FMA.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Select or manage a lateral/vertical mode and verify the Airbus FMA.'
+          : 'Engage HDG SEL, LNAV, VNAV, or another MCP mode and verify the Boeing FMA.',
       expectedPanel: 'autoflight',
       hint: `Use ${terms.selectedMode}/${terms.managedMode} cues and confirm the FMA changes on the PFD.`,
     };
@@ -363,9 +363,10 @@ function buildApproachProgress(
       ...baseProgress(terms),
       currentTrainingStep: 'configure-approach',
       completedSteps: collectCompletedPreflightSteps(state),
-      nextAction: aircraft === 'AIRBUS_A320'
-        ? 'Complete approach selection and PERF APPR landing data.'
-        : 'Complete arrival/approach selection and approach reference data.',
+      nextAction:
+        aircraft === 'AIRBUS_A320'
+          ? 'Complete approach selection and PERF APPR landing data.'
+          : 'Complete arrival/approach selection and approach reference data.',
       expectedPage: aircraft === 'AIRBUS_A320' ? 'PERF_APPR' : 'TAKEOFF_REF',
       expectedKey: aircraft === 'AIRBUS_A320' ? 'PERF_TAKEOFF' : 'INIT_REF',
       expectedPanel: 'cdu',
@@ -389,14 +390,15 @@ function collectCompletedPreflightSteps(state: FMCState): TrainingProgressStep[]
     { id: 'initialize-position', complete: isPositionInitialized(state) },
     { id: 'enter-route', complete: hasRouteEndpoints(state) && hasRouteContent(state) },
     { id: 'resolve-discontinuity', complete: hasRouteContent(state) && !routeHasDiscontinuity(state) },
-    { id: 'execute-modification', complete: !state.execLit && !state.isModified && !state.pendingFlightPlan && !state.pendingRoute },
+    {
+      id: 'execute-modification',
+      complete: !state.execLit && !state.isModified && !state.pendingFlightPlan && !state.pendingRoute,
+    },
     { id: 'enter-performance', complete: isPerformanceInitialized(state) },
     { id: 'enter-takeoff-data', complete: isTakeoffDataComplete(state) },
   ];
 
-  return checks
-    .filter((check) => check.complete)
-    .map((check) => check.id as TrainingProgressStep);
+  return checks.filter((check) => check.complete).map((check) => check.id as TrainingProgressStep);
 }
 
 function baseProgress(terms: TrainingProgress['aircraftSpecificTerminology']): TrainingProgress {
@@ -416,25 +418,20 @@ function baseProgress(terms: TrainingProgress['aircraftSpecificTerminology']): T
 }
 
 function isPositionInitialized(state: FMCState): boolean {
-  return state.position.irsState === 'NAV' && (
-    Boolean(state.position.refAirport) ||
-    (state.position.lat !== 0 && state.position.lon !== 0)
+  return (
+    state.position.irsState === 'NAV' &&
+    (Boolean(state.position.refAirport) || (state.position.lat !== 0 && state.position.lon !== 0))
   );
 }
 
 function hasRouteEndpoints(state: FMCState): boolean {
   return Boolean(
-    (state.route.origin && state.route.destination) ||
-    (state.flightPlan.origin && state.flightPlan.destination),
+    (state.route.origin && state.route.destination) || (state.flightPlan.origin && state.flightPlan.destination),
   );
 }
 
 function hasRouteContent(state: FMCState): boolean {
-  return Boolean(
-    state.route.routeString ||
-    state.flightPlan.route ||
-    state.flightPlan.waypoints.length > 0,
-  );
+  return Boolean(state.route.routeString || state.flightPlan.route || state.flightPlan.waypoints.length > 0);
 }
 
 function routeHasDiscontinuity(state: FMCState): boolean {
@@ -444,21 +441,25 @@ function routeHasDiscontinuity(state: FMCState): boolean {
 }
 
 function isPerformanceInitialized(state: FMCState): boolean {
-  return state.performance.crzAlt > 0 &&
+  return (
+    state.performance.crzAlt > 0 &&
     state.performance.costIndex >= 0 &&
     state.performance.zfw > 0 &&
     state.performance.fuel > 0 &&
-    state.performance.grossWeight > 0;
+    state.performance.grossWeight > 0
+  );
 }
 
 function isTakeoffDataComplete(state: FMCState): boolean {
-  return Boolean(state.takeoff.runway) &&
+  return (
+    Boolean(state.takeoff.runway) &&
     Boolean(state.takeoff.flaps) &&
     state.takeoff.v1 > 0 &&
     state.takeoff.vr > 0 &&
     state.takeoff.v2 > 0 &&
     state.takeoff.v1 < state.takeoff.vr &&
-    state.takeoff.vr < state.takeoff.v2;
+    state.takeoff.vr < state.takeoff.v2
+  );
 }
 
 function preflightMissingFields(state: FMCState): string[] {

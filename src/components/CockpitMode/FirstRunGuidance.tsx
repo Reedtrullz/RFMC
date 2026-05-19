@@ -20,7 +20,9 @@ export function FirstRunGuidance() {
     <section className="cockpit-first-run" aria-label="Cockpit workspace tips">
       <div>
         <strong>Task modes keep instruments readable.</strong>
-        <span>Use Focus for detailed input, Pin to keep a panel visible, and the tray to bring hidden panels back.</span>
+        <span>
+          Use Focus for detailed input, Pin to keep a panel visible, and the tray to bring hidden panels back.
+        </span>
       </div>
       <button type="button" onClick={dismiss}>
         Got it

@@ -35,7 +35,7 @@ export class TcasEngine {
     const tcasMode = state.efisL?.tcasMode ?? 'NORMAL';
 
     let alert = false;
-    this.targets = this.targets.map(t => {
+    this.targets = this.targets.map((t) => {
       // Move targets slowly towards us (aircraft is at x=50, y=50)
       const dx = (50 - t.x) * 0.01;
       const dy = (50 - t.y) * 0.01;

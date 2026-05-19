@@ -111,7 +111,7 @@ export function TerrainOverlay({ model }: TerrainOverlayProps) {
           opacity={opacity}
           rx={0.2}
           filter="url(#crt-bloom)"
-        />
+        />,
       );
     }
   }

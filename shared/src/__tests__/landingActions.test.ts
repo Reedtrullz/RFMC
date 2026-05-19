@@ -5,12 +5,38 @@ import type { FMCState } from '../types/fmc';
 function makeState(overrides?: Partial<FMCState>): FMCState {
   return {
     aircraft: 'BOEING_737',
-    route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
+    route: {
+      origin: '',
+      destination: '',
+      flightNumber: '',
+      routeString: '',
+      companyRoute: '',
+      sid: null,
+      star: null,
+      approach: null,
+      coRoute: '',
+      runway: '',
+    },
     flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
     pendingRoute: null,
     pendingFlightPlan: null,
     performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 140000 },
-    takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0, suggestedV1: 0, suggestedVr: 0, suggestedV2: 0 },
+    takeoff: {
+      runway: '',
+      toMode: 'TO',
+      assumedTemp: 0,
+      v1: 0,
+      vr: 0,
+      v2: 0,
+      trim: 0,
+      oat: 0,
+      windDir: 0,
+      windSpeed: 0,
+      qnh: 0,
+      suggestedV1: 0,
+      suggestedVr: 0,
+      suggestedV2: 0,
+    },
     landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
     ...overrides,
   } as FMCState;
@@ -272,7 +298,9 @@ describe('handleToggleLdgConf', () => {
     expect(patch.landing.ldgConf).toBe('CONF3');
     expect(patch.landing.flaps).toBe('CONF3');
 
-    const stateConf3 = makeState({ landing: { runway: '', flaps: 'CONF3', vref: 0, ilsFrequency: '', course: 0, ldgConf: 'CONF3' } });
+    const stateConf3 = makeState({
+      landing: { runway: '', flaps: 'CONF3', vref: 0, ilsFrequency: '', course: 0, ldgConf: 'CONF3' },
+    });
     const resultToggle = handleLandingAction('toggle_ldg_conf', stateConf3, '');
     const patchToggle = resultToggle.success?.patch as any;
     expect(patchToggle.landing.ldgConf).toBe('FULL');

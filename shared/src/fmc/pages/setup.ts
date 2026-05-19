@@ -3,7 +3,7 @@ import { PAGE_LINES, PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 import { seg, title } from '../displayGrid';
 
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
+function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return {
     text: text.padEnd(PAGE_WIDTH, ' '),
     leftLabel: left,
@@ -14,7 +14,7 @@ function fmt(text: string, left: string = '', right: string = '', color?: Displa
   };
 }
 
-function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
+function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
 
@@ -51,10 +51,10 @@ export function renderIdentPage(state: FMCState): DisplayData {
 }
 
 export function renderNavDataPage(state: FMCState): DisplayData {
-  const cycle = "FMC21A1";
-  const effective = "OCT05/26";
-  const expires = "NOV01/26";
-  
+  const cycle = 'FMC21A1';
+  const effective = 'OCT05/26';
+  const expires = 'NOV01/26';
+
   return {
     title: 'NAV DATA',
     pageIndicator: '1/1',
@@ -82,9 +82,10 @@ export function renderNavDataPage(state: FMCState): DisplayData {
 
 export function renderPosInitPage(state: FMCState): DisplayData {
   const { position } = state;
-  const lastPos = position.lat != null && position.lon != null
-    ? `${Math.abs(position.lat).toFixed(1)}${position.lat >= 0 ? 'N' : 'S'} ${Math.abs(position.lon).toFixed(1)}${position.lon >= 0 ? 'E' : 'W'}`
-    : '----.-  ----.-';
+  const lastPos =
+    position.lat != null && position.lon != null
+      ? `${Math.abs(position.lat).toFixed(1)}${position.lat >= 0 ? 'N' : 'S'} ${Math.abs(position.lon).toFixed(1)}${position.lon >= 0 ? 'E' : 'W'}`
+      : '----.-  ----.-';
 
   return {
     title: 'POS INIT',
@@ -101,17 +102,14 @@ export function renderPosInitPage(state: FMCState): DisplayData {
 
       seg(5, 0, '<GATE', 'white', { size: 'small' }),
       seg(6, 1, position.gate || '----', 'green'),
-      
+
       // IRS Status Block
       seg(8, 14, 'IRS STATUS', 'white', { size: 'small' }),
-      ...(position.irsState === 'ALIGNING' ? [
-        seg(9, 13, 'IN ALIGN', 'white'),
-        seg(10, 14, `${Math.ceil(position.irsTimeRemaining / 60)} MIN`, 'white')
-      ] : position.irsState === 'NAV' ? [
-        seg(9, 13, 'IRS NAV', 'green')
-      ] : [
-        seg(9, 13, 'IRS OFF', 'amber')
-      ]),
+      ...(position.irsState === 'ALIGNING'
+        ? [seg(9, 13, 'IN ALIGN', 'white'), seg(10, 14, `${Math.ceil(position.irsTimeRemaining / 60)} MIN`, 'white')]
+        : position.irsState === 'NAV'
+          ? [seg(9, 13, 'IRS NAV', 'green')]
+          : [seg(9, 13, 'IRS OFF', 'amber')]),
 
       seg(12, 13, 'SET IRS POS', 'white', { size: 'small' }),
       seg(13, 10, '□□□□.□ □□□□□.□', 'white'),
@@ -226,9 +224,19 @@ export function renderTakeoffRefPage(state: FMCState): DisplayData {
         fmt(` ${approach}`, '', '', route.approach ? 'green' : 'white'),
         blank(),
         fmt(' FLAPS', '<', 'VREF', 'white'),
-        fmt(` ${landing.flaps || '[  ]'}${''.padEnd(12, ' ')}${landing.vref ? `${landing.vref} KT` : '---'}`, '', '', landing.flaps || landing.vref ? 'green' : 'white'),
+        fmt(
+          ` ${landing.flaps || '[  ]'}${''.padEnd(12, ' ')}${landing.vref ? `${landing.vref} KT` : '---'}`,
+          '',
+          '',
+          landing.flaps || landing.vref ? 'green' : 'white',
+        ),
         fmt(' ILS FREQ', '<', 'CRS', 'white'),
-        fmt(` ${landing.ilsFrequency || '---.--'}${''.padEnd(9, ' ')}${landing.course ? `${landing.course}°` : '---'}`, '', '', landing.ilsFrequency || landing.course ? 'green' : 'white'),
+        fmt(
+          ` ${landing.ilsFrequency || '---.--'}${''.padEnd(9, ' ')}${landing.course ? `${landing.course}°` : '---'}`,
+          '',
+          '',
+          landing.ilsFrequency || landing.course ? 'green' : 'white',
+        ),
         blank(),
         fmt(' REF ONLY', '', '', 'white'),
         fmt(' TRAINER APPR DATA', '', '', 'green'),

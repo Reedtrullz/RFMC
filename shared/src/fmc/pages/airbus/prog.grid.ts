@@ -1,10 +1,5 @@
 import type { FMCState, DisplayData } from '../../../types/fmc';
-import {
-  airbusPage,
-  airbusTitleRow,
-  airbusLineLabel,
-  airbusDisplaySegment,
-} from './airbusGridHelpers';
+import { airbusPage, airbusTitleRow, airbusLineLabel, airbusDisplaySegment } from './airbusGridHelpers';
 import { AIRBUS_DEFAULT_COLOR } from '../../displayColors';
 import { buildLnavState } from '../../lnavState';
 import { buildPerformancePrediction } from '../../performancePrediction';
@@ -20,21 +15,21 @@ export function renderProgGrid(state: FMCState): DisplayData {
   const lnav = buildLnavState(state);
   const prediction = buildPerformancePrediction(state);
 
-  const crzAltStr = performance.crzAlt
-    ? `FL${String(performance.crzAlt).slice(0, 3)}`
-    : '---';
+  const crzAltStr = performance.crzAlt ? `FL${String(performance.crzAlt).slice(0, 3)}` : '---';
 
   const accuracyHigh = navPerformance.anpNm <= navPerformance.rnpNm;
   const accuracyLabel = accuracyHigh ? 'HIGH' : 'LOW';
   const rnpStr = navPerformance.rnpNm.toFixed(2);
   const origin = state.flightPlan.origin || route.origin || '----';
   const destination = lnav.destination?.ident || state.flightPlan.destination || route.destination || '----';
-  const distanceStr = lnav.distanceToDestinationNm !== null
-    ? `${String(Math.round(lnav.distanceToDestinationNm)).padStart(4, ' ')} NM`
-    : '---- NM';
-  const efobStr = prediction.estimatedFuelAtDestination !== null
-    ? `${(prediction.estimatedFuelAtDestination / 1000).toFixed(1)}`
-    : '---.-';
+  const distanceStr =
+    lnav.distanceToDestinationNm !== null
+      ? `${String(Math.round(lnav.distanceToDestinationNm)).padStart(4, ' ')} NM`
+      : '---- NM';
+  const efobStr =
+    prediction.estimatedFuelAtDestination !== null
+      ? `${(prediction.estimatedFuelAtDestination / 1000).toFixed(1)}`
+      : '---.-';
   const efobColor = prediction.warnings.includes('INSUFFICIENT FUEL') ? 'amber' : 'white';
 
   return airbusPage(
@@ -85,10 +80,18 @@ export function renderProgGrid(state: FMCState): DisplayData {
       airbusDisplaySegment(11, 18, rnpStr, AIRBUS_DEFAULT_COLOR, { semantic: 'activeData' }),
     ],
     {
-      L1: null, L2: null, L3: null, L4: null,
-      L5: null, L6: null,
-      R1: null, R2: null, R3: null, R4: null,
-      R5: null, R6: null,
+      L1: null,
+      L2: null,
+      L3: null,
+      L4: null,
+      L5: null,
+      L6: null,
+      R1: null,
+      R2: null,
+      R3: null,
+      R4: null,
+      R5: null,
+      R6: null,
     },
   );
 }

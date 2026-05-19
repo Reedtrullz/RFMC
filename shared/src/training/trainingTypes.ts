@@ -34,7 +34,7 @@ export type TrainingStep = {
   stateValidation?: StateValidation[];
   hint?: string;
   commonMistake?: string;
-  validation?: string; 
+  validation?: string;
   highlightControl?: string;
 };
 

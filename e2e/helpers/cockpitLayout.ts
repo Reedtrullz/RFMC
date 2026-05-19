@@ -107,16 +107,16 @@ export async function expectPanelGroupUsesViewport(
   ratios = { minWidthRatio: 0.5, minHeightRatio: 0.45 },
 ) {
   const viewport = page.viewportSize();
-  const boxes = await Promise.all(panels.map(panel => panelLocator(page, panel).boundingBox()));
+  const boxes = await Promise.all(panels.map((panel) => panelLocator(page, panel).boundingBox()));
   const presentBoxes = boxes.filter((box): box is NonNullable<typeof box> => !!box);
 
   expect(viewport).not.toBeNull();
   expect(presentBoxes.length).toBe(panels.length);
 
-  const left = Math.min(...presentBoxes.map(box => box.x));
-  const top = Math.min(...presentBoxes.map(box => box.y));
-  const right = Math.max(...presentBoxes.map(box => box.x + box.width));
-  const bottom = Math.max(...presentBoxes.map(box => box.y + box.height));
+  const left = Math.min(...presentBoxes.map((box) => box.x));
+  const top = Math.min(...presentBoxes.map((box) => box.y));
+  const right = Math.max(...presentBoxes.map((box) => box.x + box.width));
+  const bottom = Math.max(...presentBoxes.map((box) => box.y + box.height));
 
   expect(right - left).toBeGreaterThanOrEqual(viewport!.width * ratios.minWidthRatio);
   expect(bottom - top).toBeGreaterThanOrEqual(viewport!.height * ratios.minHeightRatio);

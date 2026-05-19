@@ -1,33 +1,101 @@
 import { create } from 'zustand';
-import type { FMCState, AircraftState, PageType, DisplayData, CDUKey, LSKId, ConnectionMode, FMCMode, ConnectionStatus, TutorialScenario, AircraftType, AltitudeConstraint, SpeedConstraint, EFISState, RouteData, FlightPlan, FlightPlanWaypoint, AdapterCapabilities, AdapterHealth, BoeingMCPState, AirbusFCUState, AutopilotState, CockpitLayoutMode, PanelId, IrsState, NavSource, NavSensor, NavigationPerformance, FlightDeckAlert, FlightPhase, FmcMessage, MessageSeverity, AcarsMessage } from '@shared';
-import { 
-  SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, 
-  parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
-  expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, 
-  TrainingScore, TrainingScenarioEngine, ExpectedAction, boeingLessons, airbusLessons, progressManager, 
-  PhaseManager, LegSequencer, PerformanceEngine,
-  AutoflightModeManager, AutoflightTruthState, LateralMode, VerticalMode, ThrustMode
+import type {
+  FMCState,
+  AircraftState,
+  PageType,
+  DisplayData,
+  CDUKey,
+  LSKId,
+  ConnectionMode,
+  FMCMode,
+  ConnectionStatus,
+  TutorialScenario,
+  AircraftType,
+  AltitudeConstraint,
+  SpeedConstraint,
+  EFISState,
+  RouteData,
+  FlightPlan,
+  FlightPlanWaypoint,
+  AdapterCapabilities,
+  AdapterHealth,
+  BoeingMCPState,
+  AirbusFCUState,
+  AutopilotState,
+  CockpitLayoutMode,
+  PanelId,
+  IrsState,
+  NavSource,
+  NavSensor,
+  NavigationPerformance,
+  FlightDeckAlert,
+  FlightPhase,
+  FmcMessage,
+  MessageSeverity,
+  AcarsMessage,
+} from '@shared';
+import {
+  SCRATCHPAD_MAX,
+  PAGE_LINES,
+  PAGE_WIDTH,
+  getPageRenderer,
+  getAirbusPageRenderer,
+  parseRouteString,
+  getTutorialScenario,
+  airbusTutorialScenarios,
+  processBoeingMCPAction,
+  expandRoute,
+  getWaypoint,
+  getAirport,
+  TrainingScenario,
+  TrainingStep,
+  TrainingMistake,
+  TrainingScore,
+  TrainingScenarioEngine,
+  ExpectedAction,
+  boeingLessons,
+  airbusLessons,
+  progressManager,
+  PhaseManager,
+  LegSequencer,
+  PerformanceEngine,
+  AutoflightModeManager,
+  AutoflightTruthState,
+  LateralMode,
+  VerticalMode,
+  ThrustMode,
 } from '@shared';
 import { useAircraftStore } from './aircraftStore';
 import { useAutopilotStore } from './autopilotStore';
 import { useCockpitLayoutStore } from './cockpitLayoutStore';
 import { useConnectionStore } from './connectionStore';
-import { 
-  selectFmcPositionSource, 
-  calculateANP, 
+import {
+  selectFmcPositionSource,
+  calculateANP,
   DEFAULT_RNP,
   calculateGroundSpeedAndTrack,
   calculateIrsDrift,
   FmsRuntimeEngine,
   loadIntoCache,
   loadProceduresIntoCache,
-  populateNavDb
+  populateNavDb,
 } from '@shared';
 import { parseWaypointInput } from '@shared/fmc/waypointParser';
 import { distanceNm } from '@shared/fmc/ndGeometry';
 import { alertBus } from '../services/AlertBus';
 import { AuralAlertService } from '../services/AuralAlertService';
-import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcExecClear, fmcPushMessage, applyFmcActionResult, applyDispatchResult, failScratchpad } from '@shared/fmc/fmcScratchpadAdapter';
+import {
+  fmcTypeChar,
+  fmcClrKey,
+  fmcDelKey,
+  fmcClearBuffer,
+  fmcPageChange,
+  fmcExecClear,
+  fmcPushMessage,
+  applyFmcActionResult,
+  applyDispatchResult,
+  failScratchpad,
+} from '@shared/fmc/fmcScratchpadAdapter';
 import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
@@ -72,25 +140,22 @@ export const gpwsEngine = new GpwsEngine();
 export const tcasEngine = new TcasEngine();
 
 function findTutorial(scenarioName: string): TutorialScenario | undefined {
-  return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find(s => s.name === scenarioName);
+  return getTutorialScenario(scenarioName) || airbusTutorialScenarios.find((s) => s.name === scenarioName);
 }
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
   const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-  const routeFixes = new Set([
-    flightPlan.origin,
-    flightPlan.destination,
-    ...flightPlan.waypoints.map(wp => wp.ident),
-  ].filter(Boolean).map(fix => fix.toUpperCase()));
+  const routeFixes = new Set(
+    [flightPlan.origin, flightPlan.destination, ...flightPlan.waypoints.map((wp) => wp.ident)]
+      .filter(Boolean)
+      .map((fix) => fix.toUpperCase()),
+  );
 
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
 }
 
 function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix']): FMCState['fixEntries'] {
-  return [
-    { ...(entries[0] ?? legacy) },
-    { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
-  ];
+  return [{ ...(entries[0] ?? legacy) }, { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) }];
 }
 
 function getTrainingHighlight(step: TrainingStep): string | null {
@@ -125,26 +190,35 @@ function createDefaultEFIS(aircraft: AircraftType, side: 'L' | 'R'): EFISState {
     mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
     range: 40,
     overlays: {
-      wpt: true, arpt: true, sta: true,
-      data: true, pos: false, terr: false, wxr: false, tfc: true,
-      cstr: aircraft === 'AIRBUS_A320'
+      wpt: true,
+      arpt: true,
+      sta: true,
+      data: true,
+      pos: false,
+      terr: false,
+      wxr: false,
+      tfc: true,
+      cstr: aircraft === 'AIRBUS_A320',
     },
     centered: false,
     side,
   };
 }
 
-const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingState & {
-  brightness: number;
-  cockpitLayoutMode: CockpitLayoutMode;
-  hiddenPanels: PanelId[];
-  pinnedPanels: PanelId[];
-  focusedPanel: PanelId | null;
-  instrumentZoom: Record<InstrumentPanelId, number>;
-  highContrast: boolean;
-  dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
-  dbInitializationProgress: number;
-} = {
+const defaultState: FMCState &
+  ConnectionDiagnostics &
+  TutorialState &
+  TrainingState & {
+    brightness: number;
+    cockpitLayoutMode: CockpitLayoutMode;
+    hiddenPanels: PanelId[];
+    pinnedPanels: PanelId[];
+    focusedPanel: PanelId | null;
+    instrumentZoom: Record<InstrumentPanelId, number>;
+    highContrast: boolean;
+    dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
+    dbInitializationProgress: number;
+  } = {
   dbInitializationState: 'idle' as const,
   dbInitializationProgress: 0,
   page: 'IDENT' as PageType,
@@ -153,17 +227,37 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   scratchpad: '',
   scratchpadError: null as string | null,
   demoMode: false,
-  
+
   aircraft: 'BOEING_737' as AircraftType,
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-  position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'NAV' as IrsState, irsAlignmentProgress: 100, irsTimeRemaining: 0 },
+  position: {
+    refAirport: '',
+    gate: '',
+    lat: 0,
+    lon: 0,
+    irsState: 'NAV' as IrsState,
+    irsAlignmentProgress: 100,
+    irsTimeRemaining: 0,
+  },
   performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
-  takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
+  takeoff: {
+    runway: '',
+    toMode: 'TO',
+    assumedTemp: 0,
+    v1: 0,
+    vr: 0,
+    v2: 0,
+    trim: 0,
+    oat: 0,
+    windDir: 0,
+    windSpeed: 0,
+    qnh: 0,
+  },
   landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
   radios: { vor1: '113.90', vor2: '115.70', adf1: '342' },
   signsOn: false,
   windowsLocked: false,
-  
+
   mode: 'STANDBY' as FMCMode,
   connectionStatus: 'DISCONNECTED' as ConnectionStatus,
   connectionMode: 'STANDALONE' as ConnectionMode,
@@ -232,7 +326,7 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
         thrust: 0,
         lateral: 0,
         vertical: 0,
-      }
+      },
     },
   },
 
@@ -245,21 +339,40 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   highContrast: false,
   brightness: 100,
 
-  route: { origin: '', destination: '', flightNumber: '', routeString: '', companyRoute: '', sid: null, star: null, approach: null, coRoute: '', runway: '' },
+  route: {
+    origin: '',
+    destination: '',
+    flightNumber: '',
+    routeString: '',
+    companyRoute: '',
+    sid: null,
+    star: null,
+    approach: null,
+    coRoute: '',
+    runway: '',
+  },
   flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
-  
+
   pendingRoute: null as RouteData | null,
   pendingFlightPlan: null as FlightPlan | null,
-  
+
   isModified: false,
   execLit: false,
   msgLight: false,
-  
+
   failureMessage: null as string | null,
   externalDisplayData: null as DisplayData | null,
 
   // FMS Ecosystem state
-  navPerformance: { anp: 2.0, rnp: 2.0, anpNm: 2.0, rnpNm: 2.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE' } as NavigationPerformance,
+  navPerformance: {
+    anp: 2.0,
+    rnp: 2.0,
+    anpNm: 2.0,
+    rnpNm: 2.0,
+    rnpManual: false,
+    activeSource: 'IRS',
+    phase: 'ENROUTE',
+  } as NavigationPerformance,
   activeNavSource: 'IRS' as NavSource,
   sensors: [
     { source: 'GPS', available: true, positionErrorNm: 0.05 },
@@ -297,8 +410,11 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
   holdPending: null,
   fix: { refFix: '', radial: 0, distance: 0 },
-  fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
-  
+  fixEntries: [
+    { refFix: '', radial: 0, distance: 0 },
+    { refFix: '', radial: 0, distance: 0 },
+  ],
+
   legsPageIndex: 0,
   legsPageCount: 1,
   depArrSubPage: 'DEP' as const,
@@ -311,7 +427,7 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
     messages: [] as AcarsMessage[],
     pendingUplink: null,
   },
-  
+
   deleteMode: false,
   editWaypointIndex: null as number | null,
 
@@ -322,7 +438,7 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   efisR: createDefaultEFIS('BOEING_737', 'R'),
 
   // New logic systems
-  aircraftState: null as (AircraftState | null),
+  aircraftState: null as AircraftState | null,
   flightPhase: 'PREFLIGHT' as FlightPhase,
   scratchpadMessages: [] as FmcMessage[],
   posPageIndex: 0,
@@ -350,7 +466,11 @@ interface FMCActions {
   setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => void;
   setSimVariables: (variables: Record<string, number>) => void;
   setAircraftState: (state: FMCState['aircraftState']) => void;
-  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => void;
+  setConnectedAircraft: (
+    aircraft: string | null,
+    capabilities?: string[] | null,
+    aircraftType?: AircraftType | null,
+  ) => void;
   setConnectedLastError: (error: string | null) => void;
   setExternalDisplayData: (data: DisplayData | null) => void;
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
@@ -431,20 +551,19 @@ interface FMCActions {
   setHighContrast: (enabled: boolean) => void;
   toggleHighContrast: () => void;
   setDemoMode: (demo: boolean) => void;
-  
+
   toggleSigns: (playChime?: boolean) => void;
   toggleWindows: () => void;
-  
+
   setIrsMode: (mode: IrsState) => void;
   updateFmsEcosystem: () => void;
   clearAlert: (id: string) => void;
-  
+
   highlightControl: (controlId: string) => void;
-  
+
   // Message actions
   addMessage: (text: string, severity: MessageSeverity, type?: 1 | 2) => void;
   clearActiveMessage: () => void;
-
 }
 
 interface ConnectionDiagnostics {
@@ -485,17 +604,21 @@ interface TrainingState {
   isReportVisible: boolean;
 }
 
-export type FMCStore = FMCState & ConnectionDiagnostics & TutorialState & TrainingState & FMCActions & {
-  brightness: number;
-  cockpitLayoutMode: CockpitLayoutMode;
-  hiddenPanels: PanelId[];
-  pinnedPanels: PanelId[];
-  focusedPanel: PanelId | null;
-  instrumentZoom: Record<InstrumentPanelId, number>;
-  highContrast: boolean;
-  dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
-  dbInitializationProgress: number;
-};
+export type FMCStore = FMCState &
+  ConnectionDiagnostics &
+  TutorialState &
+  TrainingState &
+  FMCActions & {
+    brightness: number;
+    cockpitLayoutMode: CockpitLayoutMode;
+    hiddenPanels: PanelId[];
+    pinnedPanels: PanelId[];
+    focusedPanel: PanelId | null;
+    instrumentZoom: Record<InstrumentPanelId, number>;
+    highContrast: boolean;
+    dbInitializationState: 'idle' | 'loading' | 'ready' | 'error';
+    dbInitializationProgress: number;
+  };
 
 type StoreAPI = import('zustand').StoreApi<FMCStore>;
 
@@ -541,8 +664,8 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
     state.advanceTutorial();
   } else {
     // Check if the key is an alphanumeric/editing key
-    const isAlphaNumeric = /^[A-Z0-9]$/.test(key) || 
-      ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
+    const isAlphaNumeric =
+      /^[A-Z0-9]$/.test(key) || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
 
     // Only record an error if it's NOT an alphanumeric key.
     // Alphanumeric keys are usually intermediate scratchpad input.
@@ -552,7 +675,6 @@ function tryAdvanceIfMatch(get: () => FMCStore, key: string): void {
     }
   }
 }
-
 
 function stageHoldField(state: FMCState, field: string, value: any): Partial<FMCState> {
   const base = state.holdPending ?? state.hold;
@@ -604,34 +726,80 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   pressKey: (key: CDUKey) => {
     const startTime = performance.now();
-      devLog(`[FMC] pressKey: ${key}`);
+    devLog(`[FMC] pressKey: ${key}`);
     const { scratchpad, currentPage } = get();
     let handled = false;
 
     // Navigation keys
-    if (key === 'INIT_REF') { get().setPage('POS_INIT'); handled = true; }
-    else if (key === 'RTE') { get().setPage('RTE'); handled = true; }
-    else if (key === 'CLB') { get().setPage('CLB'); handled = true; }
-    else if (key === 'CRZ') { get().setPage('CRZ'); handled = true; }
-    else if (key === 'DES') { get().setPage('DES'); handled = true; }
-    else if (key === 'DIR_INTC') { get().setPage('DIR_INTC'); handled = true; }
-    else if (key === 'LEGS') { get().setPage('LEGS'); handled = true; }
-    else if (key === 'DEP_ARR') { get().setPage('DEP_ARR'); handled = true; }
-    else if (key === 'HOLD') { get().setPage('HOLD'); handled = true; }
-    else if (key === 'PERF') { get().setPage('PERF_INIT'); handled = true; }
-    else if (key === 'PROG') { get().setPage('PROGRESS'); handled = true; }
-    else if (key === 'N1_LIMIT') { get().setPage('N1_LIMIT'); handled = true; }
-    else if (key === 'FIX') { get().setPage('FIX'); handled = true; }
-    else if (key === 'MENU') { get().setPage('MENU'); handled = true; }
+    if (key === 'INIT_REF') {
+      get().setPage('POS_INIT');
+      handled = true;
+    } else if (key === 'RTE') {
+      get().setPage('RTE');
+      handled = true;
+    } else if (key === 'CLB') {
+      get().setPage('CLB');
+      handled = true;
+    } else if (key === 'CRZ') {
+      get().setPage('CRZ');
+      handled = true;
+    } else if (key === 'DES') {
+      get().setPage('DES');
+      handled = true;
+    } else if (key === 'DIR_INTC') {
+      get().setPage('DIR_INTC');
+      handled = true;
+    } else if (key === 'LEGS') {
+      get().setPage('LEGS');
+      handled = true;
+    } else if (key === 'DEP_ARR') {
+      get().setPage('DEP_ARR');
+      handled = true;
+    } else if (key === 'HOLD') {
+      get().setPage('HOLD');
+      handled = true;
+    } else if (key === 'PERF') {
+      get().setPage('PERF_INIT');
+      handled = true;
+    } else if (key === 'PROG') {
+      get().setPage('PROGRESS');
+      handled = true;
+    } else if (key === 'N1_LIMIT') {
+      get().setPage('N1_LIMIT');
+      handled = true;
+    } else if (key === 'FIX') {
+      get().setPage('FIX');
+      handled = true;
+    } else if (key === 'MENU') {
+      get().setPage('MENU');
+      handled = true;
+    }
     // Airbus function keys
-    else if (key === 'INIT_A') { get().setPage('INIT_A'); handled = true; }
-    else if (key === 'INIT_B') { get().setPage('INIT_B'); handled = true; }
-    else if (key === 'F_PLN') { get().setPage('F_PLN'); handled = true; }
-    else if (key === 'DATA_INDEX') { get().setPage('DATA_INDEX'); handled = true; }
-    else if (key === 'PERF_TAKEOFF') { get().setPage('PERF_TAKEOFF'); handled = true; }
-    else if (key === 'PROG_A') { get().setPage('PROG_A'); handled = true; }
-    else if (key === 'RAD_NAV') { get().setPage('RAD_NAV'); handled = true; }
-    else if (key === 'MCDU_MENU') { get().setPage('MCDU_MENU'); handled = true; }
+    else if (key === 'INIT_A') {
+      get().setPage('INIT_A');
+      handled = true;
+    } else if (key === 'INIT_B') {
+      get().setPage('INIT_B');
+      handled = true;
+    } else if (key === 'F_PLN') {
+      get().setPage('F_PLN');
+      handled = true;
+    } else if (key === 'DATA_INDEX') {
+      get().setPage('DATA_INDEX');
+      handled = true;
+    } else if (key === 'PERF_TAKEOFF') {
+      get().setPage('PERF_TAKEOFF');
+      handled = true;
+    } else if (key === 'PROG_A') {
+      get().setPage('PROG_A');
+      handled = true;
+    } else if (key === 'RAD_NAV') {
+      get().setPage('RAD_NAV');
+      handled = true;
+    } else if (key === 'MCDU_MENU') {
+      get().setPage('MCDU_MENU');
+      handled = true;
+    }
 
     // Clear
     else if (key === 'CLR') {
@@ -648,9 +816,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         fmcClearBuffer(set, get);
       }
       handled = true;
-    }
-
-    else if (key === 'DEL') {
+    } else if (key === 'DEL') {
       if (scratchpad.length > 0) {
         fmcDelKey(set, get);
       } else if (currentPage === 'LEGS') {
@@ -693,9 +859,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         set({ posPageIndex: (s.posPageIndex + 1) % 3 });
       }
       handled = true;
-    }
-
-    else if (key === 'PREV_PAGE') {
+    } else if (key === 'PREV_PAGE') {
       const s = get();
       if (s.currentPage === 'LEGS' && s.legsPageIndex > 0) {
         set({ legsPageIndex: s.legsPageIndex - 1 });
@@ -726,7 +890,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Character input
     else if (scratchpad.length < SCRATCHPAD_MAX) {
       const charMap: Record<string, string> = {
-        DOT: '.', PLUS_MINUS: '+/-', SLASH: '/', SPACE: ' ',
+        DOT: '.',
+        PLUS_MINUS: '+/-',
+        SLASH: '/',
+        SPACE: ' ',
       };
       const char = charMap[key] || key;
       fmcTypeChar(set, get, char);
@@ -799,8 +966,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         idents.push(upperScratchpad);
       }
       if (idents.length > 0) {
-        idents.forEach(id => {
-          loadIntoCache(id).catch(err => devError(`Error background loading ${id}:`, err));
+        idents.forEach((id) => {
+          loadIntoCache(id).catch((err) => devError(`Error background loading ${id}:`, err));
         });
       }
     }
@@ -808,10 +975,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const originArpt = state.pendingRoute?.origin ?? state.route.origin;
     const destArpt = state.pendingRoute?.destination ?? state.route.destination;
     if (originArpt) {
-      loadProceduresIntoCache(originArpt).catch(err => devError('Failed to load arrival procedures', err));
+      loadProceduresIntoCache(originArpt).catch((err) => devError('Failed to load arrival procedures', err));
     }
     if (destArpt) {
-      loadProceduresIntoCache(destArpt).catch(err => devError('Failed to load destination procedures', err));
+      loadProceduresIntoCache(destArpt).catch((err) => devError('Failed to load destination procedures', err));
     }
 
     let handled = false;
@@ -990,12 +1157,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       scratchpadText = activeMsg.text;
       scratchpadColor = activeMsg.severity === 'ADVISORY' ? 'white' : 'amber';
       blink = activeMsg.severity === 'ALERT' || activeMsg.severity === 'IMPORTANT';
-      semantic = activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
+      semantic =
+        activeMsg.severity === 'ALERT' ? 'warning' : activeMsg.severity === 'IMPORTANT' ? 'caution' : 'advisory';
     }
 
     if (data.segments) {
       // For segment-based rendering, add/replace the last line (row 13)
-      data.segments = data.segments.filter(s => s.row !== 13);
+      data.segments = data.segments.filter((s) => s.row !== 13);
       data.segments.push({
         row: 13,
         col: 0,
@@ -1023,9 +1191,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),
   setConnectionMode: (mode: ConnectionMode) => set({ connectionMode: mode }),
   setConnectionDiagnostics: (diagnostics: Partial<ConnectionDiagnostics>) => set(diagnostics),
-  setSimVariables: (variables: Record<string, number>) => set((state) => ({
-    simVariables: { ...state.simVariables, ...variables },
-  })),
+  setSimVariables: (variables: Record<string, number>) =>
+    set((state) => ({
+      simVariables: { ...state.simVariables, ...variables },
+    })),
   setAircraftState: (state: FMCState['aircraftState']) => {
     set({ aircraftState: state });
     // Outward sync to AircraftStore
@@ -1062,14 +1231,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         }
 
         return {
-          autopilot: { boeing, airbus, truth }
+          autopilot: { boeing, airbus, truth },
         };
       });
 
       useAutopilotStore.setState({
         boeing: get().autopilot.boeing,
         airbus: get().autopilot.airbus,
-        truth: get().autopilot.truth
+        truth: get().autopilot.truth,
       });
     }
 
@@ -1084,7 +1253,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     let newMessages = [...scratchpadMessages];
     if (aircraft === 'AIRBUS_A320') {
       if (type === 1) {
-        newMessages = [message, ...newMessages.filter(m => m.type !== 1)];
+        newMessages = [message, ...newMessages.filter((m) => m.type !== 1)];
       } else {
         if (newMessages.length < 5) newMessages.push(message);
       }
@@ -1136,17 +1305,20 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       set(updates);
     }
   },
-  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => set({
-    connectedAircraft: aircraft,
-    connectedCapabilities: capabilities ?? [],
-    connectedAircraftType: aircraftType ?? null,
-  }),
+  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) =>
+    set({
+      connectedAircraft: aircraft,
+      connectedCapabilities: capabilities ?? [],
+      connectedAircraftType: aircraftType ?? null,
+    }),
   setConnectedLastError: (error: string | null) => set({ lastError: error }),
-  setExternalDisplayData: (data: DisplayData | null) => set({
-    externalDisplayData: data,
-    scratchpadError: data?.scratchpadError ?? null,
-  }),
-  setFailureMode: (mode, message) => set({ mode, failureMessage: message || (mode === 'FAIL' ? 'FMC FAILURE' : 'CDU OFF') }),
+  setExternalDisplayData: (data: DisplayData | null) =>
+    set({
+      externalDisplayData: data,
+      scratchpadError: data?.scratchpadError ?? null,
+    }),
+  setFailureMode: (mode, message) =>
+    set({ mode, failureMessage: message || (mode === 'FAIL' ? 'FMC FAILURE' : 'CDU OFF') }),
   clearFailureMode: () => set({ mode: 'ACTIVE', failureMessage: null }),
   setBrightness: (b: number) => set({ brightness: b }),
 
@@ -1156,11 +1328,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       const destination = data.destination || state.flightPlan.destination || state.route.destination || '';
       const route = data.route || state.flightPlan.route || state.route.routeString || '';
       const parsed = route ? parseRouteString([origin, route, destination].filter(Boolean).join(' ')) : null;
-      
+
       // Merge SimBrief coordinates if available
       if (parsed && data.waypoints) {
-        parsed.waypoints.forEach(pwp => {
-          const swp = data.waypoints!.find(w => w.ident === pwp.ident);
+        parsed.waypoints.forEach((pwp) => {
+          const swp = data.waypoints!.find((w) => w.ident === pwp.ident);
           if (swp && swp.lat !== undefined && swp.lon !== undefined) {
             pwp.lat = swp.lat;
             pwp.lon = swp.lon;
@@ -1198,40 +1370,42 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   setSelectedPlanWaypoint: (index) => set({ selectedPlanWaypointIndex: index }),
 
-  stepPlanForward: () => set((state) => {
-    const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-    if (flightPlan.waypoints.length === 0) return state;
-    
-    // Total points including origin and destination
-    const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
-    const currentIndex = state.selectedPlanWaypointIndex ?? 0;
-    const nextIndex = (currentIndex + 1) % totalPoints;
-    
-    return { selectedPlanWaypointIndex: nextIndex };
-  }),
+  stepPlanForward: () =>
+    set((state) => {
+      const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+      if (flightPlan.waypoints.length === 0) return state;
 
-  stepPlanBackward: () => set((state) => {
-    const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-    if (flightPlan.waypoints.length === 0) return state;
-    
-    const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
-    const currentIndex = state.selectedPlanWaypointIndex ?? 0;
-    const nextIndex = (currentIndex - 1 + totalPoints) % totalPoints;
-    
-    return { selectedPlanWaypointIndex: nextIndex };
-  }),
+      // Total points including origin and destination
+      const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
+      const currentIndex = state.selectedPlanWaypointIndex ?? 0;
+      const nextIndex = (currentIndex + 1) % totalPoints;
+
+      return { selectedPlanWaypointIndex: nextIndex };
+    }),
+
+  stepPlanBackward: () =>
+    set((state) => {
+      const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
+      if (flightPlan.waypoints.length === 0) return state;
+
+      const totalPoints = (flightPlan.origin ? 1 : 0) + flightPlan.waypoints.length + (flightPlan.destination ? 1 : 0);
+      const currentIndex = state.selectedPlanWaypointIndex ?? 0;
+      const nextIndex = (currentIndex - 1 + totalPoints) % totalPoints;
+
+      return { selectedPlanWaypointIndex: nextIndex };
+    }),
 
   resetPlanWaypoint: () => set({ selectedPlanWaypointIndex: null }),
 
   insertWaypoint: (index: number, ident: string) => {
     const state = get();
     const id = ident.toUpperCase();
-    
+
     // 1. Try advanced waypoint parser (Lat/Long, PBD, etc)
     const parsed = parseWaypointInput(id, (wptId) => getWaypoint(wptId));
-    
+
     let nextWaypoint: any = null;
-    
+
     if (parsed) {
       nextWaypoint = {
         ident: parsed.ident,
@@ -1287,8 +1461,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const state = get();
     // Outward sync to AircraftStore
     useAircraftStore.getState().setAircraft(type);
-    
-    const startPage = type === 'BOEING_737' ? 'IDENT' as PageType : 'INIT_A' as PageType;
+
+    const startPage = type === 'BOEING_737' ? ('IDENT' as PageType) : ('INIT_A' as PageType);
     set({
       ...defaultState,
       aircraft: type,
@@ -1344,11 +1518,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   // ---- Tutorial ----
   startTutorial: (scenarioName: string) => {
     const scenario = findTutorial(scenarioName);
-    if (!scenario) { return; }
+    if (!scenario) {
+      return;
+    }
     const firstStep = scenario.steps[0];
     // Call setup function to initialize tutorial state
     if (scenario.setup) scenario.setup();
-    
+
     // Navigate to the first step's page
     const pageMap: Record<string, PageType> = {
       POS_INIT: 'POS_INIT',
@@ -1377,7 +1553,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       DATA_INDEX: 'DATA_INDEX',
     };
     const target = pageMap[firstStep.page] || firstStep?.page || 'IDENT';
-    
+
     set({
       tutorialActive: true,
       tutorialScenario: scenarioName,
@@ -1453,7 +1629,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
     if (nextStep.requiredPanels) {
       const { hiddenPanels } = get();
-      const nextHidden = hiddenPanels.filter(p => !nextStep.requiredPanels?.includes(p));
+      const nextHidden = hiddenPanels.filter((p) => !nextStep.requiredPanels?.includes(p));
       if (nextHidden.length !== hiddenPanels.length) {
         set({ hiddenPanels: nextHidden });
       }
@@ -1461,17 +1637,34 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
     const currentStepPage = currentStep?.page;
     const nextStepPage = nextStep?.page;
-    
+
     // Auto-navigate to next step's page only when the next step
     // is NOT a function key action (the user will press that key themselves).
     // Function keys: INIT_REF, RTE, DEP_ARR, PERF, PROG, LEGS, MENU
     // For those steps, the highlighted button both navigates and advances.
     // Airbus function keys: INIT_A, INIT_B, F-PLN, PERF TO, PROG A, DEP ARR A, MCDU MENU, RAD NAV
-    const functionKeyActions = ['POS_INIT', 'RTE', 'DEP_ARR', 'PERF_INIT', 'PROGRESS', 'LEGS', 'MENU',
-                              'INIT_A', 'INIT_B', 'F_PLN', 'PERF_TAKEOFF', 'PROG_A', 'DEP_ARR_A', 'MCDU_MENU', 'RAD_NAV'];
-    if (!functionKeyActions.includes(nextStep.expectedAction)
-        && currentPage === currentStepPage
-        && nextStepPage !== currentPage) {
+    const functionKeyActions = [
+      'POS_INIT',
+      'RTE',
+      'DEP_ARR',
+      'PERF_INIT',
+      'PROGRESS',
+      'LEGS',
+      'MENU',
+      'INIT_A',
+      'INIT_B',
+      'F_PLN',
+      'PERF_TAKEOFF',
+      'PROG_A',
+      'DEP_ARR_A',
+      'MCDU_MENU',
+      'RAD_NAV',
+    ];
+    if (
+      !functionKeyActions.includes(nextStep.expectedAction) &&
+      currentPage === currentStepPage &&
+      nextStepPage !== currentPage
+    ) {
       set({ currentPage: nextStepPage });
     }
   },
@@ -1502,7 +1695,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const state = get();
     const newErrors = state.tutorialErrors + 1;
     const step = state.getCurrentTutorialStep();
-    
+
     let hint = 'Check the highlighted field and try again.';
     if (step) {
       if (state.currentPage !== step.page) {
@@ -1534,11 +1727,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   resetTutorialHints: () => {
     const timer = get().tutorialHintTimer;
     if (timer) clearTimeout(timer);
-    
+
     const newTimer = setTimeout(() => {
       const state = get();
       if (!state.tutorialActive) return;
-      
+
       set((s) => ({ tutorialHintLevel: Math.min(s.tutorialHintLevel + 1, 3) }));
       get().resetTutorialHints();
     }, 15000); // 15 seconds per hint level
@@ -1551,7 +1744,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   expandActiveRoute: () => {
     const state = get();
     const route = state.pendingRoute ?? state.route;
-    
+
     const expandedLegs = expandRoute(
       route.origin || '',
       route.destination || '',
@@ -1559,10 +1752,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       route.star || undefined,
       route.approach || undefined,
       [], // Add enroute parsing later
-      route.runway || undefined
+      route.runway || undefined,
     );
 
-    const waypoints = expandedLegs.map(leg => {
+    const waypoints = expandedLegs.map((leg) => {
       const isUnresolved = leg.lat === undefined || leg.lon === undefined || isNaN(leg.lat) || isNaN(leg.lon);
       return {
         ident: leg.ident,
@@ -1594,7 +1787,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   // ---- Training Curriculum ----
   startTraining: (scenarioId: string) => {
-    const scenario = [...boeingLessons, ...airbusLessons].find(s => s.id === scenarioId);
+    const scenario = [...boeingLessons, ...airbusLessons].find((s) => s.id === scenarioId);
     if (!scenario) return;
 
     const engine = new TrainingScenarioEngine(scenario);
@@ -1616,7 +1809,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       trainingCompleted: false,
       tutorialActive: false, // Deactivate legacy tutorial
       tutorialHighlight: highlight,
-      mode: 'TUTORIAL'
+      mode: 'TUTORIAL',
     });
   },
 
@@ -1626,7 +1819,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       trainingScenario: null,
       trainingEngine: null,
       tutorialHighlight: null,
-      mode: 'ACTIVE'
+      mode: 'ACTIVE',
     });
   },
 
@@ -1637,38 +1830,43 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (!trainingActive || !trainingEngine || !trainingScenario) return;
 
     const result = trainingEngine.processAction(action, get() as unknown as Record<string, unknown>);
-    
+
     if (result.success) {
       if (result.completed) {
         const summary = trainingEngine.getSummary();
-        set({ 
-          trainingCompleted: true, 
+        set({
+          trainingCompleted: true,
           trainingActive: false,
           tutorialHighlight: null,
-          trainingScore: summary.score 
+          trainingScore: summary.score,
         });
         progressManager.completeLesson(trainingScenario.id, summary.score.total);
       } else {
         const nextIndex = get().trainingStepIndex + 1;
         const nextStep = trainingScenario.steps[nextIndex];
         const highlight = nextStep ? getTrainingHighlight(nextStep) : null;
-        set({ 
+        set({
           trainingStepIndex: get().trainingStepIndex + 1,
           tutorialHighlight: highlight,
-          tutorialHint: null
+          tutorialHint: null,
         });
       }
     } else if (result.mistake) {
       set((state) => ({
         trainingMistakes: [...state.trainingMistakes, result.mistake!],
-        tutorialHint: result.mistake!.description
+        tutorialHint: result.mistake!.description,
       }));
     }
   },
   toggleNDOverlay: (side, overlayKey) => {
     const key = side === 'L' ? 'efisL' : 'efisR';
     const efis = get()[key];
-    set({ [key]: { ...efis, overlays: { ...efis.overlays, [overlayKey]: !efis.overlays[overlayKey as keyof typeof efis.overlays] } } });
+    set({
+      [key]: {
+        ...efis,
+        overlays: { ...efis.overlays, [overlayKey]: !efis.overlays[overlayKey as keyof typeof efis.overlays] },
+      },
+    });
   },
   toggleNDCenter: (side: 'L' | 'R') => {
     const efisKey = side === 'L' ? 'efisL' : 'efisR';
@@ -1680,10 +1878,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set((state) => ({
       autopilot: {
         ...state.autopilot,
-        boeing: { ...state.autopilot.boeing, ...update }
-      }
+        boeing: { ...state.autopilot.boeing, ...update },
+      },
     }));
-    
+
     // Training hook
     if (get().trainingActive) {
       Object.entries(update).forEach(([field, value]) => {
@@ -1697,12 +1895,12 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.aircraft !== 'AIRBUS_A320') return;
 
     const validatedUpdate = { ...update };
-    
+
     // Managed Navigation Interlock
     if (validatedUpdate.headingManaged) {
       const hasFpln = state.flightPlan.origin && state.flightPlan.destination;
       const irsAligned = state.position.irsState === 'NAV';
-      
+
       if (!hasFpln || !irsAligned) {
         delete validatedUpdate.headingManaged;
         set({ scratchpad: !irsAligned ? 'IRS NOT ALIGNED' : 'F-PLN NOT READY', msgLight: true });
@@ -1712,8 +1910,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set((state) => ({
       autopilot: {
         ...state.autopilot,
-        airbus: { ...state.autopilot.airbus, ...validatedUpdate }
-      }
+        airbus: { ...state.autopilot.airbus, ...validatedUpdate },
+      },
     }));
 
     // Training hook
@@ -1727,7 +1925,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   pressMCPButton: (action) => {
     const state = get();
     const { truth } = state.autopilot;
-    
+
     // 1. Authoritative Mode Request Processing
     let request: Partial<AutoflightTruthState> = {};
     const isBoeing = state.aircraft === 'BOEING_737';
@@ -1746,7 +1944,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     } else {
       if (action === 'LOC') request = { lateralActive: 'LOC' };
       if (action === 'APPR') request = { lateralActive: 'APP', verticalActive: 'G_S' };
-      if (action === 'EXPED') request = { verticalActive: 'OP_CLB' }; 
+      if (action === 'EXPED') request = { verticalActive: 'OP_CLB' };
       if (action === 'AP1') request = { autopilotStatus: truth.autopilotStatus === 'AP1' ? 'OFF' : 'AP1' };
       if (action === 'AP2') request = { autopilotStatus: truth.autopilotStatus === 'AP2' ? 'OFF' : 'AP2' };
       if (action === 'ATHR') request = { thrustActive: truth.thrustActive === 'SPEED' ? 'OFF' : 'SPEED' };
@@ -1755,14 +1953,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       if (action === 'HDG_MANAGED') request = { lateralActive: 'NAV' };
       if (action === 'HDG_SELECTED') request = { lateralActive: 'HDG' };
       if (action === 'ALT_MANAGED') request = { verticalActive: 'VNAV_PTH' }; // Airbus CLB/DES
-      if (action === 'ALT_SELECTED') request = { verticalActive: 'OP_CLB' }; 
+      if (action === 'ALT_SELECTED') request = { verticalActive: 'OP_CLB' };
     }
 
     if (Object.keys(request).length > 0) {
       if (request.autopilotStatus === 'OFF' && truth.autopilotStatus !== 'OFF') {
         AuralAlertService.playCavalryCharge();
       }
-      
+
       const { nextState, alert } = AutoflightModeManager.processModeRequest(request, truth, state);
       if (alert) {
         set({ scratchpad: alert, msgLight: true });
@@ -1772,7 +1970,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           text: alert,
           level: 'CAUTION',
           source: 'AFDS',
-          clearable: true
+          clearable: true,
         });
       } else {
         set((s) => ({ autopilot: { ...s.autopilot, truth: nextState } }));
@@ -1820,7 +2018,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     });
   },
   setHiddenPanels: (panels) => {
-    const visibleInstruments = instrumentPanelIds.filter(panelId => !panels.includes(panelId));
+    const visibleInstruments = instrumentPanelIds.filter((panelId) => !panels.includes(panelId));
     if (visibleInstruments.length === 0) {
       return;
     }
@@ -1831,10 +2029,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   togglePanelHidden: (panelId) => {
     const { hiddenPanels } = get();
     if (hiddenPanels.includes(panelId)) {
-      set({ hiddenPanels: hiddenPanels.filter(p => p !== panelId) });
+      set({ hiddenPanels: hiddenPanels.filter((p) => p !== panelId) });
     } else {
       const nextHidden = [...hiddenPanels, panelId];
-      const visibleInstruments = instrumentPanelIds.filter(id => !nextHidden.includes(id));
+      const visibleInstruments = instrumentPanelIds.filter((id) => !nextHidden.includes(id));
       if (visibleInstruments.length === 0) {
         return;
       }
@@ -1844,11 +2042,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   togglePanelPinned: (panelId) => {
     const { pinnedPanels, hiddenPanels } = get();
     if (pinnedPanels.includes(panelId)) {
-      set({ pinnedPanels: pinnedPanels.filter(p => p !== panelId) });
+      set({ pinnedPanels: pinnedPanels.filter((p) => p !== panelId) });
     } else {
-      set({ 
+      set({
         pinnedPanels: [...pinnedPanels, panelId],
-        hiddenPanels: hiddenPanels.filter(p => p !== panelId)
+        hiddenPanels: hiddenPanels.filter((p) => p !== panelId),
       });
     }
   },
@@ -1895,25 +2093,26 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
   setHighContrast: (enabled) => set({ highContrast: enabled }),
   toggleHighContrast: () => set((state) => ({ highContrast: !state.highContrast })),
   toggleSigns: (playChime = true) => {
-    set(state => {
+    set((state) => {
       const next = !state.signsOn;
       // We'll handle the sound in the component or via a side effect
       return { signsOn: next };
     });
   },
-  
-  toggleWindows: () => set(state => ({ windowsLocked: !state.windowsLocked })),
+
+  toggleWindows: () => set((state) => ({ windowsLocked: !state.windowsLocked })),
 
   setIrsMode: (mode) => {
-    set(state => ({
-      position: { 
-        ...state.position, 
+    set((state) => ({
+      position: {
+        ...state.position,
         irsState: mode,
-        irsTimeRemaining: mode === 'ALIGNING' ? (state.demoMode ? 1 : 600) : (mode === 'FAST_ALIGNING' ? (state.demoMode ? 1 : 30) : 0),
-        irsAlignmentProgress: 0
-      }
+        irsTimeRemaining:
+          mode === 'ALIGNING' ? (state.demoMode ? 1 : 600) : mode === 'FAST_ALIGNING' ? (state.demoMode ? 1 : 30) : 0,
+        irsAlignmentProgress: 0,
+      },
     }));
-    
+
     if (mode === 'OFF') {
       alertBus.addAlert({ id: 'irs-off', text: 'IRS OFF', level: 'ADVISORY', source: 'IRS', clearable: true });
     } else {
@@ -1923,7 +2122,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   clearAlert: (id) => {
     alertBus.removeAlert(id);
-    set(state => ({ alerts: state.alerts.filter(a => a.id !== id) }));
+    set((state) => ({ alerts: state.alerts.filter((a) => a.id !== id) }));
   },
 
   updateFmsEcosystem: () => {
@@ -1935,13 +2134,13 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (position.irsState === 'ALIGNING' || position.irsState === 'FAST_ALIGNING') {
       if (position.irsTimeRemaining > 0) {
         const newTime = Math.max(0, position.irsTimeRemaining - 1);
-        const total = position.irsState === 'ALIGNING' ? (state.demoMode ? 1 : 600) : (state.demoMode ? 1 : 30);
+        const total = position.irsState === 'ALIGNING' ? (state.demoMode ? 1 : 600) : state.demoMode ? 1 : 30;
         const progress = Math.round(((total - newTime) / total) * 100);
-        
-        updates.position = { 
-          ...position, 
+
+        updates.position = {
+          ...position,
           irsTimeRemaining: newTime,
-          irsAlignmentProgress: progress
+          irsAlignmentProgress: progress,
         };
 
         if (newTime === 0) {
@@ -1951,16 +2150,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-
-
     // 2. Performance & Fuel Logic
     const fuelFlow = PerformanceEngine.calculateFuelFlow(state.flightPhase, state.aircraftState?.altitude || 0);
     const newFuel = PerformanceEngine.updateFuelState(state.performance.fuel, fuelFlow, 1);
-    
+
     updates.performance = {
       ...state.performance,
       fuel: newFuel,
-      grossWeight: (state.performance.zfw || 100000) + newFuel
+      grossWeight: (state.performance.zfw || 100000) + newFuel,
     };
 
     if (newFuel < 5000 && state.performance.fuel >= 5000) {
@@ -1973,7 +2170,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const rnp = DEFAULT_RNP[navPerformance.phase] || 2.0;
 
     // Simulate sensor drift if IRS is active
-    const newSensors = sensors.map(s => {
+    const newSensors = sensors.map((s) => {
       if (s.source === 'IRS' && s.available) {
         return { ...s, positionErrorNm: calculateIrsDrift(s.positionErrorNm, 1) };
       }
@@ -1988,13 +2185,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.aircraftState) {
       const { heading, tas, indicatedAirspeedKt: prevIas } = state.aircraftState;
       const { windDir, windSpeed } = state.takeoff; // Using takeoff wind as ambient for now
-      
-      const { gs, track } = calculateGroundSpeedAndTrack(
-        heading || 0,
-        tas || 0,
-        windDir || 0,
-        windSpeed || 0
-      );
+
+      const { gs, track } = calculateGroundSpeedAndTrack(heading || 0, tas || 0, windDir || 0, windSpeed || 0);
 
       const currentIas = updates.aircraftState?.indicatedAirspeedKt ?? prevIas;
       const accel = (currentIas - prevIas) / 1; // 1 second tick
@@ -2003,12 +2195,15 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         ...state.aircraftState,
         gs: gs,
         track: track,
-        accelerationKtS: accel
+        accelerationKtS: accel,
       };
 
       // Record Flight Path for Debrief
       if (state.aircraftState.lat !== undefined && state.aircraftState.lon !== undefined) {
-        const history = [...state.flightPathHistory, { lat: state.aircraftState.lat, lon: state.aircraftState.lon, timestamp: Date.now() }];
+        const history = [
+          ...state.flightPathHistory,
+          { lat: state.aircraftState.lat, lon: state.aircraftState.lon, timestamp: Date.now() },
+        ];
         updates.flightPathHistory = history.slice(-1000); // Keep last 1000 seconds
 
         // Leg Sequencing Logic
@@ -2017,26 +2212,28 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const currentLeg = waypoints[0];
           const nextLeg = waypoints[1];
           const { sequence, reason } = LegSequencer.shouldSequence(currentLeg, nextLeg, state.aircraftState);
-          
+
           if (sequence) {
             devLog(`Sequencing: ${reason}`);
-            
+
             // Check restrictions for the leg we just finished
             const result = LegSequencer.checkRestrictions(currentLeg, state.aircraftState);
             if (!result.ok && state.activeScenario) {
               const mistake = { id: Date.now().toString(), text: result.message!, timestamp: Date.now() };
               AuralAlertService.playChime();
-              set(s => ({
-                activeScenario: s.activeScenario ? {
-                  ...s.activeScenario,
-                  mistakes: [...(s.activeScenario.mistakes || []), mistake]
-                } : null
+              set((s) => ({
+                activeScenario: s.activeScenario
+                  ? {
+                      ...s.activeScenario,
+                      mistakes: [...(s.activeScenario.mistakes || []), mistake],
+                    }
+                  : null,
               }));
             }
 
             const newWaypoints = waypoints.slice(1);
             updates.flightPlan = { ...state.flightPlan, waypoints: newWaypoints };
-            
+
             // Auto-advance phase if appropriate
             if (newWaypoints.length === 0) {
               updates.flightPhase = 'DONE';
@@ -2059,7 +2256,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.trainingActive && state.trainingEngine && state.trainingScenario) {
       const currentStep = state.trainingScenario.steps[state.trainingStepIndex];
       if (currentStep?.expectedAction?.type === 'verify_fma') {
-        const isValid = state.trainingEngine.validateState(state as unknown as Record<string, unknown>, currentStep.stateValidation || []);
+        const isValid = state.trainingEngine.validateState(
+          state as unknown as Record<string, unknown>,
+          currentStep.stateValidation || [],
+        );
         if (isValid) {
           get().processTrainingAction({ type: 'verify_fma', mode: currentStep.expectedAction.mode });
         }
@@ -2074,7 +2274,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     updates.alerts = alertBus.getAlerts();
-    
+
     // 4. Tutorial Progression (State-based)
     if (state.tutorialActive && state.tutorialScenario) {
       const scenario = findTutorial(state.tutorialScenario);
@@ -2085,14 +2285,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     }
 
     let apUpdates = AutoflightModeManager.tick(state.autopilot.truth, state);
-    
+
     const isAirbus = state.aircraft === 'AIRBUS_A320';
     const targetAlt = isAirbus ? state.autopilot.airbus.altitude : state.autopilot.boeing.altitude;
     const currentAlt = state.aircraftState?.altitudeFt ?? state.aircraftState?.altitude ?? 0;
     const deltaH = targetAlt - currentAlt;
     const absDeltaH = Math.abs(deltaH);
     const activeVertical = apUpdates?.verticalActive ?? state.autopilot.truth.verticalActive;
-    
+
     let altStarTriggered = false;
     if (
       activeVertical !== 'ALT*' &&
@@ -2120,7 +2320,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       let airbusUpdate = {};
 
       if (nextTruth.verticalActive === 'ALT*') {
-        const vsEntry = nextTruth.vsEntry !== undefined ? nextTruth.vsEntry : (state.aircraftState?.verticalSpeedFpm ?? state.aircraftState?.vs ?? 1000);
+        const vsEntry =
+          nextTruth.vsEntry !== undefined
+            ? nextTruth.vsEntry
+            : (state.aircraftState?.verticalSpeedFpm ?? state.aircraftState?.vs ?? 1000);
         if (absDeltaH <= 20) {
           apUpdates = {
             ...(apUpdates || {}),

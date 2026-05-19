@@ -32,8 +32,8 @@ describe('CDUDisplayGrid', () => {
     render(<CDUDisplayGrid grid={grid} />);
 
     // Character cells are rendered individually
-    expect(screen.getAllByText('I').find(el => el.getAttribute('data-semantic') === 'title')).toBeTruthy();
-    expect(screen.getAllByText('D').find(el => el.getAttribute('data-semantic') === 'title')).toBeTruthy();
+    expect(screen.getAllByText('I').find((el) => el.getAttribute('data-semantic') === 'title')).toBeTruthy();
+    expect(screen.getAllByText('D').find((el) => el.getAttribute('data-semantic') === 'title')).toBeTruthy();
   });
 
   it('positions segments by known grid row and column', () => {

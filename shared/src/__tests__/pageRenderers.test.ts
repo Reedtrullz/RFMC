@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { renderIdentPage, renderMenuPage, renderPerfInitPage, renderPosInitPage, renderTakeoffRefPage, renderThrustLimPage } from '../fmc/pages/setup';
+import {
+  renderIdentPage,
+  renderMenuPage,
+  renderPerfInitPage,
+  renderPosInitPage,
+  renderTakeoffRefPage,
+  renderThrustLimPage,
+} from '../fmc/pages/setup';
 import { renderHoldPage, renderFixPage } from '../fmc/pages/navigation';
 import { renderRtePage, renderDepArrPage } from '../fmc/pages/route';
 import { renderClbPage, renderCrzPage, renderDesPage, renderDirIntcPage, renderN1LimitPage } from '../fmc/pages/index';
@@ -19,8 +26,15 @@ const baseState = createBaseState({
     centered: false,
     side: 'L',
     overlays: {
-      wpt: true, arpt: true, sta: true, data: false, 
-      pos: false, terr: false, wxr: false, tfc: true, cstr: false
+      wpt: true,
+      arpt: true,
+      sta: true,
+      data: false,
+      pos: false,
+      terr: false,
+      wxr: false,
+      tfc: true,
+      cstr: false,
     },
   },
   efisR: {
@@ -29,8 +43,15 @@ const baseState = createBaseState({
     centered: false,
     side: 'R',
     overlays: {
-      wpt: true, arpt: true, sta: true, data: false, 
-      pos: false, terr: false, wxr: false, tfc: true, cstr: false
+      wpt: true,
+      arpt: true,
+      sta: true,
+      data: false,
+      pos: false,
+      terr: false,
+      wxr: false,
+      tfc: true,
+      cstr: false,
     },
   },
 });
@@ -39,14 +60,14 @@ describe('Page Renderers', () => {
   it('renders IDENT page', () => {
     const data = renderIdentPage(baseState);
     expect(data.title).toBe('IDENT');
-    expect(data.lines.some(l => l.text.includes('737-800'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('737-800'))).toBe(true);
   });
 
   it('tags Boeing setup page lines with display semantics', () => {
     const data = renderIdentPage(baseState);
     expect(data.lines[0]).toMatchObject({ semantic: 'title', inverse: true });
-    expect(data.lines.find(l => l.text.includes('MODEL'))?.semantic).toBe('label');
-    expect(data.lines.find(l => l.text.includes('737-800'))?.semantic).toBe('activeData');
+    expect(data.lines.find((l) => l.text.includes('MODEL'))?.semantic).toBe('label');
+    expect(data.lines.find((l) => l.text.includes('737-800'))?.semantic).toBe('activeData');
   });
 
   it('tags every primary Boeing page title as a semantic title', () => {
@@ -73,7 +94,7 @@ describe('Page Renderers', () => {
     for (const renderer of renderers) {
       const data = renderer(baseState);
       if (data.segments && data.segments.length > 0) {
-        expect(data.segments.some(s => s.semantic === 'title')).toBe(true);
+        expect(data.segments.some((s) => s.semantic === 'title')).toBe(true);
       } else if (data.lines && data.lines.length > 0) {
         expect(data.lines[0].semantic, data.title).toBe('title');
       }
@@ -85,8 +106,8 @@ describe('Page Renderers', () => {
     expect(data.lskActions.R6).toBe('des_now');
     expect(data.lskLabels?.R6).toBe('DES NOW');
     const hasText = data.segments
-      ? data.segments.some(s => s.text.includes('DES NOW'))
-      : data.lines.some(line => line.text.includes('DES NOW'));
+      ? data.segments.some((s) => s.text.includes('DES NOW'))
+      : data.lines.some((line) => line.text.includes('DES NOW'));
     expect(hasText).toBe(true);
   });
 
@@ -99,9 +120,9 @@ describe('Page Renderers', () => {
     });
 
     expect(data.pageIndicator).toBe('2/2');
-    expect(data.lines.some(l => l.text.includes('LANDING RW'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('ILS19'))).toBe(true);
-    expect(data.lines.some(l => l.text.includes('142 KT'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('LANDING RW'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('ILS19'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('142 KT'))).toBe(true);
     expect(data.lskActions.L3).toBe('set_landing_flaps');
     expect(data.lskActions.R3).toBe('set_landing_vref');
   });
@@ -109,16 +130,17 @@ describe('Page Renderers', () => {
   it('renders POS INIT page', () => {
     const data = renderPosInitPage(baseState);
     expect(data.title).toBe('POS INIT');
-    const hasRefAirport = data.segments?.some(s => s.text.includes('REF AIRPORT')) || 
-                          data.lines?.some(l => l.text.includes('REF AIRPORT'));
+    const hasRefAirport =
+      data.segments?.some((s) => s.text.includes('REF AIRPORT')) ||
+      data.lines?.some((l) => l.text.includes('REF AIRPORT'));
     expect(hasRefAirport).toBe(true);
   });
 
   it('renders authentic Boeing PROGRESS page layout', () => {
     const data = renderBoeingProgressGrid(baseState);
-    expect(data.segments?.some(s => s.semantic === 'title' && s.text === 'PROGRESS')).toBe(true);
-    expect(data.segments?.some(s => s.text === 'KJFK')).toBe(true);
-    expect(data.segments?.some(s => s.text === 'KDCA')).toBe(true);
+    expect(data.segments?.some((s) => s.semantic === 'title' && s.text === 'PROGRESS')).toBe(true);
+    expect(data.segments?.some((s) => s.text === 'KJFK')).toBe(true);
+    expect(data.segments?.some((s) => s.text === 'KDCA')).toBe(true);
   });
 
   it('renders Boeing PROGRESS from shared LNAV VNAV and performance truth', () => {
@@ -176,21 +198,21 @@ describe('Page Renderers', () => {
     });
 
     const gridData = renderBoeingProgressGrid(state);
-    expect(gridData.segments?.some(s => s.text === 'FIX1')).toBe(true);
-    expect(gridData.segments?.some(s => s.text === 'FUEL DEST')).toBe(true);
-    expect(gridData.segments?.some(s => s.text === 'VNAV')).toBe(true);
+    expect(gridData.segments?.some((s) => s.text === 'FIX1')).toBe(true);
+    expect(gridData.segments?.some((s) => s.text === 'FUEL DEST')).toBe(true);
+    expect(gridData.segments?.some((s) => s.text === 'VNAV')).toBe(true);
   });
 
   it('renders HOLD page', () => {
     const data = renderHoldPage(baseState);
     expect(data.title).toBe('HOLD');
-    expect(data.lines.some(l => l.text.includes('FIX'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('FIX'))).toBe(true);
   });
 
   it('renders FIX page', () => {
     const data = renderFixPage(baseState);
     expect(data.title).toBe('FIX');
-    expect(data.lines.some(l => l.text.includes('REF FIX 1'))).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('REF FIX 1'))).toBe(true);
   });
 
   it('renders two FIX entries and exposes entry-specific actions', () => {
@@ -202,9 +224,9 @@ describe('Page Renderers', () => {
       ],
     });
 
-    expect(data.lines.some(l => l.text.includes('RBV'))).toBe(true);
-    expect(data.lines.some(l => l.rightLabel === 'DIXIE')).toBe(true);
-    expect(data.lines.some(l => l.rightLabel === '270/035')).toBe(true);
+    expect(data.lines.some((l) => l.text.includes('RBV'))).toBe(true);
+    expect(data.lines.some((l) => l.rightLabel === 'DIXIE')).toBe(true);
+    expect(data.lines.some((l) => l.rightLabel === '270/035')).toBe(true);
     expect(data.lskActions.L1).toBe('set_fix_ref_0');
     expect(data.lskActions.R1).toBe('set_fix_ref_1');
   });
@@ -221,8 +243,8 @@ describe('Page Renderers', () => {
       },
     };
     const data = renderBoeingLegsGrid(state);
-    expect(data.segments?.some(s => s.semantic === 'title' && s.text.includes('LEGS'))).toBe(true);
-    expect(data.segments?.some(s => s.text === 'RBV')).toBe(true);
+    expect(data.segments?.some((s) => s.semantic === 'title' && s.text.includes('LEGS'))).toBe(true);
+    expect(data.segments?.some((s) => s.text === 'RBV')).toBe(true);
   });
 
   it('emits delete_wp_* LSK actions when deleteMode is true', () => {
@@ -266,16 +288,33 @@ describe('Airbus Page Renderers', () => {
   const airbusState = createBaseState({
     aircraft: 'AIRBUS_A320',
     currentPage: 'INIT_A',
-    position: { irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0, refAirport: '', gate: '', lat: 0, lon: 0 },
-    navPerformance: { anpNm: 0.05, rnpNm: 1.0, anp: 0.05, rnp: 1.0, rnpManual: false, activeSource: 'IRS', phase: 'ENROUTE', xteNm: 0 }
+    position: {
+      irsState: 'OFF',
+      irsTimeRemaining: 0,
+      irsAlignmentProgress: 0,
+      refAirport: '',
+      gate: '',
+      lat: 0,
+      lon: 0,
+    },
+    navPerformance: {
+      anpNm: 0.05,
+      rnpNm: 1.0,
+      anp: 0.05,
+      rnp: 1.0,
+      rnpManual: false,
+      activeSource: 'IRS',
+      phase: 'ENROUTE',
+      xteNm: 0,
+    },
   });
 
   it('renders INIT A page with alignment prompt when IRS is off', () => {
     const renderer = getAirbusPageRenderer('INIT_A');
     const data = renderer!(airbusState);
     const hasIrsInit = data.segments
-      ? data.segments.some(s => s.text === '<IRS INIT')
-      : data.lines.some(l => l.leftLabel === '<IRS INIT');
+      ? data.segments.some((s) => s.text === '<IRS INIT')
+      : data.lines.some((l) => l.leftLabel === '<IRS INIT');
     expect(hasIrsInit).toBe(true);
     expect(data.lskActions.L6).toBe('align_irs');
   });
@@ -284,7 +323,7 @@ describe('Airbus Page Renderers', () => {
     const renderer = getAirbusPageRenderer('PROG_A');
     const data = renderer!(airbusState);
     const segments = (data as any).segments || data.lines;
-    const hasNavAccur = Array.isArray(segments) 
+    const hasNavAccur = Array.isArray(segments)
       ? segments.some((s: any) => (s.text || '').includes('NAV ACCUR'))
       : segments.some((l: any) => (l.text || '').includes('NAV ACCUR'));
     const hasHigh = Array.isArray(segments)

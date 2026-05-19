@@ -9,7 +9,7 @@ describe('ndGeometry', () => {
 
   it('distanceNm between two known airport coordinates is approximately correct', () => {
     const eham = { lat: 52.3081, lon: 4.7642 };
-    const egll = { lat: 51.4700, lon: -0.4543 };
+    const egll = { lat: 51.47, lon: -0.4543 };
     const dist = distanceNm(eham, egll);
     expect(dist).toBeGreaterThan(180);
     expect(dist).toBeLessThan(200);
@@ -47,4 +47,3 @@ describe('ndGeometry', () => {
     expect(relativeBearing(10, 350)).toBe(-20);
   });
 });
-

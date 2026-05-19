@@ -8,15 +8,13 @@ interface NDGlassProps {
 
 export function NDGlass({ children, brightness = 100, scanlines = true }: NDGlassProps) {
   return (
-    <div 
+    <div
       className="relative h-full w-full overflow-hidden rounded-[inherit] bg-black"
       style={{ filter: `brightness(${brightness}%)` }}
     >
       {/* Base content */}
-      <div className="h-full w-full">
-        {children}
-      </div>
-      
+      <div className="h-full w-full">{children}</div>
+
       {/* Spherical Curvature Overlay (Subtle Glass Bulge) */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.05)_0%,transparent_70%)] opacity-30" />
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]" />

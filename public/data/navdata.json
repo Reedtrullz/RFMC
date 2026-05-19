@@ -5,31 +5,158 @@
     "version": 1
   },
   "airports": [
-    { "icao": "ENAL", "name": "Alesund Vigra", "lat": 62.5625, "lon": 6.1194, "elevation": 70, "runways": ["06", "24"] },
+    {
+      "icao": "ENAL",
+      "name": "Alesund Vigra",
+      "lat": 62.5625,
+      "lon": 6.1194,
+      "elevation": 70,
+      "runways": ["06", "24"]
+    },
     { "icao": "ENAT", "name": "Alta", "lat": 69.9761, "lon": 23.3717, "elevation": 10, "runways": ["11", "29"] },
     { "icao": "ENBO", "name": "Bodo", "lat": 67.2692, "lon": 14.3644, "elevation": 43, "runways": ["07", "25"] },
-    { "icao": "ENBR", "name": "Bergen Flesland", "lat": 60.2934, "lon": 5.2181, "elevation": 164, "runways": ["17", "35"] },
-    { "icao": "ENCN", "name": "Kristiansand Kjevik", "lat": 58.2033, "lon": 8.0853, "elevation": 56, "runways": ["03", "21"] },
+    {
+      "icao": "ENBR",
+      "name": "Bergen Flesland",
+      "lat": 60.2934,
+      "lon": 5.2181,
+      "elevation": 164,
+      "runways": ["17", "35"]
+    },
+    {
+      "icao": "ENCN",
+      "name": "Kristiansand Kjevik",
+      "lat": 58.2033,
+      "lon": 8.0853,
+      "elevation": 56,
+      "runways": ["03", "21"]
+    },
     { "icao": "ENDU", "name": "Bardufoss", "lat": 69.0558, "lon": 18.5403, "elevation": 252, "runways": ["10", "28"] },
-    { "icao": "ENEV", "name": "Harstad/Narvik Evenes", "lat": 68.4897, "lon": 16.6783, "elevation": 84, "runways": ["17", "35"] },
-    { "icao": "ENFL", "name": "Floro", "lat": 61.5833, "lon": 5.0250, "elevation": 37, "runways": ["07", "25"] },
-    { "icao": "ENGM", "name": "Oslo Gardermoen", "lat": 60.1939, "lon": 11.1004, "elevation": 681, "runways": ["01L", "01R", "19L", "19R"] },
-    { "icao": "ENHD", "name": "Haugesund Karmoy", "lat": 59.3444, "lon": 5.2136, "elevation": 87, "runways": ["13", "31"] },
+    {
+      "icao": "ENEV",
+      "name": "Harstad/Narvik Evenes",
+      "lat": 68.4897,
+      "lon": 16.6783,
+      "elevation": 84,
+      "runways": ["17", "35"]
+    },
+    { "icao": "ENFL", "name": "Floro", "lat": 61.5833, "lon": 5.025, "elevation": 37, "runways": ["07", "25"] },
+    {
+      "icao": "ENGM",
+      "name": "Oslo Gardermoen",
+      "lat": 60.1939,
+      "lon": 11.1004,
+      "elevation": 681,
+      "runways": ["01L", "01R", "19L", "19R"]
+    },
+    {
+      "icao": "ENHD",
+      "name": "Haugesund Karmoy",
+      "lat": 59.3444,
+      "lon": 5.2136,
+      "elevation": 87,
+      "runways": ["13", "31"]
+    },
     { "icao": "ENHF", "name": "Hammerfest", "lat": 70.6794, "lon": 23.6683, "elevation": 262, "runways": ["04", "22"] },
-    { "icao": "ENKB", "name": "Kristiansund Kvernberget", "lat": 63.1119, "lon": 7.8267, "elevation": 204, "runways": ["07", "25"] },
-    { "icao": "ENKR", "name": "Kirkenes Hoybuktmoen", "lat": 69.7258, "lon": 29.8889, "elevation": 284, "runways": ["05", "23"] },
+    {
+      "icao": "ENKB",
+      "name": "Kristiansund Kvernberget",
+      "lat": 63.1119,
+      "lon": 7.8267,
+      "elevation": 204,
+      "runways": ["07", "25"]
+    },
+    {
+      "icao": "ENKR",
+      "name": "Kirkenes Hoybuktmoen",
+      "lat": 69.7258,
+      "lon": 29.8889,
+      "elevation": 284,
+      "runways": ["05", "23"]
+    },
     { "icao": "ENML", "name": "Molde Aro", "lat": 62.7447, "lon": 7.2628, "elevation": 10, "runways": ["07", "25"] },
-    { "icao": "ENTC", "name": "Tromso Langnes", "lat": 69.6814, "lon": 18.9189, "elevation": 32, "runways": ["18", "36"] },
-    { "icao": "ENTO", "name": "Sandefjord Torp", "lat": 59.1867, "lon": 10.2586, "elevation": 286, "runways": ["18", "36"] },
-    { "icao": "ENZV", "name": "Stavanger Sola", "lat": 58.8767, "lon": 5.6378, "elevation": 30, "runways": ["18", "36", "11", "29"] },
-    { "icao": "KJFK", "name": "John F Kennedy Intl", "lat": 40.6398, "lon": -73.7789, "elevation": 13, "runways": ["04L", "04R", "13L", "13R", "22L", "22R", "31L", "31R"] },
-    { "icao": "KLAX", "name": "Los Angeles Intl", "lat": 33.9425, "lon": -118.408, "elevation": 125, "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"] },
-    { "icao": "KDCA", "name": "Ronald Reagan Washington Natl", "lat": 38.8522, "lon": -77.0378, "elevation": 15, "runways": ["01", "19", "04", "22", "15", "33"] }
+    {
+      "icao": "ENTC",
+      "name": "Tromso Langnes",
+      "lat": 69.6814,
+      "lon": 18.9189,
+      "elevation": 32,
+      "runways": ["18", "36"]
+    },
+    {
+      "icao": "ENTO",
+      "name": "Sandefjord Torp",
+      "lat": 59.1867,
+      "lon": 10.2586,
+      "elevation": 286,
+      "runways": ["18", "36"]
+    },
+    {
+      "icao": "ENZV",
+      "name": "Stavanger Sola",
+      "lat": 58.8767,
+      "lon": 5.6378,
+      "elevation": 30,
+      "runways": ["18", "36", "11", "29"]
+    },
+    {
+      "icao": "KJFK",
+      "name": "John F Kennedy Intl",
+      "lat": 40.6398,
+      "lon": -73.7789,
+      "elevation": 13,
+      "runways": ["04L", "04R", "13L", "13R", "22L", "22R", "31L", "31R"]
+    },
+    {
+      "icao": "KLAX",
+      "name": "Los Angeles Intl",
+      "lat": 33.9425,
+      "lon": -118.408,
+      "elevation": 125,
+      "runways": ["06L", "06R", "07L", "07R", "24L", "24R", "25L", "25R"]
+    },
+    {
+      "icao": "KDCA",
+      "name": "Ronald Reagan Washington Natl",
+      "lat": 38.8522,
+      "lon": -77.0378,
+      "elevation": 15,
+      "runways": ["01", "19", "04", "22", "15", "33"]
+    }
   ],
   "runways": [
-    { "id": "ENGM-01L", "airport_icao": "ENGM", "ident": "01L", "length": 11811, "width": 148, "heading": 13, "lat": 60.1772, "lon": 11.0858, "ils_freq": 110.3 },
-    { "id": "ENGM-01R", "airport_icao": "ENGM", "ident": "01R", "length": 11811, "width": 148, "heading": 13, "lat": 60.1802, "lon": 11.1102, "ils_freq": 110.3 },
-    { "id": "ENBR-17", "airport_icao": "ENBR", "ident": "17", "length": 9810, "width": 148, "heading": 171, "lat": 60.3012, "lon": 5.2152 }
+    {
+      "id": "ENGM-01L",
+      "airport_icao": "ENGM",
+      "ident": "01L",
+      "length": 11811,
+      "width": 148,
+      "heading": 13,
+      "lat": 60.1772,
+      "lon": 11.0858,
+      "ils_freq": 110.3
+    },
+    {
+      "id": "ENGM-01R",
+      "airport_icao": "ENGM",
+      "ident": "01R",
+      "length": 11811,
+      "width": 148,
+      "heading": 13,
+      "lat": 60.1802,
+      "lon": 11.1102,
+      "ils_freq": 110.3
+    },
+    {
+      "id": "ENBR-17",
+      "airport_icao": "ENBR",
+      "ident": "17",
+      "length": 9810,
+      "width": 148,
+      "heading": 171,
+      "lat": 60.3012,
+      "lon": 5.2152
+    }
   ],
   "waypoints": [
     { "id": "LUNIP-WP", "ident": "LUNIP", "lat": 60.1, "lon": 10.5, "type": "WP", "country_code": "EN" },

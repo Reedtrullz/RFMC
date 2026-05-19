@@ -9,7 +9,7 @@ interface UseWebSocketOptions {
 }
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  const fmcStatus = useConnectionStore(s => s.connectionStatus);
+  const fmcStatus = useConnectionStore((s) => s.connectionStatus);
   const [status, setStatus] = useState(fmcStatus);
 
   useEffect(() => {

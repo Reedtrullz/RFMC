@@ -17,20 +17,20 @@ const testScenario: TrainingScenario = {
       instruction: 'Press A',
       objective: 'Objective A',
       expectedAction: { type: 'press_key', key: 'A' },
-      validation: 'true'
+      validation: 'true',
     },
     {
       id: 'step-2',
       instruction: 'Press B',
       objective: 'Objective B',
       expectedAction: { type: 'press_key', key: 'B' },
-      validation: 'true'
-    }
+      validation: 'true',
+    },
   ],
   passCriteria: {
     minScore: 80,
-    maxMistakes: 1
-  }
+    maxMistakes: 1,
+  },
 };
 
 describe('TrainingScenarioEngine', () => {
@@ -73,7 +73,7 @@ describe('TrainingScenarioEngine', () => {
     engine.processAction({ type: 'press_key', key: 'C' }, {}); // Mistake
     engine.processAction({ type: 'press_key', key: 'A' }, {});
     engine.processAction({ type: 'press_key', key: 'B' }, {});
-    
+
     const summary = engine.getSummary();
     expect(summary.score.total).toBeLessThan(100);
     expect(summary.mistakes.length).toBe(1);

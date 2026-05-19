@@ -15,33 +15,39 @@ import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 
 export function AirbusMCDU() {
   const isKiosk = useKioskMode();
-  const pressKey = useFMCStore(s => s.pressKey);
-  const pressLSK = useFMCStore(s => s.pressLSK);
-  const annunciators = useAircraftStore(s => s.airbusAnnunciators);
-  const execLit = useFMCStore(s => s.execLit);
-  const connectionMode = useConnectionStore(s => s.connectionMode);
-  const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
-  const brightness = useCockpitLayoutStore(s => s.brightness);
+  const pressKey = useFMCStore((s) => s.pressKey);
+  const pressLSK = useFMCStore((s) => s.pressLSK);
+  const annunciators = useAircraftStore((s) => s.airbusAnnunciators);
+  const execLit = useFMCStore((s) => s.execLit);
+  const connectionMode = useConnectionStore((s) => s.connectionMode);
+  const connectionStatus = useConnectionStore((s) => s.connectionStatus);
+  const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
+  const brightness = useCockpitLayoutStore((s) => s.brightness);
   const { send } = useWebSocket();
 
-  const onPressKey = useCallback((key: string) => {
-    if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
-      send({ type: 'fmc.input', key: key as CDUKey });
-      return;
-    }
-    pressKey(key as CDUKey);
-  }, [pressKey, connectionMode, connectionStatus, send]);
+  const onPressKey = useCallback(
+    (key: string) => {
+      if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
+        send({ type: 'fmc.input', key: key as CDUKey });
+        return;
+      }
+      pressKey(key as CDUKey);
+    },
+    [pressKey, connectionMode, connectionStatus, send],
+  );
 
-  const onPressLSK = useCallback((side: 'L' | 'R', index: number) => {
-    if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
-      send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
-      return;
-    }
-    pressLSK(side, index);
-  }, [pressLSK, connectionMode, connectionStatus, send]);
+  const onPressLSK = useCallback(
+    (side: 'L' | 'R', index: number) => {
+      if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
+        send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
+        return;
+      }
+      pressLSK(side, index);
+    },
+    [pressLSK, connectionMode, connectionStatus, send],
+  );
 
-  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
+  const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
   const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {
     const lskId = `${side}${index}`;
     const action = displayData.lskActions[lskId];
@@ -56,7 +62,9 @@ export function AirbusMCDU() {
   const isHighlighted = (id: string) => tutorialHighlight === id;
 
   return (
-    <div className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}>
+    <div
+      className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}
+    >
       <AirbusMCDUShell annunciators={annunciators}>
         <AirbusDisplayBay
           brightness={brightness}

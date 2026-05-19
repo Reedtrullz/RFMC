@@ -115,10 +115,18 @@ describe('buildTrainingProgress', () => {
   });
 
   it('maps Boeing selected autoflight values and mode engagement into automation progress', () => {
-    const state = withTakeoffData(withPerformance(withRoute(withInitializedPosition(createBaseState({
-      aircraft: 'BOEING_737',
-      cockpitLayoutMode: 'automation',
-    })))));
+    const state = withTakeoffData(
+      withPerformance(
+        withRoute(
+          withInitializedPosition(
+            createBaseState({
+              aircraft: 'BOEING_737',
+              cockpitLayoutMode: 'automation',
+            }),
+          ),
+        ),
+      ),
+    );
     const autopilot = {
       ...state.autopilot,
       boeing: {
@@ -143,38 +151,42 @@ describe('buildTrainingProgress', () => {
   });
 
   it('returns to performance review when shared prediction reports insufficient fuel', () => {
-    const state = withRoute(withInitializedPosition(createBaseState({
-      aircraft: 'BOEING_737',
-      cockpitLayoutMode: 'fmc-focus',
-      performance: {
-        ...createBaseState().performance,
-        crzAlt: 35000,
-        costIndex: 25,
-        zfw: 130000,
-        fuel: 5000,
-        reserve: 4500,
-        grossWeight: 135000,
-      },
-      aircraftState: {
-        ...createBaseState().aircraftState,
-        lat: 60.1939,
-        lon: 11.1004,
-        altitude: 0,
-        altitudeFt: 0,
-        heading: 270,
-        headingDeg: 270,
-        track: 270,
-        trackDeg: 270,
-        ias: 0,
-        indicatedAirspeedKt: 0,
-        tas: 0,
-        gs: 0,
-        verticalSpeedFpm: 0,
-        vs: 0,
-        fuelTotal: 5000,
-        gw: 135000,
-      },
-    })));
+    const state = withRoute(
+      withInitializedPosition(
+        createBaseState({
+          aircraft: 'BOEING_737',
+          cockpitLayoutMode: 'fmc-focus',
+          performance: {
+            ...createBaseState().performance,
+            crzAlt: 35000,
+            costIndex: 25,
+            zfw: 130000,
+            fuel: 5000,
+            reserve: 4500,
+            grossWeight: 135000,
+          },
+          aircraftState: {
+            ...createBaseState().aircraftState,
+            lat: 60.1939,
+            lon: 11.1004,
+            altitude: 0,
+            altitudeFt: 0,
+            heading: 270,
+            headingDeg: 270,
+            track: 270,
+            trackDeg: 270,
+            ias: 0,
+            indicatedAirspeedKt: 0,
+            tas: 0,
+            gs: 0,
+            verticalSpeedFpm: 0,
+            vs: 0,
+            fuelTotal: 5000,
+            gw: 135000,
+          },
+        }),
+      ),
+    );
 
     const progress = buildTrainingProgress({ fmcState: state });
 
@@ -185,10 +197,12 @@ describe('buildTrainingProgress', () => {
   });
 
   it('uses Airbus managed and selected terminology without Boeing leakage', () => {
-    const state = withInitializedPosition(createBaseState({
-      aircraft: 'AIRBUS_A320',
-      cockpitLayoutMode: 'fmc-focus',
-    }));
+    const state = withInitializedPosition(
+      createBaseState({
+        aircraft: 'AIRBUS_A320',
+        cockpitLayoutMode: 'fmc-focus',
+      }),
+    );
 
     const progress = buildTrainingProgress({ fmcState: state });
 
@@ -202,10 +216,14 @@ describe('buildTrainingProgress', () => {
 
   it('detects complete Airbus approach setup', () => {
     const state = {
-      ...withRoute(withInitializedPosition(createBaseState({
-        aircraft: 'AIRBUS_A320',
-        cockpitLayoutMode: 'approach',
-      }))),
+      ...withRoute(
+        withInitializedPosition(
+          createBaseState({
+            aircraft: 'AIRBUS_A320',
+            cockpitLayoutMode: 'approach',
+          }),
+        ),
+      ),
       route: {
         ...withRoute(createBaseState()).route,
         approach: 'ILS27L',

@@ -19,12 +19,7 @@ function makeWaypoint(ident: string): FlightPlanWaypoint {
 }
 
 function sampleRoute(): RouteEntry[] {
-  return [
-    makeWaypoint('KJFK'),
-    makeWaypoint('RBV'),
-    makeWaypoint('LENDY'),
-    makeWaypoint('KDCA'),
-  ];
+  return [makeWaypoint('KJFK'), makeWaypoint('RBV'), makeWaypoint('LENDY'), makeWaypoint('KDCA')];
 }
 
 describe('RouteDiscontinuity', () => {
@@ -253,18 +248,14 @@ describe('RouteDiscontinuity', () => {
       const route = insertDiscontinuity(sampleRoute(), 'manual', 1);
       const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
 
-      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow(
-        'No cleared discontinuity found in route',
-      );
+      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow('No cleared discontinuity found in route');
     });
 
     it('throws when no discontinuity exists in the route', () => {
       const route = sampleRoute();
       const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
 
-      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow(
-        'No cleared discontinuity found in route',
-      );
+      expect(() => resolveDiscontinuity(route, connectingLeg)).toThrow('No cleared discontinuity found in route');
     });
 
     it('replaces the first cleared discontinuity when multiple exist', () => {
@@ -333,9 +324,7 @@ describe('RouteDiscontinuity', () => {
     it('throws for an empty route', () => {
       const connectingLeg: Omit<FlightPlanWaypoint, 'discontinuity'> = { ident: 'FIX' };
 
-      expect(() => resolveDiscontinuity([], connectingLeg)).toThrow(
-        'No cleared discontinuity found in route',
-      );
+      expect(() => resolveDiscontinuity([], connectingLeg)).toThrow('No cleared discontinuity found in route');
     });
 
     it('completes the full insert → clear → resolve lifecycle', () => {

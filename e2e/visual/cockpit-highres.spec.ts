@@ -31,7 +31,10 @@ test.describe('High-resolution cockpit visual baselines', () => {
   test.setTimeout(90_000);
 
   test.beforeEach(async ({}, testInfo) => {
-    test.skip(!HIGH_RES_PROJECTS.has(testInfo.project.name), 'High-resolution baselines only run in explicit high-res projects.');
+    test.skip(
+      !HIGH_RES_PROJECTS.has(testInfo.project.name),
+      'High-resolution baselines only run in explicit high-res projects.',
+    );
   });
 
   for (const aircraft of ['boeing', 'airbus'] as CockpitAircraft[]) {

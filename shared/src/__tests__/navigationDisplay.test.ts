@@ -11,8 +11,15 @@ const baseState = createBaseState({
     centered: false,
     side: 'L',
     overlays: {
-      wpt: true, arpt: true, sta: true, data: false, 
-      pos: false, terr: false, wxr: false, tfc: true, cstr: false
+      wpt: true,
+      arpt: true,
+      sta: true,
+      data: false,
+      pos: false,
+      terr: false,
+      wxr: false,
+      tfc: true,
+      cstr: false,
     },
   },
   efisR: {
@@ -21,8 +28,15 @@ const baseState = createBaseState({
     centered: false,
     side: 'R',
     overlays: {
-      wpt: true, arpt: true, sta: true, data: false, 
-      pos: false, terr: false, wxr: false, tfc: true, cstr: false
+      wpt: true,
+      arpt: true,
+      sta: true,
+      data: false,
+      pos: false,
+      terr: false,
+      wxr: false,
+      tfc: true,
+      cstr: false,
     },
   },
   aircraftState: {
@@ -62,7 +76,7 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.activeRoutePoints.map(point => point.label)).toEqual(['KJFK', 'RBV', 'DIXIE', 'KDCA']);
+    expect(model.activeRoutePoints.map((point) => point.label)).toEqual(['KJFK', 'RBV', 'DIXIE', 'KDCA']);
     expect(model.activeRouteSegments).toHaveLength(4); // 3 route segments + 1 aircraft-to-active segment
     expect(model.activeRoutePoints[1].active).toBe(true);
   });
@@ -83,10 +97,10 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.activeRoutePoints.some(point => point.discontinuity)).toBe(true);
+    expect(model.activeRoutePoints.some((point) => point.discontinuity)).toBe(true);
     // KJFK -> RBV is drawn, but RBV -> DISCO and DISCO -> KDCA are omitted
-    expect(model.activeRouteSegments.some(s => s.from.label === 'RBV' && s.to.label === 'DISCO')).toBe(false);
-    expect(model.activeRouteSegments.some(s => s.from.label === 'DISCO' && s.to.label === 'KDCA')).toBe(false);
+    expect(model.activeRouteSegments.some((s) => s.from.label === 'RBV' && s.to.label === 'DISCO')).toBe(false);
+    expect(model.activeRouteSegments.some((s) => s.from.label === 'DISCO' && s.to.label === 'KDCA')).toBe(false);
   });
 
   it('creates hold and fix overlays from FMC state', () => {
@@ -154,11 +168,11 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.activeRoutePoints.find(point => point.label === 'RBV')).toMatchObject({
+    expect(model.activeRoutePoints.find((point) => point.label === 'RBV')).toMatchObject({
       speedLabel: '250',
       altitudeLabel: '10000A',
     });
-    expect(model.activeRoutePoints.find(point => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
+    expect(model.activeRoutePoints.find((point) => point.label === 'DIXIE')?.altitudeLabel).toBe('FL180');
   });
 
   it('uses direct-to route state as the active ND target', () => {
@@ -179,9 +193,9 @@ describe('Navigation Display model', () => {
     });
 
     expect(model.procedureLabel).toContain('DIR DIXIE');
-    expect(model.activeRoutePoints.find(point => point.label === 'RBV')?.active).toBe(false);
-    expect(model.activeRoutePoints.find(point => point.label === 'DIXIE')?.active).toBe(true);
-    expect(model.activeRouteSegments.find(segment => segment.to.label === 'DIXIE')?.active).toBe(true);
+    expect(model.activeRoutePoints.find((point) => point.label === 'RBV')?.active).toBe(false);
+    expect(model.activeRoutePoints.find((point) => point.label === 'DIXIE')?.active).toBe(true);
+    expect(model.activeRouteSegments.find((segment) => segment.to.label === 'DIXIE')?.active).toBe(true);
   });
 
   it('does not show constraints for discontinuity markers', () => {
@@ -203,7 +217,7 @@ describe('Navigation Display model', () => {
       },
     });
 
-    expect(model.activeRoutePoints.find(point => point.discontinuity)).toMatchObject({
+    expect(model.activeRoutePoints.find((point) => point.discontinuity)).toMatchObject({
       speedLabel: null,
       altitudeLabel: null,
     });
@@ -222,9 +236,29 @@ describe('Navigation Display model', () => {
     const stateWithGeo = {
       ...baseState,
       efisL: { ...baseState.efisL, range: 40 }, // 40nm range so WPT2 at 60nm is clipped
-      aircraftState: { lat: 0, lon: 0, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0, headingDeg: 0, trackDeg: 0, altitudeFt: 0, indicatedAirspeedKt: 0, verticalSpeedFpm: 0 },
+      aircraftState: {
+        lat: 0,
+        lon: 0,
+        ias: 0,
+        tas: 0,
+        vs: 0,
+        gs: 0,
+        fuelTotal: 0,
+        gw: 0,
+        altitude: 0,
+        heading: 0,
+        track: 0,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 0,
+        indicatedAirspeedKt: 0,
+        verticalSpeedFpm: 0,
+      },
       flightPlan: {
-        origin: '', destination: '', flightNumber: '', route: '',
+        origin: '',
+        destination: '',
+        flightNumber: '',
+        route: '',
         waypoints: [
           { ident: 'WPT1', lat: 0.1, lon: 0, discontinuity: false }, // ~6nm (visible)
           { ident: 'WPT2', lat: 1.0, lon: 0, discontinuity: false }, // ~60nm (clipped, range is 40)
@@ -232,17 +266,37 @@ describe('Navigation Display model', () => {
       },
     };
     const model = buildNavigationDisplayModel(stateWithGeo);
-    expect(model.activeRoutePoints.some(p => p.label === 'WPT1')).toBe(true);
-    expect(model.activeRoutePoints.some(p => p.label === 'WPT2')).toBe(false);
+    expect(model.activeRoutePoints.some((p) => p.label === 'WPT1')).toBe(true);
+    expect(model.activeRoutePoints.some((p) => p.label === 'WPT2')).toBe(false);
     expect(model.activeRouteSegments.length).toBe(1); // One segment from aircraft to WPT1
   });
 
   it('includes relativeBearingDeg on geo-projected points', () => {
     const stateWithGeo = {
       ...baseState,
-      aircraftState: { lat: 0, lon: 0, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 90, track: 0, headingDeg: 90, trackDeg: 0, altitudeFt: 0, indicatedAirspeedKt: 0, verticalSpeedFpm: 0 },
+      aircraftState: {
+        lat: 0,
+        lon: 0,
+        ias: 0,
+        tas: 0,
+        vs: 0,
+        gs: 0,
+        fuelTotal: 0,
+        gw: 0,
+        altitude: 0,
+        heading: 90,
+        track: 0,
+        headingDeg: 90,
+        trackDeg: 0,
+        altitudeFt: 0,
+        indicatedAirspeedKt: 0,
+        verticalSpeedFpm: 0,
+      },
       flightPlan: {
-        origin: '', destination: '', flightNumber: '', route: '',
+        origin: '',
+        destination: '',
+        flightNumber: '',
+        route: '',
         waypoints: [{ ident: 'WPT1', lat: 0.1, lon: 0, discontinuity: false }], // North
       },
     };
@@ -255,10 +309,30 @@ describe('Navigation Display model', () => {
   it('uses direct-to target for active waypoint block', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
-      aircraftState: { lat: 0, lon: 0, ias: 200, tas: 200, vs: 0, gs: 200, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0, headingDeg: 0, trackDeg: 0, altitudeFt: 0, indicatedAirspeedKt: 200, verticalSpeedFpm: 0 },
+      aircraftState: {
+        lat: 0,
+        lon: 0,
+        ias: 200,
+        tas: 200,
+        vs: 0,
+        gs: 200,
+        fuelTotal: 0,
+        gw: 0,
+        altitude: 0,
+        heading: 0,
+        track: 0,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 0,
+        indicatedAirspeedKt: 200,
+        verticalSpeedFpm: 0,
+      },
       route: { ...baseState.route, directTo: 'DIXIE' },
       flightPlan: {
-        origin: '', destination: '', flightNumber: '', route: '',
+        origin: '',
+        destination: '',
+        flightNumber: '',
+        route: '',
         waypoints: [
           { ident: 'RBV', lat: 0.1, lon: 0, discontinuity: false },
           { ident: 'DIXIE', lat: 0.2, lon: 0, discontinuity: false },
@@ -272,7 +346,24 @@ describe('Navigation Display model', () => {
     const model = buildNavigationDisplayModel({
       ...baseState,
       // Aircraft positioned near KJFK so both airports are within 160nm range
-      aircraftState: { lat: 39.5, lon: -75.5, ias: 0, tas: 0, vs: 0, gs: 0, fuelTotal: 0, gw: 0, altitude: 0, heading: 0, track: 0, headingDeg: 0, trackDeg: 0, altitudeFt: 0, indicatedAirspeedKt: 0, verticalSpeedFpm: 0 },
+      aircraftState: {
+        lat: 39.5,
+        lon: -75.5,
+        ias: 0,
+        tas: 0,
+        vs: 0,
+        gs: 0,
+        fuelTotal: 0,
+        gw: 0,
+        altitude: 0,
+        heading: 0,
+        track: 0,
+        headingDeg: 0,
+        trackDeg: 0,
+        altitudeFt: 0,
+        indicatedAirspeedKt: 0,
+        verticalSpeedFpm: 0,
+      },
       flightPlan: { ...baseState.flightPlan, origin: 'KJFK', destination: 'KDCA', waypoints: [] },
     });
     expect(model.activeRoutePoints[0].label).toBe('KJFK');
@@ -282,27 +373,48 @@ describe('Navigation Display model', () => {
   });
 
   it('sets centered correctly for Boeing modes', () => {
-    const modelMapUncentered = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'MAP', centered: false });
+    const modelMapUncentered = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'BOEING_737' },
+      { ...baseState.efisL, mode: 'MAP', centered: false },
+    );
     expect(modelMapUncentered.centered).toBe(false);
 
-    const modelMapCentered = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'MAP', centered: true });
+    const modelMapCentered = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'BOEING_737' },
+      { ...baseState.efisL, mode: 'MAP', centered: true },
+    );
     expect(modelMapCentered.centered).toBe(true);
 
-    const modelPln = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'PLN', centered: false });
+    const modelPln = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'BOEING_737' },
+      { ...baseState.efisL, mode: 'PLN', centered: false },
+    );
     expect(modelPln.centered).toBe(true);
 
-    const modelApp = buildNavigationDisplayModel({ ...baseState, aircraft: 'BOEING_737' }, { ...baseState.efisL, mode: 'APP', centered: false });
+    const modelApp = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'BOEING_737' },
+      { ...baseState.efisL, mode: 'APP', centered: false },
+    );
     expect(modelApp.centered).toBe(true);
   });
 
   it('sets centered correctly for Airbus modes', () => {
-    const modelArc = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'ARC', centered: true });
+    const modelArc = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'AIRBUS_A320' },
+      { ...baseState.efisL, mode: 'ARC', centered: true },
+    );
     expect(modelArc.centered).toBe(false);
 
-    const modelPlan = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'PLAN', centered: false });
+    const modelPlan = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'AIRBUS_A320' },
+      { ...baseState.efisL, mode: 'PLAN', centered: false },
+    );
     expect(modelPlan.centered).toBe(true);
 
-    const modelRoseNav = buildNavigationDisplayModel({ ...baseState, aircraft: 'AIRBUS_A320' }, { ...baseState.efisL, mode: 'ROSE_NAV', centered: false });
+    const modelRoseNav = buildNavigationDisplayModel(
+      { ...baseState, aircraft: 'AIRBUS_A320' },
+      { ...baseState.efisL, mode: 'ROSE_NAV', centered: false },
+    );
     expect(modelRoseNav.centered).toBe(true);
   });
 
@@ -311,29 +423,33 @@ describe('Navigation Display model', () => {
       ...baseState,
       isModified: true,
       flightPlan: {
-        origin: 'KJFK', destination: 'KDCA', flightNumber: '', route: '',
-        waypoints: [{ ident: 'WPT1', discontinuity: false }]
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
+        waypoints: [{ ident: 'WPT1', discontinuity: false }],
       },
       route: { ...baseState.route },
       pendingFlightPlan: {
-        origin: 'KJFK', destination: 'KDCA', flightNumber: '', route: '',
+        origin: 'KJFK',
+        destination: 'KDCA',
+        flightNumber: '',
+        route: '',
         waypoints: [
           { ident: 'WPT1', discontinuity: false },
-          { ident: 'WPT2', discontinuity: false } // Added in pending
-        ]
+          { ident: 'WPT2', discontinuity: false }, // Added in pending
+        ],
       },
-      pendingRoute: { ...baseState.route }
+      pendingRoute: { ...baseState.route },
     });
 
     expect(model.activeRoutePoints.length).toBeGreaterThan(0);
     expect(model.pendingRoutePoints.length).toBeGreaterThan(0);
-    
-    expect(model.activeRoutePoints.some(p => p.label === 'WPT2')).toBe(false);
-    expect(model.pendingRoutePoints.some(p => p.label === 'WPT2')).toBe(true);
-    
+
+    expect(model.activeRoutePoints.some((p) => p.label === 'WPT2')).toBe(false);
+    expect(model.pendingRoutePoints.some((p) => p.label === 'WPT2')).toBe(true);
+
     // Pending segments should have the modified flag
-    expect(model.pendingRouteSegments.every(s => s.modified)).toBe(true);
+    expect(model.pendingRouteSegments.every((s) => s.modified)).toBe(true);
   });
 });
-
-

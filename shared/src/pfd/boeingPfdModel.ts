@@ -38,9 +38,16 @@ export function buildBoeingFMAState(autopilot: AutopilotState, fmc: FMCState): B
     autothrottleMode,
     rollMode,
     pitchMode,
-    armedRollMode: truth.lateralArmed === 'VOR_LOC' ? 'VOR/LOC' : (truth.lateralArmed === 'LOC' ? 'VOR/LOC' : (truth.lateralArmed === 'APP' ? 'APP' : '')),
-    armedPitchMode: truth.verticalArmed === 'G_S' ? 'G/S' : (truth.verticalArmed === 'VNAV_PTH' ? 'VNAV' : ''),
-    apStatus
+    armedRollMode:
+      truth.lateralArmed === 'VOR_LOC'
+        ? 'VOR/LOC'
+        : truth.lateralArmed === 'LOC'
+          ? 'VOR/LOC'
+          : truth.lateralArmed === 'APP'
+            ? 'APP'
+            : '',
+    armedPitchMode: truth.verticalArmed === 'G_S' ? 'G/S' : truth.verticalArmed === 'VNAV_PTH' ? 'VNAV' : '',
+    apStatus,
   };
 }
 
@@ -58,7 +65,7 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
     targetAltitude: state.autopilot.boeing.altitude,
     targetHeading: state.autopilot.boeing.heading,
     targetVerticalSpeed: state.autopilot.boeing.verticalSpeed,
-    radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? (aircraft?.altitudeFt || 0) : null,
+    radioAltitude: (aircraft?.altitudeFt || 0) < 2500 ? aircraft?.altitudeFt || 0 : null,
     failureFlags: {
       attitude: state.position.irsState === 'OFF',
       airData: false,
@@ -72,9 +79,9 @@ export function buildBoeingPFDState(state: FMCState): PFDState {
     flightDirector: {
       visible: state.autopilot.boeing.fdLeft || state.autopilot.boeing.fdRight,
       pitch: 0,
-      roll: 0
+      roll: 0,
     },
-    alertText: state.gpwsAlert !== 'NONE' ? state.gpwsAlert.replace('_', ' ') : (state.tcasAlert ? 'TRAFFIC' : undefined),
-    alertLevel: (state.gpwsAlert === 'PULL_UP' || state.gpwsAlert === 'TERRAIN') ? 'WARNING' : 'CAUTION'
+    alertText: state.gpwsAlert !== 'NONE' ? state.gpwsAlert.replace('_', ' ') : state.tcasAlert ? 'TRAFFIC' : undefined,
+    alertLevel: state.gpwsAlert === 'PULL_UP' || state.gpwsAlert === 'TERRAIN' ? 'WARNING' : 'CAUTION',
   };
 }

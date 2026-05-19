@@ -11,10 +11,10 @@ const PRESETS: Record<BrightnessPreset, { label: string; value: number }> = {
 };
 
 export function BrightnessPanel() {
-  const brightness = useCockpitLayoutStore(s => s.brightness);
-  const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
-  const highContrast = useCockpitLayoutStore(s => s.highContrast);
-  const setHighContrast = useCockpitLayoutStore(s => s.setHighContrast);
+  const brightness = useCockpitLayoutStore((s) => s.brightness);
+  const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
+  const highContrast = useCockpitLayoutStore((s) => s.highContrast);
+  const setHighContrast = useCockpitLayoutStore((s) => s.setHighContrast);
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-cdu-bezel/40 px-3 py-2 backdrop-blur-md">
@@ -24,15 +24,17 @@ export function BrightnessPanel() {
       </div>
 
       <div className="grid grid-cols-4 gap-1">
-        {(Object.entries(PRESETS) as [BrightnessPreset, typeof PRESETS['DAY']][]).map(([id, data]) => (
+        {(Object.entries(PRESETS) as [BrightnessPreset, (typeof PRESETS)['DAY']][]).map(([id, data]) => (
           <button
             key={id}
             onClick={() => setBrightness(data.value)}
             className={`
               min-h-8 px-2 rounded border transition-all text-[9px] font-cdu uppercase
-              ${brightness === data.value 
-                ? 'bg-cdu-cyan/20 border-cdu-cyan text-cdu-cyan shadow-lg shadow-cdu-cyan/20' 
-                : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'}
+              ${
+                brightness === data.value
+                  ? 'bg-cdu-cyan/20 border-cdu-cyan text-cdu-cyan shadow-lg shadow-cdu-cyan/20'
+                  : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
+              }
             `}
           >
             {data.label}

@@ -62,7 +62,7 @@ export function PushPullRotary({ value, onRotate, onPush, onPull, label, highlig
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div 
+      <div
         data-testid={label ? `push-pull-${label.toLowerCase().replace(/[\s\/]/g, '-')}` : undefined}
         className={`relative cursor-pointer rounded-full transition-transform duration-150 ${isPressing ? 'scale-90' : ''} ${highlighted ? 'ring-2 ring-cdu-amber shadow-[0_0_18px_rgba(255,184,77,0.55)]' : ''}`}
         onMouseDown={handleMouseDown}
@@ -73,8 +73,12 @@ export function PushPullRotary({ value, onRotate, onPush, onPull, label, highlig
         <div className="absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.07),rgba(0,0,0,0.72)_70%)] shadow-[inset_0_6px_14px_rgba(0,0,0,0.85)]" />
         <div className="absolute -left-6 top-1/2 h-0.5 w-4 -translate-y-1/2 bg-white/24" />
         <div className="absolute -right-6 top-1/2 h-0.5 w-4 -translate-y-1/2 bg-white/24" />
-        <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-widest text-white/35">PUSH</div>
-        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-widest text-white/35">PULL</div>
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-widest text-white/35">
+          PUSH
+        </div>
+        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-widest text-white/35">
+          PULL
+        </div>
         <RotaryKnob value={value} onRotate={onRotate} highlighted={highlighted} />
       </div>
     </div>

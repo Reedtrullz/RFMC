@@ -26,7 +26,7 @@ export function describeModificationState(state: RouteModificationState): string
 
 export function applyPendingRouteChanges(state: FMCState): Partial<FMCState> {
   const updates: Partial<FMCState> = {};
-  
+
   if (state.pendingRoute) {
     updates.route = { ...state.pendingRoute };
     updates.pendingRoute = null;
@@ -35,15 +35,15 @@ export function applyPendingRouteChanges(state: FMCState): Partial<FMCState> {
     updates.flightPlan = { ...state.pendingFlightPlan };
     updates.pendingFlightPlan = null;
   }
-  
+
   if (state.holdPending?.fix) {
     updates.hold = state.holdPending as HoldEntry;
     updates.holdPending = null;
   }
-  
+
   updates.isModified = false;
   updates.execLit = false;
-  
+
   return updates;
 }
 

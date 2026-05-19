@@ -17,11 +17,7 @@ import { handlePositionAction } from './positionActions';
 import { handleWindAction } from './windActions';
 import { handleAtsuAction } from './atsuActions';
 
-export type FmcSideEffect =
-  | 'expand_active_route'
-  | 'step_plan'
-  | 'print_message'
-  | null;
+export type FmcSideEffect = 'expand_active_route' | 'step_plan' | 'print_message' | null;
 
 export interface DispatchLskActionInput {
   state: FMCState;

@@ -4,9 +4,11 @@
 **Area:** src/
 
 ## OVERVIEW
+
 React frontend workspace (@virtual-cdu/frontend). Contains CDU, ND, instruments, cockpit mode, hooks, store, and utils.
 
 ## STRUCTURE
+
 ```
 src/
 ├── components/          # UI components (CDU, ND, instruments, cockpit)
@@ -22,19 +24,21 @@ src/
 ```
 
 ## WHERE TO LOOK
-| Task | Location |
-|------|----------|
-| CDU display/input | `src/components/CDU/` |
-| Navigation Display | `src/components/ND/` |
-| Instrument panels | `src/components/instruments/` |
-| Full cockpit view | `src/components/CockpitMode/` |
-| Tutorial overlay | `src/components/Training/` |
-| WebSocket/audio/hooks | `src/hooks/` |
-| FMC state management | `src/store/` |
-| Test setup/mocks | `src/test/` |
-| Shared utilities | `src/utils/` |
+
+| Task                  | Location                      |
+| --------------------- | ----------------------------- |
+| CDU display/input     | `src/components/CDU/`         |
+| Navigation Display    | `src/components/ND/`          |
+| Instrument panels     | `src/components/instruments/` |
+| Full cockpit view     | `src/components/CockpitMode/` |
+| Tutorial overlay      | `src/components/Training/`    |
+| WebSocket/audio/hooks | `src/hooks/`                  |
+| FMC state management  | `src/store/`                  |
+| Test setup/mocks      | `src/test/`                   |
+| Shared utilities      | `src/utils/`                  |
 
 ## CONVENTIONS
+
 - **React 18**: Function components with hooks
 - **TypeScript strict**: All workspaces use `strict: true`
 - **Zustand**: State management only — no Redux
@@ -45,6 +49,7 @@ src/
 - **File organization**: Group by feature (CDU, ND, instruments, etc.)
 
 ## ANTI-PATTERNS
+
 - **No router**: Single-page app — no React Router
 - **No authentication**: Standalone/offline mode only
 - **No direct DOM manipulation**: Prefer React refs and state

@@ -100,11 +100,7 @@ export function handleSetReserve(state: FMCState, scratchpad: string): FmcAction
   };
 }
 
-export function handlePerformanceAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handlePerformanceAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_crz_alt':
       return handleSetCrzAlt(state, scratchpad);

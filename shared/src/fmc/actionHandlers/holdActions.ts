@@ -2,11 +2,7 @@ import type { FMCState } from '../../types/fmc';
 import { isValidWaypoint } from '../validation';
 import type { FmcActionResult } from './actionResult';
 
-export function handleHoldAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleHoldAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_hold_fix':
       return handleSetHoldFix(state, scratchpad);
@@ -35,7 +31,7 @@ function handleSetHoldFix(state: FMCState, scratchpad: string): FmcActionResult 
     };
   }
 
-  const inRoute = state.flightPlan.waypoints.some(w => w.ident === ident);
+  const inRoute = state.flightPlan.waypoints.some((w) => w.ident === ident);
   if (!inRoute) {
     return {
       handled: true,

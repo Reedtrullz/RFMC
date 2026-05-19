@@ -26,60 +26,54 @@ describe('validateDisplayGrid', () => {
     const badGrid: GridDisplayData = { rows: 10, columns: 24, segments: [], scratchpad: [] };
     const result = validateDisplayGrid(badGrid);
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'INVALID_ROW_COUNT')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'INVALID_ROW_COUNT')).toBe(true);
   });
 
   it('invalid column count fails', () => {
     const badGrid: GridDisplayData = { rows: 14, columns: 20, segments: [], scratchpad: [] };
     const result = validateDisplayGrid(badGrid);
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'INVALID_COLUMN_COUNT')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'INVALID_COLUMN_COUNT')).toBe(true);
   });
 
   it('row -1 fails', () => {
     const result = validateDisplayGrid(grid([seg(-1, 0, 'X')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_ROW_OUT_OF_BOUNDS')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_ROW_OUT_OF_BOUNDS')).toBe(true);
   });
 
   it('row 14 fails', () => {
     const result = validateDisplayGrid(grid([seg(14, 0, 'X')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_ROW_OUT_OF_BOUNDS')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_ROW_OUT_OF_BOUNDS')).toBe(true);
   });
 
   it('col -1 fails', () => {
     const result = validateDisplayGrid(grid([seg(0, -1, 'X')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_COL_OUT_OF_BOUNDS')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_COL_OUT_OF_BOUNDS')).toBe(true);
   });
 
   it('col 24 fails', () => {
     const result = validateDisplayGrid(grid([seg(0, 24, 'X')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_COL_OUT_OF_BOUNDS')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_COL_OUT_OF_BOUNDS')).toBe(true);
   });
 
   it('segment overflow fails', () => {
     const result = validateDisplayGrid(grid([seg(0, 20, 'HELLO')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_TEXT_OVERFLOW')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_TEXT_OVERFLOW')).toBe(true);
   });
 
   it('overlapping non-space chars fail', () => {
-    const result = validateDisplayGrid(grid([
-      seg(0, 0, 'ABC'),
-      seg(0, 1, 'XYZ'),
-    ]));
+    const result = validateDisplayGrid(grid([seg(0, 0, 'ABC'), seg(0, 1, 'XYZ')]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_CELL_OVERLAP')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_CELL_OVERLAP')).toBe(true);
   });
 
   it('non-overlapping segments pass', () => {
-    const result = validateDisplayGrid(grid([
-      seg(0, 0, 'AAA'),
-      seg(0, 3, 'BBB'),
-    ]));
+    const result = validateDisplayGrid(grid([seg(0, 0, 'AAA'), seg(0, 3, 'BBB')]));
     expect(result.valid).toBe(true);
   });
 
@@ -96,14 +90,14 @@ describe('validateDisplayGrid', () => {
   it('col 0 with 25 chars fails', () => {
     const result = validateDisplayGrid(grid([seg(0, 0, 'X'.repeat(25))]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'SEGMENT_TEXT_OVERFLOW')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'SEGMENT_TEXT_OVERFLOW')).toBe(true);
   });
 
   it('invalid segment text fails', () => {
     const badSeg: any = { row: 0, col: 0, text: null, color: 'white' };
     const result = validateDisplayGrid(grid([badSeg]));
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.code === 'INVALID_SEGMENT_TEXT')).toBe(true);
+    expect(result.issues.some((i) => i.code === 'INVALID_SEGMENT_TEXT')).toBe(true);
   });
 
   it('empty text segment passes', () => {

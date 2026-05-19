@@ -11,7 +11,7 @@ export function PanelTray({ hiddenPanels, onShow }: PanelTrayProps) {
 
   return (
     <div className="panel-tray" aria-label="Hidden panels">
-      {hiddenPanels.map(panelId => (
+      {hiddenPanels.map((panelId) => (
         <button key={panelId} type="button" onClick={() => onShow(panelId)}>
           Show {panelLabels[panelId]}
         </button>

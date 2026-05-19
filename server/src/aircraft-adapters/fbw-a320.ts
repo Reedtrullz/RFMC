@@ -5,13 +5,7 @@
  * Falls back to mock data when MSFS/SimConnect is unavailable.
  */
 
-import {
-  open,
-  Protocol,
-  SimConnectConstants,
-  SimConnectDataType,
-  SimConnectPeriod,
-} from 'node-simconnect';
+import { open, Protocol, SimConnectConstants, SimConnectDataType, SimConnectPeriod } from 'node-simconnect';
 import type { SimConnectConnection } from 'node-simconnect';
 import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './IAircraftAdapter';
 import type { AircraftType, ConnectionStatus } from '@virtual-cdu/shared';
@@ -31,38 +25,69 @@ export class FBWA320Adapter implements IAircraftAdapter {
   private handle: SimConnectConnection | null = null;
 
   private static readonly FBW_KEY_MAP: Record<string, string> = {
-    '1': 'A32NX_MCDU_L_BTN_1', '2': 'A32NX_MCDU_L_BTN_2', '3': 'A32NX_MCDU_L_BTN_3',
-    '4': 'A32NX_MCDU_L_BTN_4', '5': 'A32NX_MCDU_L_BTN_5', '6': 'A32NX_MCDU_L_BTN_6',
-    '7': 'A32NX_MCDU_L_BTN_7', '8': 'A32NX_MCDU_L_BTN_8', '9': 'A32NX_MCDU_L_BTN_9',
+    '1': 'A32NX_MCDU_L_BTN_1',
+    '2': 'A32NX_MCDU_L_BTN_2',
+    '3': 'A32NX_MCDU_L_BTN_3',
+    '4': 'A32NX_MCDU_L_BTN_4',
+    '5': 'A32NX_MCDU_L_BTN_5',
+    '6': 'A32NX_MCDU_L_BTN_6',
+    '7': 'A32NX_MCDU_L_BTN_7',
+    '8': 'A32NX_MCDU_L_BTN_8',
+    '9': 'A32NX_MCDU_L_BTN_9',
     '0': 'A32NX_MCDU_L_BTN_0',
-    'A': 'A32NX_MCDU_L_BTN_A', 'B': 'A32NX_MCDU_L_BTN_B', 'C': 'A32NX_MCDU_L_BTN_C',
-    'D': 'A32NX_MCDU_L_BTN_D', 'E': 'A32NX_MCDU_L_BTN_E', 'F': 'A32NX_MCDU_L_BTN_F',
-    'G': 'A32NX_MCDU_L_BTN_G', 'H': 'A32NX_MCDU_L_BTN_H', 'I': 'A32NX_MCDU_L_BTN_I',
-    'J': 'A32NX_MCDU_L_BTN_J', 'K': 'A32NX_MCDU_L_BTN_K', 'L': 'A32NX_MCDU_L_BTN_L',
-    'M': 'A32NX_MCDU_L_BTN_M', 'N': 'A32NX_MCDU_L_BTN_N', 'O': 'A32NX_MCDU_L_BTN_O',
-    'P': 'A32NX_MCDU_L_BTN_P', 'Q': 'A32NX_MCDU_L_BTN_Q', 'R': 'A32NX_MCDU_L_BTN_R',
-    'S': 'A32NX_MCDU_L_BTN_S', 'T': 'A32NX_MCDU_L_BTN_T', 'U': 'A32NX_MCDU_L_BTN_U',
-    'V': 'A32NX_MCDU_L_BTN_V', 'W': 'A32NX_MCDU_L_BTN_W', 'X': 'A32NX_MCDU_L_BTN_X',
-    'Y': 'A32NX_MCDU_L_BTN_Y', 'Z': 'A32NX_MCDU_L_BTN_Z',
-    'DIR_INTC': 'A32NX_MCDU_L_BTN_DIR',
-    'PROG': 'A32NX_MCDU_L_BTN_PROG',
-    'PERF': 'A32NX_MCDU_L_BTN_PERF',
-    'INIT': 'A32NX_MCDU_L_BTN_INIT',
-    'DATA': 'A32NX_MCDU_L_BTN_DATA',
-    'F_PLN': 'A32NX_MCDU_L_BTN_FPLN',
-    'RAD_NAV': 'A32NX_MCDU_L_BTN_RADNAV',
-    'FUEL_PRED': 'A32NX_MCDU_L_BTN_FUEL',
-    'SEC_FPLN': 'A32NX_MCDU_L_BTN_SEC_FPLN',
-    'ATC_COMM': 'A32NX_MCDU_L_BTN_ATC_COMM',
-    'MCDU_MENU': 'A32NX_MCDU_L_BTN_MENU',
-    'CLR': 'A32NX_MCDU_L_BTN_CLR',
-    'OVFY': 'A32NX_MCDU_L_BTN_OVFY',
-    'NEXT_PAGE': 'A32NX_MCDU_L_BTN_NEXT_PAGE',
-    'PREV_PAGE': 'A32NX_MCDU_L_BTN_PREV_PAGE',
-    'L1': 'A32NX_MCDU_L_BTN_L1', 'L2': 'A32NX_MCDU_L_BTN_L2', 'L3': 'A32NX_MCDU_L_BTN_L3',
-    'L4': 'A32NX_MCDU_L_BTN_L4', 'L5': 'A32NX_MCDU_L_BTN_L5', 'L6': 'A32NX_MCDU_L_BTN_L6',
-    'R1': 'A32NX_MCDU_L_BTN_R1', 'R2': 'A32NX_MCDU_L_BTN_R2', 'R3': 'A32NX_MCDU_L_BTN_R3',
-    'R4': 'A32NX_MCDU_L_BTN_R4', 'R5': 'A32NX_MCDU_L_BTN_R5', 'R6': 'A32NX_MCDU_L_BTN_R6',
+    A: 'A32NX_MCDU_L_BTN_A',
+    B: 'A32NX_MCDU_L_BTN_B',
+    C: 'A32NX_MCDU_L_BTN_C',
+    D: 'A32NX_MCDU_L_BTN_D',
+    E: 'A32NX_MCDU_L_BTN_E',
+    F: 'A32NX_MCDU_L_BTN_F',
+    G: 'A32NX_MCDU_L_BTN_G',
+    H: 'A32NX_MCDU_L_BTN_H',
+    I: 'A32NX_MCDU_L_BTN_I',
+    J: 'A32NX_MCDU_L_BTN_J',
+    K: 'A32NX_MCDU_L_BTN_K',
+    L: 'A32NX_MCDU_L_BTN_L',
+    M: 'A32NX_MCDU_L_BTN_M',
+    N: 'A32NX_MCDU_L_BTN_N',
+    O: 'A32NX_MCDU_L_BTN_O',
+    P: 'A32NX_MCDU_L_BTN_P',
+    Q: 'A32NX_MCDU_L_BTN_Q',
+    R: 'A32NX_MCDU_L_BTN_R',
+    S: 'A32NX_MCDU_L_BTN_S',
+    T: 'A32NX_MCDU_L_BTN_T',
+    U: 'A32NX_MCDU_L_BTN_U',
+    V: 'A32NX_MCDU_L_BTN_V',
+    W: 'A32NX_MCDU_L_BTN_W',
+    X: 'A32NX_MCDU_L_BTN_X',
+    Y: 'A32NX_MCDU_L_BTN_Y',
+    Z: 'A32NX_MCDU_L_BTN_Z',
+    DIR_INTC: 'A32NX_MCDU_L_BTN_DIR',
+    PROG: 'A32NX_MCDU_L_BTN_PROG',
+    PERF: 'A32NX_MCDU_L_BTN_PERF',
+    INIT: 'A32NX_MCDU_L_BTN_INIT',
+    DATA: 'A32NX_MCDU_L_BTN_DATA',
+    F_PLN: 'A32NX_MCDU_L_BTN_FPLN',
+    RAD_NAV: 'A32NX_MCDU_L_BTN_RADNAV',
+    FUEL_PRED: 'A32NX_MCDU_L_BTN_FUEL',
+    SEC_FPLN: 'A32NX_MCDU_L_BTN_SEC_FPLN',
+    ATC_COMM: 'A32NX_MCDU_L_BTN_ATC_COMM',
+    MCDU_MENU: 'A32NX_MCDU_L_BTN_MENU',
+    CLR: 'A32NX_MCDU_L_BTN_CLR',
+    OVFY: 'A32NX_MCDU_L_BTN_OVFY',
+    NEXT_PAGE: 'A32NX_MCDU_L_BTN_NEXT_PAGE',
+    PREV_PAGE: 'A32NX_MCDU_L_BTN_PREV_PAGE',
+    L1: 'A32NX_MCDU_L_BTN_L1',
+    L2: 'A32NX_MCDU_L_BTN_L2',
+    L3: 'A32NX_MCDU_L_BTN_L3',
+    L4: 'A32NX_MCDU_L_BTN_L4',
+    L5: 'A32NX_MCDU_L_BTN_L5',
+    L6: 'A32NX_MCDU_L_BTN_L6',
+    R1: 'A32NX_MCDU_L_BTN_R1',
+    R2: 'A32NX_MCDU_L_BTN_R2',
+    R3: 'A32NX_MCDU_L_BTN_R3',
+    R4: 'A32NX_MCDU_L_BTN_R4',
+    R5: 'A32NX_MCDU_L_BTN_R5',
+    R6: 'A32NX_MCDU_L_BTN_R6',
   };
 
   constructor() {
@@ -160,7 +185,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
         eventId,
         0,
         1, // Group ID
-        0 // Flags
+        0, // Flags
       );
       devLog(`[FBW A320] Sent keypress: ${key} (H:${eventName})`);
     } catch (err) {
@@ -176,11 +201,17 @@ export class FBWA320Adapter implements IAircraftAdapter {
   async readAircraftState(): Promise<AdapterAircraftState> {
     if (!this.simState) {
       return {
-        lat: 40.6413, lon: -73.7781,
+        lat: 40.6413,
+        lon: -73.7781,
         heading: 45,
         track: 45,
         altitude: 0,
-        ias: 0, tas: 0, gs: 0, vs: 0, fuelTotal: 0, gw: 0,
+        ias: 0,
+        tas: 0,
+        gs: 0,
+        vs: 0,
+        fuelTotal: 0,
+        gw: 0,
         headingDeg: 45,
         trackDeg: 45,
         altitudeFt: 0,
@@ -221,7 +252,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
           DEF_CDU,
           `L:A32NX_MCDU_L_LINE_${i}`,
           'string32', // Use string32 as buffer for 24 chars
-          SimConnectDataType.STRING32
+          SimConnectDataType.STRING32,
         );
       }
 
@@ -229,7 +260,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
         REQ_CDU,
         DEF_CDU,
         0, // SimConnectConstants.OBJECT_ID_USER
-        SimConnectPeriod.SECOND
+        SimConnectPeriod.SECOND,
       );
 
       handle.on('simObjectData', (recvSimObjectData) => {
@@ -302,11 +333,11 @@ export class FBWA320Adapter implements IAircraftAdapter {
             };
             this.simState.fuelTotal = this.simState.fuelTotal;
             this.simState.gw = this.simState.gw;
-            
+
             const vor1 = recvSimObjectData.data.readFloat64().toFixed(2);
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
-            
+
             (this.simState as any).radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[FBW A320] Error reading aircraft state:', readErr);

@@ -57,8 +57,8 @@ export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }:
   return (
     <div className="flex flex-col items-center gap-1 select-none">
       {label && <span className="text-[9px] font-bold text-[#c8c8c8] uppercase tracking-wider">{label}</span>}
-      
-      <div 
+
+      <div
         tabIndex={0}
         role="slider"
         aria-label={label}
@@ -81,20 +81,20 @@ export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }:
       >
         {/* Grip ridges */}
         <div className="absolute inset-2 rounded-full border-[2px] border-dashed border-[#333] opacity-50" />
-        
+
         {/* Top cap */}
         <div className="absolute inset-3 rounded-full bg-[#2a2a2a] shadow-inner" />
-        
+
         {/* Position pointer */}
-        <div 
-          className="absolute top-2 left-1/2 h-3 w-1 -translate-x-1/2 rounded-full bg-white/30" 
+        <div
+          className="absolute top-2 left-1/2 h-3 w-1 -translate-x-1/2 rounded-full bg-white/30"
           style={{ transform: `translateX(-50%) rotate(${value * 2}deg)` }}
         />
 
         {/* Tap area indicators for small screens */}
         <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none opacity-0 group-hover:opacity-20 transition-opacity">
-           <span className="text-white text-[8px]">-</span>
-           <span className="text-white text-[8px]">+</span>
+          <span className="text-white text-[8px]">-</span>
+          <span className="text-white text-[8px]">+</span>
         </div>
       </div>
     </div>

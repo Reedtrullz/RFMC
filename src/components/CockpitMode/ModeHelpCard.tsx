@@ -12,7 +12,7 @@ interface ModeHelpCardProps {
 export function ModeHelpCard({ mode, onResetLayout }: ModeHelpCardProps) {
   const config = getTrainingModeConfig(mode);
   const fmcState = useFMCStore();
-  const autopilotState = useAutopilotStore(state => ({
+  const autopilotState = useAutopilotStore((state) => ({
     boeing: state.boeing,
     airbus: state.airbus,
     truth: state.truth,
@@ -42,7 +42,7 @@ export function ModeHelpCard({ mode, onResetLayout }: ModeHelpCardProps) {
         </div>
         <div>
           <span>Required</span>
-          <strong>{config.minimumRequiredPanels.map(panelId => panelLabels[panelId]).join(' + ')}</strong>
+          <strong>{config.minimumRequiredPanels.map((panelId) => panelLabels[panelId]).join(' + ')}</strong>
         </div>
       </div>
       <div className="mode-help-card__progress" aria-label="Current training progress">

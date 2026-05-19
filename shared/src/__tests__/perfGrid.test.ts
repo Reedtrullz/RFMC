@@ -21,9 +21,9 @@ describe('renderPerfTakeoffGrid', () => {
     const data = renderPerfTakeoffGrid(state);
 
     expect(data.segments).toBeDefined();
-    expect(data.segments!.some(s => s.text === 'PERF')).toBe(true);
-    expect(data.segments!.some(s => s.text === 'TO')).toBe(true);
-    expect(data.segments!.some(s => s.inverse && s.semantic === 'title')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'PERF')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'TO')).toBe(true);
+    expect(data.segments!.some((s) => s.inverse && s.semantic === 'title')).toBe(true);
   });
 
   it('renders placeholder V-speeds when no takeoff data set', () => {
@@ -82,7 +82,7 @@ describe('renderPerfTakeoffGrid', () => {
     });
     const data = renderPerfTakeoffGrid(state);
 
-    const v1Seg = data.segments!.find(s => s.text.trim() === '120');
+    const v1Seg = data.segments!.find((s) => s.text.trim() === '120');
     expect(v1Seg).toBeDefined();
     expect(v1Seg!.color).toBe('green');
   });
@@ -91,7 +91,7 @@ describe('renderPerfTakeoffGrid', () => {
     const state = createBaseState({ aircraft: 'AIRBUS_A320' });
     const data = renderPerfTakeoffGrid(state);
 
-    const v1Seg = data.segments!.find(s => s.text.includes('[  ]'));
+    const v1Seg = data.segments!.find((s) => s.text.includes('[  ]'));
     expect(v1Seg).toBeDefined();
     expect(v1Seg!.color).toBe('white');
   });
@@ -193,7 +193,7 @@ describe('renderPerfTakeoffGrid', () => {
     });
     const data = renderPerfTakeoffGrid(state);
 
-    const flexSeg = data.segments!.find(s => s.text.includes('55°'));
+    const flexSeg = data.segments!.find((s) => s.text.includes('55°'));
     expect(flexSeg).toBeDefined();
     expect(flexSeg!.color).toBe('magenta');
     expect(flexSeg!.semantic).toBe('guidance');
@@ -286,9 +286,9 @@ describe('renderPerfApprGrid', () => {
     const data = renderPerfApprGrid(state);
 
     expect(data.segments).toBeDefined();
-    expect(data.segments!.some(s => s.text === 'PERF')).toBe(true);
-    expect(data.segments!.some(s => s.text === 'APPR')).toBe(true);
-    expect(data.segments!.some(s => s.inverse && s.semantic === 'title')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'PERF')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'APPR')).toBe(true);
+    expect(data.segments!.some((s) => s.inverse && s.semantic === 'title')).toBe(true);
   });
 
   it('renders all approach fields', () => {
@@ -326,7 +326,7 @@ describe('renderPerfApprGrid', () => {
     const state = createBaseState({ aircraft: 'AIRBUS_A320' });
     const data = renderPerfApprGrid(state);
 
-    const confSeg = data.segments!.find(s => s.text === ' FULL');
+    const confSeg = data.segments!.find((s) => s.text === ' FULL');
     expect(confSeg).toBeDefined();
     expect(confSeg!.color).toBe('green');
     expect(confSeg!.semantic).toBe('activeData');
@@ -336,11 +336,11 @@ describe('renderPerfApprGrid', () => {
     const state = createBaseState({ aircraft: 'AIRBUS_A320' });
     const data = renderPerfApprGrid(state);
 
-    const qnhVal = data.segments!.find(s => s.text.trim() === '1013');
+    const qnhVal = data.segments!.find((s) => s.text.trim() === '1013');
     expect(qnhVal).toBeDefined();
     expect(qnhVal!.color).toBe('magenta');
 
-    const tempVal = data.segments!.find(s => s.text.trim() === '15°C');
+    const tempVal = data.segments!.find((s) => s.text.trim() === '15°C');
     expect(tempVal).toBeDefined();
     expect(tempVal!.color).toBe('magenta');
   });

@@ -10,7 +10,7 @@ export function HoldPattern({ model }: HoldPatternProps) {
 
   const isAirbus = model.style === 'airbus';
   const color = isAirbus ? '#00ff00' : '#ff00ff';
-  
+
   // Dynamic racetrack sizing: scale leg distance by ND range
   const pixelsPerNm = 45 / model.range;
   const legLen = Math.max(hold.legDist ? hold.legDist * pixelsPerNm : 8, 3);
@@ -34,21 +34,21 @@ export function HoldPattern({ model }: HoldPatternProps) {
         strokeDasharray={hold.isPending ? '2.5 2.5' : undefined}
         filter="url(#nd-glow)"
       />
-      
+
       {/* Inbound entry arrow */}
-      <path 
-        d="M-1.5 -3 L0 0 L1.5 -3" 
-        fill="none" 
-        stroke={color} 
-        strokeWidth="1" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
+      <path
+        d="M-1.5 -3 L0 0 L1.5 -3"
+        fill="none"
+        stroke={color}
+        strokeWidth="1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         filter="url(#nd-glow)"
       />
-      
+
       {/* Label with industrial contrast */}
       <g transform={`rotate(${-hold.inboundCourse}) translate(${radius * 2 + 3} 0)`}>
-         <text
+        <text
           fill="black"
           fontSize="3.8"
           fontWeight="900"
@@ -59,13 +59,7 @@ export function HoldPattern({ model }: HoldPatternProps) {
         >
           HOLD
         </text>
-        <text
-          fill={color}
-          fontSize="3.8"
-          fontWeight="900"
-          className="font-avionics"
-          filter="url(#nd-glow)"
-        >
+        <text fill={color} fontSize="3.8" fontWeight="900" className="font-avionics" filter="url(#nd-glow)">
           HOLD
         </text>
       </g>

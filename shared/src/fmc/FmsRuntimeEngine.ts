@@ -28,28 +28,28 @@ export class FmsRuntimeEngine {
     if (newPhase !== state.flightPhase) {
       updates.flightPhase = newPhase;
     }
- 
+
     // 3. Evaluate Leg Sequencing
     if (state.aircraftState && state.flightPlan.waypoints.length > 0) {
       const currentLeg = state.flightPlan.waypoints[0];
       const nextLeg = state.flightPlan.waypoints[1];
       const { sequence, reason } = LegSequencer.shouldSequence(currentLeg, nextLeg, state.aircraftState);
-      
+
       if (sequence) {
         updates.flightPlan = {
           ...state.flightPlan,
-          waypoints: state.flightPlan.waypoints.slice(1)
+          waypoints: state.flightPlan.waypoints.slice(1),
         };
         if (state.route.directTo) {
           updates.route = {
             ...state.route,
-            directTo: undefined
+            directTo: undefined,
           };
         }
         if (state.pendingRoute?.directTo) {
           updates.pendingRoute = {
             ...state.pendingRoute,
-            directTo: undefined
+            directTo: undefined,
           };
         }
         // Also update performance engine with the change if needed
@@ -66,7 +66,7 @@ export class FmsRuntimeEngine {
 
     const activeSource = selectFmcPositionSource(sensors);
     const anp = calculateANP(sensors, activeSource);
-    
+
     // Determine target RNP based on phase if not manual
     let rnp = state.navPerformance?.rnp ?? 2.0;
     if (!state.navPerformance?.rnpManual) {
@@ -80,22 +80,22 @@ export class FmsRuntimeEngine {
       const ac = { lat: state.aircraftState.lat, lon: state.aircraftState.lon };
       const wp1 = state.flightPlan.waypoints[0];
       const wp2 = state.flightPlan.waypoints[1];
-      
+
       if (wp1.lat !== undefined && wp1.lon !== undefined) {
         if (wp2 && wp2.lat !== undefined && wp2.lon !== undefined) {
-           xteNm = crossTrackErrorNm(ac, { lat: wp1.lat, lon: wp1.lon }, { lat: wp2.lat, lon: wp2.lon });
+          xteNm = crossTrackErrorNm(ac, { lat: wp1.lat, lon: wp1.lon }, { lat: wp2.lat, lon: wp2.lon });
         } else {
-           // Direct to WP1: No path yet, so XTE is 0 or distance-based error?
-           // Typically XTE is only valid relative to a track.
-           xteNm = 0;
+          // Direct to WP1: No path yet, so XTE is 0 or distance-based error?
+          // Typically XTE is only valid relative to a track.
+          xteNm = 0;
         }
       }
     }
 
     // Only return if changed (basic optimization)
     if (
-      anp === state.navPerformance?.anp && 
-      rnp === state.navPerformance?.rnp && 
+      anp === state.navPerformance?.anp &&
+      rnp === state.navPerformance?.rnp &&
       activeSource === state.navPerformance?.activeSource &&
       Math.abs(xteNm - (state.navPerformance?.xteNm ?? 0)) < 0.01
     ) {
@@ -106,7 +106,7 @@ export class FmsRuntimeEngine {
       anp,
       rnp,
       activeSource,
-      xteNm
+      xteNm,
     };
   }
 }

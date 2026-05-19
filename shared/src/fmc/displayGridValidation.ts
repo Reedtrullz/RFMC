@@ -115,7 +115,7 @@ export function validateDisplayGrid(grid: GridDisplayData): DisplayGridValidatio
 export function assertValidDisplayGrid(grid: GridDisplayData): void {
   const result = validateDisplayGrid(grid);
   if (!result.valid) {
-    const details = result.issues.map(i => `  ${i.code}: ${i.message}`).join('\n');
+    const details = result.issues.map((i) => `  ${i.code}: ${i.message}`).join('\n');
     throw new Error(`Display grid validation failed:\n${details}`);
   }
 }

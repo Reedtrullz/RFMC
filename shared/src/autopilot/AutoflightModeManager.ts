@@ -13,7 +13,7 @@ export class AutoflightModeManager {
    */
   public static canEngageLateral(mode: LateralMode, state: FMCState): ModeGuardResult {
     const isAirbus = state.aircraft === 'AIRBUS_A320';
-    
+
     switch (mode) {
       case 'LNAV':
       case 'NAV':
@@ -24,7 +24,8 @@ export class AutoflightModeManager {
           return { ok: false, message: 'IRS NOT ALIGNED' };
         }
         const hasUnresolved = state.flightPlan.waypoints.some(
-          wp => !wp.discontinuity && (wp.lat === undefined || wp.lon === undefined || wp.coordinateSource === 'UNRESOLVED')
+          (wp) =>
+            !wp.discontinuity && (wp.lat === undefined || wp.lon === undefined || wp.coordinateSource === 'UNRESOLVED'),
         );
         if (hasUnresolved) {
           return { ok: false, message: 'NAV DATA OUT' };
@@ -72,7 +73,7 @@ export class AutoflightModeManager {
   public static processModeRequest(
     request: Partial<AutoflightTruthState>,
     currentState: AutoflightTruthState,
-    fmcState: FMCState
+    fmcState: FMCState,
   ): { nextState: AutoflightTruthState; alert?: string } {
     const nextState = { ...currentState };
     let alert: string | undefined;
@@ -82,8 +83,12 @@ export class AutoflightModeManager {
       const guard = this.canEngageLateral(request.lateralActive, fmcState);
       if (guard.ok) {
         // Intercept logic for arming
-        if ((request.lateralActive === 'LOC' || request.lateralActive === 'VOR_LOC' || request.lateralActive === 'LNAV') && 
-            !this.isLateralCaptured(request.lateralActive, fmcState)) {
+        if (
+          (request.lateralActive === 'LOC' ||
+            request.lateralActive === 'VOR_LOC' ||
+            request.lateralActive === 'LNAV') &&
+          !this.isLateralCaptured(request.lateralActive, fmcState)
+        ) {
           nextState.lateralArmed = request.lateralActive;
         } else {
           nextState.lateralActive = request.lateralActive;
@@ -117,9 +122,9 @@ export class AutoflightModeManager {
       if (isAirbus) {
         // Dual AP allowed in approach
         if (request.autopilotStatus === 'AP1' || request.autopilotStatus === 'AP2') {
-           nextState.autopilotStatus = request.autopilotStatus;
+          nextState.autopilotStatus = request.autopilotStatus;
         } else {
-           nextState.autopilotStatus = 'OFF';
+          nextState.autopilotStatus = 'OFF';
         }
       } else {
         // Boeing logic
@@ -138,10 +143,7 @@ export class AutoflightModeManager {
   /**
    * Periodic tick to handle mode captures (Armed -> Active)
    */
-  public static tick(
-    currentState: AutoflightTruthState,
-    fmcState: FMCState
-  ): Partial<AutoflightTruthState> | null {
+  public static tick(currentState: AutoflightTruthState, fmcState: FMCState): Partial<AutoflightTruthState> | null {
     const updates: Partial<AutoflightTruthState> = {};
     let changed = false;
 
@@ -150,9 +152,9 @@ export class AutoflightModeManager {
       if (this.isLateralCaptured(currentState.lateralArmed, fmcState)) {
         updates.lateralActive = currentState.lateralArmed;
         updates.lateralArmed = 'OFF';
-        updates.lastModeChangeTimestamps = { 
-          ...currentState.lastModeChangeTimestamps, 
-          lateral: Date.now() 
+        updates.lastModeChangeTimestamps = {
+          ...currentState.lastModeChangeTimestamps,
+          lateral: Date.now(),
         };
         changed = true;
       }
@@ -163,9 +165,9 @@ export class AutoflightModeManager {
       if (this.isVerticalCaptured(currentState.verticalArmed, fmcState)) {
         updates.verticalActive = currentState.verticalArmed;
         updates.verticalArmed = 'OFF';
-        updates.lastModeChangeTimestamps = { 
-          ...currentState.lastModeChangeTimestamps, 
-          vertical: Date.now() 
+        updates.lastModeChangeTimestamps = {
+          ...currentState.lastModeChangeTimestamps,
+          vertical: Date.now(),
         };
         changed = true;
       }
@@ -176,9 +178,9 @@ export class AutoflightModeManager {
       if (!vnav.available || (vnav.pathDeviationFt !== null && Math.abs(vnav.pathDeviationFt) > 250)) {
         updates.verticalActive = 'OFF';
         updates.verticalArmed = 'VNAV_PTH';
-        updates.lastModeChangeTimestamps = { 
-          ...currentState.lastModeChangeTimestamps, 
-          vertical: Date.now() 
+        updates.lastModeChangeTimestamps = {
+          ...currentState.lastModeChangeTimestamps,
+          vertical: Date.now(),
         };
         changed = true;
       }
@@ -195,7 +197,7 @@ export class AutoflightModeManager {
 
   private static isLateralCaptured(mode: LateralMode, state: FMCState): boolean {
     if (!state.aircraftState) return false;
-    
+
     switch (mode) {
       case 'LNAV':
       case 'NAV':
@@ -205,7 +207,7 @@ export class AutoflightModeManager {
       case 'LOC':
       case 'VOR_LOC':
         // Mock LOC capture
-        return true; 
+        return true;
 
       default:
         return false;

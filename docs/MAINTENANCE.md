@@ -7,6 +7,7 @@ This document outlines the operational tasks required to maintain, update, and d
 VirtualCDU is deployed to the production VPS using Ansible and Docker.
 
 ### Manual Deployment
+
 1. Ensure your SSH key is authorized on the target VPS.
 2. Run the playbook:
    ```bash
@@ -14,7 +15,9 @@ VirtualCDU is deployed to the production VPS using Ansible and Docker.
    ```
 
 ### Automated Deployment (CI/CD)
+
 Pushing to the `main` branch triggers a GitHub Action that:
+
 1. Runs unit and E2E tests.
 2. Builds the Docker image.
 3. Deploys the image to the VPS via Ansible.
@@ -31,7 +34,7 @@ The application runs as a single Docker container containing both the Vite stati
 
 - **Caddy**: Acts as a reverse proxy and provides automatic TLS (HTTPS).
 - **Domain**: `fmc.reidar.tech`
-- **Ports**: 
+- **Ports**:
   - Host `:8082` maps to Container `:8080`.
   - Container `:8080` serves both HTTP (frontend) and WebSocket (bridge).
 
@@ -55,9 +58,11 @@ VirtualCDU uses a custom "ARINC-Lite" JSON schema for navigation data.
 ## Troubleshooting
 
 ### Connection Failures
+
 - Verify the bridge server is running: `docker logs virtual-cdu`.
 - Check WebSocket connectivity: Use browser devtools to monitor the `ws://` connection.
 - PMDG Integration: Ensure `node-simconnect` is correctly configured on the Windows machine running the bridge (if using local bridge).
 
 ### PWA / Caching Issues
+
 - If the app doesn't update, use the "Update" prompt in the UI or manually clear the service worker cache in the browser.

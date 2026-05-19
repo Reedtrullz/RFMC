@@ -38,7 +38,7 @@ export function BoeingAlphaNumericKeypad({
       <div className="flex-[1.2]">
         {numKeys.map((row, rowIndex) => (
           <div key={rowIndex} className={`grid grid-cols-3 gap-1 ${rowIndex > 0 ? 'mt-1' : ''}`}>
-            {row.map(key => (
+            {row.map((key) => (
               <AvionicsKey
                 key={key}
                 label={key}
@@ -53,7 +53,7 @@ export function BoeingAlphaNumericKeypad({
       <div className="flex-[1.8]">
         {alphaKeys.map((row, rowIndex) => (
           <div key={rowIndex} className={`grid grid-cols-5 gap-1 ${rowIndex > 0 ? 'mt-1' : ''}`}>
-            {row.map(key => (
+            {row.map((key) => (
               <AvionicsKey
                 key={key}
                 label={key}
@@ -65,11 +65,40 @@ export function BoeingAlphaNumericKeypad({
           </div>
         ))}
         <div className="mt-1 grid grid-cols-[0.7fr_1.3fr_1.3fr_0.7fr_1fr] gap-1">
-              <AvionicsKey label="/" variant="function" ariaLabel="Slash" hintLevel={highlight === 'SLASH' ? hintLevel : 0} onPress={() => onPress('SLASH')} />
-          <AvionicsKey label="CLR" variant="boeing" ariaLabel="Clear" hintLevel={highlight === 'CLR' ? hintLevel : 0} onPress={() => onPress('CLR')} />
-          <AvionicsKey label="SP" variant="boeing" ariaLabel="Space" hintLevel={highlight === 'SPACE' ? hintLevel : 0} onPress={() => onPress('SPACE')} />
-          <AvionicsKey label="Z" variant="boeing" hintLevel={highlight === 'Z' ? hintLevel : 0} onPress={() => onPress('Z')} />
-          <AvionicsKey label="DEL" variant="function" ariaLabel="Delete" hintLevel={highlight === 'DEL' ? hintLevel : 0} onPress={() => onPress('DEL')} />
+          <AvionicsKey
+            label="/"
+            variant="function"
+            ariaLabel="Slash"
+            hintLevel={highlight === 'SLASH' ? hintLevel : 0}
+            onPress={() => onPress('SLASH')}
+          />
+          <AvionicsKey
+            label="CLR"
+            variant="boeing"
+            ariaLabel="Clear"
+            hintLevel={highlight === 'CLR' ? hintLevel : 0}
+            onPress={() => onPress('CLR')}
+          />
+          <AvionicsKey
+            label="SP"
+            variant="boeing"
+            ariaLabel="Space"
+            hintLevel={highlight === 'SPACE' ? hintLevel : 0}
+            onPress={() => onPress('SPACE')}
+          />
+          <AvionicsKey
+            label="Z"
+            variant="boeing"
+            hintLevel={highlight === 'Z' ? hintLevel : 0}
+            onPress={() => onPress('Z')}
+          />
+          <AvionicsKey
+            label="DEL"
+            variant="function"
+            ariaLabel="Delete"
+            hintLevel={highlight === 'DEL' ? hintLevel : 0}
+            onPress={() => onPress('DEL')}
+          />
         </div>
         <BoeingBrightnessExecPanel
           execLit={execLit}

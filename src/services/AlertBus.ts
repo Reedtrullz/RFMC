@@ -21,14 +21,14 @@ export class AlertBus {
     };
 
     // Remove existing alert with same ID if present
-    this.alerts = this.alerts.filter(a => a.id !== alert.id);
-    
+    this.alerts = this.alerts.filter((a) => a.id !== alert.id);
+
     this.alerts.push(fullAlert);
     this.sortAndNotify();
   }
 
   removeAlert(id: string) {
-    this.alerts = this.alerts.filter(a => a.id !== id);
+    this.alerts = this.alerts.filter((a) => a.id !== id);
     this.sortAndNotify();
   }
 
@@ -40,7 +40,7 @@ export class AlertBus {
     this.listeners.push(listener);
     listener(this.getAlerts());
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
@@ -59,7 +59,7 @@ export class AlertBus {
       return b.timestamp - a.timestamp;
     });
 
-    this.listeners.forEach(l => l(this.getAlerts()));
+    this.listeners.forEach((l) => l(this.getAlerts()));
   }
 }
 

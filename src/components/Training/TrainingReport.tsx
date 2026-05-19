@@ -2,8 +2,8 @@ import React from 'react';
 import { useFMCStore } from '../../store/useFMCStore';
 
 export function TrainingReport() {
-  const scenario = useFMCStore(s => s.activeScenario);
-  const isVisible = useFMCStore(s => s.isReportVisible);
+  const scenario = useFMCStore((s) => s.activeScenario);
+  const isVisible = useFMCStore((s) => s.isReportVisible);
 
   if (!isVisible) return null;
 
@@ -32,10 +32,7 @@ export function TrainingReport() {
       <div className="bg-[#1a1c1e] border-2 border-cyan-500 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden font-mono">
         <div className="bg-cyan-600 p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white italic">FMS TRAINING REPORT</h2>
-          <button 
-            onClick={handleClose}
-            className="text-white hover:bg-cyan-700 px-3 rounded"
-          >
+          <button onClick={handleClose} className="text-white hover:bg-cyan-700 px-3 rounded">
             CLOSE
           </button>
         </div>
@@ -62,9 +59,7 @@ export function TrainingReport() {
               <div className="space-y-2">
                 {goals.map((g: any) => (
                   <div key={g.id} className="flex items-center gap-2 text-sm p-2 bg-gray-900/50 rounded">
-                    <span className={g.completed ? 'text-green-400' : 'text-gray-600'}>
-                      {g.completed ? '✓' : '✗'}
-                    </span>
+                    <span className={g.completed ? 'text-green-400' : 'text-gray-600'}>{g.completed ? '✓' : '✗'}</span>
                     <span className={g.completed ? 'text-white' : 'text-gray-500'}>{g.text}</span>
                   </div>
                 ))}
@@ -81,7 +76,10 @@ export function TrainingReport() {
                   <div className="text-gray-500 italic text-sm">No deviations recorded. Perfect flight.</div>
                 ) : (
                   mistakes.map((m: any) => (
-                    <div key={m.id} className="text-xs text-red-200 bg-red-900/20 p-2 rounded border-l-2 border-red-500">
+                    <div
+                      key={m.id}
+                      className="text-xs text-red-200 bg-red-900/20 p-2 rounded border-l-2 border-red-500"
+                    >
                       {m.text}
                     </div>
                   ))
@@ -92,7 +90,7 @@ export function TrainingReport() {
 
           {/* Footer Controls */}
           <div className="pt-6 flex gap-4 border-t border-gray-800">
-            <button 
+            <button
               onClick={() => {
                 const text = `FMS TRAINING REPORT\nScenario: ${scenario?.name}\nGrade: ${grade.label}\nScore: ${finalScore}%\n\nGoals: ${completedGoals}/${goals.length}\nMistakes: ${mistakes.length}`;
                 navigator.clipboard.writeText(text);
@@ -101,7 +99,7 @@ export function TrainingReport() {
             >
               COPY REPORT
             </button>
-            <button 
+            <button
               onClick={() => useFMCStore.setState({ activeScenario: null })}
               className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white p-3 rounded font-bold transition-colors"
             >

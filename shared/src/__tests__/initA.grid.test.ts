@@ -20,9 +20,9 @@ describe('renderInitAGrid', () => {
     const data = renderInitAGrid(state);
 
     expect(data.segments).toBeDefined();
-    expect(data.segments!.some(s => s.text === 'INIT')).toBe(true);
-    expect(data.segments!.some(s => s.text === 'A')).toBe(true);
-    expect(data.segments!.some(s => s.inverse && s.semantic === 'title')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'INIT')).toBe(true);
+    expect(data.segments!.some((s) => s.text === 'A')).toBe(true);
+    expect(data.segments!.some((s) => s.inverse && s.semantic === 'title')).toBe(true);
   });
 
   it('uses grid segment format (airbusPage wrapper)', () => {
@@ -92,8 +92,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 35, zfw: 0, fuel: 0, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 35,
+        zfw: 0,
+        fuel: 0,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitAGrid(state);
@@ -107,8 +112,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 35000, costIndex: 0, zfw: 0, fuel: 0, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 35000,
+        costIndex: 0,
+        zfw: 0,
+        fuel: 0,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitAGrid(state);
@@ -122,8 +132,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       performance: {
-        crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 0,
+        costIndex: 0,
+        zfw: 0,
+        fuel: 0,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
     });
     const data = renderInitAGrid(state);
@@ -136,8 +151,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: 0,
-        irsState: 'ALIGNING', irsTimeRemaining: 360, irsAlignmentProgress: 50,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'ALIGNING',
+        irsTimeRemaining: 360,
+        irsAlignmentProgress: 50,
       },
     });
     const data = renderInitAGrid(state);
@@ -151,8 +171,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: 0,
-        irsState: 'NAV', irsTimeRemaining: 0, irsAlignmentProgress: 100,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'NAV',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 100,
       },
     });
     const data = renderInitAGrid(state);
@@ -165,8 +190,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: 0,
-        irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'OFF',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 0,
       },
     });
     const data = renderInitAGrid(state);
@@ -196,8 +226,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 51.5, lon: 0,
-        irsState: 'NAV', irsTimeRemaining: 0, irsAlignmentProgress: 100,
+        refAirport: '',
+        gate: '',
+        lat: 51.5,
+        lon: 0,
+        irsState: 'NAV',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 100,
       },
     });
     const data = renderInitAGrid(state);
@@ -210,8 +245,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: -74.0,
-        irsState: 'NAV', irsTimeRemaining: 0, irsAlignmentProgress: 100,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: -74.0,
+        irsState: 'NAV',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 100,
       },
     });
     const data = renderInitAGrid(state);
@@ -236,8 +276,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: 0,
-        irsState: 'OFF', irsTimeRemaining: 0, irsAlignmentProgress: 0,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'OFF',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 0,
       },
     });
     const data = renderInitAGrid(state);
@@ -262,8 +307,13 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       position: {
-        refAirport: '', gate: '', lat: 0, lon: 0,
-        irsState: 'NAV', irsTimeRemaining: 0, irsAlignmentProgress: 100,
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'NAV',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 100,
       },
     });
     const data = renderInitAGrid(state);
@@ -276,18 +326,18 @@ describe('renderInitAGrid', () => {
     const data = renderInitAGrid(state);
 
     // Label row elements should be white with 'label' semantic
-    const fromToLabel = data.segments!.find(s => s.text === 'FROM/TO');
+    const fromToLabel = data.segments!.find((s) => s.text === 'FROM/TO');
     expect(fromToLabel).toBeDefined();
     expect(fromToLabel!.color).toBe('white');
     expect(fromToLabel!.semantic).toBe('label');
 
-    const costIndexLabel = data.segments!.find(s => s.text === 'COST INDEX');
+    const costIndexLabel = data.segments!.find((s) => s.text === 'COST INDEX');
     expect(costIndexLabel).toBeDefined();
     expect(costIndexLabel!.color).toBe('white');
     expect(costIndexLabel!.semantic).toBe('label');
 
     // Missing data values should be magenta with 'activeData' semantic
-    const magentaData = data.segments!.filter(s => s.color === 'magenta');
+    const magentaData = data.segments!.filter((s) => s.color === 'magenta');
     expect(magentaData.length).toBeGreaterThan(0);
     for (const seg of magentaData) {
       expect(seg.semantic).toBe('activeData');
@@ -298,16 +348,30 @@ describe('renderInitAGrid', () => {
     const state = createBaseState({
       aircraft: 'AIRBUS_A320',
       route: {
-        origin: 'EGLL', destination: 'KJFK', flightNumber: 'BA1234',
-        companyRoute: '', routeString: '', alternate: 'LFPG',
+        origin: 'EGLL',
+        destination: 'KJFK',
+        flightNumber: 'BA1234',
+        companyRoute: '',
+        routeString: '',
+        alternate: 'LFPG',
       },
       performance: {
-        crzAlt: 35000, costIndex: 35, zfw: 0, fuel: 0, cg: 0,
-        reserve: 0, grossWeight: 0,
+        crzAlt: 35000,
+        costIndex: 35,
+        zfw: 0,
+        fuel: 0,
+        cg: 0,
+        reserve: 0,
+        grossWeight: 0,
       },
       position: {
-        refAirport: '', gate: '', lat: 51.5, lon: -74.0,
-        irsState: 'NAV', irsTimeRemaining: 0, irsAlignmentProgress: 100,
+        refAirport: '',
+        gate: '',
+        lat: 51.5,
+        lon: -74.0,
+        irsState: 'NAV',
+        irsTimeRemaining: 0,
+        irsAlignmentProgress: 100,
       },
     });
     const data = renderInitAGrid(state);

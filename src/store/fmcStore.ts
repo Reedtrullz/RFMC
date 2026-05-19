@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import type { FMCState, HoldEntry } from '@shared';
 import { buildInitialFMCState } from '@shared/fmc/initialState';
-import { processFMCKey }         from '@shared/fmc/keyProcessor';
-import { buildDisplayData }      from '@shared/fmc/displayBuilder';
+import { processFMCKey } from '@shared/fmc/keyProcessor';
+import { buildDisplayData } from '@shared/fmc/displayBuilder';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // fmcStore – thin Zustand shell around the shared FMC engine
@@ -13,11 +13,11 @@ import { buildDisplayData }      from '@shared/fmc/displayBuilder';
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface FMCStoreActions {
-  pressKey:     (key: string) => void;
-  pressExec:    () => void;
-  setMode:      (mode: string) => void;
-  setDemoMode:  (demo: boolean) => void;
-  resetState:   () => void;
+  pressKey: (key: string) => void;
+  pressExec: () => void;
+  setMode: (mode: string) => void;
+  setDemoMode: (demo: boolean) => void;
+  resetState: () => void;
 }
 
 export type FMCStore = FMCState & FMCStoreActions;

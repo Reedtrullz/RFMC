@@ -5,7 +5,7 @@ import { BoeingMCPState } from './autopilotTypes';
  */
 export function processBoeingMCPAction(
   state: BoeingMCPState,
-  action: keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE'
+  action: keyof BoeingMCPState | 'SPD_INTERVENE' | 'ALT_INTERVENE' | 'SPD_MACH_TOGGLE',
 ): Partial<BoeingMCPState> {
   switch (action) {
     case 'lnav':

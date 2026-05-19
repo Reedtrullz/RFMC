@@ -45,31 +45,30 @@ describe('Flight Plan Parser', () => {
     const result = parseRouteString('KJFK LENDY1 KJFK');
     // LENDY1 expands to ['LENDY', 'DIXIE', 'JFK']
     // Plus the destination KJFK
-    expect(result.waypoints.map(w => w.ident)).toEqual(['LENDY', 'DIXIE', 'JFK', 'KJFK']);
+    expect(result.waypoints.map((w) => w.ident)).toEqual(['LENDY', 'DIXIE', 'JFK', 'KJFK']);
   });
 
   it('unrolls KATL SMKEY2 procedure', () => {
     const result = parseRouteString('KATL SMKEY2 KORD');
     // SMKEY2 expands to ['KATL', 'DAWGS', 'MCDON', 'SMKEY']
-    expect(result.waypoints.map(w => w.ident)).toContain('SMKEY');
-    expect(result.waypoints.map(w => w.ident)).toContain('MCDON');
+    expect(result.waypoints.map((w) => w.ident)).toContain('SMKEY');
+    expect(result.waypoints.map((w) => w.ident)).toContain('MCDON');
   });
 
   it('enriches waypoints with coordinates from the local navdb', () => {
     const result = parseRouteString('KJFK DCT RBV DCT KDCA');
-    
+
     // RBV should be enriched
-    const rbv = result.waypoints.find(w => w.ident === 'RBV');
+    const rbv = result.waypoints.find((w) => w.ident === 'RBV');
     expect(rbv).toBeDefined();
     expect(rbv?.lat).toBeCloseTo(40.2023, 2);
     expect(rbv?.lon).toBeCloseTo(-74.4947, 2);
     expect(rbv?.coordinateSource).toBe('navdb');
 
     // KDCA should be enriched as an airport
-    const kdca = result.waypoints.find(w => w.ident === 'KDCA');
+    const kdca = result.waypoints.find((w) => w.ident === 'KDCA');
     expect(kdca).toBeDefined();
     expect(kdca?.lat).toBeCloseTo(38.8521, 2);
     expect(kdca?.coordinateSource).toBe('navdb');
   });
 });
-

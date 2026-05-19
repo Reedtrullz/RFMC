@@ -3,17 +3,10 @@ import { isValidWaypoint } from '../validation';
 import type { FmcActionResult } from './actionResult';
 
 function ensureFixEntries(entries: FixEntry[], legacy: FMCState['fix']): FixEntry[] {
-  return [
-    { ...(entries[0] ?? legacy) },
-    { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
-  ];
+  return [{ ...(entries[0] ?? legacy) }, { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) }];
 }
 
-export function handleFixAction(
-  action: string,
-  state: FMCState,
-  scratchpad: string
-): FmcActionResult {
+export function handleFixAction(action: string, state: FMCState, scratchpad: string): FmcActionResult {
   switch (action) {
     case 'set_fix_ref':
     case 'set_fix_ref_0':
@@ -28,11 +21,7 @@ export function handleFixAction(
   }
 }
 
-function handleSetFixRef(
-  state: FMCState,
-  scratchpad: string,
-  action: string
-): FmcActionResult {
+function handleSetFixRef(state: FMCState, scratchpad: string, action: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const result = isValidWaypoint(scratchpad.toUpperCase());
@@ -56,11 +45,7 @@ function handleSetFixRef(
   };
 }
 
-function handleSetFixRadialDistance(
-  state: FMCState,
-  scratchpad: string,
-  action: string
-): FmcActionResult {
+function handleSetFixRadialDistance(state: FMCState, scratchpad: string, action: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
 
   const parts = scratchpad.split('/');

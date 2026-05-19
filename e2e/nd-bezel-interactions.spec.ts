@@ -68,21 +68,21 @@ test.describe('Navigation Display Bezel Interactions', () => {
     let currentRange = await page.evaluate(() => (window as any).useFMCStore.getState().efisL.range);
     expect(currentRange).toBe(40);
 
-    let style = await pointer.getAttribute('style') || '';
+    let style = (await pointer.getAttribute('style')) || '';
     expect(style).toContain('rotate(-19.28');
 
     await rangeKnob.click({ button: 'right', force: true });
     currentRange = await page.evaluate(() => (window as any).useFMCStore.getState().efisL.range);
     expect(currentRange).toBe(80);
-    
-    style = await pointer.getAttribute('style') || '';
+
+    style = (await pointer.getAttribute('style')) || '';
     expect(style).toContain('rotate(19.28');
 
     await rangeKnob.click({ button: 'right', force: true });
     currentRange = await page.evaluate(() => (window as any).useFMCStore.getState().efisL.range);
     expect(currentRange).toBe(160);
 
-    style = await pointer.getAttribute('style') || '';
+    style = (await pointer.getAttribute('style')) || '';
     expect(style).toContain('rotate(57.85');
 
     await rangeKnob.click({ button: 'left', force: true });
@@ -97,7 +97,7 @@ test.describe('Navigation Display Bezel Interactions', () => {
     currentRange = await page.evaluate(() => (window as any).useFMCStore.getState().efisL.range);
     expect(currentRange).toBe(20);
 
-    style = await pointer.getAttribute('style') || '';
+    style = (await pointer.getAttribute('style')) || '';
     expect(style).toContain('rotate(-57.85');
   });
 

@@ -6,11 +6,11 @@ import { expect, type Page } from '@playwright/test';
 export async function dismissWelcome(page: Page) {
   // Wait for the app to be fully loaded and network to be idle
   await page.waitForLoadState('networkidle');
-  
+
   const skipButton = page.locator('button:has-text("Skip Demo")');
   // Ensure the store is attached to window before evaluating
   await page.waitForFunction(() => (window as any).useFMCStore !== undefined, { timeout: 10000 });
-  
+
   try {
     // Wait for the modal to potentially appear
     await skipButton.waitFor({ state: 'visible', timeout: 3000 });
@@ -20,7 +20,7 @@ export async function dismissWelcome(page: Page) {
   } catch {
     // Modal already dismissed or not present
   }
-  
+
   // Explicitly set demoMode via the exposed store to ensure fast IRS alignment and other simulation logic
   // We wait for the store to be attached to window before evaluating
   try {
@@ -38,7 +38,7 @@ export async function dismissWelcome(page: Page) {
     // Ignore evaluation errors or timeouts during stabilization
     console.warn('[E2E Helper] dismissWelcome: store initialization timed out or failed');
   }
-  
+
   // Ensure the trainer is at least in the DOM and visible
   // We use cdu-panel as it exists in both legacy and all Cockpit Mode layouts
   // We wait for it to be visible after the modal is gone, but we don't hard-fail here
@@ -86,7 +86,7 @@ export async function ensureTrainingMode(page: Page, mode: string) {
   const selector = page.getByTestId(`layout-mode-${mode}`);
   try {
     await selector.waitFor({ state: 'visible', timeout: 5000 });
-    
+
     // Check current state
     const currentMode = await page.evaluate(() => {
       return (window as any).useCockpitLayoutStore?.getState().cockpitLayoutMode;
@@ -95,9 +95,13 @@ export async function ensureTrainingMode(page: Page, mode: string) {
     if (currentMode !== mode) {
       await selector.click();
       // Wait for state sync
-      await page.waitForFunction((m) => {
-        return (window as any).useCockpitLayoutStore?.getState().cockpitLayoutMode === m;
-      }, mode, { timeout: 5000 });
+      await page.waitForFunction(
+        (m) => {
+          return (window as any).useCockpitLayoutStore?.getState().cockpitLayoutMode === m;
+        },
+        mode,
+        { timeout: 5000 },
+      );
     }
 
     // Wait for core instruments of this mode to be visible.
@@ -123,11 +127,11 @@ export async function ensureTrainingMode(page: Page, mode: string) {
 export async function expectScreenText(page: Page, text: string) {
   // Try the new dedicated sr-only text tag first
   let display = page.getByTestId('main-cdu-display-text').first();
-  if (await display.count() === 0) {
+  if ((await display.count()) === 0) {
     // Fallback to the generic one
     display = page.locator('.cdu-display-container pre.sr-only').first();
   }
-  
+
   // Use a longer timeout for the FMS to initialize and render the text
   await expect(display).toContainText(text, { timeout: 30000 });
 }
@@ -139,7 +143,7 @@ export async function pressCdu(page: Page, label: string) {
   // Try variant-based data-testids (more specific)
   const variants = ['function', 'boeing', 'airbus', 'exec', 'lsk'];
   const labelsToTry = [label, label.replace(/_/g, ' ')];
-  
+
   for (const variant of variants) {
     for (const l of labelsToTry) {
       const btn = page.getByTestId(`key-${variant}-${l}`).first();
@@ -160,10 +164,7 @@ export async function pressCdu(page: Page, label: string) {
   }
 
   const candidates =
-    label === '/' ? ['/', 'SLASH'] :
-    label === '.' ? ['.', 'DOT'] :
-    label === ' ' ? ['SP', 'SPACE'] :
-    [label];
+    label === '/' ? ['/', 'SLASH'] : label === '.' ? ['.', 'DOT'] : label === ' ' ? ['SP', 'SPACE'] : [label];
 
   for (const name of candidates) {
     const button = page.getByRole('button', { name, exact: true }).first();
@@ -210,11 +211,7 @@ export async function enterText(page: Page, text: string) {
   let expected = '';
 
   for (const char of text) {
-    const key =
-      char === ' ' ? 'SP' :
-      char === '/' ? '/' :
-      char === '.' ? '.' :
-      char;
+    const key = char === ' ' ? 'SP' : char === '/' ? '/' : char === '.' ? '.' : char;
 
     await expect(async () => {
       const current = await page.evaluate(() => (window as any).useFMCStore?.getState().scratchpad || '');
@@ -224,7 +221,9 @@ export async function enterText(page: Page, text: string) {
 
       const after = await page.evaluate(() => (window as any).useFMCStore?.getState().scratchpad || '');
       if (!after.includes(expected + char)) {
-        throw new Error(`Scratchpad did not reflect "${char}". Got "${after}", expected to include "${expected + char}"`);
+        throw new Error(
+          `Scratchpad did not reflect "${char}". Got "${after}", expected to include "${expected + char}"`,
+        );
       }
     }).toPass({ timeout: 4000, intervals: [500] });
 

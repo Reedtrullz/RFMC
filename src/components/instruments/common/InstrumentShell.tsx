@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react';
-import { 
-  BOEING_CDU_GEOMETRY, 
-  AIRBUS_MCDU_GEOMETRY, 
+import {
+  BOEING_CDU_GEOMETRY,
+  AIRBUS_MCDU_GEOMETRY,
   BOEING_ND_GEOMETRY,
   AIRBUS_ND_GEOMETRY,
   BOEING_MCP_GEOMETRY,
   AIRBUS_FCU_GEOMETRY,
-  type InstrumentGeometryProfile 
+  type InstrumentGeometryProfile,
 } from './GeometryProfiles';
 import { BezelScrew } from './BezelScrew';
 
@@ -27,13 +27,13 @@ interface InstrumentShellProps {
   geometryProfile?: Partial<InstrumentGeometryProfile>;
 }
 
-export function InstrumentShell({ 
-  variant, 
-  children, 
-  className = '', 
+export function InstrumentShell({
+  variant,
+  children,
+  className = '',
   id,
   'data-testid': dataTestId,
-  geometryProfile
+  geometryProfile,
 }: InstrumentShellProps) {
   const defaults: Partial<Record<InstrumentShellVariant, InstrumentGeometryProfile>> = {
     'boeing-cdu': BOEING_CDU_GEOMETRY,
@@ -53,7 +53,7 @@ export function InstrumentShell({
   } as React.CSSProperties;
 
   return (
-    <div 
+    <div
       id={id}
       data-testid={dataTestId}
       className={`instrument-shell instrument-shell--${variant} ${className}`}
@@ -61,28 +61,26 @@ export function InstrumentShell({
     >
       <div className="instrument-shell__edge-highlight" />
       <div className="instrument-shell__wear" />
-      
+
       {profile?.screwPositions?.map((pos, idx) => {
         const left = profile?.outerWidthMm ? `${(pos.x / profile.outerWidthMm) * 100}%` : '0%';
         const top = profile?.outerHeightMm ? `${(pos.y / profile.outerHeightMm) * 100}%` : '0%';
         const rotation = (idx * 137.5) % 360;
         return (
-          <BezelScrew 
+          <BezelScrew
             key={`screw-${idx}`}
-            className="absolute" 
-            style={{ 
+            className="absolute"
+            style={{
               left,
               top,
-              transform: `translate(-50%, -50%) rotate(${rotation}deg)`
-            }} 
-            rotation={rotation} 
+              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+            }}
+            rotation={rotation}
           />
         );
       })}
 
-      <div className="instrument-shell__content">
-        {children}
-      </div>
+      <div className="instrument-shell__content">{children}</div>
     </div>
   );
 }

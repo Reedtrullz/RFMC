@@ -24,7 +24,7 @@ export function FixRing({ model }: FixRingProps) {
         const refX = fix.refX ?? fix.x;
         const refY = fix.refY ?? fix.y;
         if (refX === undefined || refY === undefined || isNaN(refX) || isNaN(refY)) return null;
-        
+
         // Scale distance to pixels
         const distPx = fix.distance * (45 / model.range);
 
@@ -35,8 +35,8 @@ export function FixRing({ model }: FixRingProps) {
               <line
                 x1={refX}
                 y1={refY}
-                x2={refX + Math.sin(fix.radial * Math.PI / 180) * (distPx + 3)}
-                y2={refY - Math.cos(fix.radial * Math.PI / 180) * (distPx + 3)}
+                x2={refX + Math.sin((fix.radial * Math.PI) / 180) * (distPx + 3)}
+                y2={refY - Math.cos((fix.radial * Math.PI) / 180) * (distPx + 3)}
                 stroke={color}
                 strokeWidth="0.4"
                 strokeDasharray="2 4"
@@ -44,7 +44,7 @@ export function FixRing({ model }: FixRingProps) {
                 filter="url(#nd-glow)"
               />
             )}
-            
+
             {/* Distance Circle (High-Fidelity) */}
             {fix.distance > 0 && (
               <circle

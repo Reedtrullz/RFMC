@@ -4,7 +4,7 @@ export type Orientation = 'portrait' | 'landscape';
 
 export function useOrientation() {
   const [orientation, setOrientation] = useState<Orientation>(
-    window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
+    window.innerHeight > window.innerWidth ? 'portrait' : 'landscape',
   );
 
   useEffect(() => {

@@ -64,16 +64,16 @@ interface ProcedureLeg {
 
 ## First Supported Leg Types
 
-| Type | Meaning | Phase 4 support |
-| --- | --- | --- |
-| IF | Initial fix | Required |
-| TF | Track to fix | Required |
-| DF | Direct to fix | Required |
-| CF | Course to fix | Required |
-| RW | Runway fix | Required |
-| HM | Hold/manual termination | Required for HOLD integration |
-| DISCONTINUITY | Route discontinuity | Required |
-| RF | Radius-to-fix | Optional in first implementation |
+| Type          | Meaning                 | Phase 4 support                  |
+| ------------- | ----------------------- | -------------------------------- |
+| IF            | Initial fix             | Required                         |
+| TF            | Track to fix            | Required                         |
+| DF            | Direct to fix           | Required                         |
+| CF            | Course to fix           | Required                         |
+| RW            | Runway fix              | Required                         |
+| HM            | Hold/manual termination | Required for HOLD integration    |
+| DISCONTINUITY | Route discontinuity     | Required                         |
+| RF            | Radius-to-fix           | Optional in first implementation |
 
 ## Fixture Policy
 

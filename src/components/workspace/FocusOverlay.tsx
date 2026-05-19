@@ -17,9 +17,7 @@ export function FocusOverlay({ panelId, children, onClose }: FocusOverlayProps) 
           Back
         </button>
       </div>
-      <div className="focus-overlay__stage">
-        {children}
-      </div>
+      <div className="focus-overlay__stage">{children}</div>
     </div>
   );
 }

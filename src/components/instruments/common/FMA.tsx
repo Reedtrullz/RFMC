@@ -5,14 +5,10 @@ import { useFMCStore } from '../../../store/useFMCStore';
 import { buildBoeingFMAState, buildAirbusFMAState } from '@shared';
 
 export function FMA() {
-  const aircraft = useAircraftStore(s => s.aircraft);
-  const truth = useAutopilotStore(s => s.truth);
-  const autopilot = useAutopilotStore(
-    useShallow(s => ({ truth: s.truth, boeing: s.boeing, airbus: s.airbus }))
-  );
-  const fmc = useFMCStore(
-    useShallow(s => ({ aircraftState: s.aircraftState }))
-  );
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const truth = useAutopilotStore((s) => s.truth);
+  const autopilot = useAutopilotStore(useShallow((s) => ({ truth: s.truth, boeing: s.boeing, airbus: s.airbus })));
+  const fmc = useFMCStore(useShallow((s) => ({ aircraftState: s.aircraftState })));
   const now = Date.now();
   const BOX_TIME = 10000;
 
@@ -20,21 +16,27 @@ export function FMA() {
     return now - (truth.lastModeChangeTimestamps?.[type] || 0) < BOX_TIME;
   };
 
-  const boxStyle = "border border-white shadow-[0_0_4px_rgba(255,255,255,0.5)]";
-  
+  const boxStyle = 'border border-white shadow-[0_0_4px_rgba(255,255,255,0.5)]';
+
   if (aircraft === 'BOEING_737') {
     const fma = buildBoeingFMAState(autopilot, fmc as any);
-    
+
     return (
       <div className="flex w-full justify-between border-b border-[#2a2d2d] bg-black p-1 font-mono text-xs font-bold uppercase h-10">
-        <div className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('thrust') ? boxStyle : ''}`}>
+        <div
+          className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('thrust') ? boxStyle : ''}`}
+        >
           <span className="text-[#00ff44]">{fma.autothrottleMode}</span>
         </div>
-        <div className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('lateral') ? boxStyle : ''}`}>
+        <div
+          className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('lateral') ? boxStyle : ''}`}
+        >
           <span className="text-[#00ff44]">{fma.rollMode}</span>
           <span className="text-white opacity-60 text-[9px] leading-none">{fma.armedRollMode}</span>
         </div>
-        <div className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('vertical') ? boxStyle : ''}`}>
+        <div
+          className={`flex flex-1 flex-col items-center justify-center border-r border-[#2a2d2d] ${isBoxed('vertical') ? boxStyle : ''}`}
+        >
           <span className="text-[#00ff44]">{fma.pitchMode}</span>
           <span className="text-white opacity-60 text-[9px] leading-none">{fma.armedPitchMode}</span>
         </div>
@@ -49,18 +51,32 @@ export function FMA() {
     const fma = buildAirbusFMAState(autopilot, fmc as any);
     return (
       <div className="grid grid-cols-5 w-full border-b border-[#2a2d2d] bg-black p-0.5 font-mono text-[9px] font-bold uppercase text-[#00ff44] h-8">
-        <div className={`border-r border-[#2a2d2d] text-center flex items-center justify-center ${isBoxed('thrust') ? boxStyle : ''}`}>{fma.autothrustMode}</div>
-        <div className={`border-r border-[#2a2d2d] text-center flex flex-col items-center justify-center ${isBoxed('vertical') ? boxStyle : ''}`}>
-          <div>{fma.verticalMode}</div>
-          <div className="text-white opacity-50 text-[7px] leading-none">{fma.armedModes.find(m => ['G/S', 'ALT'].includes(m))}</div>
+        <div
+          className={`border-r border-[#2a2d2d] text-center flex items-center justify-center ${isBoxed('thrust') ? boxStyle : ''}`}
+        >
+          {fma.autothrustMode}
         </div>
-        <div className={`border-r border-[#2a2d2d] text-center flex flex-col items-center justify-center ${isBoxed('lateral') ? boxStyle : ''}`}>
+        <div
+          className={`border-r border-[#2a2d2d] text-center flex flex-col items-center justify-center ${isBoxed('vertical') ? boxStyle : ''}`}
+        >
+          <div>{fma.verticalMode}</div>
+          <div className="text-white opacity-50 text-[7px] leading-none">
+            {fma.armedModes.find((m) => ['G/S', 'ALT'].includes(m))}
+          </div>
+        </div>
+        <div
+          className={`border-r border-[#2a2d2d] text-center flex flex-col items-center justify-center ${isBoxed('lateral') ? boxStyle : ''}`}
+        >
           <div>{fma.lateralMode}</div>
-          <div className="text-white opacity-50 text-[7px] leading-none">{fma.armedModes.find(m => ['LOC', 'NAV'].includes(m))}</div>
+          <div className="text-white opacity-50 text-[7px] leading-none">
+            {fma.armedModes.find((m) => ['LOC', 'NAV'].includes(m))}
+          </div>
         </div>
         <div className="border-r border-[#2a2d2d] text-center flex flex-col items-center justify-center">
           <div className="text-white">{fma.approachCapability}</div>
-          <div className="text-white opacity-50 text-[7px] leading-none">{fma.approachCapability === 'CAT3 DUAL' ? 'DUAL' : (fma.approachCapability === 'CAT3 SINGLE' ? 'SINGLE' : '')}</div>
+          <div className="text-white opacity-50 text-[7px] leading-none">
+            {fma.approachCapability === 'CAT3 DUAL' ? 'DUAL' : fma.approachCapability === 'CAT3 SINGLE' ? 'SINGLE' : ''}
+          </div>
         </div>
         <div className="text-center flex flex-col items-center justify-center">
           <div className="flex justify-center gap-1">
@@ -77,7 +93,6 @@ export function FMA() {
       </div>
     );
   }
-
 
   return null;
 }

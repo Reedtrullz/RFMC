@@ -6,22 +6,22 @@ This is the current source of truth for automated status. Other docs should link
 
 ## Automated Baseline
 
-| Gate | Command | Current result |
-| --- | --- | --- |
-| TypeScript | `npm run typecheck:all` | Passing (all 3 workspaces) |
-| Unit/regression tests | `npm test -- --run` | 789/789 passing (61 test files) |
-| Playwright smoke E2E | `npm run test:e2e:ci` | 3/3 passing (desktop Chromium smoke gate) |
-| Playwright full E2E | `npm run test:e2e` | Not currently green on this macOS checkout; see caveats |
-| Production build | `npm run build` | Passing |
-| Coverage | `npm run test:coverage` | 51.75% all files in last recorded run |
-| Audit policy | `npm audit --audit-level=high` | Passing high/critical policy; moderate Vite/esbuild dev-dependency exception documented |
-| ND visual baseline | `npm run test:e2e:visual` | 4/4 passing (Boeing MAP, Boeing MAP failure, Airbus ARC, Airbus ARC aligning) |
-| PFD visual baseline | `npx playwright test e2e/visual-pfd.spec.ts --project=desktop-chromium` | 8/8 passing (Boeing/Airbus automation, focused, approach, and failure PFDs) |
-| Cockpit visual baseline | `npx playwright test e2e/visual/cockpit-layouts.spec.ts --project=desktop-chromium` | 27/27 passing (task modes, focused panels, tablet landscape layouts, layout assertions) |
-| Broad desktop visual suite | `npm run test:visual -- --project=desktop-chromium` | 60/60 passing, 18 high-resolution-only tests skipped |
-| 3456x2234 cockpit visual baseline | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234` | 18/18 passing |
-| Retina cockpit visual baseline | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2` | 18/18 passing |
-| Visual fidelity manifest | `npm run measure:visual` | Passing; generated `docs/VISUAL_FIDELITY_REPORT.md` and warns that rights-cleared hardware reference crops are not approved yet |
+| Gate                              | Command                                                                                  | Current result                                                                                                                  |
+| --------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript                        | `npm run typecheck:all`                                                                  | Passing (all 3 workspaces)                                                                                                      |
+| Unit/regression tests             | `npm test -- --run`                                                                      | 789/789 passing (61 test files)                                                                                                 |
+| Playwright smoke E2E              | `npm run test:e2e:ci`                                                                    | 3/3 passing (desktop Chromium smoke gate)                                                                                       |
+| Playwright full E2E               | `npm run test:e2e`                                                                       | Not currently green on this macOS checkout; see caveats                                                                         |
+| Production build                  | `npm run build`                                                                          | Passing                                                                                                                         |
+| Coverage                          | `npm run test:coverage`                                                                  | 51.75% all files in last recorded run                                                                                           |
+| Audit policy                      | `npm audit --audit-level=high`                                                           | Passing high/critical policy; moderate Vite/esbuild dev-dependency exception documented                                         |
+| ND visual baseline                | `npm run test:e2e:visual`                                                                | 4/4 passing (Boeing MAP, Boeing MAP failure, Airbus ARC, Airbus ARC aligning)                                                   |
+| PFD visual baseline               | `npx playwright test e2e/visual-pfd.spec.ts --project=desktop-chromium`                  | 8/8 passing (Boeing/Airbus automation, focused, approach, and failure PFDs)                                                     |
+| Cockpit visual baseline           | `npx playwright test e2e/visual/cockpit-layouts.spec.ts --project=desktop-chromium`      | 27/27 passing (task modes, focused panels, tablet landscape layouts, layout assertions)                                         |
+| Broad desktop visual suite        | `npm run test:visual -- --project=desktop-chromium`                                      | 60/60 passing, 18 high-resolution-only tests skipped                                                                            |
+| 3456x2234 cockpit visual baseline | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234`     | 18/18 passing                                                                                                                   |
+| Retina cockpit visual baseline    | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2` | 18/18 passing                                                                                                                   |
+| Visual fidelity manifest          | `npm run measure:visual`                                                                 | Passing; generated `docs/VISUAL_FIDELITY_REPORT.md` and warns that rights-cleared hardware reference crops are not approved yet |
 
 ## Current Commit
 

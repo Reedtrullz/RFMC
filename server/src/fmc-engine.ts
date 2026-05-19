@@ -1,27 +1,33 @@
 import type { FMCState, DisplayData, PageType } from '@virtual-cdu/shared';
 import { getPageRenderer, parseRouteString, FmsRuntimeEngine } from '@virtual-cdu/shared';
 import {
-  isValidICAO, isValidAltitude, isValidSpeed, isValidTemperature,
-  isValidWind, isValidFlightNumber, isValidWaypoint, isValidVSpeeds, isProcedure,
-  isValidFrequency, isValidADF, getTutorialScenario
+  isValidICAO,
+  isValidAltitude,
+  isValidSpeed,
+  isValidTemperature,
+  isValidWind,
+  isValidFlightNumber,
+  isValidWaypoint,
+  isValidVSpeeds,
+  isProcedure,
+  isValidFrequency,
+  isValidADF,
+  getTutorialScenario,
 } from '@virtual-cdu/shared';
 
 function isFixInActiveRoute(state: FMCState, ident: string): boolean {
   const flightPlan = state.pendingFlightPlan ?? state.flightPlan;
-  const routeFixes = new Set([
-    flightPlan.origin,
-    flightPlan.destination,
-    ...flightPlan.waypoints.map(wp => wp.ident),
-  ].filter(Boolean).map(fix => fix.toUpperCase()));
+  const routeFixes = new Set(
+    [flightPlan.origin, flightPlan.destination, ...flightPlan.waypoints.map((wp) => wp.ident)]
+      .filter(Boolean)
+      .map((fix) => fix.toUpperCase()),
+  );
 
   return routeFixes.size === 0 || routeFixes.has(ident.toUpperCase());
 }
 
 function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix']): FMCState['fixEntries'] {
-  return [
-    { ...(entries[0] ?? legacy) },
-    { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) },
-  ];
+  return [{ ...(entries[0] ?? legacy) }, { ...(entries[1] ?? { refFix: '', radial: 0, distance: 0 }) }];
 }
 
 export class FMCEngine {
@@ -46,9 +52,9 @@ export class FMCEngine {
               ...this.state.autopilot,
               truth: {
                 ...this.state.autopilot.truth,
-                ...(nextState as any).autopilot?.truth
-              }
-            }
+                ...(nextState as any).autopilot?.truth,
+              },
+            },
           };
         }
       } catch (err) {
@@ -74,8 +80,25 @@ export class FMCEngine {
       scratchpadError: null,
       demoMode: false,
       ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
-      position: { refAirport: '', gate: '', lat: 0, lon: 0, irsState: 'OFF', irsAlignmentProgress: 0, irsTimeRemaining: 600 },
-      navPerformance: { anpNm: 2.0, rnpNm: 2.0, phase: 'ENROUTE', anp: 0.05, rnp: 2.0, rnpManual: false, activeSource: 'IRS', xteNm: 0 },
+      position: {
+        refAirport: '',
+        gate: '',
+        lat: 0,
+        lon: 0,
+        irsState: 'OFF',
+        irsAlignmentProgress: 0,
+        irsTimeRemaining: 600,
+      },
+      navPerformance: {
+        anpNm: 2.0,
+        rnpNm: 2.0,
+        phase: 'ENROUTE',
+        anp: 0.05,
+        rnp: 2.0,
+        rnpManual: false,
+        activeSource: 'IRS',
+        xteNm: 0,
+      },
       activeNavSource: 'IRS',
       sensors: [
         { source: 'GPS', available: true, positionErrorNm: 0.05 },
@@ -86,7 +109,19 @@ export class FMCEngine {
       windowsLocked: false,
       posPageIndex: 0,
       performance: { crzAlt: 0, costIndex: 0, zfw: 0, fuel: 0, cg: 0, reserve: 0, grossWeight: 0 },
-      takeoff: { runway: '', toMode: 'TO', assumedTemp: 0, v1: 0, vr: 0, v2: 0, trim: 0, oat: 0, windDir: 0, windSpeed: 0, qnh: 0 },
+      takeoff: {
+        runway: '',
+        toMode: 'TO',
+        assumedTemp: 0,
+        v1: 0,
+        vr: 0,
+        v2: 0,
+        trim: 0,
+        oat: 0,
+        windDir: 0,
+        windSpeed: 0,
+        qnh: 0,
+      },
       landing: { runway: '', flaps: '', vref: 0, ilsFrequency: '', course: 0 },
       route: { origin: '', destination: '', flightNumber: '', companyRoute: '', routeString: '' },
       flightPlan: { origin: '', destination: '', flightNumber: '', route: '', waypoints: [] },
@@ -237,8 +272,16 @@ export class FMCEngine {
       mode: aircraft === 'AIRBUS_A320' ? 'ARC' : 'MAP',
       range: 40,
       overlays: {
-        fix: true, hold: true, wpt: true, arpt: true, sta: true,
-        data: false, pos: false, terr: false, wxr: false, tfc: true
+        fix: true,
+        hold: true,
+        wpt: true,
+        arpt: true,
+        sta: true,
+        data: false,
+        pos: false,
+        terr: false,
+        wxr: false,
+        tfc: true,
       },
       centered: false,
       side,
@@ -250,36 +293,42 @@ export class FMCEngine {
     if (!renderer) {
       const fallback = getPageRenderer('MENU');
       if (fallback) return { ...fallback(this.state), scratchpadError: this.state.scratchpadError };
-      return { lines: [], title: 'ERROR', pageIndicator: '', lskActions: {}, scratchpadError: this.state.scratchpadError };
+      return {
+        lines: [],
+        title: 'ERROR',
+        pageIndicator: '',
+        lskActions: {},
+        scratchpadError: this.state.scratchpadError,
+      };
     }
     return { ...renderer(this.state), scratchpadError: this.state.scratchpadError };
   }
 
   setPage(page: string): void {
     const pageMap: Record<string, PageType> = {
-      'INIT_REF': 'POS_INIT',
-      'RTE': 'RTE',
-      'CLB': 'CLB',
-      'CRZ': 'CRZ',
-      'DES': 'DES',
-      'DIR_INTC': 'DIR_INTC',
-      'DEP_ARR': 'DEP_ARR',
-      'LEGS': 'LEGS',
-      'HOLD': 'HOLD',
-      'FIX': 'FIX',
-      'PERF': 'PERF_INIT',
-      'PROG': 'PROGRESS',
-      'N1_LIMIT': 'N1_LIMIT',
-      'MENU': 'MENU',
-      'INIT_A': 'INIT_A',
-      'INIT_B': 'INIT_B',
-      'F_PLN': 'F_PLN',
-      'PERF_TAKEOFF': 'PERF_TAKEOFF',
-      'PROG_A': 'PROG_A',
-      'DEP_ARR_A': 'DEP_ARR_A',
-      'MCDU_MENU': 'MCDU_MENU',
-      'RAD_NAV': 'RAD_NAV',
-      'DATA_INDEX': 'DATA_INDEX',
+      INIT_REF: 'POS_INIT',
+      RTE: 'RTE',
+      CLB: 'CLB',
+      CRZ: 'CRZ',
+      DES: 'DES',
+      DIR_INTC: 'DIR_INTC',
+      DEP_ARR: 'DEP_ARR',
+      LEGS: 'LEGS',
+      HOLD: 'HOLD',
+      FIX: 'FIX',
+      PERF: 'PERF_INIT',
+      PROG: 'PROGRESS',
+      N1_LIMIT: 'N1_LIMIT',
+      MENU: 'MENU',
+      INIT_A: 'INIT_A',
+      INIT_B: 'INIT_B',
+      F_PLN: 'F_PLN',
+      PERF_TAKEOFF: 'PERF_TAKEOFF',
+      PROG_A: 'PROG_A',
+      DEP_ARR_A: 'DEP_ARR_A',
+      MCDU_MENU: 'MCDU_MENU',
+      RAD_NAV: 'RAD_NAV',
+      DATA_INDEX: 'DATA_INDEX',
     };
     const target = pageMap[page] || (page as PageType);
     this.state.pageHistory.push(this.state.currentPage);
@@ -296,8 +345,20 @@ export class FMCEngine {
     let handled = false;
     let action: string | null = null;
 
-    if (key === 'L1' || key === 'L2' || key === 'L3' || key === 'L4' || key === 'L5' || key === 'L6' ||
-        key === 'R1' || key === 'R2' || key === 'R3' || key === 'R4' || key === 'R5' || key === 'R6') {
+    if (
+      key === 'L1' ||
+      key === 'L2' ||
+      key === 'L3' ||
+      key === 'L4' ||
+      key === 'L5' ||
+      key === 'L6' ||
+      key === 'R1' ||
+      key === 'R2' ||
+      key === 'R3' ||
+      key === 'R4' ||
+      key === 'R5' ||
+      key === 'R6'
+    ) {
       const display = this.getDisplayData();
       action = display.lskActions[key];
       if (action) {
@@ -315,8 +376,31 @@ export class FMCEngine {
   }
 
   private handleKeyAction(key: string): boolean {
-    const functionKeys = ['INIT_REF', 'RTE', 'CLB', 'CRZ', 'DES', 'DIR_INTC', 'DEP_ARR', 'LEGS', 'HOLD', 'FIX', 'PERF', 'PROG', 'N1_LIMIT', 'MENU',
-      'INIT_A', 'INIT_B', 'F_PLN', 'PERF_TAKEOFF', 'PROG_A', 'DEP_ARR_A', 'MCDU_MENU', 'RAD_NAV', 'DATA_INDEX'];
+    const functionKeys = [
+      'INIT_REF',
+      'RTE',
+      'CLB',
+      'CRZ',
+      'DES',
+      'DIR_INTC',
+      'DEP_ARR',
+      'LEGS',
+      'HOLD',
+      'FIX',
+      'PERF',
+      'PROG',
+      'N1_LIMIT',
+      'MENU',
+      'INIT_A',
+      'INIT_B',
+      'F_PLN',
+      'PERF_TAKEOFF',
+      'PROG_A',
+      'DEP_ARR_A',
+      'MCDU_MENU',
+      'RAD_NAV',
+      'DATA_INDEX',
+    ];
 
     if (functionKeys.includes(key)) {
       this.setPage(key as PageType);
@@ -420,8 +504,6 @@ export class FMCEngine {
 
     return false;
   }
-
-
 
   private advancePage(): boolean {
     if (this.state.currentPage === 'RTE') {
@@ -667,8 +749,14 @@ export class FMCEngine {
     const sp = this.state.scratchpad.trim();
     if (!sp) return false;
 
-    const err = (): 'error' => { this.state.scratchpadError = 'INVALID ENTRY'; return 'error'; };
-    const icaoErr = (r: { valid: boolean; error?: string }): 'error' => { this.state.scratchpadError = r.error ?? 'INVALID ENTRY'; return 'error'; };
+    const err = (): 'error' => {
+      this.state.scratchpadError = 'INVALID ENTRY';
+      return 'error';
+    };
+    const icaoErr = (r: { valid: boolean; error?: string }): 'error' => {
+      this.state.scratchpadError = r.error ?? 'INVALID ENTRY';
+      return 'error';
+    };
 
     switch (action) {
       case 'set_ref_airport': {
@@ -689,15 +777,15 @@ export class FMCEngine {
         const route = this.state.pendingRoute ?? this.state.route;
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
         const origin = sp.toUpperCase();
-        
+
         this.state.pendingRoute = { ...route, origin };
         this.state.pendingFlightPlan = { ...flightPlan, origin };
-        
+
         // If no waypoints, initialize with origin-dest if possible
         if (flightPlan.waypoints.length === 0 && flightPlan.destination) {
           this.state.pendingFlightPlan.waypoints = [{ ident: flightPlan.destination, discontinuity: false }];
         }
-        
+
         this.state.scratchpad = '';
         return true;
       }
@@ -707,15 +795,15 @@ export class FMCEngine {
         const route = this.state.pendingRoute ?? this.state.route;
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
         const destination = sp.toUpperCase();
-        
+
         this.state.pendingRoute = { ...route, destination };
         this.state.pendingFlightPlan = { ...flightPlan, destination };
-        
+
         // If no waypoints, initialize with destination
         if (flightPlan.waypoints.length === 0) {
           this.state.pendingFlightPlan.waypoints = [{ ident: destination, discontinuity: false }];
         }
-        
+
         this.state.scratchpad = '';
         return true;
       }
@@ -732,10 +820,10 @@ export class FMCEngine {
       case 'set_route': {
         const routeStr = sp.toUpperCase();
         const tokens = routeStr.trim().split(/\s+/);
-        
+
         let detectedSid: string | null = null;
         let detectedStar: string | null = null;
-        
+
         if (tokens.length >= 2) {
           if (isProcedure(tokens[1])) detectedSid = tokens[1];
           // Usually STAR is the 2nd to last token (before destination)
@@ -745,7 +833,7 @@ export class FMCEngine {
         }
 
         const route = this.state.pendingRoute ?? this.state.route;
-        
+
         let hasMismatch = false;
         let updatedSid = route.sid;
         let updatedStar = route.star;
@@ -757,7 +845,7 @@ export class FMCEngine {
             this.state.scratchpadError = 'ROUTE/SID MISMATCH';
           }
         }
-        
+
         if (detectedStar) {
           if (!route.star) updatedStar = detectedStar;
           else if (route.star !== detectedStar) {
@@ -773,8 +861,14 @@ export class FMCEngine {
 
         const parsed = parseRouteString(routeStr);
         const flightPlan = this.state.pendingFlightPlan ?? this.state.flightPlan;
-        const waypoints = parsed.waypoints.length > 0 ? parsed.waypoints : [{ ident: parsed.origin, discontinuity: false }, { ident: parsed.destination, discontinuity: false }].filter(w => w.ident);
-        
+        const waypoints =
+          parsed.waypoints.length > 0
+            ? parsed.waypoints
+            : [
+                { ident: parsed.origin, discontinuity: false },
+                { ident: parsed.destination, discontinuity: false },
+              ].filter((w) => w.ident);
+
         this.state.pendingRoute = { ...route, routeString: routeStr, sid: updatedSid, star: updatedStar };
         this.state.pendingFlightPlan = { ...flightPlan, waypoints, route: routeStr };
         this.state.legsPageCount = Math.max(1, Math.ceil(waypoints.length / 5));
@@ -814,9 +908,10 @@ export class FMCEngine {
         const runway = sp.toUpperCase();
         const runwayChanged = this.state.takeoff.runway && this.state.takeoff.runway !== runway;
         const speedsEntered = this.state.takeoff.v1 > 0 || this.state.takeoff.vr > 0 || this.state.takeoff.v2 > 0;
-        this.state.takeoff = runwayChanged && speedsEntered
-          ? { ...this.state.takeoff, runway, v1: 0, vr: 0, v2: 0 }
-          : { ...this.state.takeoff, runway };
+        this.state.takeoff =
+          runwayChanged && speedsEntered
+            ? { ...this.state.takeoff, runway, v1: 0, vr: 0, v2: 0 }
+            : { ...this.state.takeoff, runway };
         this.state.msgLight = runwayChanged && speedsEntered ? true : this.state.msgLight;
         this.state.scratchpad = runwayChanged && speedsEntered ? 'V SPEEDS DELETED' : '';
         return true;
@@ -833,7 +928,10 @@ export class FMCEngine {
         if (!result.valid) return icaoErr(result);
         const newTakeoff = { ...this.state.takeoff, v1: parseInt(sp) || 0 };
         const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        if (!vsResult.valid) {
+          this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS';
+          return 'error';
+        }
         this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
@@ -843,7 +941,10 @@ export class FMCEngine {
         if (!result.valid) return icaoErr(result);
         const newTakeoff = { ...this.state.takeoff, vr: parseInt(sp) || 0 };
         const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        if (!vsResult.valid) {
+          this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS';
+          return 'error';
+        }
         this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
@@ -853,7 +954,10 @@ export class FMCEngine {
         if (!result.valid) return icaoErr(result);
         const newTakeoff = { ...this.state.takeoff, v2: parseInt(sp) || 0 };
         const vsResult = isValidVSpeeds(newTakeoff.v1, newTakeoff.vr, newTakeoff.v2);
-        if (!vsResult.valid) { this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS'; return 'error'; }
+        if (!vsResult.valid) {
+          this.state.scratchpadError = vsResult.error ?? 'INVALID V-SPEEDS';
+          return 'error';
+        }
         this.state.takeoff = newTakeoff;
         this.state.scratchpad = '';
         return true;
@@ -1022,7 +1126,8 @@ export class FMCEngine {
         if (parts.length !== 2) return err();
         const radial = parseInt(parts[0]);
         const distance = parseInt(parts[1]);
-        if (isNaN(radial) || radial < 1 || radial > 360 || isNaN(distance) || distance < 0 || distance > 999) return err();
+        if (isNaN(radial) || radial < 1 || radial > 360 || isNaN(distance) || distance < 0 || distance > 999)
+          return err();
         const entryIndex = action.endsWith('_1') ? 1 : 0;
         const fixEntries = ensureFixEntries(this.state.fixEntries, this.state.fix);
         fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
@@ -1211,8 +1316,6 @@ export class FMCEngine {
     this.advanceTutorial();
   }
 
-
-
   getState(): FMCState {
     return this.state;
   }
@@ -1271,8 +1374,8 @@ export class FMCEngine {
     }
 
     // Alphanumeric keys: don't record errors while typing
-    const isAlphaNumeric = /^[A-Z0-9]$/.test(key) || 
-      ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
+    const isAlphaNumeric =
+      /^[A-Z0-9]$/.test(key) || ['DOT', 'SLASH', 'PLUS_MINUS', 'SPACE', 'CLR', 'DEL'].includes(key);
 
     if (!isAlphaNumeric) {
       this.recordTutorialError();

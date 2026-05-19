@@ -1,4 +1,4 @@
-import { NgLcdRenderer }      from './NgLcdRenderer';
+import { NgLcdRenderer } from './NgLcdRenderer';
 import { ClassicCrtRenderer } from './ClassicCrtRenderer';
 import type { DisplayRenderer } from './types';
 
@@ -12,7 +12,7 @@ import type { DisplayRenderer } from './types';
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const rendererMap: Record<string, DisplayRenderer> = {
-  'ng-lcd':      new NgLcdRenderer(),
+  'ng-lcd': new NgLcdRenderer(),
   'classic-crt': new ClassicCrtRenderer(),
 } as const;
 

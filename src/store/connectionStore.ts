@@ -1,7 +1,12 @@
 import { create } from 'zustand';
-import type { 
-  FMCMode, ConnectionStatus, ConnectionMode, AircraftType, 
-  AdapterCapabilities, AdapterHealth, DisplayData 
+import type {
+  FMCMode,
+  ConnectionStatus,
+  ConnectionMode,
+  AircraftType,
+  AdapterCapabilities,
+  AdapterHealth,
+  DisplayData,
 } from '@shared';
 
 export interface ConnectionState {
@@ -26,7 +31,11 @@ export interface ConnectionActions {
   setConnectionStatus: (status: ConnectionStatus) => void;
   setConnectionMode: (mode: ConnectionMode) => void;
   setSimVariables: (variables: Record<string, number>) => void;
-  setConnectedAircraft: (aircraft: string | null, capabilities?: string[] | null, aircraftType?: AircraftType | null) => void;
+  setConnectedAircraft: (
+    aircraft: string | null,
+    capabilities?: string[] | null,
+    aircraftType?: AircraftType | null,
+  ) => void;
   setConnectedLastError: (error: string | null) => void;
   setExternalDisplayData: (data: DisplayData | null) => void;
   setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => void;
@@ -56,16 +65,19 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
   setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),
   setConnectionMode: (mode: ConnectionMode) => set({ connectionMode: mode }),
   setSimVariables: (variables: Record<string, number>) => set({ simVariables: variables }),
-  
-  setConnectedAircraft: (aircraft: string | null, capabilities: string[] | null = null, aircraftType: AircraftType | null = null) => 
-    set({ connectedAircraft: aircraft, connectedCapabilities: capabilities, connectedAircraftType: aircraftType }),
-  
+
+  setConnectedAircraft: (
+    aircraft: string | null,
+    capabilities: string[] | null = null,
+    aircraftType: AircraftType | null = null,
+  ) => set({ connectedAircraft: aircraft, connectedCapabilities: capabilities, connectedAircraftType: aircraftType }),
+
   setConnectedLastError: (error: string | null) => set({ lastError: error }),
   setExternalDisplayData: (data: DisplayData | null) => set({ externalDisplayData: data }),
-  
-  setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) => 
+
+  setFailureMode: (mode: 'FAIL' | 'OFF', message?: string) =>
     set({ connectionStatus: mode === 'FAIL' ? 'ERROR' : 'DISCONNECTED', failureMessage: message || null }),
-    
+
   clearFailureMode: () => set({ failureMessage: null }),
   setLatency: (ms: number) => set({ latency: ms }),
 }));

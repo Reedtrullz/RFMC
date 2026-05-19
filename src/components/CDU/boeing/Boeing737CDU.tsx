@@ -16,35 +16,41 @@ import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 export function Boeing737CDU() {
   const isKiosk = useKioskMode();
 
-  const pressKey = useFMCStore(s => s.pressKey);
-  const pressLSK = useFMCStore(s => s.pressLSK);
-  const annunciators = useAircraftStore(s => s.boeingAnnunciators);
-  const execLit = useFMCStore(s => s.execLit);
-  const connectionMode = useConnectionStore(s => s.connectionMode);
-  const connectionStatus = useConnectionStore(s => s.connectionStatus);
-  const tutorialHighlight = useFMCStore(s => s.tutorialHighlight);
-  const tutorialHintLevel = useFMCStore(s => s.tutorialHintLevel);
-  const brightness = useCockpitLayoutStore(s => s.brightness);
-  const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
-  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
+  const pressKey = useFMCStore((s) => s.pressKey);
+  const pressLSK = useFMCStore((s) => s.pressLSK);
+  const annunciators = useAircraftStore((s) => s.boeingAnnunciators);
+  const execLit = useFMCStore((s) => s.execLit);
+  const connectionMode = useConnectionStore((s) => s.connectionMode);
+  const connectionStatus = useConnectionStore((s) => s.connectionStatus);
+  const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
+  const tutorialHintLevel = useFMCStore((s) => s.tutorialHintLevel);
+  const brightness = useCockpitLayoutStore((s) => s.brightness);
+  const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
+  const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
 
   const { send } = useWebSocket();
 
-  const onPressKey = useCallback((key: string) => {
-    if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
-      send({ type: 'fmc.input', key: key as CDUKey });
-      return;
-    }
-    pressKey(key as CDUKey);
-  }, [pressKey, connectionMode, connectionStatus, send]);
+  const onPressKey = useCallback(
+    (key: string) => {
+      if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
+        send({ type: 'fmc.input', key: key as CDUKey });
+        return;
+      }
+      pressKey(key as CDUKey);
+    },
+    [pressKey, connectionMode, connectionStatus, send],
+  );
 
-  const onPressLSK = useCallback((side: 'L' | 'R', index: number) => {
-    if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
-      send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
-      return;
-    }
-    pressLSK(side, index);
-  }, [pressLSK, connectionMode, connectionStatus, send]);
+  const onPressLSK = useCallback(
+    (side: 'L' | 'R', index: number) => {
+      if (connectionMode === 'CONTROL' && connectionStatus === 'CONNECTED') {
+        send({ type: 'fmc.input', key: `${side}${index}` as CDUKey });
+        return;
+      }
+      pressLSK(side, index);
+    },
+    [pressLSK, connectionMode, connectionStatus, send],
+  );
 
   const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {
     const lskId = `${side}${index}`;

@@ -39,10 +39,7 @@ export function airbusDisplaySegment(
  * @param title - The title text
  * @param pageIndicator - Optional page indicator (e.g., 'A', 'B', '1/2')
  */
-export function airbusTitleRow(
-  title: string,
-  pageIndicator?: string,
-): DisplaySegment[] {
+export function airbusTitleRow(title: string, pageIndicator?: string): DisplaySegment[] {
   const segments: DisplaySegment[] = [
     airbusDisplaySegment(0, 2, title, 'white', {
       inverse: true,
@@ -71,11 +68,7 @@ export function airbusTitleRow(
  * @param row - Row number
  * @param side - 'L' for left side (col 0) or 'R' for right side (right-aligned)
  */
-export function airbusLineLabel(
-  label: string,
-  row: number,
-  side: 'L' | 'R',
-): DisplaySegment {
+export function airbusLineLabel(label: string, row: number, side: 'L' | 'R'): DisplaySegment {
   if (side === 'L') {
     return airbusDisplaySegment(row, 0, label, 'white', { semantic: 'label' });
   }
@@ -156,10 +149,7 @@ export function airbusGrid(segments: DisplaySegment[]): GridDisplayData {
  * @param segments - Grid segments composing the page display
  * @param lskActions - Mapping of LSK identifiers to action handler keys
  */
-export function airbusPage(
-  segments: DisplaySegment[],
-  lskActions: Record<string, string | null> = {},
-): DisplayData {
+export function airbusPage(segments: DisplaySegment[], lskActions: Record<string, string | null> = {}): DisplayData {
   return {
     segments,
     lskActions,

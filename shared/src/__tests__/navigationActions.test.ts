@@ -9,7 +9,11 @@ describe('resolveLskNavigation', () => {
     expect(resolveLskNavigation('next_page')).toEqual({ action: 'next_page', pressKey: 'NEXT_PAGE', handled: true });
   });
   it('Boeing dep_page returns DEP subpage', () => {
-    expect(resolveLskNavigation('dep_page')).toEqual({ action: 'dep_page', setSubPage: { depArrSubPage: 'DEP' }, handled: true });
+    expect(resolveLskNavigation('dep_page')).toEqual({
+      action: 'dep_page',
+      setSubPage: { depArrSubPage: 'DEP' },
+      handled: true,
+    });
   });
   it('Airbus init_a returns INIT_A page', () => {
     expect(resolveLskNavigation('init_a')).toEqual({ action: 'init_a', targetPage: 'INIT_A', handled: true });

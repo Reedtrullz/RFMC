@@ -57,9 +57,11 @@ describe('buildLnavState', () => {
   });
 
   it('uses direct-to as the active leg target', () => {
-    const lnav = buildLnavState(stateWithRoute({
-      route: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', routeString: 'BAMAD BGO', directTo: 'BGO' },
-    }));
+    const lnav = buildLnavState(
+      stateWithRoute({
+        route: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', routeString: 'BAMAD BGO', directTo: 'BGO' },
+      }),
+    );
 
     expect(lnav.directToActive).toBe(true);
     expect(lnav.activeLegIndex).toBe(2);
@@ -68,20 +70,22 @@ describe('buildLnavState', () => {
   });
 
   it('stops normal sequencing at a discontinuity', () => {
-    const lnav = buildLnavState(stateWithRoute({
-      flightPlan: {
-        origin: 'ENGM',
-        destination: 'ENBR',
-        flightNumber: '',
-        route: 'BAMAD BGO',
-        waypoints: [
-          routeWaypoints[0],
-          { ident: 'ROUTE DISCONTINUITY', discontinuity: true },
-          routeWaypoints[2],
-          routeWaypoints[3],
-        ],
-      },
-    }));
+    const lnav = buildLnavState(
+      stateWithRoute({
+        flightPlan: {
+          origin: 'ENGM',
+          destination: 'ENBR',
+          flightNumber: '',
+          route: 'BAMAD BGO',
+          waypoints: [
+            routeWaypoints[0],
+            { ident: 'ROUTE DISCONTINUITY', discontinuity: true },
+            routeWaypoints[2],
+            routeWaypoints[3],
+          ],
+        },
+      }),
+    );
 
     expect(lnav.activeWaypoint?.ident).toBe('ENGM');
     expect(lnav.nextWaypoint).toBeNull();
@@ -90,21 +94,23 @@ describe('buildLnavState', () => {
   });
 
   it('can direct-to a waypoint beyond a discontinuity', () => {
-    const lnav = buildLnavState(stateWithRoute({
-      route: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', routeString: 'BAMAD BGO', directTo: 'BGO' },
-      flightPlan: {
-        origin: 'ENGM',
-        destination: 'ENBR',
-        flightNumber: '',
-        route: 'BAMAD BGO',
-        waypoints: [
-          routeWaypoints[0],
-          { ident: 'ROUTE DISCONTINUITY', discontinuity: true },
-          routeWaypoints[2],
-          routeWaypoints[3],
-        ],
-      },
-    }));
+    const lnav = buildLnavState(
+      stateWithRoute({
+        route: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', routeString: 'BAMAD BGO', directTo: 'BGO' },
+        flightPlan: {
+          origin: 'ENGM',
+          destination: 'ENBR',
+          flightNumber: '',
+          route: 'BAMAD BGO',
+          waypoints: [
+            routeWaypoints[0],
+            { ident: 'ROUTE DISCONTINUITY', discontinuity: true },
+            routeWaypoints[2],
+            routeWaypoints[3],
+          ],
+        },
+      }),
+    );
 
     expect(lnav.directToActive).toBe(true);
     expect(lnav.activeWaypoint?.ident).toBe('BGO');
@@ -112,24 +118,25 @@ describe('buildLnavState', () => {
   });
 
   it('marks an empty or discontinuity-first route as blocked', () => {
-    const empty = buildLnavState(stateWithRoute({
-      flightPlan: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', route: '', waypoints: [] },
-    }));
+    const empty = buildLnavState(
+      stateWithRoute({
+        flightPlan: { origin: 'ENGM', destination: 'ENBR', flightNumber: '', route: '', waypoints: [] },
+      }),
+    );
     expect(empty.activeWaypoint).toBeNull();
     expect(empty.routeComplete).toBe(true);
 
-    const blocked = buildLnavState(stateWithRoute({
-      flightPlan: {
-        origin: 'ENGM',
-        destination: 'ENBR',
-        flightNumber: '',
-        route: '',
-        waypoints: [
-          { ident: 'ROUTE DISCONTINUITY', discontinuity: true },
-          routeWaypoints[2],
-        ],
-      },
-    }));
+    const blocked = buildLnavState(
+      stateWithRoute({
+        flightPlan: {
+          origin: 'ENGM',
+          destination: 'ENBR',
+          flightNumber: '',
+          route: '',
+          waypoints: [{ ident: 'ROUTE DISCONTINUITY', discontinuity: true }, routeWaypoints[2]],
+        },
+      }),
+    );
     expect(blocked.activeWaypoint).toBeNull();
     expect(blocked.stoppedAtDiscontinuity).toBe(true);
   });

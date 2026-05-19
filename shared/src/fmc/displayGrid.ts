@@ -9,7 +9,7 @@ export type { DisplaySegment, GridDisplayData, DisplayTextSize, CellData };
 
 export function buildCells(grid: GridDisplayData): CellData[] {
   const cells: CellData[] = [];
-  
+
   for (let r = 0; r < grid.rows; r++) {
     for (let c = 0; c < grid.columns; c++) {
       cells.push({ row: r, col: c, char: ' ' });
@@ -18,8 +18,16 @@ export function buildCells(grid: GridDisplayData): CellData[] {
 
   for (const segment of grid.segments) {
     if (process.env.NODE_ENV !== 'production') {
-      if (segment.row < 0 || segment.row >= grid.rows || segment.col < 0 || segment.col + segment.text.length > grid.columns) {
-        devWarn(`Display segment out of bounds: row ${segment.row}, col ${segment.col}, length ${segment.text.length} (Grid: ${grid.rows}x${grid.columns})`, segment);
+      if (
+        segment.row < 0 ||
+        segment.row >= grid.rows ||
+        segment.col < 0 ||
+        segment.col + segment.text.length > grid.columns
+      ) {
+        devWarn(
+          `Display segment out of bounds: row ${segment.row}, col ${segment.col}, length ${segment.text.length} (Grid: ${grid.rows}x${grid.columns})`,
+          segment,
+        );
       }
     }
     for (let i = 0; i < segment.text.length; i++) {
@@ -50,7 +58,7 @@ export function seg(
   col: number,
   text: string,
   color: DisplayColor = 'white',
-  options: Partial<DisplaySegment> = {}
+  options: Partial<DisplaySegment> = {},
 ): DisplaySegment {
   return {
     row,
@@ -142,9 +150,7 @@ export function scratchpadToGridSegment(
 }
 
 export function gridToPlainText(grid: GridDisplayData): string {
-  const charGrid: string[][] = Array.from({ length: grid.rows }, () => 
-    Array.from({ length: grid.columns }, () => ' ')
-  );
+  const charGrid: string[][] = Array.from({ length: grid.rows }, () => Array.from({ length: grid.columns }, () => ' '));
 
   for (const segment of grid.segments) {
     for (let i = 0; i < segment.text.length; i++) {
@@ -155,5 +161,5 @@ export function gridToPlainText(grid: GridDisplayData): string {
     }
   }
 
-  return charGrid.map(row => row.join('')).join('\n');
+  return charGrid.map((row) => row.join('')).join('\n');
 }

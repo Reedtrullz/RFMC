@@ -29,20 +29,18 @@ export function buildDisplayData(state: FMCState): RendererDisplayData {
   // Convert to the richer GridDisplayData model used by canvas renderers.
   const grid = displayDataToGrid(legacyData);
 
-    // Build scratchpad segments.
-    // Prefer scratchpadState (new engine). Fall back to legacy scratchpad + scratchpadError.
-    let spText: string;
-    let color: DisplayColor = 'white';
-    if (state.scratchpadState) {
-      spText = getActiveDisplay(state.scratchpadState);
-      color = state.scratchpadState.message ? 'amber' : 'white';
-    } else {
-      spText = state.scratchpadError ?? state.scratchpad;
-      color = state.scratchpadError != null ? 'amber' : 'white';
-    }
-    const scratchpad = spText
-      ? [scratchpadToGridSegment(spText, { color })]
-      : [];
+  // Build scratchpad segments.
+  // Prefer scratchpadState (new engine). Fall back to legacy scratchpad + scratchpadError.
+  let spText: string;
+  let color: DisplayColor = 'white';
+  if (state.scratchpadState) {
+    spText = getActiveDisplay(state.scratchpadState);
+    color = state.scratchpadState.message ? 'amber' : 'white';
+  } else {
+    spText = state.scratchpadError ?? state.scratchpad;
+    color = state.scratchpadError != null ? 'amber' : 'white';
+  }
+  const scratchpad = spText ? [scratchpadToGridSegment(spText, { color })] : [];
 
   return { grid, scratchpad };
 }
