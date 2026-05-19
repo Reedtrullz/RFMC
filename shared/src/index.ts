@@ -19,6 +19,8 @@ export type {
   NDHoldOverlay,
   NDRoutePoint,
   NDRouteSegment,
+  VerticalProfilePoint,
+  WXRPoint,
 } from './fmc/ndTypes';
 export { tutorialScenarios, getTutorialScenario, calculateTutorialGrade, isStepComplete } from './fmc/tutorialEngine';
 export {

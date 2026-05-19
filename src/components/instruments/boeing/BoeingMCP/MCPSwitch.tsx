@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import { MCPAnnunciator } from './MCPAnnunciator';
+import { tactile } from '../../../../utils/tactile';
 
 interface MCPSwitchProps {
   label: string;
@@ -9,9 +11,12 @@ interface MCPSwitchProps {
   highlighted?: boolean;
 }
 
-import { tactile } from '../../../../utils/tactile';
-
 export function MCPSwitch({ label, active, onPress, showAnnunciator = true, small = false, highlighted }: MCPSwitchProps) {
+  const handleClick = useCallback(() => {
+    tactile.feedback();
+    onPress();
+  }, [onPress]);
+
   return (
     <div className="flex flex-col items-center gap-2.5">
       <div className="relative group">
@@ -19,10 +24,7 @@ export function MCPSwitch({ label, active, onPress, showAnnunciator = true, smal
         <div className="absolute -inset-1 rounded-sm bg-black/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]" />
         
         <button
-          onClick={() => {
-            tactile.feedback();
-            onPress();
-          }}
+          onClick={handleClick}
           className={`relative flex items-center justify-center rounded-[1px] border-b-[3px] border-black/60 bg-[#2d3030] text-center font-cdu text-white shadow-xl transition-all hover:bg-[#3d4040] active:translate-y-[2px] active:border-b-0 ${
             small ? 'h-11 w-16 text-[9px]' : 'h-14 w-20 text-[10px]'
           } ${highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]' : ''}`}

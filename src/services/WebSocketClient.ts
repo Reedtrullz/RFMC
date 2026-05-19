@@ -31,7 +31,7 @@ class WebSocketClient {
       this.saveServerUrl(url);
     }
 
-    if (this.ws?.readyState === WebSocket.OPEN) return;
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
 
     this.setStatus('CONNECTING');
 

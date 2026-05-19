@@ -6,6 +6,9 @@ export class MetricsRegistry {
   private totalConnections = 0;
   private validationErrors = 0;
   private simErrors = 0;
+  private authRejections = 0;
+  private rateLimitedConnections = 0;
+  private pingTimeouts = 0;
   private startTime = Date.now();
 
   clientConnected() {
@@ -25,6 +28,18 @@ export class MetricsRegistry {
     this.simErrors++;
   }
 
+  authRejected() {
+    this.authRejections++;
+  }
+
+  rateLimited() {
+    this.rateLimitedConnections++;
+  }
+
+  pingTimeout() {
+    this.pingTimeouts++;
+  }
+
   getMetrics() {
     return {
       uptimeSeconds: Math.floor((Date.now() - this.startTime) / 1000),
@@ -32,6 +47,9 @@ export class MetricsRegistry {
       totalConnections: this.totalConnections,
       validationErrors: this.validationErrors,
       simErrors: this.simErrors,
+      authRejections: this.authRejections,
+      rateLimitedConnections: this.rateLimitedConnections,
+      pingTimeouts: this.pingTimeouts,
       version: process.env.APP_VERSION || '0.1.0',
     };
   }

@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
 import { useFMCStore } from '../../../store/useFMCStore';
@@ -6,8 +7,12 @@ import { buildBoeingFMAState, buildAirbusFMAState } from '@shared';
 export function FMA() {
   const aircraft = useAircraftStore(s => s.aircraft);
   const truth = useAutopilotStore(s => s.truth);
-  const autopilot = useAutopilotStore(s => s);
-  const fmc = useFMCStore(s => s);
+  const autopilot = useAutopilotStore(
+    useShallow(s => ({ truth: s.truth, boeing: s.boeing, airbus: s.airbus }))
+  );
+  const fmc = useFMCStore(
+    useShallow(s => ({ aircraftState: s.aircraftState }))
+  );
   const now = Date.now();
   const BOX_TIME = 10000;
 

@@ -1,3 +1,4 @@
+import { devError } from '../logger';
 import { NAV_FIXES } from '../navdata/navdataStore';
 import { AIRPORTS, WAYPOINTS } from './airFMCData';
 import type { NavFix } from '../navdata/navdataTypes';
@@ -58,7 +59,7 @@ export async function loadIntoCache(ident: string): Promise<boolean> {
       return true;
     }
   } catch (error) {
-    console.error(`Failed to load ${upper} into nav cache:`, error);
+    devError(`Failed to load ${upper} into nav cache:`, error);
   }
 
   return false;
@@ -82,7 +83,7 @@ export async function loadProceduresIntoCache(icao: string): Promise<boolean> {
       return true;
     }
   } catch (error) {
-    console.error(`Failed to load procedures for ${upper} into nav cache:`, error);
+    devError(`Failed to load procedures for ${upper} into nav cache:`, error);
   }
 
   return false;

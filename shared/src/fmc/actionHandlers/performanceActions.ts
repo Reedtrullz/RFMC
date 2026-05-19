@@ -53,6 +53,13 @@ export function handleSetZfw(state: FMCState, scratchpad: string): FmcActionResu
       failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'performanceActions' },
     };
   }
+  // B737-800 physical limits: ZFW range ~85,000-138,500 lbs
+  if (zfwInput < 85 || zfwInput > 140) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'OUT OF RANGE', source: 'performanceActions' },
+    };
+  }
 
   const zfw = zfwInput * 1000;
   const fuel = state.performance.fuel ?? 0;

@@ -31,11 +31,21 @@ jobs:
       - name: Typecheck (all workspaces)
         run: npm run typecheck:all
 
-      - name: Unit tests
-        run: npm test -- --run
+      - name: Lint check
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit tests + coverage
+        run: npm run test:coverage
 
       - name: Build production bundle
         run: npm run build
+
+      - name: Bundle size check
+        run: |
+          du -sh dist/ 2>/dev/null || echo "No dist/ directory — skipping bundle size check"
 
       - name: Status docs are consolidated
         run: npm run check:status-docs

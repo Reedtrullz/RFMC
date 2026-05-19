@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { useFMCStore } from '../../../store/useFMCStore';
@@ -25,7 +26,7 @@ export function Boeing737CDU() {
   const tutorialHintLevel = useFMCStore(s => s.tutorialHintLevel);
   const brightness = useCockpitLayoutStore(s => s.brightness);
   const setBrightness = useCockpitLayoutStore(s => s.setBrightness);
-  const displayData = useFMCStore(s => s.getDisplayData());
+  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
 
   const { send } = useWebSocket();
 

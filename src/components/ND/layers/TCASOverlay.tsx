@@ -1,4 +1,6 @@
-export function TCASOverlay({ targets }: { targets: any[] }) {
+import type { TCASTarget } from '@shared';
+
+export function TCASOverlay({ targets }: { targets: TCASTarget[] }) {
   return (
     <g data-testid="nd-tcas-overlay">
       {targets.map(t => (

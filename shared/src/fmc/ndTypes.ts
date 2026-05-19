@@ -1,8 +1,5 @@
-import type { AircraftType, EFISState } from '../types/fmc';
-
-export type NDMapMode = 
-  | 'MAP' | 'PLN' | 'APP' | 'VOR' // Boeing
-  | 'ROSE_NAV' | 'ARC' | 'PLAN' | 'ROSE_ILS' | 'ROSE_VOR'; // Airbus
+import type { AircraftType, EFISState, NDMapMode } from '../types/fmc';
+export type { NDMapMode };
 
 export type NDRange = 5 | 10 | 20 | 40 | 80 | 160 | 320 | 640;
 
@@ -83,9 +80,16 @@ export interface TCASTarget {
   threatLevel: 'other' | 'proximate' | 'traffic' | 'resolution';
 }
 
+export interface WXRPoint {
+  x: number;
+  y: number;
+  r: number;
+  intensity: 'light' | 'medium' | 'heavy';
+}
+
 export interface WXRData {
   intensity: 'none' | 'light' | 'medium' | 'heavy';
-  points: Array<{ x: number; y: number; r: number }>;
+  points: WXRPoint[];
 }
 
 export interface VerticalProfilePoint {

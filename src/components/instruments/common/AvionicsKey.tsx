@@ -1,4 +1,5 @@
 import { tactile } from '../../../utils/tactile';
+import { devLog } from '@shared';
 
 interface AvionicsKeyProps {
   label: string;
@@ -52,7 +53,7 @@ export function AvionicsKey({
           tactile.feedback();
           onPress();
         } else {
-          console.log(`[FMC] Key clicked but DISABLED: ${label}`);
+          devLog(`[FMC] Key clicked but DISABLED: ${label}`);
         }
       }}
     >

@@ -1,4 +1,4 @@
-import type { AircraftType, PageType } from '../types/fmc';
+import type { AircraftType, PageType } from '../types/core';
 
 export type TrainingCategory = 'fmc' | 'autopilot' | 'navigation' | 'approach' | 'checkride';
 export type TrainingDifficulty = 'basic' | 'intermediate' | 'advanced';

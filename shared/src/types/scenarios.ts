@@ -21,6 +21,12 @@ export interface ScenarioEvent {
   processed?: boolean;
 }
 
+export interface TrainingGoal {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface TrainingScenario {
   id: string;
   name: string;
@@ -31,9 +37,5 @@ export interface TrainingScenario {
     destination: string;
   };
   events: ScenarioEvent[];
-  goals: {
-    id: string;
-    text: string;
-    completed: boolean;
-  }[];
+  goals: TrainingGoal[];
 }

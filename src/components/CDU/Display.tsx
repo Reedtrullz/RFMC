@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useFMCStore } from '../../store/useFMCStore';
 import { displayDataToGrid, PAGE_LINES } from '@shared';
 import { CDUDisplayGrid } from './display/CDUDisplayGrid';
@@ -8,7 +9,7 @@ interface DisplayProps {
 }
 
 export function Display({ variant = 'boeing' }: DisplayProps) {
-  const displayData = useFMCStore(s => s.getDisplayData());
+  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
   const aircraft = useAircraftStore(s => s.aircraft);
   const isAirbus = variant === 'airbus' || aircraft === 'AIRBUS_A320';
   const grid = displayDataToGrid(displayData);

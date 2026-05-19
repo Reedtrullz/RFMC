@@ -4,7 +4,7 @@ import {
   SCRATCHPAD_MAX, PAGE_LINES, PAGE_WIDTH, getPageRenderer, getAirbusPageRenderer, 
   parseRouteString, getTutorialScenario, airbusTutorialScenarios, processBoeingMCPAction, 
   expandRoute, getWaypoint, getAirport, TrainingScenario, TrainingStep, TrainingMistake, 
-  TrainingScore, TrainingScenarioEngine, boeingLessons, airbusLessons, progressManager, 
+  TrainingScore, TrainingScenarioEngine, ExpectedAction, boeingLessons, airbusLessons, progressManager, 
   PhaseManager, LegSequencer, PerformanceEngine,
   AutoflightModeManager, AutoflightTruthState, LateralMode, VerticalMode, ThrustMode
 } from '@shared';
@@ -31,7 +31,7 @@ import { fmcTypeChar, fmcClrKey, fmcDelKey, fmcClearBuffer, fmcPageChange, fmcEx
 import { getActiveDisplay } from '@shared/fmc/scratchpadEngine';
 import type { FmcActionResult } from '@shared/fmc/actionHandlers/actionResult';
 import { dispatchLskAction } from '@shared/fmc/actionHandlers/lskDispatcher';
-import { devLog, devError } from '@shared';
+import { devLog, devError, devWarn } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
 type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
@@ -93,7 +93,7 @@ function ensureFixEntries(entries: FMCState['fixEntries'], legacy: FMCState['fix
   ];
 }
 
-function getTrainingHighlight(step: any): string | null {
+function getTrainingHighlight(step: TrainingStep): string | null {
   if (step.highlightControl) return step.highlightControl;
   const action = step.expectedAction;
   if (!action) return null;
@@ -279,7 +279,7 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   tutorialHint: null as string | null,
   tutorialSkipAvailable: false,
   tutorialHintLevel: 0,
-  tutorialHintTimer: null as any,
+  tutorialHintTimer: null as number | null,
   tutorialConfidence: null as number | null,
 
   // New Training state
@@ -291,11 +291,11 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
   trainingStepIndex: 0,
   trainingCompleted: false,
   debriefMode: false,
-  activeScenario: null as any | null,
+  activeScenario: null as TrainingScenario | null,
   isReportVisible: false,
 
   hold: { fix: '', inboundCourse: 0, legTime: 1.0, legDist: 0, direction: 'R' as const },
-  holdPending: null as any,
+  holdPending: null,
   fix: { refFix: '', radial: 0, distance: 0 },
   fixEntries: [{ refFix: '', radial: 0, distance: 0 }, { refFix: '', radial: 0, distance: 0 }],
   
@@ -309,7 +309,7 @@ const defaultState: FMCState & ConnectionDiagnostics & TutorialState & TrainingS
 
   atsu: {
     messages: [] as AcarsMessage[],
-    pendingUplink: null as any,
+    pendingUplink: null,
   },
   
   deleteMode: false,
@@ -407,7 +407,7 @@ interface FMCActions {
   // Training actions
   startTraining: (scenarioId: string) => void;
   stopTraining: () => void;
-  processTrainingAction: (action: any) => void;
+  processTrainingAction: (action: ExpectedAction) => void;
   setDebriefMode: (active: boolean) => void;
 
   setNDMode: (side: 'L' | 'R', mode: string) => void;
@@ -468,7 +468,7 @@ interface TutorialState {
   tutorialSkipAvailable: boolean;
   tutorialHighlight: string | null;
   tutorialHintLevel: number; // 0=none, 1=glow, 2=tooltip, 3=arrow
-  tutorialHintTimer: any | null;
+  tutorialHintTimer: number | null;
   tutorialConfidence: number | null;
 }
 
@@ -481,7 +481,7 @@ interface TrainingState {
   trainingStepIndex: number;
   trainingCompleted: boolean;
   debriefMode: boolean;
-  activeScenario: any | null;
+  activeScenario: TrainingScenario | null;
   isReportVisible: boolean;
 }
 
@@ -604,7 +604,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   pressKey: (key: CDUKey) => {
     const startTime = performance.now();
-    console.log(`[FMC] pressKey: ${key}`);
+      devLog(`[FMC] pressKey: ${key}`);
     const { scratchpad, currentPage } = get();
     let handled = false;
 
@@ -800,7 +800,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
       if (idents.length > 0) {
         idents.forEach(id => {
-          loadIntoCache(id).catch(err => console.error(`Error background loading ${id}:`, err));
+          loadIntoCache(id).catch(err => devError(`Error background loading ${id}:`, err));
         });
       }
     }
@@ -808,10 +808,10 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     const originArpt = state.pendingRoute?.origin ?? state.route.origin;
     const destArpt = state.pendingRoute?.destination ?? state.route.destination;
     if (originArpt) {
-      loadProceduresIntoCache(originArpt).catch(() => {});
+      loadProceduresIntoCache(originArpt).catch(err => devError('Failed to load arrival procedures', err));
     }
     if (destArpt) {
-      loadProceduresIntoCache(destArpt).catch(() => {});
+      loadProceduresIntoCache(destArpt).catch(err => devError('Failed to load destination procedures', err));
     }
 
     let handled = false;
@@ -1191,7 +1191,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       });
       set({ dbInitializationState: 'ready' });
     } catch (error) {
-      console.error('Failed to initialize NavDB:', error);
+      devError('Failed to initialize NavDB:', error);
       set({ dbInitializationState: 'error' });
     }
   },
@@ -1632,11 +1632,11 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
 
   setDebriefMode: (active: boolean) => set({ debriefMode: active }),
 
-  processTrainingAction: (action: any) => {
+  processTrainingAction: (action: ExpectedAction) => {
     const { trainingActive, trainingEngine, trainingScenario } = get();
     if (!trainingActive || !trainingEngine || !trainingScenario) return;
 
-    const result = trainingEngine.processAction(action, get());
+    const result = trainingEngine.processAction(action, get() as unknown as Record<string, unknown>);
     
     if (result.success) {
       if (result.completed) {
@@ -1687,7 +1687,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Training hook
     if (get().trainingActive) {
       Object.entries(update).forEach(([field, value]) => {
-        get().processTrainingAction({ type: 'set_mcp', field, value });
+        get().processTrainingAction({ type: 'set_mcp', field, value: value as string | number | boolean });
       });
     }
   },
@@ -1719,7 +1719,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     // Training hook
     if (get().trainingActive) {
       Object.entries(update).forEach(([field, value]) => {
-        get().processTrainingAction({ type: 'set_mcp', field, value });
+        get().processTrainingAction({ type: 'set_mcp', field, value: value as string | number | boolean });
       });
     }
   },
@@ -2019,7 +2019,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
           const { sequence, reason } = LegSequencer.shouldSequence(currentLeg, nextLeg, state.aircraftState);
           
           if (sequence) {
-            console.log(`Sequencing: ${reason}`);
+            devLog(`Sequencing: ${reason}`);
             
             // Check restrictions for the leg we just finished
             const result = LegSequencer.checkRestrictions(currentLeg, state.aircraftState);
@@ -2059,7 +2059,7 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     if (state.trainingActive && state.trainingEngine && state.trainingScenario) {
       const currentStep = state.trainingScenario.steps[state.trainingStepIndex];
       if (currentStep?.expectedAction?.type === 'verify_fma') {
-        const isValid = state.trainingEngine.validateState(state, currentStep.stateValidation || []);
+        const isValid = state.trainingEngine.validateState(state as unknown as Record<string, unknown>, currentStep.stateValidation || []);
         if (isValid) {
           get().processTrainingAction({ type: 'verify_fma', mode: currentStep.expectedAction.mode });
         }

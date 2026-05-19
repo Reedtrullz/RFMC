@@ -1,18 +1,8 @@
 import type { DisplayColor } from '../fmc/displayColors';
-import type { DisplaySemantic } from '../fmc/displaySemantics';
+import type { DisplaySemantic, DisplaySegment } from './fmc';
+export type { DisplaySemantic, DisplaySegment };
 
 export type DisplayTextSize = 'small' | 'normal';
-
-export interface DisplaySegment {
-  row: number;
-  col: number;
-  text: string;
-  size?: DisplayTextSize;
-  color?: DisplayColor;
-  inverse?: boolean;
-  blink?: boolean;
-  semantic?: DisplaySemantic;
-}
 
 export interface CellData {
   row: number;

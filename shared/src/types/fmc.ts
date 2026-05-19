@@ -1,7 +1,26 @@
 import type { DisplayColor } from '../fmc/displayColors';
-import type { DisplaySemantic } from '../fmc/displaySemantics';
-export { DisplayColor, DisplaySemantic };
-import type { NDMapMode } from '../fmc/ndTypes';
+export { DisplayColor };
+
+// DisplaySemantic moved here to break circular dep: types/fmc.ts ↔ displaySemantics.ts
+export type DisplaySemantic =
+  | 'title'
+  | 'label'
+  | 'activeData'
+  | 'inactiveData'
+  | 'modified'
+  | 'guidance'
+  | 'warning'
+  | 'caution'
+  | 'placeholder'
+  | 'scratchpad'
+  | 'inverse'
+  | 'titleBackground'
+  | 'pageIndicator';
+
+// Core types (zero-dependency module) — imported to break training cycle
+import type { AircraftType, BoeingPageType, AirbusPageType, PageType } from './core';
+export type { AircraftType, BoeingPageType, AirbusPageType, PageType };
+
 import type { TrainingScenario, TrainingMistake, TrainingScore } from '../training/trainingTypes';
 import type { TrainingScenarioEngine } from '../training/scenarioEngine';
 import type { ScratchpadState } from '../fmc/scratchpadEngine';
@@ -20,12 +39,21 @@ export interface TCASTarget {
 // Core FMC types shared between frontend and backend
 // ============================================================
 
-/** Aircraft variant */
-export type AircraftType = 'BOEING_737' | 'AIRBUS_A320';
+// NDMapMode moved here to break circular dep: types/fmc.ts ↔ ndTypes.ts
+export type NDMapMode =
+  | 'MAP'
+  | 'PLN'
+  | 'APP'
+  | 'VOR' // Boeing
+  | 'ROSE_NAV'
+  | 'ARC'
+  | 'PLAN'
+  | 'ROSE_ILS'
+  | 'ROSE_VOR'; // Airbus
 
 export interface EFISState {
-  mode: NDMapMode;           // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
-  range: number;          // 10, 20, 40, 80, 160, 320, 640
+  mode: NDMapMode; // 737: APP, VOR, MAP, PLN; A320: ROSE, ARC, PLAN
+  range: number; // 10, 20, 40, 80, 160, 320, 640
   overlays: {
     wpt: boolean;
     arpt: boolean;
@@ -37,19 +65,12 @@ export interface EFISState {
     tfc: boolean;
     cstr: boolean;
   };
-  centered: boolean;      // 737 CTR toggle
+  centered: boolean; // 737 CTR toggle
   side: 'L' | 'R';
   tcasMode?: 'ABOVE' | 'BELOW' | 'NORMAL';
 }
 
-export type IrsState =
-  | 'OFF'
-  | 'ALIGNING'
-  | 'NAV'
-  | 'ATT'
-  | 'ALIGN_INTERRUPTED'
-  | 'FAST_ALIGNING'
-  | 'FAULT';
+export type IrsState = 'OFF' | 'ALIGNING' | 'NAV' | 'ATT' | 'ALIGN_INTERRUPTED' | 'FAST_ALIGNING' | 'FAULT';
 
 export type NavSource = 'GPS' | 'DME_DME' | 'VOR_DME' | 'LOC' | 'IRS' | 'LOC_GPS';
 
@@ -81,50 +102,6 @@ export interface FlightDeckAlert {
   timestamp: number;
   clearable: boolean;
 }
-
-/** All possible Boeing 737 CDU pages */
-export type BoeingPageType =
-  | 'IDENT'
-  | 'POS_INIT'
-  | 'RTE'
-  | 'DEP_ARR'
-  | 'PERF_INIT'
-  | 'THRUST_LIM'
-  | 'TAKEOFF_REF'
-  | 'LEGS'
-  | 'PROGRESS'
-  | 'HOLD'
-  | 'FIX'
-  | 'MENU'
-  | 'TUTORIAL'
-  | 'CLB'
-  | 'CRZ'
-  | 'DES'
-  | 'DIR_INTC'
-  | 'NAV_DATA'
-  | 'N1_LIMIT';
-
-/** All possible Airbus A320 MCDU pages */
-export type AirbusPageType =
-  | 'INIT_A'
-  | 'INIT_B'
-  | 'F_PLN'
-  | 'DEP_ARR_A'
-  | 'PERF_TAKEOFF'
-  | 'PERF_APPR'
-  | 'FUEL_PRED'
-  | 'SEC_FPLN'
-  | 'RAD_NAV'
-  | 'PROG_A'
-  | 'DATA_INDEX'
-  | 'MCDU_MENU'
-  | 'AC_STATUS'
-  | 'ATSU'
-  | 'ATSU_MSGS'
-  | 'ATSU_MSG_DETAIL';
-
-/** All possible FMC pages (Boeing + Airbus) */
-export type PageType = BoeingPageType | AirbusPageType;
 
 export type FlightPhase =
   | 'PREFLIGHT'
@@ -181,8 +158,17 @@ export interface DisplayLine {
   semantic?: DisplaySemantic;
 }
 
-import type { DisplaySegment } from './display';
-export type { DisplaySegment };
+// DisplaySegment moved here to break circular dep (was in types/display.ts)
+export interface DisplaySegment {
+  row: number;
+  col: number;
+  text: string;
+  size?: 'small' | 'normal';
+  color?: DisplayColor;
+  inverse?: boolean;
+  blink?: boolean;
+  semantic?: DisplaySemantic;
+}
 
 /** Full CDU display data — what gets rendered on screen */
 export interface DisplayData {
@@ -208,18 +194,86 @@ export type LSKId = 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'R1' | 'R2' | 'R3'
 
 /** A CDU keyboard key */
 export type CDUKey =
-  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
-  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J'
-  | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T'
-  | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
-  | 'DOT' | 'PLUS_MINUS' | 'SLASH' | 'SPACE'
-  | 'CLR' | 'DEL' | 'EXEC'
-  | 'NEXT_PAGE' | 'PREV_PAGE'
-  | 'INIT_REF' | 'RTE' | 'CLB' | 'CRZ' | 'DES' | 'DIR_INTC' | 'LEGS'
-  | 'DEP_ARR' | 'HOLD' | 'PERF' | 'PROG' | 'N1_LIMIT' | 'FIX' | 'MENU'
-  | 'INIT_A' | 'INIT_B' | 'F_PLN' | 'PERF_TAKEOFF' | 'PROG_A' | 'DEP_ARR_A' | 'MCDU_MENU' | 'RAD_NAV' | 'DATA_INDEX'
-  | 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
-  | 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6';
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z'
+  | 'DOT'
+  | 'PLUS_MINUS'
+  | 'SLASH'
+  | 'SPACE'
+  | 'CLR'
+  | 'DEL'
+  | 'EXEC'
+  | 'NEXT_PAGE'
+  | 'PREV_PAGE'
+  | 'INIT_REF'
+  | 'RTE'
+  | 'CLB'
+  | 'CRZ'
+  | 'DES'
+  | 'DIR_INTC'
+  | 'LEGS'
+  | 'DEP_ARR'
+  | 'HOLD'
+  | 'PERF'
+  | 'PROG'
+  | 'N1_LIMIT'
+  | 'FIX'
+  | 'MENU'
+  | 'INIT_A'
+  | 'INIT_B'
+  | 'F_PLN'
+  | 'PERF_TAKEOFF'
+  | 'PROG_A'
+  | 'DEP_ARR_A'
+  | 'MCDU_MENU'
+  | 'RAD_NAV'
+  | 'DATA_INDEX'
+  | 'L1'
+  | 'L2'
+  | 'L3'
+  | 'L4'
+  | 'L5'
+  | 'L6'
+  | 'R1'
+  | 'R2'
+  | 'R3'
+  | 'R4'
+  | 'R5'
+  | 'R6';
 
 /** Connection mode */
 export type ConnectionMode = 'STANDALONE' | 'SYNC' | 'CONTROL';
@@ -236,15 +290,15 @@ export type AltitudeConstraintType = 'AT' | 'AT_OR_ABOVE' | 'AT_OR_BELOW' | 'BET
 
 export interface AltitudeConstraint {
   type: AltitudeConstraintType;
-  altitude: number;       // feet
-  altitude2?: number;     // for BETWEEN
+  altitude: number; // feet
+  altitude2?: number; // for BETWEEN
 }
 
 export type SpeedConstraintType = 'AT' | 'AT_OR_ABOVE' | 'AT_OR_BELOW';
 
 export interface SpeedConstraint {
   type: SpeedConstraintType;
-  speed: number;          // knots
+  speed: number; // knots
 }
 
 export interface FlightPlanWaypoint {
@@ -334,7 +388,7 @@ export interface PositionData {
   lon: number;
   irsState: IrsState;
   irsAlignmentProgress: number; // 0-100
-  irsTimeRemaining: number;     // seconds
+  irsTimeRemaining: number; // seconds
 }
 
 export interface IdentData {
@@ -413,9 +467,9 @@ export interface FMCState {
   aircraft: AircraftType;
   mode: FMCMode;
   page: PageType;
-  
+
   autopilot: AutopilotState;
-  
+
   efisL: EFISState;
   efisR: EFISState;
 
@@ -423,10 +477,10 @@ export interface FMCState {
   pageHistory: PageType[];
   scratchpad: string;
   scratchpadError: string | null;
-  fmcPushMessage?: string | null;       // transitional — display compat, use scratchpadState instead
-  scratchpadState?: ScratchpadState;     // canonical scratchpad engine state (transitional — will become required)
+  fmcPushMessage?: string | null; // transitional — display compat, use scratchpadState instead
+  scratchpadState?: ScratchpadState; // canonical scratchpad engine state (transitional — will become required)
   demoMode: boolean;
-  
+
   ident: IdentData;
   position: PositionData;
   performance: PerformanceData;
@@ -434,14 +488,14 @@ export interface FMCState {
   landing: LandingData;
   route: RouteData;
   flightPlan: FlightPlan;
-  
+
   pendingRoute: RouteData | null;
   pendingFlightPlan: FlightPlan | null;
-  
+
   isModified: boolean;
   execLit: boolean;
   msgLight: boolean;
-  
+
   connectionStatus: ConnectionStatus;
   connectionMode: ConnectionMode;
   connectedAircraft: string | null;
@@ -455,7 +509,7 @@ export interface FMCState {
 
   // New FMS Ecosystem fields
   navPerformance: NavigationPerformance;
-  
+
   // Training state
   trainingActive: boolean;
   trainingScenario: TrainingScenario | null;
@@ -471,11 +525,10 @@ export interface FMCState {
   tutorialHintLevel: number;
   tutorialHintTimer: any;
 
-
   activeNavSource: NavSource;
   sensors: NavSensor[];
   alerts: FlightDeckAlert[];
-  
+
   signsOn: boolean;
   windowsLocked: boolean;
 
@@ -531,7 +584,7 @@ export interface FMCState {
   // New logic systems
   flightPhase: FlightPhase;
   scratchpadMessages: FmcMessage[];
-  
+
   // Cockpit Layout State
   cockpitLayoutMode: CockpitLayoutMode;
   hiddenPanels: PanelId[];
@@ -586,7 +639,7 @@ export interface AircraftState extends AircraftTelemetry {
   vs: number;
   gs: number;
   track: number;
-  
+
   fuelTotal: number;
   gw: number;
   accelerationKtS?: number;
@@ -597,4 +650,15 @@ export interface AircraftState extends AircraftTelemetry {
   apHeadingActive?: boolean;
   apAltitudeActive?: boolean;
   apTargetAltitude?: number;
+
+  // Approach / NAV radio state
+  approachArmed?: boolean;    // Pilot has armed approach mode
+  hasLoc?: boolean;           // Localizer signal captured
+  hasGs?: boolean;            // Glideslope signal captured
+  locDeviation?: number;      // Localizer deviation in dots (-2 to +2)
+  gsDeviation?: number;       // Glideslope deviation in dots (-2 to +2)
+
+  // Configuration state (needed by GPWS)
+  gearDown?: boolean;         // Landing gear down
+  flapsPosition?: number;     // Flaps deployment in degrees
 }

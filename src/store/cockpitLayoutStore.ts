@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CockpitLayoutMode, PanelId, EFISState, TCASTarget } from '@shared';
+import type { CockpitLayoutMode, PanelId, EFISState, TCASTarget, NDMapMode } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
 export type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
@@ -65,7 +65,7 @@ export interface CockpitLayoutActions {
   toggleHighContrast: () => void;
   setBrightness: (b: number) => void;
   toggleKeyboardHelp: () => void;
-  setEFISMode: (side: 'L' | 'R', mode: any) => void;
+  setEFISMode: (side: 'L' | 'R', mode: NDMapMode) => void;
   setEFISRange: (side: 'L' | 'R', range: number) => void;
 }
 

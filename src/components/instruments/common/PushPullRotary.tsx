@@ -12,7 +12,16 @@ interface PushPullRotaryProps {
 
 export function PushPullRotary({ value, onRotate, onPush, onPull, label, highlighted }: PushPullRotaryProps) {
   const [isPressing, setIsPressing] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click

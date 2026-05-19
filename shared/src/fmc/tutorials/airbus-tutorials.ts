@@ -1,4 +1,4 @@
-import type { TutorialScenario } from '../../types/fmc';
+import type { FMCState, TutorialScenario } from '../../types/fmc';
 
 export const airbusBasicsScenario: TutorialScenario = {
   name: 'Airbus A320 Basics',
@@ -24,7 +24,7 @@ export const airbusBasicsScenario: TutorialScenario = {
       id: 'airbus_align_irs_wait',
       instruction: 'The IRS is now aligning. Notice the "MAP NOT AVAIL" flag on the ND. Navigation will be unavailable until alignment is complete (NAV status). This takes 7 minutes in a real A320, but is accelerated here. Wait for status to show "IRS NAV".',
       expectedAction: 'WAIT',
-      validate: (_input: string, state: any) => state.position.irsState === 'NAV',
+      validate: (_input: string, state: FMCState) => state.position.irsState === 'NAV',
       page: 'INIT_A',
     },
     {

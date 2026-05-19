@@ -1,5 +1,5 @@
 import { FMCState, DisplayData, AcarsMessage } from '../../../types/fmc';
-import { inv, fmt, blank } from './index';
+import { inv, fmt, blank } from './formatting';
 
 export function renderAtsuMenu(state: FMCState): DisplayData {
   const unreadCount = state.atsu.messages.filter(m => !m.read).length;

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { useFMCStore } from '../../../store/useFMCStore';
@@ -40,7 +41,7 @@ export function AirbusMCDU() {
     pressLSK(side, index);
   }, [pressLSK, connectionMode, connectionStatus, send]);
 
-  const displayData = useFMCStore(s => s.getDisplayData());
+  const displayData = useFMCStore(useShallow(s => s.getDisplayData()));
   const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {
     const lskId = `${side}${index}`;
     const action = displayData.lskActions[lskId];

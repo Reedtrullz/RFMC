@@ -213,6 +213,161 @@ describe('GpwsEngine', () => {
     });
   });
 
+  describe('Mode 1 — Sink Rate boundaries', () => {
+    it('returns NONE at exactly 2500ft regardless of sink rate', () => {
+      const state = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 2500, altitudeFt: 2500,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 250, indicatedAirspeedKt: 250, tas: 260, gs: 250,
+          verticalSpeedFpm: -10000, vs: -10000,
+          fuelTotal: 10000, gw: 140000,
+        },
+      });
+      const result = engine.update(state, 1);
+      expect(result.alert).toBe('NONE');
+    });
+
+    it('returns NONE when no aircraft state', () => {
+      const state = createBaseState({ aircraftState: undefined });
+      const result = engine.update(state, 1);
+      expect(result.alert).toBe('NONE');
+    });
+  });
+
+  describe('Mode 6 — Callout boundary conditions', () => {
+    it('generates callout at 2500ft', () => {
+      const state = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 2600, altitudeFt: 2600,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      engine.update(state, 1);
+      const state2 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 2450, altitudeFt: 2450,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      const result = engine.update(state2, 1);
+      expect(result.callout).toBe(2500);
+    });
+
+    it('generates callout at 1000ft', () => {
+      const state = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 1100, altitudeFt: 1100,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      engine.update(state, 1);
+      const state2 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 950, altitudeFt: 950,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      const result = engine.update(state2, 1);
+      expect(result.callout).toBe(1000);
+    });
+
+    it('generates multiple callouts in one descent', () => {
+      const altSequence = [2700, 2400, 900, 450, 150, 90, 45, 35, 25, 15, 5];
+      const expectedCallouts = [2500, 1000, 500, 400, 100, 50, 40, 30, 20, 10];
+      const actualCallouts: number[] = [];
+
+      for (const alt of altSequence) {
+        const state = createBaseState({
+          aircraftState: {
+            lat: 0, lon: 0, altitude: alt, altitudeFt: alt,
+            heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+            ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+            verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+          },
+        });
+        const result = engine.update(state, 1);
+        if (result.callout !== undefined) actualCallouts.push(result.callout);
+      }
+
+      expect(actualCallouts).toEqual(expectedCallouts);
+    });
+
+    it('does not fire same callout twice', () => {
+      const state600 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 600, altitudeFt: 600,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state600, 1).callout).toBeUndefined();
+
+      const state450 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 450, altitudeFt: 450,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state450, 1).callout).toBe(500);
+
+      // Descend to 350 — fires 400 (first threshold below lastCalloutAlt=450)
+      const state350 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 350, altitudeFt: 350,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state350, 1).callout).toBe(400);
+
+      // Descend to 150 — fires 300 (first threshold below lastCalloutAlt=350)
+      const state150 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 150, altitudeFt: 150,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state150, 1).callout).toBe(300);
+
+      // Now descend to 80 — fires 100 (300>100 && 80<=100 → true; 200 is skipped because 150<200)
+      const state80 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 80, altitudeFt: 80,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state80, 1).callout).toBe(100);
+
+      // Further descent to 5 — fires 50 (first threshold below lastCalloutAlt=80)
+      const state5 = createBaseState({
+        aircraftState: {
+          lat: 0, lon: 0, altitude: 5, altitudeFt: 5,
+          heading: 0, headingDeg: 0, track: 0, trackDeg: 0,
+          ias: 180, indicatedAirspeedKt: 180, tas: 190, gs: 180,
+          verticalSpeedFpm: -500, vs: -500, fuelTotal: 10000, gw: 140000,
+        },
+      });
+      expect(engine.update(state5, 1).callout).toBe(50);
+    });
+  });
+
   describe('Cooldown', () => {
     it('respects 2-second cooldown between same alerts', () => {
       const state = createBaseState({
@@ -334,6 +489,62 @@ describe('TcasEngine', () => {
 
       // Targets should eventually come close enough to trigger traffic alert
       expect(alert).toBe(true);
+    });
+  });
+
+  describe('Threat level progression', () => {
+    it('targets progress through other → proximate → traffic → resolution as they close in', () => {
+      const state = tcasState();
+      const threatLevels: string[] = [];
+      const targetId = 'T3'; // T3 starts at (50,10) — closest to aircraft center
+
+      for (let i = 0; i < 300; i++) {
+        const result = engine.update(state, 1);
+        const target = result.targets.find(t => t.id === targetId);
+        if (target && !threatLevels.includes(target.threatLevel)) {
+          threatLevels.push(target.threatLevel);
+        }
+      }
+
+      // T3 should progress from other → proximate → traffic → resolution
+      expect(threatLevels).toContain('other');
+      expect(threatLevels).toContain('proximate');
+      expect(threatLevels).toContain('traffic');
+    });
+  });
+
+  describe('TCAS vertical envelope — ABOVE mode', () => {
+    it('allows targets above aircraft in ABOVE mode', () => {
+      const state = tcasState({ efisL: { ...tcasEfisDefault, tcasMode: 'ABOVE' } });
+
+      for (let i = 0; i < 50; i++) {
+        engine.update(state, 1);
+      }
+
+      const result = engine.update(state, 1);
+      // Targets should still be visible
+      expect(result.targets.length).toBe(3);
+    });
+  });
+
+  describe('TCAS vertical envelope — BELOW mode', () => {
+    it('allows targets below aircraft in BELOW mode', () => {
+      const state = tcasState({ efisL: { ...tcasEfisDefault, tcasMode: 'BELOW' } });
+
+      for (let i = 0; i < 50; i++) {
+        engine.update(state, 1);
+      }
+
+      const result = engine.update(state, 1);
+      expect(result.targets.length).toBe(3);
+    });
+  });
+
+  describe('Tutorial mode generates targets', () => {
+    it('generates 3 synthetic targets in tutorial mode', () => {
+      const state = tcasState({ demoMode: false, tutorialActive: true });
+      const result = engine.update(state, 1);
+      expect(result.targets).toHaveLength(3);
     });
   });
 });

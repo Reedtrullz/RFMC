@@ -61,7 +61,7 @@ export const KeyboardHelpOverlay: React.FC = () => {
         <div className="p-6">
           <div className="grid grid-cols-2 gap-y-3">
             {shortcuts.map((s, idx) => (
-              <React.Fragment key={idx}>
+              <React.Fragment key={`shortcut-${idx}`}>
                 <div className="flex items-center">
                   <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded border border-white/10 bg-white/5 px-2 py-1 font-mono text-[10px] text-white/80">
                     {s.key}

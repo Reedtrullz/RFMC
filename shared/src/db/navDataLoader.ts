@@ -1,3 +1,4 @@
+import { devError } from '../logger';
 import { getNavDb, AirportRecord, RunwayRecord, WaypointRecord, ProcedureRecord, NavDBSchema } from './navDb';
 
 interface NavDataJson {
@@ -12,10 +13,7 @@ interface NavDataJson {
   procedures?: ProcedureRecord[];
 }
 
-export async function populateNavDb(
-  jsonUrl: string,
-  onProgress?: (progress: number) => void
-): Promise<void> {
+export async function populateNavDb(jsonUrl: string, onProgress?: (progress: number) => void): Promise<void> {
   try {
     const response = await fetch(jsonUrl);
     if (!response.ok) {
@@ -42,25 +40,32 @@ export async function populateNavDb(
       (data.runways?.length ?? 0) +
       (data.waypoints?.length ?? 0) +
       (data.procedures?.length ?? 0);
-      
+
     let processedItems = 0;
 
     const checkpointKey = 'navdata_load_checkpoint';
     const checkpoint = await db.get('metadata', checkpointKey);
-    
+
     type NavStoreName = 'airports' | 'runways' | 'waypoints' | 'procedures';
+    const STORE_NAMES: readonly NavStoreName[] = ['airports', 'runways', 'waypoints', 'procedures'];
+
+    function isNavStoreName(v: string): v is NavStoreName {
+      return (STORE_NAMES as readonly string[]).includes(v);
+    }
+
     let resumeStoreName: NavStoreName = 'airports';
     let resumeIndex = 0;
     let resumeProcessedItems = 0;
-    
-    const isResumeValid = checkpoint && 
+
+    const isResumeValid =
+      checkpoint &&
       checkpoint.value &&
       'storeName' in checkpoint.value &&
       checkpoint.value.airacCycle === data.metadata.airacCycle &&
       checkpoint.value.version === data.metadata.version;
-      
-    if (isResumeValid && checkpoint && 'storeName' in checkpoint.value) {
-      resumeStoreName = checkpoint.value.storeName as NavStoreName;
+
+    if (isResumeValid && checkpoint && 'storeName' in checkpoint.value && isNavStoreName(checkpoint.value.storeName)) {
+      resumeStoreName = checkpoint.value.storeName;
       resumeIndex = checkpoint.value.batchIndex;
       resumeProcessedItems = checkpoint.value.processedItems;
       processedItems = resumeProcessedItems;
@@ -76,15 +81,11 @@ export async function populateNavDb(
 
     const BATCH_SIZE = 1000;
 
-    async function processBatch<K extends NavStoreName>(
-      storeName: K, 
-      items: NavDBSchema[K]['value'][]
-    ) {
+    async function processBatch<K extends NavStoreName>(storeName: K, items: NavDBSchema[K]['value'][]) {
       if (!items || items.length === 0) return;
 
-      const storeOrder: NavStoreName[] = ['airports', 'runways', 'waypoints', 'procedures'];
-      const targetOrderIndex = storeOrder.indexOf(storeName);
-      const resumeOrderIndex = storeOrder.indexOf(resumeStoreName);
+      const targetOrderIndex = STORE_NAMES.indexOf(storeName);
+      const resumeOrderIndex = STORE_NAMES.indexOf(resumeStoreName);
 
       if (targetOrderIndex < resumeOrderIndex) {
         processedItems += items.length;
@@ -113,33 +114,27 @@ export async function populateNavDb(
         let finalBatchIndex = nextBatchIndex;
         if (nextBatchIndex >= items.length) {
           const nextIndex = targetOrderIndex + 1;
-          if (nextIndex < storeOrder.length) {
-            nextStoreName = storeOrder[nextIndex] as NavStoreName;
+          if (nextIndex < STORE_NAMES.length) {
+            nextStoreName = STORE_NAMES[nextIndex]!;
             finalBatchIndex = 0;
           }
         }
-        
+
         const currentProcessed = processedItems;
 
+        // Deferred checkpoint write — uses outer `db` reference (already open)
+        const checkpointPayload = {
+          airacCycle: data.metadata.airacCycle,
+          version: data.metadata.version,
+          storeName: nextStoreName,
+          batchIndex: finalBatchIndex,
+          processedItems: currentProcessed,
+        };
         setTimeout(() => {
-          getNavDb().then(async (database) => {
-            try {
-              const metaTx = database.transaction('metadata', 'readwrite');
-              await metaTx.objectStore('metadata').put({
-                key: checkpointKey,
-                value: {
-                  airacCycle: data.metadata.airacCycle,
-                  version: data.metadata.version,
-                  storeName: nextStoreName,
-                  batchIndex: finalBatchIndex,
-                  processedItems: currentProcessed
-                }
-              });
-              await metaTx.done;
-            } catch (e) {
-              console.error('Error writing checkpoint', e);
-            }
-          });
+          db.transaction('metadata', 'readwrite')
+            .objectStore('metadata')
+            .put({ key: checkpointKey, value: checkpointPayload })
+            .catch((e: unknown) => devError('Error writing checkpoint', e));
         }, 0);
 
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -167,7 +162,7 @@ export async function populateNavDb(
 
     if (onProgress) onProgress(100);
   } catch (error) {
-    console.error('Error populating NavDB:', error);
+    devError('Error populating NavDB:', error);
     throw error;
   }
 }

@@ -13,16 +13,16 @@ export function FmsInspector() {
   const fmcState = useFMCStore((s) => s as unknown as FMCState);
 
   // Using specific store hooks for truth data
-   const aircraftState = useAircraftStore((s: any) => s.aircraftState);
-   const aircraft = useAircraftStore((s: any) => s.aircraft);
-   const flightPhase = useFMCStore((s: any) => s.flightPhase);
-   const activeNavSource = useAircraftStore((s: any) => s.activeNavSource);
-   const navPerformance = useAircraftStore((s: any) => s.navPerformance);
-   const scratchpadMessages = useFMCStore((s: any) => s.scratchpadMessages);
+   const aircraftState = useAircraftStore((s) => s.aircraftState);
+   const aircraft = useAircraftStore((s) => s.aircraft);
+   const flightPhase = useFMCStore((s) => s.flightPhase);
+   const activeNavSource = useAircraftStore((s) => s.activeNavSource);
+   const navPerformance = useAircraftStore((s) => s.navPerformance);
+   const scratchpadMessages = useFMCStore((s) => s.scratchpadMessages);
    
-   const activeScenario = useFMCStore((s: any) => s.activeScenario);
-   const debriefMode = useFMCStore((s: any) => s.debriefMode);
-   const setDebriefMode = useFMCStore((s: any) => s.setDebriefMode);
+   const activeScenario = useFMCStore((s) => s.activeScenario);
+   const debriefMode = useFMCStore((s) => s.debriefMode);
+   const setDebriefMode = useFMCStore((s) => s.setDebriefMode);
   
   const addMessage = useAlertStore(s => s.addMessage);
   const receiveAtsuMessage = useAlertStore(s => s.receiveAtsuMessage);
@@ -223,7 +223,7 @@ export function FmsInspector() {
             <div className="space-y-3">
               <div className="font-black text-white uppercase tracking-tight">{activeScenario.name}</div>
               <div className="space-y-1.5">
-                {activeScenario.goals.map((goal: any) => (
+                {activeScenario.goals.map((goal: { id: string; text: string; completed: boolean }) => (
                   <div key={goal.id} className="flex items-start gap-2">
                     <div className={`mt-1 w-1.5 h-1.5 shrink-0 ${goal.completed ? 'bg-cdu-exec' : 'border border-white/20'}`} />
                     <span className={goal.completed ? 'text-cdu-exec' : 'text-white/40'}>{goal.text}</span>
@@ -245,7 +245,7 @@ export function FmsInspector() {
                 onChange={(e) => {
                   const s = SCENARIOS[e.target.value];
                   if (s) {
-                    scenarioEngine.loadScenario(s as any);
+                    scenarioEngine.loadScenario(s as unknown as Parameters<typeof scenarioEngine.loadScenario>[0]);
                     scenarioEngine.start();
                     useFMCStore.setState({ activeScenario: { ...s } });
                   }

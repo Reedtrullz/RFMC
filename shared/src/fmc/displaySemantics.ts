@@ -1,20 +1,6 @@
-import type { AircraftType, DisplayLine } from '../types/fmc';
+import type { AircraftType, DisplayLine, DisplaySemantic } from '../types/fmc';
+export type { DisplaySemantic };
 import type { DisplayColor } from './displayColors';
-
-export type DisplaySemantic =
-  | 'title'
-  | 'label'
-  | 'activeData'
-  | 'inactiveData'
-  | 'modified'
-  | 'guidance'
-  | 'warning'
-  | 'caution'
-  | 'placeholder'
-  | 'scratchpad'
-  | 'inverse'
-  | 'titleBackground'
-  | 'pageIndicator';
 
 export const BOEING_SEMANTIC_COLORS: Record<DisplaySemantic, DisplayColor> = {
   title: 'cyan',

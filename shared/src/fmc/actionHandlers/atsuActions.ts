@@ -33,7 +33,7 @@ function handleAtsuUplink(state: FMCState): FmcActionResult {
             timestamp: Date.now(),
           },
         ],
-      } as any,
+      },
     },
   };
 }
@@ -42,7 +42,7 @@ function handleAtsuUplink(state: FMCState): FmcActionResult {
 function handleAtsuPage(): FmcActionResult {
   return {
     handled: true,
-    success: { targetPage: 'ATSU' } as any,
+    success: { targetPage: 'ATSU' },
   };
 }
 
@@ -50,7 +50,7 @@ function handleAtsuPage(): FmcActionResult {
 function handleAtsuMsgsPage(): FmcActionResult {
   return {
     handled: true,
-    success: { targetPage: 'ATSU_MSGS' } as any,
+    success: { targetPage: 'ATSU_MSGS' },
   };
 }
 
@@ -77,7 +77,7 @@ function handleAtsuLoadRoute(state: FMCState): FmcActionResult {
         scratchpad: '',
         scratchpadError: null,
         atsu: { ...state.atsu, pendingUplink: null },
-      } as any,
+      },
     },
   };
 }
@@ -99,7 +99,7 @@ function handleViewMessage(
         page: 'ATSU_MSG_DETAIL',
         selectedMessageId: msgId,
         atsu: { ...state.atsu, messages: msgs },
-      } as any,
+      },
     },
   };
 }

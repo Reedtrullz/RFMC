@@ -52,7 +52,7 @@ function handleSetHoldFix(state: FMCState, scratchpad: string): FmcActionResult 
         holdPending: { ...base, fix: ident },
         isModified: true,
         execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -77,7 +77,7 @@ function handleSetInboundCourse(state: FMCState, scratchpad: string): FmcActionR
         holdPending: { ...base, inboundCourse: crs },
         isModified: true,
         execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -102,7 +102,7 @@ function handleSetLegTime(state: FMCState, scratchpad: string): FmcActionResult 
         holdPending: { ...base, legTime: time },
         isModified: true,
         execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -127,7 +127,7 @@ function handleSetLegDist(state: FMCState, scratchpad: string): FmcActionResult 
         holdPending: { ...base, legDist: dist },
         isModified: true,
         execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -152,7 +152,7 @@ function handleSetHoldDirection(state: FMCState, scratchpad: string): FmcActionR
         holdPending: { ...base, direction: dir as 'L' | 'R' },
         isModified: true,
         execLit: true,
-      } as any,
+      },
     },
   };
 }

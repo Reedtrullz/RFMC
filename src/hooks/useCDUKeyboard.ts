@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
-import { useAircraftStore } from '../store/aircraftStore';
 import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
+import type { CDUKey } from '@shared';
 
 /**
  * Captures physical keyboard events and routes them to the FMC pressKey action.
@@ -9,7 +9,6 @@ import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 export function useCDUKeyboard() {
   const pressKey = useFMCStore(s => s.pressKey);
   const pressLSK = useFMCStore(s => s.pressLSK);
-  const aircraft = useAircraftStore(s => s.aircraft);
   const toggleKeyboardHelp = useCockpitLayoutStore(s => s.toggleKeyboardHelp);
 
   useEffect(() => {
@@ -33,7 +32,7 @@ export function useCDUKeyboard() {
 
       // Alphanumeric
       if (/^[A-Z0-9]$/.test(key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        pressKey(key as any);
+        pressKey(key as CDUKey);
         return;
       }
 
@@ -89,5 +88,5 @@ export function useCDUKeyboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [pressKey, pressLSK, aircraft, toggleKeyboardHelp]);
+  }, [pressKey, pressLSK, toggleKeyboardHelp]);
 }

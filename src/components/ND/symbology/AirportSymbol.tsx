@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { NavigationDisplayModel } from '@shared';
 
 interface AirportSymbolProps {
@@ -8,9 +9,14 @@ export function AirportSymbol({ model }: AirportSymbolProps) {
   const isAirbus = model.style === 'airbus';
   const color = isAirbus ? '#00ff00' : '#00ccff';
 
+  const airports = useMemo(
+    () => model.backgroundAirports.filter(p => !isNaN(p.x) && !isNaN(p.y)),
+    [model.backgroundAirports]
+  );
+
   return (
     <g>
-      {model.backgroundAirports.filter(p => !isNaN(p.x) && !isNaN(p.y)).map(point => (
+      {airports.map(point => (
         <g key={point.id} transform={`translate(${point.x} ${point.y})`} opacity="0.7">
           {/* Airport Icon */}
           {isAirbus ? (

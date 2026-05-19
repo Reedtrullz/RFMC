@@ -2,11 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderIdentPage, renderMenuPage, renderPerfInitPage, renderPosInitPage, renderTakeoffRefPage, renderThrustLimPage } from '../fmc/pages/setup';
 import { renderHoldPage, renderFixPage } from '../fmc/pages/navigation';
 import { renderRtePage, renderDepArrPage } from '../fmc/pages/route';
-import { renderClbPage } from '../fmc/pages/climb';
-import { renderCrzPage } from '../fmc/pages/cruise';
-import { renderDesPage } from '../fmc/pages/descent';
-import { renderDirIntcPage } from '../fmc/pages/direct';
-import { renderN1LimitPage } from '../fmc/pages/n1limit';
+import { renderClbPage, renderCrzPage, renderDesPage, renderDirIntcPage, renderN1LimitPage } from '../fmc/pages/index';
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
 import { renderBoeingProgressGrid } from '../fmc/pages/boeing/progress.grid';
 import { renderBoeingLegsGrid } from '../fmc/pages/boeing/legs.grid';
@@ -88,7 +84,10 @@ describe('Page Renderers', () => {
     const data = renderDesPage(baseState);
     expect(data.lskActions.R6).toBe('des_now');
     expect(data.lskLabels?.R6).toBe('DES NOW');
-    expect(data.lines.some(line => line.text.includes('DES NOW'))).toBe(true);
+    const hasText = data.segments
+      ? data.segments.some(s => s.text.includes('DES NOW'))
+      : data.lines.some(line => line.text.includes('DES NOW'));
+    expect(hasText).toBe(true);
   });
 
   it('renders TAKEOFF REF page 2 as landing and approach reference', () => {

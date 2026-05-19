@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { NavigationDisplayModel } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { AvionicsKey } from '../instruments/common/AvionicsKey';
@@ -12,8 +13,10 @@ interface NDControlsProps {
 }
 
 export function NDControls({ model, side }: NDControlsProps) {
-  const state = useFMCStore();
-  const efis = side === 'L' ? state.efisL : state.efisR;
+  const { efisL, efisR, setNDMode, setNDRange, toggleNDOverlay, toggleNDCenter } = useFMCStore(
+    useShallow(s => ({ efisL: s.efisL, efisR: s.efisR, setNDMode: s.setNDMode, setNDRange: s.setNDRange, toggleNDOverlay: s.toggleNDOverlay, toggleNDCenter: s.toggleNDCenter }))
+  );
+  const efis = side === 'L' ? efisL : efisR;
   const modes = model.style === 'airbus' ? AIRBUS_MODES : BOEING_MODES;
 
   return (
@@ -27,7 +30,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             {modes.map(m => (
               <button
                 key={m}
-                onClick={() => state.setNDMode(side, m as any)}
+                onClick={() => setNDMode(side, m as any)}
                 className={`h-5 px-1.5 rounded-full text-[8px] font-bold transition-all ${efis.mode === m ? 'bg-cdu-cyan text-black shadow-[0_0_8px_rgba(0,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
               >
                 {m.replace('ROSE_', '').replace('NAV', 'NV')}
@@ -43,7 +46,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             {RANGES.map(r => (
               <button
                 key={r}
-                onClick={() => state.setNDRange(side, r)}
+                onClick={() => setNDRange(side, r)}
                 className={`h-5 w-5 rounded-full text-[8px] font-bold transition-all flex items-center justify-center ${efis.range === r ? 'bg-white text-black shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
               >
                 {r}
@@ -61,7 +64,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             label={ov}
             active={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
             lit={efis.overlays[ov.toLowerCase() as keyof typeof efis.overlays]}
-            onPress={() => state.toggleNDOverlay(side, ov.toLowerCase() as any)}
+            onPress={() => toggleNDOverlay(side, ov.toLowerCase() as any)}
             variant={model.style === 'airbus' ? 'airbus' : 'boeing'}
             className="!h-6 !text-[7px] !min-w-0"
           />
@@ -71,7 +74,7 @@ export function NDControls({ model, side }: NDControlsProps) {
             label="CTR"
             active={efis.centered}
             lit={efis.centered}
-            onPress={() => state.toggleNDCenter(side)}
+            onPress={() => toggleNDCenter(side)}
             variant="boeing"
             className="!h-6 !text-[7px] !min-w-0"
           />

@@ -26,6 +26,8 @@ export interface FmcActionSuccess {
   clearScratchpad?: boolean;
   scratchpadMessage?: string;
   sideEffect?: string;
+  /** Navigate to a specific page. Consumed by fmcScratchpadAdapter. */
+  targetPage?: string;
 }
 
 export interface FmcActionResult {

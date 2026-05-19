@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CDU } from './components/CDU/CDU';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { TutorialOverlay } from './components/TutorialOverlay';
@@ -6,15 +6,17 @@ import { DemoWelcome } from './components/DemoWelcome';
 import { NavigationDisplay } from './components/ND/NavigationDisplay';
 import { useKioskMode } from './hooks/useKioskMode';
 import { useFMCStore } from './store/useFMCStore';
-import { FmsInspector } from './components/Training/FmsInspector';
 import { TrainingReport } from './components/Training/TrainingReport';
+
+const AutopilotTrainer = React.lazy(() => import('./components/Autopilot/AutopilotTrainer').then(m => ({ default: m.AutopilotTrainer })));
+const FmsInspector = React.lazy(() => import('./components/Training/FmsInspector').then(m => ({ default: m.FmsInspector })));
+const TrainingOverlay = React.lazy(() => import('./components/Training/TrainingOverlay').then(m => ({ default: m.TrainingOverlay })));
+import { devLog } from '@shared';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useEffect } from 'react';
-import { AutopilotTrainer } from './components/Autopilot/AutopilotTrainer';
 import { PrimaryFlightDisplay } from './components/instruments/common/PFD';
-import { TrainingOverlay } from './components/Training/TrainingOverlay';
 import { CockpitLayout } from './components/CockpitMode/CockpitLayout';
 import { SettingsPanel, ChecklistPanel } from './components/CockpitMode/CockpitPanels';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
@@ -376,7 +378,7 @@ export default function App() {
       }
     },
     onRegisterError(error: any) {
-      console.log('SW registration error', error);
+      devLog('SW registration error', error);
     },
   });
 
@@ -386,18 +388,20 @@ export default function App() {
   };
 
   const content = cockpitMode ? (
-    <>
+    <ErrorBoundary fallback={<SectionErrorFallback title="COCKPIT ERROR" message="Cockpit layout encountered an error" />}>
       <CockpitLayout />
       <SettingsPanel />
       <ChecklistPanel />
       <OrientationPrompt />
       <EICASPanel />
-    </>
+    </ErrorBoundary>
   ) : (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-black">
       <div className="flex w-full shrink-0 justify-center items-center py-3 px-4 bg-[#1a1c1c] border-b-4 border-[#2a2d2d] shadow-2xl">
         <div data-testid="autoflight-panel">
-          <AutopilotTrainer />
+          <React.Suspense fallback={null}>
+            <AutopilotTrainer />
+          </React.Suspense>
         </div>
         <button
           type="button"
@@ -421,22 +425,28 @@ export default function App() {
 
       <main className="grid flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden bg-black p-2 lg:p-4 gap-2 lg:gap-4">
         <div className="flex min-h-0 flex-col items-center justify-center gap-4 lg:flex-row">
-          <InstrumentSlot className="h-full w-full max-w-[360px]" dataTestId="pfd-panel">
-            <PrimaryFlightDisplay />
-          </InstrumentSlot>
+          <ErrorBoundary fallback={<SectionErrorFallback title="PFD ERROR" message="Primary Flight Display encountered an error" />}>
+            <InstrumentSlot className="h-full w-full max-w-[360px]" dataTestId="pfd-panel">
+              <PrimaryFlightDisplay />
+            </InstrumentSlot>
+          </ErrorBoundary>
 
-          <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`} dataTestId="nd-panel">
-            <NavigationDisplay />
-          </InstrumentSlot>
+          <ErrorBoundary fallback={<SectionErrorFallback title="NAV DISPLAY ERROR" message="Navigation Display encountered an error" />}>
+            <InstrumentSlot className={`${showNd ? '' : 'hidden'} h-full w-full max-w-[360px]`} dataTestId="nd-panel">
+              <NavigationDisplay />
+            </InstrumentSlot>
+          </ErrorBoundary>
         </div>
 
-        <InstrumentSlot
-          className="h-full w-full max-lg:col-span-2"
-          contentClassName="normal-cdu-scale origin-top"
-          dataTestId="cdu-panel"
-        >
-          <CDU />
-        </InstrumentSlot>
+        <ErrorBoundary fallback={<SectionErrorFallback title="CDU ERROR" message="CDU display encountered an error" />}>
+          <InstrumentSlot
+            className="h-full w-full max-lg:col-span-2"
+            contentClassName="normal-cdu-scale origin-top"
+            dataTestId="cdu-panel"
+          >
+            <CDU />
+          </InstrumentSlot>
+        </ErrorBoundary>
       </main>
     </div>
   );
@@ -444,15 +454,19 @@ export default function App() {
   const showWelcome = mode === 'STANDBY' && !tutorialActive && !tutorialCompleted;
 
   return (
-    <>
+    <ErrorBoundary>
       {content}
       {showWelcome && <DemoWelcome />}
-      {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
-      <TrainingOverlay />
+      <ErrorBoundary fallback={<SectionErrorFallback title="TRAINING ERROR" message="Training overlay encountered an error" />}>
+        <React.Suspense fallback={null}>
+          {(tutorialActive || tutorialCompleted) && <TutorialOverlay />}
+          <TrainingOverlay />
+          <FmsInspector />
+          <TrainingReport />
+        </React.Suspense>
+      </ErrorBoundary>
       {!isKiosk && <ConnectionStatus />}
       <PerformanceOverlay enabled={import.meta.env.DEV} />
-      <FmsInspector />
-      <TrainingReport />
       <AuralAlertsHandler />
 
       <PwaUpdatePrompt
@@ -461,11 +475,22 @@ export default function App() {
         onClose={closePwaPrompt}
         onReload={() => updateServiceWorker(true)}
       />
-    </>
+    </ErrorBoundary>
   );
 }
 
 function AuralAlertsHandler() {
   useAuralAlerts();
   return null;
+}
+
+function SectionErrorFallback({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="flex h-full min-h-[200px] items-center justify-center bg-black p-8">
+      <div className="text-center">
+        <div className="mb-2 font-cdu text-lg font-bold text-cdu-red">{title}</div>
+        <div className="font-cdu text-xs text-cdu-text/60">{message}</div>
+      </div>
+    </div>
+  );
 }

@@ -21,7 +21,7 @@ export function RangeRings({ model, color = '#003344' }: RangeRingsProps) {
         const labelY = cy - radius + 1.0;
 
         return (
-          <g key={i}>
+          <g key={`range-ring-${i}`}>
             {model.centered ? (
               <circle 
                 cx="50" 

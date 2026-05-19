@@ -68,7 +68,7 @@ export function InstrumentShell({
         const rotation = (idx * 137.5) % 360;
         return (
           <BezelScrew 
-            key={idx}
+            key={`screw-${idx}`}
             className="absolute" 
             style={{ 
               left,

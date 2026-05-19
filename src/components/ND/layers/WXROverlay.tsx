@@ -47,7 +47,7 @@ export function WXROverlay({ model }: WXROverlayProps) {
 
       {/* Render the organic weather precipitation cells */}
       <g className="wxr-weather-cell">
-        {data.points.map((p: any, i: number) => {
+        {data.points.map((p, i: number) => {
           let fill = '#00ff00'; // Light rain (Green)
           if (p.intensity === 'heavy') {
             fill = '#ff0055'; // Heavy precipitation (Red/Magenta)
@@ -57,7 +57,7 @@ export function WXROverlay({ model }: WXROverlayProps) {
 
           return (
             <circle
-              key={i}
+              key={`wxr-cell-${i}`}
               cx={p.x}
               cy={p.y}
               r={p.r}

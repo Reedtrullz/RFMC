@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 
 interface AttitudeSphereProps {
   pitch: number;
@@ -15,7 +15,13 @@ interface AttitudeSphereProps {
 const pitchMarks = [-30, -25, -20, -15, -10, -5, 5, 10, 15, 20, 25, 30];
 const bankMarks = [-45, -30, -20, -10, 10, 20, 30, 45];
 
-export const AttitudeSphere = React.memo(function AttitudeSphere({ pitch, bank, variant = 'boeing', fd, failed = false }: AttitudeSphereProps) {
+export const AttitudeSphere = React.memo(function AttitudeSphere({
+  pitch,
+  bank,
+  variant = 'boeing',
+  fd,
+  failed = false,
+}: AttitudeSphereProps) {
   const pixelsPerDegree = 4;
   const sky = variant === 'airbus' ? '#1767c7' : '#0055ff';
   const ground = variant === 'airbus' ? '#8d4d22' : '#7a3f18';
@@ -50,56 +56,75 @@ export const AttitudeSphere = React.memo(function AttitudeSphere({ pitch, bank, 
     );
   }
 
+  // CSS custom properties for animated values — avoids per-element inline style creation on each frame
+  const animVars = {
+    '--pitch-offset': `${pitch * pixelsPerDegree}px`,
+    '--bank-rotate': `${-bank}deg`,
+    '--bank-rotate-abs': `${bank}deg`,
+    '--sky-fill': sky,
+    '--ground-fill': ground,
+  } as CSSProperties;
+
   return (
     <div
       className="relative flex h-full w-full flex-1 items-center justify-center overflow-hidden"
       data-testid={`${variant}-attitude-sphere`}
-      style={{ background: `linear-gradient(to bottom, ${sky} 0 49.5%, #ffffff 49.5% 50.5%, ${ground} 50.5% 100%)` }}
+      style={{
+        ...animVars,
+        background: `linear-gradient(to bottom, ${sky} 0 49.5%, #ffffff 49.5% 50.5%, ${ground} 50.5% 100%)`,
+      }}
     >
-      <div 
+      <div
         className="absolute left-[-50%] top-1/2 flex h-[4002px] w-[200%] flex-col transition-transform duration-100"
-        style={{ transform: `translateY(calc(-50% + ${pitch * pixelsPerDegree}px)) rotate(${-bank}deg)` }}
+        style={{ transform: 'translateY(calc(-50% + var(--pitch-offset))) rotate(var(--bank-rotate))' }}
       >
-        <div className="relative h-[2000px] w-full flex flex-col items-center justify-end pb-2" style={{ backgroundColor: sky }}>
-          {pitchMarks.filter(mark => mark > 0).map(mark => (
-            <PitchMark key={mark} mark={mark} pixelsPerDegree={pixelsPerDegree} variant={variant} />
-          ))}
+        <div
+          className="relative h-[2000px] w-full flex flex-col items-center justify-end pb-2"
+          style={{ backgroundColor: sky }}
+        >
+          {pitchMarks
+            .filter((mark) => mark > 0)
+            .map((mark) => (
+              <PitchMark key={mark} mark={mark} pixelsPerDegree={pixelsPerDegree} variant={variant} />
+            ))}
         </div>
         <div className="h-[2px] w-full bg-white shadow-[0_0_10px_white]" />
         <div className="relative h-[2000px] w-full" style={{ backgroundColor: ground }}>
-          {pitchMarks.filter(mark => mark < 0).map(mark => (
-            <PitchMark key={mark} mark={mark} pixelsPerDegree={pixelsPerDegree} variant={variant} />
-          ))}
+          {pitchMarks
+            .filter((mark) => mark < 0)
+            .map((mark) => (
+              <PitchMark key={mark} mark={mark} pixelsPerDegree={pixelsPerDegree} variant={variant} />
+            ))}
         </div>
       </div>
-      
+
       {fd?.visible && (
         <div className="absolute inset-0 pointer-events-none z-20">
-           <div 
-             className="absolute left-1/2 h-[2px] w-40 shadow-[0_0_8px_currentColor]"
-             style={{ 
-               backgroundColor: fdColor,
-               color: fdColor,
-               top: `calc(50% - ${(fd.pitch - pitch) * pixelsPerDegree}px)`,
-               left: '50%',
-               transform: `translate(-50%, -50%) rotate(${-bank}deg)` 
-             }}
-           />
-           <div 
-             className="absolute top-1/2 h-36 w-[2px] shadow-[0_0_8px_currentColor]"
-             style={{ 
-               backgroundColor: fdColor,
-               color: fdColor,
-               left: `calc(50% + ${(fd.roll - bank) * pixelsPerDegree}px)`,
-               top: '50%',
-               transform: `translate(-50%, -50%) rotate(${-bank}deg)` 
-             }}
-           />
+          <div
+            className="absolute left-1/2 h-[2px] w-40 shadow-[0_0_8px_currentColor]"
+            style={{
+              backgroundColor: fdColor,
+              color: fdColor,
+              top: `calc(50% - ${(fd.pitch - pitch) * pixelsPerDegree}px)`,
+              left: '50%',
+              transform: 'translate(-50%, -50%) rotate(var(--bank-rotate))',
+            }}
+          />
+          <div
+            className="absolute top-1/2 h-36 w-[2px] shadow-[0_0_8px_currentColor]"
+            style={{
+              backgroundColor: fdColor,
+              color: fdColor,
+              left: `calc(50% + ${(fd.roll - bank) * pixelsPerDegree}px)`,
+              top: '50%',
+              transform: 'translate(-50%, -50%) rotate(var(--bank-rotate))',
+            }}
+          />
         </div>
       )}
 
       <div className="absolute top-3 left-1/2 z-30 h-20 w-44 -translate-x-1/2 pointer-events-none">
-        {bankMarks.map(mark => (
+        {bankMarks.map((mark) => (
           <div
             key={mark}
             className="absolute left-1/2 top-0 h-3 w-[2px] origin-[50%_72px] bg-white/80"
@@ -112,37 +137,52 @@ export const AttitudeSphere = React.memo(function AttitudeSphere({ pitch, bank, 
         <div className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[10px] border-x-transparent border-t-white" />
         <div
           className="absolute left-1/2 top-12 h-0 w-0 -translate-x-1/2 border-x-[5px] border-b-[9px] border-x-transparent border-b-white"
-          style={{ transform: `translateX(-50%) rotate(${bank}deg)`, transformOrigin: '50% 28px' }}
+          style={{ transform: 'translateX(-50%) rotate(var(--bank-rotate-abs))', transformOrigin: '50% 28px' }}
         />
       </div>
 
       <div className="relative z-30 flex h-3 w-24 items-center justify-between">
-         <div
-           className="h-2 w-9 border shadow-lg"
-           style={{ backgroundColor: referenceColor, borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)' }}
-         />
-         <div
-           className="h-2 w-2 border shadow-lg"
-           style={{ backgroundColor: referenceColor, borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)' }}
-         />
-         <div
-           className="h-2 w-9 border shadow-lg"
-           style={{ backgroundColor: referenceColor, borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)' }}
-         />
+        <div
+          className="h-2 w-9 border shadow-lg"
+          style={{
+            backgroundColor: referenceColor,
+            borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)',
+          }}
+        />
+        <div
+          className="h-2 w-2 border shadow-lg"
+          style={{
+            backgroundColor: referenceColor,
+            borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)',
+          }}
+        />
+        <div
+          className="h-2 w-9 border shadow-lg"
+          style={{
+            backgroundColor: referenceColor,
+            borderColor: variant === 'airbus' ? '#201400' : 'rgba(255,255,255,0.7)',
+          }}
+        />
       </div>
-      
+
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full border border-white/10 pointer-events-none" />
     </div>
   );
 });
 
-function PitchMark({ mark, pixelsPerDegree, variant }: { mark: number; pixelsPerDegree: number; variant: 'boeing' | 'airbus' }) {
+function PitchMark({
+  mark,
+  pixelsPerDegree,
+  variant,
+}: {
+  mark: number;
+  pixelsPerDegree: number;
+  variant: 'boeing' | 'airbus';
+}) {
   const isMajor = Math.abs(mark) % 10 === 0;
   const width = isMajor ? 'w-24' : 'w-14';
   const label = Math.abs(mark).toString();
-  const top = mark > 0
-    ? `${2000 - mark * pixelsPerDegree}px`
-    : `${Math.abs(mark) * pixelsPerDegree}px`;
+  const top = mark > 0 ? `${2000 - mark * pixelsPerDegree}px` : `${Math.abs(mark) * pixelsPerDegree}px`;
 
   return (
     <div

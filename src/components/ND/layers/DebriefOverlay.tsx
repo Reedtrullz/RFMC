@@ -53,7 +53,7 @@ export function DebriefOverlay({ model }: DebriefOverlayProps) {
         if (!p || !p.visible) return null;
         
         return (
-          <circle key={i} cx={p.x} cy={p.y} r="0.8" fill="white" opacity="0.3" />
+          <circle key={`debrief-${i}`} cx={p.x} cy={p.y} r="0.8" fill="white" opacity="0.3" />
         );
       })}
     </g>

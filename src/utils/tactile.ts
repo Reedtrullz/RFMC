@@ -1,4 +1,5 @@
 import { getAudioContext } from '../services/audioContext';
+import { devWarn } from '@shared';
 
 /**
  * Synthesizes a subtle tactile 'click' sound and triggers device vibration.
@@ -33,7 +34,7 @@ class TactileEngine {
       osc.start();
       osc.stop(this.audioCtx.currentTime + 0.1);
     } catch (e) {
-      console.warn('Audio feedback failed', e);
+      devWarn('Audio feedback failed', e);
     }
   }
 

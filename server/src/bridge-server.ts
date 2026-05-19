@@ -11,16 +11,21 @@ import { FMCEngine } from './fmc-engine';
 import { configureSecurity } from './security';
 import { logger, LogEvent } from './logging';
 import { metrics } from './metrics';
-import { validateClientMessage, WSRateLimiter } from './websocketValidation';
+import { validateClientMessage, WSRateLimiter, WSConnectionRateLimiter } from './websocketValidation';
 
 function parseAllowedOrigins(value: string | undefined): string[] {
   if (!value) return [];
-  return value.split(',').map(origin => origin.trim()).filter(Boolean);
+  return value
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 }
 
 function isOriginAllowed(origin: string | undefined, allowedOrigins: string[]): boolean {
-  if (!origin) return true;
+  // No origin restriction when no origins configured (dev mode)
   if (allowedOrigins.length === 0) return true;
+  // If origins ARE configured, missing Origin header = reject
+  if (!origin) return false;
   return allowedOrigins.includes(origin);
 }
 
@@ -48,22 +53,53 @@ export interface BridgeServer {
 export function createBridgeServer(options: BridgeServerOptions = {}): BridgeServer {
   const app = express();
   const server = http.createServer(app);
-  
+
   // Apply production security hardening
   configureSecurity(app);
 
   const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(process.env.WS_ALLOWED_ORIGINS);
   const maxMessageBytes = options.maxMessageBytes ?? parseInt(process.env.WS_MAX_MESSAGE_BYTES || '65536', 10);
-  
+  const connectionRateLimiter = new WSConnectionRateLimiter();
+
+  function getClientIp(req: http.IncomingMessage): string {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) {
+      return (Array.isArray(forwarded) ? forwarded[0] : forwarded).split(',')[0].trim();
+    }
+    return req.socket.remoteAddress || 'unknown';
+  }
+
   const wss = new WebSocketServer({
     server,
     maxPayload: maxMessageBytes,
-    verifyClient: ({ origin }, done) => {
-      if (isOriginAllowed(origin, allowedOrigins)) {
-        done(true);
+    verifyClient: ({ origin, req }, done) => {
+      if (!isOriginAllowed(origin, allowedOrigins)) {
+        done(false, 403, 'Forbidden origin');
         return;
       }
-      done(false, 403, 'Forbidden origin');
+
+      const authToken = process.env.AUTH_TOKEN;
+      if (authToken) {
+        const queryStart = (req.url || '').indexOf('?');
+        const query = queryStart >= 0 ? (req.url || '').slice(queryStart + 1) : '';
+        const token = new URLSearchParams(query).get('token');
+        if (token !== authToken) {
+          metrics.authRejected();
+          logger.warn(LogEvent.WS_AUTH_REJECTED, { ip: getClientIp(req) });
+          done(false, 4001, 'Authentication failed');
+          return;
+        }
+      }
+
+      const ip = getClientIp(req);
+      if (!connectionRateLimiter.isAllowed(ip)) {
+        metrics.rateLimited();
+        logger.warn(LogEvent.WS_RATE_LIMITED, { ip });
+        done(false, 429, 'Too many connections');
+        return;
+      }
+
+      done(true);
     },
   });
 
@@ -79,6 +115,20 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       if (wss.clients.size > 0) {
         broadcast({ type: 'sim.heartbeat', serverTime: Date.now() });
       }
+
+      wss.clients.forEach((client) => {
+        const c = client as WebSocket & { isAlive?: boolean };
+        if (c.isAlive === false) {
+          metrics.pingTimeout();
+          logger.warn(LogEvent.WS_PING_TIMEOUT, {});
+          c.terminate();
+          return;
+        }
+        c.isAlive = false;
+        c.ping();
+      });
+
+      connectionRateLimiter.cleanup();
     }, 5000);
   }
 
@@ -122,10 +172,10 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   function startPolling(): void {
     isPollingActive = true;
     if (pollTimeout) clearTimeout(pollTimeout);
-    
+
     async function tick() {
       if (!isPollingActive) return;
-      
+
       if (!aircraft.isConnected) {
         if (shouldBeConnected && !retryTimeout) {
           retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
@@ -138,11 +188,11 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       try {
         const simDisplay = await aircraft.readDisplay();
         const aircraftState = await aircraft.readAircraftState();
-        
+
         const displayData: DisplayData = {
           title: simDisplay.title,
           pageIndicator: '',
-          lines: simDisplay.lines.map(text => ({ text, leftLabel: '', rightLabel: '', inverse: false })),
+          lines: simDisplay.lines.map((text) => ({ text, leftLabel: '', rightLabel: '', inverse: false })),
           lskActions: {},
         };
 
@@ -172,7 +222,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         }
       }
     }
-    
+
     pollTimeout = setTimeout(tick, 100);
   }
 
@@ -194,17 +244,17 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       retryTimeout = null;
     }
     if (!shouldBeConnected || aircraft.isConnected || isConnecting) return;
-    
+
     isConnecting = true;
     logger.info(LogEvent.SIM_CONNECTED, { message: 'Attempting auto-reconnect' });
     try {
       const connectPromise = aircraft.connect();
       const timeoutPromise = new Promise<boolean>((_, reject) =>
-        setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000)
+        setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000),
       );
       const connected = await Promise.race([connectPromise, timeoutPromise]);
       if (!shouldBeConnected) return;
-      
+
       if (connected) {
         startPolling();
         broadcast({
@@ -231,31 +281,41 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   wss.on('connection', (ws: WebSocket) => {
     metrics.clientConnected();
     const rateLimiter = new WSRateLimiter();
-    
-    logger.info(LogEvent.WS_CLIENT_CONNECTED, { 
-      clients: wss.clients.size,
-      adapter: aircraft.name 
+    const wsClient = ws as WebSocket & { isAlive?: boolean };
+    wsClient.isAlive = true;
+
+    wsClient.on('pong', () => {
+      wsClient.isAlive = true;
     });
-    
+
+    logger.info(LogEvent.WS_CLIENT_CONNECTED, {
+      clients: wss.clients.size,
+      adapter: aircraft.name,
+    });
+
     if (wss.clients.size === 1) {
       startHeartbeat();
     }
 
-    ws.send(JSON.stringify({
-      type: 'fmc.display',
-      data: fmc.getDisplayData(),
-    } as ServerMessage));
+    ws.send(
+      JSON.stringify({
+        type: 'fmc.display',
+        data: fmc.getDisplayData(),
+      } as ServerMessage),
+    );
 
-    ws.send(JSON.stringify({
-      type: aircraft.isConnected ? 'sim.connected' : 'sim.disconnected',
-      aircraft: aircraft.name,
-      aircraftType: aircraft.aircraftType,
-      capabilities: aircraft.capabilities,
-      structuredCapabilities: toAdapterCapabilities(aircraft),
-      adapterHealth: getAdapterHealth(aircraft),
-      connectionStatus: aircraft.connectionStatus,
-      lastError: aircraft.lastError,
-    } as ServerMessage));
+    ws.send(
+      JSON.stringify({
+        type: aircraft.isConnected ? 'sim.connected' : 'sim.disconnected',
+        aircraft: aircraft.name,
+        aircraftType: aircraft.aircraftType,
+        capabilities: aircraft.capabilities,
+        structuredCapabilities: toAdapterCapabilities(aircraft),
+        adapterHealth: getAdapterHealth(aircraft),
+        connectionStatus: aircraft.connectionStatus,
+        lastError: aircraft.lastError,
+      } as ServerMessage),
+    );
 
     ws.on('message', (raw) => {
       try {
@@ -277,7 +337,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
 
         const parsed = JSON.parse(rawText);
         const msg = validateClientMessage(parsed);
-        
+
         if (!msg) {
           ws.send(JSON.stringify({ type: 'error', message: 'Unknown or invalid message type' } as ServerMessage));
           metrics.validationError();
@@ -290,7 +350,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
             const displayData = fmc.processInput(msg.key);
             broadcast({ type: 'fmc.display', data: displayData });
             if (aircraft.isConnected) {
-              aircraft.sendKeypress(msg.key).catch(err => {
+              aircraft.sendKeypress(msg.key).catch((err) => {
                 devError('[Aircraft] sendKeypress error:', err);
                 metrics.simError();
               });
@@ -304,45 +364,51 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
               break;
             }
             isConnecting = true;
-            
+
             const connectPromise = aircraft.connect();
             const timeoutPromise = new Promise<boolean>((_, reject) =>
-              setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000)
+              setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000),
             );
-            
-            Promise.race([connectPromise, timeoutPromise]).then(connected => {
-              isConnecting = false;
-              if (!shouldBeConnected) return;
-              if (connected) {
-                startPolling();
-                broadcast({
-                  type: 'sim.connected',
-                  aircraft: aircraft.name,
-                  aircraftType: aircraft.aircraftType,
-                  capabilities: aircraft.capabilities,
-                  structuredCapabilities: toAdapterCapabilities(aircraft),
-                  adapterHealth: getAdapterHealth(aircraft),
-                  connectionStatus: aircraft.connectionStatus,
-                  lastError: aircraft.lastError,
-                } as ServerMessage);
-              } else {
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: aircraft.lastError ?? 'Failed to connect to MSFS',
-                } as ServerMessage));
+
+            Promise.race([connectPromise, timeoutPromise])
+              .then((connected) => {
+                isConnecting = false;
+                if (!shouldBeConnected) return;
+                if (connected) {
+                  startPolling();
+                  broadcast({
+                    type: 'sim.connected',
+                    aircraft: aircraft.name,
+                    aircraftType: aircraft.aircraftType,
+                    capabilities: aircraft.capabilities,
+                    structuredCapabilities: toAdapterCapabilities(aircraft),
+                    adapterHealth: getAdapterHealth(aircraft),
+                    connectionStatus: aircraft.connectionStatus,
+                    lastError: aircraft.lastError,
+                  } as ServerMessage);
+                } else {
+                  ws.send(
+                    JSON.stringify({
+                      type: 'error',
+                      message: aircraft.lastError ?? 'Failed to connect to MSFS',
+                    } as ServerMessage),
+                  );
+                  if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
+                }
+              })
+              .catch((err) => {
+                isConnecting = false;
+                if (!shouldBeConnected) return;
+                devError('[SimConnect] Error:', err);
+                metrics.simError();
+                ws.send(
+                  JSON.stringify({
+                    type: 'error',
+                    message: 'Failed to connect to MSFS',
+                  } as ServerMessage),
+                );
                 if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
-              }
-            }).catch(err => {
-              isConnecting = false;
-              if (!shouldBeConnected) return;
-              devError('[SimConnect] Error:', err);
-              metrics.simError();
-              ws.send(JSON.stringify({
-                type: 'error',
-                message: 'Failed to connect to MSFS',
-              } as ServerMessage));
-              if (!retryTimeout) retryTimeout = setTimeout(attemptReconnect, options.watchdogInterval || 10000);
-            });
+              });
             break;
           }
 
@@ -353,9 +419,12 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
               retryTimeout = null;
             }
             stopPolling();
-            aircraft.disconnect().then(() => {
-              broadcast({ type: 'sim.disconnected', lastError: aircraft.lastError } as ServerMessage);
-            });
+            aircraft
+              .disconnect()
+              .then(() => {
+                broadcast({ type: 'sim.disconnected', lastError: aircraft.lastError } as ServerMessage);
+              })
+              .catch((err) => devError('Aircraft disconnect failed', err));
             break;
           }
 
@@ -386,14 +455,15 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     aircraft,
     fmc,
     broadcast,
-    start: () => new Promise((resolve) => {
-      server.listen(options.port ?? 0, () => {
-        const address = server.address();
-        const port = typeof address === 'object' && address ? address.port : options.port ?? 0;
-        logger.info(LogEvent.SERVER_START, { port });
-        resolve(port);
-      });
-    }),
+    start: () =>
+      new Promise((resolve) => {
+        server.listen(options.port ?? 0, () => {
+          const address = server.address();
+          const port = typeof address === 'object' && address ? address.port : (options.port ?? 0);
+          logger.info(LogEvent.SERVER_START, { port });
+          resolve(port);
+        });
+      }),
     stop: async () => {
       logger.info(LogEvent.SERVER_STOP, {});
       stopPolling();
@@ -402,7 +472,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       wss.clients.forEach((client) => client.terminate());
       await new Promise<void>((resolve) => wss.close(() => resolve()));
       await new Promise<void>((resolve, reject) => {
-        server.close((err) => err ? reject(err) : resolve());
+        server.close((err) => (err ? reject(err) : resolve()));
       });
     },
   };

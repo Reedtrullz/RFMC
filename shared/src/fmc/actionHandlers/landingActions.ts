@@ -41,8 +41,8 @@ function handleSetQnh(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         takeoff: { ...state.takeoff, qnh: qnh * 100 },
         landing: { ...state.landing, qnh },
-        isModified: true, execLit: true,
-      } as any,
+          isModified: true, execLit: true,
+        },
     },
   };
 }
@@ -79,7 +79,7 @@ function handleSetLandingRunway(state: FMCState, scratchpad: string): FmcActionR
         landing: { ...state.landing, runway },
         route: { ...state.route, runway },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -100,7 +100,7 @@ function handleSetLandingFlaps(state: FMCState, scratchpad: string): FmcActionRe
       patch: {
         landing: { ...state.landing, flaps },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -121,7 +121,7 @@ function handleSetLandingVref(state: FMCState, scratchpad: string): FmcActionRes
       patch: {
         landing: { ...state.landing, vref },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -142,7 +142,7 @@ function handleSetIlsFrequency(state: FMCState, scratchpad: string): FmcActionRe
       patch: {
         landing: { ...state.landing, ilsFrequency: frequency.toFixed(2) },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -163,7 +163,7 @@ function handleSetIlsCourse(state: FMCState, scratchpad: string): FmcActionResul
       patch: {
         landing: { ...state.landing, course },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -186,7 +186,7 @@ function handleSetFlaps(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         takeoff,
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -207,7 +207,7 @@ function handleSetLandingTemp(state: FMCState, scratchpad: string): FmcActionRes
       patch: {
         landing: { ...state.landing, temp },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -236,7 +236,7 @@ function handleSetLandingWind(state: FMCState, scratchpad: string): FmcActionRes
       patch: {
         landing: { ...state.landing, windDir, windSpeed },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -257,7 +257,7 @@ function handleSetMda(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         landing: { ...state.landing, mda },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -278,7 +278,7 @@ function handleSetDh(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         landing: { ...state.landing, dh },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -308,7 +308,7 @@ function handleToggleLdgConf(state: FMCState, scratchpad: string): FmcActionResu
       patch: {
         landing: { ...state.landing, ldgConf: nextVal, flaps: nextVal },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }

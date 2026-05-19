@@ -66,3 +66,43 @@ export class WSRateLimiter {
     return this.totalMessagesInWindow.length > this.abuseThreshold;
   }
 }
+
+/**
+ * Server-wide IP-based connection rate limiter
+ */
+export class WSConnectionRateLimiter {
+  private connections = new Map<string, { count: number; windowStart: number }>();
+  private readonly windowMs: number;
+  private readonly maxConnectionsPerWindow: number;
+
+  constructor(windowMs = 60000, maxConnectionsPerWindow = 20) {
+    this.windowMs = windowMs;
+    this.maxConnectionsPerWindow = maxConnectionsPerWindow;
+  }
+
+  isAllowed(ip: string): boolean {
+    const now = Date.now();
+    const entry = this.connections.get(ip);
+
+    if (!entry || now - entry.windowStart > this.windowMs) {
+      this.connections.set(ip, { count: 1, windowStart: now });
+      return true;
+    }
+
+    if (entry.count >= this.maxConnectionsPerWindow) {
+      return false;
+    }
+
+    entry.count++;
+    return true;
+  }
+
+  cleanup(): void {
+    const now = Date.now();
+    for (const [ip, entry] of this.connections) {
+      if (now - entry.windowStart > this.windowMs) {
+        this.connections.delete(ip);
+      }
+    }
+  }
+}

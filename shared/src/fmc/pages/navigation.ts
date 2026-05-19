@@ -2,15 +2,27 @@ import type { FMCState, DisplayData, DisplayLine } from '../../types/fmc';
 import { PAGE_WIDTH } from '../constants';
 import { inferBoeingSemantic } from '../pageLineSemantics';
 
-function fmt(text: string, left: string = '', right: string = '', color?: DisplayLine["color"], semantic?: DisplayLine['semantic']): DisplayLine {
-  return { text: text.padEnd(PAGE_WIDTH, ' '), leftLabel: left, rightLabel: right, inverse: false, color, semantic: semantic ?? inferBoeingSemantic(color) };
+function fmt(
+  text: string,
+  left: string = '',
+  right: string = '',
+  color?: DisplayLine['color'],
+  semantic?: DisplayLine['semantic'],
+): DisplayLine {
+  return {
+    text: text.padEnd(PAGE_WIDTH, ' '),
+    leftLabel: left,
+    rightLabel: right,
+    inverse: false,
+    color,
+    semantic: semantic ?? inferBoeingSemantic(color),
+  };
 }
-function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine["color"]): DisplayLine {
+function inverse(text: string, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
   return { ...fmt(text, left, right, color), inverse: true, color, semantic: inferBoeingSemantic(color, true) };
 }
-function blank() { return fmt('', '', ''); }
-function modData(text: string, isModified: boolean, left: string = '', right: string = '', color?: DisplayLine['color']): DisplayLine {
-  return fmt(text, left, right, color, isModified ? 'modified' : undefined);
+function blank() {
+  return fmt('', '', '');
 }
 
 export function renderHoldPage(state: FMCState): DisplayData {
@@ -50,10 +62,18 @@ export function renderHoldPage(state: FMCState): DisplayData {
       L5: 'set_leg_dist',
       L6: null,
       R1: 'set_hold_direction',
-      R2: null, R3: null, R4: null, R5: null, R6: null,
+      R2: null,
+      R3: null,
+      R4: null,
+      R5: null,
+      R6: null,
     },
     lskLabels: {
-      L1: 'FIX', L3: 'CRS', L4: 'TIME', L5: 'DIST', R1: 'DIR',
+      L1: 'FIX',
+      L3: 'CRS',
+      L4: 'TIME',
+      L5: 'DIST',
+      R1: 'DIR',
     },
   };
 }
@@ -65,12 +85,14 @@ export function renderFixPage(state: FMCState): DisplayData {
   const radDis1 = formatFixRadialDistance(entry1);
   const refFix2 = entry2.refFix || '----';
   const radDis2 = formatFixRadialDistance(entry2);
-  const abeam1 = entry1.refFix && entry1.radial > 0
-    ? `1 ${entry1.refFix} R${String(entry1.radial).padStart(3, '0')} D${String(entry1.distance).padStart(3, '0')}`
-    : '---/---';
-  const abeam2 = entry2.refFix && entry2.radial > 0
-    ? `2 ${entry2.refFix} R${String(entry2.radial).padStart(3, '0')} D${String(entry2.distance).padStart(3, '0')}`
-    : '----';
+  const abeam1 =
+    entry1.refFix && entry1.radial > 0
+      ? `1 ${entry1.refFix} R${String(entry1.radial).padStart(3, '0')} D${String(entry1.distance).padStart(3, '0')}`
+      : '---/---';
+  const abeam2 =
+    entry2.refFix && entry2.radial > 0
+      ? `2 ${entry2.refFix} R${String(entry2.radial).padStart(3, '0')} D${String(entry2.distance).padStart(3, '0')}`
+      : '----';
 
   return {
     title: 'FIX',
@@ -94,25 +116,29 @@ export function renderFixPage(state: FMCState): DisplayData {
     lskActions: {
       L1: 'set_fix_ref_0',
       L2: 'set_fix_radial_distance_0',
-      L3: null, L4: null, L5: null, L6: null,
+      L3: null,
+      L4: null,
+      L5: null,
+      L6: null,
       R1: 'set_fix_ref_1',
       R2: 'set_fix_radial_distance_1',
-      R3: null, R4: null, R5: null, R6: null,
+      R3: null,
+      R4: null,
+      R5: null,
+      R6: null,
     },
     lskLabels: {
-      L1: 'REF1', L2: 'R/D1', R1: 'REF2', R2: 'R/D2',
+      L1: 'REF1',
+      L2: 'R/D1',
+      R1: 'REF2',
+      R2: 'R/D2',
     },
   };
 }
 
 function getFixEntries(state: FMCState) {
-  const entries = state.fixEntries.some(entry => entry.refFix)
-    ? state.fixEntries
-    : [state.fix];
-  return [
-    entries[0] ?? { refFix: '', radial: 0, distance: 0 },
-    entries[1] ?? { refFix: '', radial: 0, distance: 0 },
-  ];
+  const entries = state.fixEntries.some((entry) => entry.refFix) ? state.fixEntries : [state.fix];
+  return [entries[0] ?? { refFix: '', radial: 0, distance: 0 }, entries[1] ?? { refFix: '', radial: 0, distance: 0 }];
 }
 
 function formatFixRadialDistance(entry: { refFix: string; radial: number; distance: number }): string {

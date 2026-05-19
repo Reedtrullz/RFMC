@@ -1,4 +1,4 @@
-import { TrainingScenario, TrainingStep, TrainingMistake, ExpectedAction } from './trainingTypes';
+import type { TrainingScenario, TrainingStep, TrainingMistake, ExpectedAction, StateValidation } from './trainingTypes';
 import { createMistake, MISTAKE_TYPES } from './mistakes';
 import { calculateScore } from './scoring';
 
@@ -30,7 +30,7 @@ export class TrainingScenarioEngine {
     return this.scenario.steps[this.currentStepIndex];
   }
 
-  processAction(action: ExpectedAction, currentState: any): { 
+  processAction(action: ExpectedAction, currentState: Record<string, unknown>): { 
     success: boolean; 
     completed: boolean; 
     mistake?: TrainingMistake;
@@ -83,53 +83,63 @@ export class TrainingScenarioEngine {
     }
   }
 
-  private getDiagnosticHint(failed: any, state: any): string | undefined {
+  private getDiagnosticHint(failed: StateValidation, state: Record<string, unknown>): string | undefined {
     if (failed.path.includes('lateralActive') && failed.expected === 'LNAV') {
-      if (!state.flightPlan.waypoints.length) return "LNAV requires an active flight plan.";
-      if (state.position.irsState !== 'NAV') return "LNAV requires aligned IRS.";
+      const waypoints = this.getNestedValue(state, 'flightPlan.waypoints');
+      if (!Array.isArray(waypoints) || waypoints.length === 0) return "LNAV requires an active flight plan.";
+      const irsState = this.getNestedValue(state, 'position.irsState');
+      if (irsState !== 'NAV') return "LNAV requires aligned IRS.";
     }
     if (failed.path.includes('verticalActive') && failed.expected === 'VNAV_PTH') {
-      if (!state.performance.zfw) return "VNAV requires performance data (ZFW).";
+      const zfw = this.getNestedValue(state, 'performance.zfw');
+      if (!zfw) return "VNAV requires performance data (ZFW).";
     }
     return undefined;
   }
 
-  validateState(state: any, validations: any[]): boolean {
+  validateState(state: Record<string, unknown>, validations: StateValidation[]): boolean {
     return validations.every(v => {
       const actual = this.getNestedValue(state, v.path);
       return this.checkCondition(actual, v.expected, v.operator);
     });
   }
 
-  private checkCondition(actual: any, expected: any, operator: string = '=='): boolean {
+  private checkCondition(actual: unknown, expected: unknown, operator: string = '=='): boolean {
     switch (operator) {
       case '!=': return actual != expected;
-      case '>': return actual > expected;
-      case '<': return actual < expected;
+      case '>': return (actual as number) > (expected as number);
+      case '<': return (actual as number) < (expected as number);
       case 'includes': return Array.isArray(actual) && actual.includes(expected);
       default: return actual == expected;
     }
   }
 
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((o, i) => (o ? o[i] : undefined), obj);
+  private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+    let current: unknown = obj;
+    const keys = path.split('.');
+    for (const key of keys) {
+      if (current === null || current === undefined) return undefined;
+      current = (current as Record<string, unknown>)[key];
+    }
+    return current;
   }
 
   private validateAction(actual: ExpectedAction, expected: ExpectedAction): boolean {
     if (actual.type !== expected.type) return false;
 
-    switch (expected.type) {
+    switch (actual.type) {
       case 'press_key':
-        return (actual as any).key === expected.key;
+        return actual.key === (expected as { key: string }).key;
       case 'press_lsk':
-        return (actual as any).side === expected.side && (actual as any).index === expected.index;
+        return actual.side === (expected as { side: 'L' | 'R'; index: number }).side
+            && actual.index === (expected as { side: 'L' | 'R'; index: number }).index;
       case 'enter_scratchpad':
-        return (actual as any).value === expected.value;
+        return actual.value === (expected as { value: string }).value;
       case 'set_mcp':
-        return (actual as any).field === expected.field && (actual as any).value === expected.value;
+        return actual.field === (expected as { field: string; value: string | number | boolean }).field
+            && actual.value === (expected as { field: string; value: string | number | boolean }).value;
       case 'verify_fma':
         return true;
-      // Add other validations as needed
       default:
         return false;
     }

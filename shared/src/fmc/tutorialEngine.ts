@@ -1,4 +1,4 @@
-import type { FMCState, TutorialScenario } from '../types/fmc';
+import type { FMCState, TutorialScenario, TutorialStep } from '../types/fmc';
 
 /**
  * Preflight: Cold cockpit to flight-ready FMC.
@@ -448,7 +448,7 @@ export function calculateTutorialGrade(errors: number, timeMs: number, stepCount
 /**
  * Check if a tutorial step is satisfied by the current FMC state.
  */
-export function isStepComplete(step: any, state: any): boolean {
+export function isStepComplete(step: TutorialStep, state: FMCState): boolean {
   if (state.currentPage !== step.page) return false;
   if (step.validate) {
     return step.validate(state.scratchpad || '', state);

@@ -34,7 +34,7 @@ export function MCPKnob({ label, value, onRotate, onPress, unit, highlighted }: 
           <div className="absolute inset-0 rounded-full opacity-40 mix-blend-overlay overflow-hidden">
             {[...Array(36)].map((_, i) => (
               <div 
-                key={i} 
+                key={`knurl-${i}`} 
                 className="absolute top-1/2 left-1/2 w-full h-[1px] bg-black/40 origin-left"
                 style={{ transform: `translate(-50%, -50%) rotate(${i * 10}deg)` }}
               />

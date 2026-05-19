@@ -29,7 +29,7 @@ export function FixRing({ model }: FixRingProps) {
         const distPx = fix.distance * (45 / model.range);
 
         return (
-          <g key={i} data-testid="nd-fix-overlay">
+          <g key={`fix-${fix.ident ?? fix.refFix ?? i}`} data-testid="nd-fix-overlay">
             {/* Radial Line (Cyan/Green Glow) */}
             {fix.radial > 0 && (
               <line

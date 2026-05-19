@@ -55,12 +55,12 @@ export function handleSetFromTo(
       patch: {
         isModified: true,
         execLit: true,
-        scratchpad: '' as any,
-        scratchpadError: null as any,
+        scratchpad: '',
+        scratchpadError: null,
         pendingRoute: {
           origin: from,
           destination: to,
-          flightNumber: (state.pendingRoute ?? state.route)?.flightNumber ?? null as any,
+          flightNumber: (state.pendingRoute ?? state.route)?.flightNumber ?? null,
         },
         pendingFlightPlan: {
           origin: from,
@@ -95,7 +95,7 @@ function handleSetOrigin(state: FMCState, scratchpad: string): FmcActionResult {
         pendingRoute: { ...route, origin: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, origin: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -118,7 +118,7 @@ function handleSetDest(state: FMCState, scratchpad: string): FmcActionResult {
         pendingRoute: { ...route, destination: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, destination: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -140,7 +140,7 @@ function handleSetFltNo(state: FMCState, scratchpad: string): FmcActionResult {
         pendingRoute: { ...route, flightNumber: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, flightNumber: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -166,7 +166,7 @@ function handleSetRoute(state: FMCState, scratchpad: string): FmcActionResult {
         pendingFlightPlan: { ...fp, waypoints, route: routeStr },
         legsPageCount: Math.max(1, Math.ceil(waypoints.length / 5)),
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -186,7 +186,7 @@ function handleSetDirectTo(state: FMCState, scratchpad: string): FmcActionResult
       patch: {
         pendingRoute: { ...route, directTo: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }

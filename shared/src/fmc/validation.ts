@@ -35,7 +35,7 @@ export function isValidFlightNumber(flt: string): ValidationResult {
 
 export function isValidAltitude(alt: string): ValidationResult {
   const num = parseInt(alt);
-  if (isNaN(num) || num < 0 || num > 500) {
+  if (isNaN(num) || num < 0 || num > 410) {
     return { valid: false, error: 'OUT OF RANGE' };
   }
   return { valid: true };

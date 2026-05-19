@@ -25,13 +25,13 @@ export function handleLegWpAction(
           editWaypointIndex: wpIdx,
           scratchpad: '',
           scratchpadError: null,
-        } as any,
+        },
       },
     };
   }
 
   if (wpAction === 'delete_wp' && state.deleteMode) {
-    return { handled: true, sideEffect: `delete_waypoint_${wpIdx}` } as any;
+    return { handled: true, sideEffect: `delete_waypoint_${wpIdx}` };
   }
 
   return { handled: false };

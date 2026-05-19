@@ -47,12 +47,12 @@ function handleSetFixRef(
   const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
   fixEntries[entryIndex] = { ...fixEntries[entryIndex], refFix: scratchpad.toUpperCase() };
 
-  const patch: Record<string, unknown> = { fixEntries };
+  const patch: Partial<FMCState> = { fixEntries };
   if (entryIndex === 0) patch.fix = fixEntries[0];
 
   return {
     handled: true,
-    success: { clearScratchpad: true, patch: patch as any },
+    success: { clearScratchpad: true, patch },
   };
 }
 
@@ -91,11 +91,11 @@ function handleSetFixRadialDistance(
   const fixEntries = ensureFixEntries(state.fixEntries, state.fix);
   fixEntries[entryIndex] = { ...fixEntries[entryIndex], radial, distance };
 
-  const patch: Record<string, unknown> = { fixEntries };
+  const patch: Partial<FMCState> = { fixEntries };
   if (entryIndex === 0) patch.fix = fixEntries[0];
 
   return {
     handled: true,
-    success: { clearScratchpad: true, patch: patch as any },
+    success: { clearScratchpad: true, patch },
   };
 }

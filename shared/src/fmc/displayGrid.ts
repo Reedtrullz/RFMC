@@ -1,3 +1,4 @@
+import { devWarn } from '../logger';
 import type { DisplayColor } from './displayColors';
 import type { DisplaySemantic } from './displaySemantics';
 import type { DisplayData, DisplayLine } from '../types/fmc';
@@ -18,7 +19,7 @@ export function buildCells(grid: GridDisplayData): CellData[] {
   for (const segment of grid.segments) {
     if (process.env.NODE_ENV !== 'production') {
       if (segment.row < 0 || segment.row >= grid.rows || segment.col < 0 || segment.col + segment.text.length > grid.columns) {
-        console.warn(`Display segment out of bounds: row ${segment.row}, col ${segment.col}, length ${segment.text.length} (Grid: ${grid.rows}x${grid.columns})`, segment);
+        devWarn(`Display segment out of bounds: row ${segment.row}, col ${segment.col}, length ${segment.text.length} (Grid: ${grid.rows}x${grid.columns})`, segment);
       }
     }
     for (let i = 0; i < segment.text.length; i++) {

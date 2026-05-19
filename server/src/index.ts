@@ -17,6 +17,7 @@ async function shutdown(): Promise<void> {
 
 process.on('SIGINT', () => void shutdown());
 process.on('SIGTERM', () => void shutdown());
+process.on('SIGHUP', () => void shutdown());
 
 process.on('unhandledRejection', (reason) => {
   logger.error(LogEvent.SIM_ERROR, {
@@ -33,13 +34,16 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-bridge.start().then((port) => {
-  logger.info(LogEvent.SERVER_START, {
-    port,
-    adapter: bridge.aircraft.name,
-    status: bridge.aircraft.connectionStatus,
+bridge
+  .start()
+  .then((port) => {
+    logger.info(LogEvent.SERVER_START, {
+      port,
+      adapter: bridge.aircraft.name,
+      status: bridge.aircraft.connectionStatus,
+    });
+  })
+  .catch((err) => {
+    logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Failed to start server' });
+    process.exit(1);
   });
-}).catch((err) => {
-  logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Failed to start server' });
-  process.exit(1);
-});

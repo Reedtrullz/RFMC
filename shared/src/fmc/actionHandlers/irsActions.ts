@@ -63,7 +63,7 @@ function handleSetIrsPos(state: FMCState, scratchpad: string): FmcActionResult {
           irsAlignmentProgress: 0,
           irsTimeRemaining: state.position.irsState === 'FAST_ALIGNING' ? 30 : 600,
         },
-      } as any,
+      },
     },
   };
 }

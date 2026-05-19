@@ -5,7 +5,7 @@ import { distanceNm, bearingDeg } from './ndGeometry';
 import { getAllAirports, getAllWaypoints, getAirportCoordinates, getWaypointCoordinates } from './navDatabase';
 import type { 
   NDMapMode, NDRange, NDAnchorZones, NDRoutePoint, NDRouteSegment, 
-  NDFixOverlay, NDHoldOverlay, TCASTarget, WXRData, VerticalProfilePoint, 
+  NDFixOverlay, NDHoldOverlay, TCASTarget, WXRData, WXRPoint, VerticalProfilePoint, 
   NavigationDisplayModel 
 } from './ndTypes';
 
@@ -163,14 +163,14 @@ function buildWXRData(
   const rangeNm = projectionContext.rangeNm;
 
   // Proportional weather cell cluster placed relative to range and heading
-  const cells = [
+  const cells: { dist: number; angleOffset: number; intensity: WXRPoint['intensity']; r: number }[] = [
     { dist: rangeNm * 0.38, angleOffset: 12, intensity: 'light', r: 5 },
     { dist: rangeNm * 0.46, angleOffset: 18, intensity: 'medium', r: 8 },
     { dist: rangeNm * 0.43, angleOffset: 15, intensity: 'heavy', r: 4 },
     { dist: rangeNm * 0.54, angleOffset: 24, intensity: 'medium', r: 6 },
   ];
 
-  const points: Array<{ x: number; y: number; r: number; intensity: 'light' | 'medium' | 'heavy' }> = [];
+  const points: WXRPoint[] = [];
 
   for (const c of cells) {
     const bearingRad = ((projectionContext.heading + c.angleOffset) * Math.PI) / 180;
@@ -183,14 +183,14 @@ function buildWXRData(
         x: p.x,
         y: p.y,
         r: c.r,
-        intensity: c.intensity as any
+        intensity: c.intensity,
       });
     }
   }
 
   return {
     intensity: 'medium',
-    points: points as any
+    points,
   };
 }
 

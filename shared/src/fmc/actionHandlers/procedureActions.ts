@@ -43,7 +43,7 @@ function handleSetSid(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, sid: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -75,7 +75,7 @@ function handleSetRwy(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, runway: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -107,7 +107,7 @@ function handleSetStar(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, star: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }
@@ -139,7 +139,7 @@ function handleSetAppr(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, approach: scratchpad.toUpperCase() },
         isModified: true, execLit: true,
-      } as any,
+      },
     },
   };
 }

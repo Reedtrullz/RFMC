@@ -1,6 +1,7 @@
 import type { DisplayColor } from '../../displayColors';
 import type { DisplaySegment, GridDisplayData } from '../../../types/display';
-import type { FMCState, DisplayData } from '../../../types/fmc';
+import type { FMCState, DisplayData, DisplayLine } from '../../../types/fmc';
+import { inferBoeingSemantic } from '../../pageLineSemantics';
 
 export function seg(
   row: number,
@@ -44,6 +45,43 @@ export function boeingGrid(segments: DisplaySegment[]): GridDisplayData {
   };
 }
 
+export function compileGridLines(segments: DisplaySegment[]): DisplayLine[] {
+  const lines: DisplayLine[] = Array.from({ length: 14 }, () => ({
+    text: ' '.repeat(24),
+    leftLabel: '',
+    rightLabel: '',
+    inverse: false,
+  }));
+
+  for (const segVal of segments) {
+    if (segVal.row < 0 || segVal.row >= 14) continue;
+    const line = lines[segVal.row];
+    const text = segVal.text;
+    const col = segVal.col;
+
+    const chars = line.text.split('');
+    for (let i = 0; i < text.length; i++) {
+      const pos = col + i;
+      if (pos >= 0 && pos < 24) {
+        chars[pos] = text[i];
+      }
+    }
+    line.text = chars.join('');
+
+    if (segVal.color && !line.color) line.color = segVal.color;
+    if (segVal.inverse) line.inverse = true;
+    if (segVal.semantic && !line.semantic) line.semantic = segVal.semantic;
+  }
+
+  for (const line of lines) {
+    if (!line.semantic && line.color) {
+      line.semantic = inferBoeingSemantic(line.color, line.inverse);
+    }
+  }
+
+  return lines;
+}
+
 export function boeingPage(
   segments: DisplaySegment[],
   lskActions: Record<string, string | null> = {},
@@ -51,7 +89,7 @@ export function boeingPage(
   return {
     segments,
     lskActions,
-    lines: [],
+    lines: compileGridLines(segments),
     title: '', // segments contain the title
   };
 }
