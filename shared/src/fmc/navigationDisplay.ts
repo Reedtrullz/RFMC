@@ -663,7 +663,7 @@ function processRoute(
     const activePoint = routePoints[activeIndex];
     if (activePoint) {
       const cy = isCentered ? 50 : 84;
-      const aircraftPoint = {
+      const aircraftPoint: NDRoutePoint = {
         x: 50,
         y: cy,
         visible: true,
@@ -680,7 +680,7 @@ function processRoute(
 
       if (clipped.visible) {
         routeSegments.unshift({
-          from: aircraftPoint as any,
+          from: aircraftPoint,
           to: activePoint,
           x1: clipped.x1,
           y1: clipped.y1,
