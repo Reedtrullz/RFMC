@@ -1,5 +1,8 @@
 import { MockSimConnectAdapter } from './mock-simconnect';
 import type { IAircraftAdapter } from './IAircraftAdapter';
+import { createRequire } from 'node:module';
+
+const _require = createRequire(__filename);
 
 export type AircraftAdapterKind = 'pmdg' | 'mock' | 'fbw-a320' | 'fbw';
 
@@ -15,7 +18,7 @@ export function createAircraftAdapter(kind = process.env.AIRCRAFT_ADAPTER || 'mo
         'PMDG adapter is only supported in a Windows/MSFS bridge environment. Use AIRCRAFT_ADAPTER=mock on CI and VPS deployments.',
       );
     }
-    const { PMDG737Adapter } = require('./pmdg-737');
+    const { PMDG737Adapter } = _require('./pmdg-737');
     return new PMDG737Adapter();
   }
 
@@ -25,7 +28,7 @@ export function createAircraftAdapter(kind = process.env.AIRCRAFT_ADAPTER || 'mo
         'FBW A320 adapter is only supported in a Windows/MSFS bridge environment. Use AIRCRAFT_ADAPTER=mock on CI and VPS deployments.',
       );
     }
-    const { FBWA320Adapter } = require('./fbw-a320');
+    const { FBWA320Adapter } = _require('./fbw-a320');
     return new FBWA320Adapter();
   }
 
