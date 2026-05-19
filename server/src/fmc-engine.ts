@@ -59,7 +59,7 @@ export class FMCEngine {
               ...this.state.autopilot,
               truth: {
                 ...this.state.autopilot.truth,
-                ...(nextState as any).autopilot?.truth,
+                ...nextState.autopilot?.truth,
               },
             },
           };
@@ -225,7 +225,7 @@ export class FMCEngine {
             lateral: 0,
             vertical: 0,
           },
-        } as any,
+        },
       },
       efisL: this.createDefaultEFIS('BOEING_737', 'L'),
       efisR: this.createDefaultEFIS('BOEING_737', 'R'),
@@ -270,7 +270,7 @@ export class FMCEngine {
         messages: [],
         pendingUplink: null,
       },
-      flightPhase: 'PREFLIGHT' as any,
+      flightPhase: 'PREFLIGHT',
       scratchpadMessages: [],
       trafficTargets: [],
       selectedMessageId: null,
@@ -1329,7 +1329,7 @@ export class FMCEngine {
   }
 
   getState(): FMCState {
-    return this.state;
+    return structuredClone(this.state);
   }
 
   private checkTutorialProgression(key: string, action: string | null, sp: string): void {

@@ -36,7 +36,7 @@ export function resolveLskNavigation(action: string): LskNavigationAction | null
     prev_page: { action: 'prev_page', pressKey: 'PREV_PAGE', handled: true },
     dep_page: { action: 'dep_page', setSubPage: { depArrSubPage: 'DEP' as const }, handled: true },
     arr_page: { action: 'arr_page', setSubPage: { depArrSubPage: 'ARR' as const }, handled: true },
-    atc: { action: 'atc', handled: true },
+    atc: { action: 'atc', targetPage: 'MENU' as PageType, handled: true },
 
     // Airbus LSK navigation
     init_a: { action: 'init_a', targetPage: 'INIT_A', handled: true },

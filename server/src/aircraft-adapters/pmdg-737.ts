@@ -16,6 +16,40 @@ import { devLog, devError, devWarn } from '@virtual-cdu/shared';
 
 export type PMDGVariant = '737-600' | '737-700' | '737-800' | '737-900';
 
+interface SimState {
+  lat: number;
+  lon: number;
+  headingDeg: number;
+  trackDeg: number;
+  altitudeFt: number;
+  indicatedAirspeedKt: number;
+  trueAirspeedKt: number;
+  groundSpeedKt: number;
+  verticalSpeedFpm: number;
+  pitchDeg: number;
+  bankDeg: number;
+  apMaster: boolean;
+  apLnavActive: boolean;
+  apVnavActive: boolean;
+  apHeadingActive: boolean;
+  apAltitudeActive: boolean;
+  apTargetAltitude: number;
+  fuelTotal: number;
+  gw: number;
+  altitude: number;
+  heading: number;
+  ias: number;
+  tas: number;
+  gs: number;
+  vs: number;
+  track: number;
+  radios?: {
+    vor1: string;
+    vor2: string;
+    adf1: string;
+  };
+}
+
 const PMDG_KEY_MAP: Record<string, string> = {
   '0': 'PMDG_CDU_1_BTN_0',
   '1': 'PMDG_CDU_1_BTN_1',
@@ -119,7 +153,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
   lastError: string | null = null;
   isConnected = false;
 
-  private simState: any | null = null;
+  private simState: SimState | null = null;
 
   /** Cached CDU display lines, updated by SimConnect event handler */
   private cduLines: string[] = [];
@@ -307,7 +341,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
       vs: this.simState.vs,
       fuelTotal: 0,
       gw: 0,
-      radios: (this.simState as any).radios,
+      radios: this.simState.radios,
       headingDeg: this.simState.headingDeg,
       trackDeg: this.simState.trackDeg,
       altitudeFt: this.simState.altitudeFt,
@@ -337,22 +371,26 @@ export class PMDG737Adapter implements IAircraftAdapter {
       handle.on('simObjectData', (recvSimObjectData) => {
         if (recvSimObjectData.requestID !== REQ_CDU) return;
 
-        const lines: string[] = [];
-        for (let row = 0; row < PMDG737Adapter.CDU_ROWS; row++) {
-          let rowStr = '';
-          for (let col = 0; col < PMDG737Adapter.CDU_COLS; col++) {
-            const charCode = recvSimObjectData.data.readInt32();
-            rowStr += String.fromCharCode(charCode);
+        try {
+          const lines: string[] = [];
+          for (let row = 0; row < PMDG737Adapter.CDU_ROWS; row++) {
+            let rowStr = '';
+            for (let col = 0; col < PMDG737Adapter.CDU_COLS; col++) {
+              const charCode = recvSimObjectData.data.readInt32();
+              rowStr += String.fromCharCode(charCode);
+            }
+            lines.push(rowStr);
           }
-          lines.push(rowStr);
-        }
 
-        if (lines.length > 0) {
-          this.cduLines = lines;
-          if (lines[0].trim().length > 0) {
-            const titleMatch = lines[0].match(/^\s*(\S+)/);
-            this.cduTitle = titleMatch ? titleMatch[1] : 'CDU';
+          if (lines.length > 0) {
+            this.cduLines = lines;
+            if (lines[0].trim().length > 0) {
+              const titleMatch = lines[0].match(/^\s*(\S+)/);
+              this.cduTitle = titleMatch ? titleMatch[1] : 'CDU';
+            }
           }
+        } catch (readErr) {
+          devError('[PMDG737Adapter] SimConnect CDU data read error:', readErr);
         }
       });
     } catch (err) {
@@ -450,7 +488,7 @@ export class PMDG737Adapter implements IAircraftAdapter {
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
 
-            (this.simState as any).radios = { vor1, vor2, adf1 };
+            this.simState.radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[PMDG] Error reading aircraft state:', readErr);
           }

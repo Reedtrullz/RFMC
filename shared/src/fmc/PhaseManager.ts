@@ -2,13 +2,74 @@ import { FlightPhase, FMCState } from '../types/fmc';
 import { navDatabase } from './NavDatabaseService';
 
 export class PhaseManager {
+  // ── Hysteresis state ───────────────────────────────────────────────────────
+  // Prevents rapid phase oscillation near threshold boundaries.
+  // A candidate phase must remain stable for HYSTERESIS_MS before transition.
+  // Safety-critical phases (GO_AROUND) bypass hysteresis entirely.
+
+  private static _candidatePhase: FlightPhase | null = null;
+  private static _candidateTimestamp = 0;
+  private static readonly HYSTERESIS_MS = 5000;
+  /** Phases that bypass hysteresis (safety-critical or terminal). */
+  private static readonly IMMEDIATE_PHASES: ReadonlySet<FlightPhase> = new Set([
+    'GO_AROUND',
+    'PREFLIGHT',
+    'DONE',
+  ]);
+
+  /** Reset hysteresis tracking. Intended for test use only. */
+  public static _resetHysteresis(): void {
+    PhaseManager._candidatePhase = null;
+    PhaseManager._candidateTimestamp = 0;
+  }
+
   /**
    * Infers the flight phase based on aircraft state and NAV radio data.
    *
    * Uses approach arming + LOC/GS capture when available (MSFS bridge),
    * falls back to altitude + speed thresholds in standalone mode.
+   *
+   * Applies 5-second hysteresis to prevent rapid oscillation near thresholds.
+   * Safety-critical phases (GO_AROUND, PREFLIGHT, DONE) transition immediately.
    */
   public static inferFlightPhase(state: FMCState): FlightPhase {
+    const rawPhase = PhaseManager.computeRawPhase(state);
+    const currentPhase = state.flightPhase || 'PREFLIGHT';
+
+    // Safety-critical / terminal phases bypass hysteresis, as does transitioning out of PREFLIGHT
+    if (PhaseManager.IMMEDIATE_PHASES.has(rawPhase) || currentPhase === 'PREFLIGHT') {
+      PhaseManager._candidatePhase = null;
+      return rawPhase;
+    }
+
+    // Same as current phase — no transition, clear candidate
+    if (rawPhase === currentPhase) {
+      PhaseManager._candidatePhase = null;
+      return rawPhase;
+    }
+
+    // New candidate differs from previous candidate — restart timer
+    const now = Date.now();
+    if (rawPhase !== PhaseManager._candidatePhase) {
+      PhaseManager._candidatePhase = rawPhase;
+      PhaseManager._candidateTimestamp = now;
+      return currentPhase;
+    }
+
+    // Same candidate — check if stable long enough
+    if (now - PhaseManager._candidateTimestamp >= PhaseManager.HYSTERESIS_MS) {
+      PhaseManager._candidatePhase = null;
+      return rawPhase;
+    }
+
+    return currentPhase;
+  }
+
+  /**
+   * Pure phase computation without hysteresis.
+   * Extracted so tests can verify raw logic independently.
+   */
+  private static computeRawPhase(state: FMCState): FlightPhase {
     const acState = state.aircraftState;
     if (!acState) return 'PREFLIGHT';
 

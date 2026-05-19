@@ -14,7 +14,7 @@ export function isValidICAO(code: string): ValidationResult {
 }
 
 export function isValidWaypoint(ident: string): ValidationResult {
-  if (!ident || ident.length < 2 || ident.length > 5) {
+  if (!ident || ident.length < 1 || ident.length > 5) {
     return { valid: false, error: 'INVALID ENTRY' };
   }
   if (!/^[A-Z0-9]+$/.test(ident)) {
@@ -35,10 +35,16 @@ export function isValidFlightNumber(flt: string): ValidationResult {
 
 export function isValidAltitude(alt: string): ValidationResult {
   const num = parseInt(alt);
-  if (isNaN(num) || num < 0 || num > 410) {
+  if (isNaN(num) || num < 0) {
     return { valid: false, error: 'OUT OF RANGE' };
   }
-  return { valid: true };
+  if (num <= 410) {
+    return { valid: true };
+  }
+  if (num >= 1000 && num <= 41000) {
+    return { valid: true };
+  }
+  return { valid: false, error: 'OUT OF RANGE' };
 }
 
 export function isValidSpeed(spd: string): ValidationResult {
@@ -71,8 +77,13 @@ export function isValidRunway(rwy: string): ValidationResult {
   if (!rwy || rwy.length < 2) {
     return { valid: false, error: 'INVALID ENTRY' };
   }
-  if (!/^\d{1,2}[LCR]?$/.test(rwy)) {
+  const match = rwy.match(/^(\d{1,2})([LCR])?$/);
+  if (!match) {
     return { valid: false, error: 'INVALID ENTRY' };
+  }
+  const rwyNum = parseInt(match[1], 10);
+  if (rwyNum < 1 || rwyNum > 36) {
+    return { valid: false, error: 'OUT OF RANGE' };
   }
   return { valid: true };
 }

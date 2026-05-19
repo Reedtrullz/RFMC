@@ -18,7 +18,7 @@ describe('handlePositionAction', () => {
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
     const patch = getPatch(result);
-    expect(patch.position.refAirport).toBe('KJFK');
+    expect(patch.position?.refAirport).toBe('KJFK');
   });
 
   it('set_ref_airport fails for invalid ICAO', () => {
@@ -38,6 +38,6 @@ describe('handlePositionAction', () => {
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
     const patch = getPatch(result);
-    expect(patch.position.gate).toBe('A12');
+    expect(patch.position?.gate).toBe('A12');
   });
 });

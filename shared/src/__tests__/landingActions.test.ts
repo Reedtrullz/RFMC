@@ -59,7 +59,7 @@ describe('handleSetQnh', () => {
     const result = handleLandingAction('set_qnh', makeState(), '1013');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.takeoff.qnh).toBe(101300);
+    expect(patch.landing?.qnh).toBe(1013);
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
@@ -89,8 +89,8 @@ describe('handleSetLandingRunway', () => {
     const result = handleLandingAction('set_landing_runway', state, '19R');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.runway).toBe('19R');
-    expect(patch.route.runway).toBe('19R');
+    expect(patch.landing?.runway).toBe('19R');
+    expect(patch.route?.runway).toBe('19R');
     expect(patch.isModified).toBe(true);
   });
 });
@@ -111,7 +111,7 @@ describe('handleSetLandingFlaps', () => {
     const result = handleLandingAction('set_landing_flaps', makeState(), '40');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.flaps).toBe('40');
+    expect(patch.landing?.flaps).toBe('40');
   });
 });
 
@@ -137,7 +137,7 @@ describe('handleSetLandingVref', () => {
     const result = handleLandingAction('set_landing_vref', makeState(), '135');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.vref).toBe(135);
+    expect(patch.landing?.vref).toBe(135);
   });
 });
 
@@ -152,7 +152,7 @@ describe('handleSetIlsFrequency', () => {
     const result = handleLandingAction('set_ils_frequency', makeState(), '110.90');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.ilsFrequency).toBe('110.90');
+    expect(patch.landing?.ilsFrequency).toBe('110.90');
   });
 });
 
@@ -167,7 +167,7 @@ describe('handleSetIlsCourse', () => {
     const result = handleLandingAction('set_ils_course', makeState(), '195');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.course).toBe(195);
+    expect(patch.landing?.course).toBe(195);
   });
 });
 
@@ -181,10 +181,10 @@ describe('handleSetFlaps (takeoff)', () => {
     const result = handleLandingAction('set_flaps', makeState(), '5');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.takeoff.flaps).toBe('5');
-    expect(patch.takeoff.suggestedV1).toBeGreaterThan(0);
-    expect(patch.takeoff.suggestedVr).toBeGreaterThan(patch.takeoff.suggestedV1);
-    expect(patch.takeoff.suggestedV2).toBeGreaterThan(patch.takeoff.suggestedVr);
+    expect(patch.takeoff?.flaps).toBe('5');
+    expect(patch.takeoff?.suggestedV1).toBeGreaterThan(0);
+    expect(patch.takeoff?.suggestedVr).toBeGreaterThan(patch.takeoff?.suggestedV1 ?? 0);
+    expect(patch.takeoff?.suggestedV2).toBeGreaterThan(patch.takeoff?.suggestedVr ?? 0);
   });
 });
 
@@ -208,7 +208,7 @@ describe('handleSetLandingTemp', () => {
     const result = handleLandingAction('set_landing_temp', makeState(), '25');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.temp).toBe(25);
+    expect(patch.landing?.temp).toBe(25);
   });
 });
 
@@ -238,8 +238,8 @@ describe('handleSetLandingWind', () => {
     const result = handleLandingAction('set_landing_wind', makeState(), '240/15');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.windDir).toBe(240);
-    expect(patch.landing.windSpeed).toBe(15);
+    expect(patch.landing?.windDir).toBe(240);
+    expect(patch.landing?.windSpeed).toBe(15);
   });
 });
 
@@ -263,7 +263,7 @@ describe('handleSetMda', () => {
     const result = handleLandingAction('set_mda', makeState(), '250');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.mda).toBe(250);
+    expect(patch.landing?.mda).toBe(250);
   });
 });
 
@@ -287,7 +287,7 @@ describe('handleSetDh', () => {
     const result = handleLandingAction('set_dh', makeState(), '200');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.dh).toBe(200);
+    expect(patch.landing?.dh).toBe(200);
   });
 });
 
@@ -296,8 +296,8 @@ describe('handleToggleLdgConf', () => {
     const result = handleLandingAction('toggle_ldg_conf', makeState(), '');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.ldgConf).toBe('CONF3');
-    expect(patch.landing.flaps).toBe('CONF3');
+    expect(patch.landing?.ldgConf).toBe('CONF3');
+    expect(patch.landing?.flaps).toBe('CONF3');
 
     const stateConf3 = makeState({
       landing: { runway: '', flaps: 'CONF3', vref: 0, ilsFrequency: '', course: 0, ldgConf: 'CONF3' },
@@ -312,8 +312,8 @@ describe('handleToggleLdgConf', () => {
     const result = handleLandingAction('toggle_ldg_conf', makeState(), 'FULL');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.landing.ldgConf).toBe('FULL');
-    expect(patch.landing.flaps).toBe('FULL');
+    expect(patch.landing?.ldgConf).toBe('FULL');
+    expect(patch.landing?.flaps).toBe('FULL');
   });
 
   it('updates to CONF3 when scratchpad is 3 or CONF3', () => {

@@ -144,6 +144,13 @@ export function handleSetVr(state: FMCState, scratchpad: string): FmcActionResul
     };
   }
 
+  if (state.takeoff.v2 && vr >= state.takeoff.v2) {
+    return {
+      handled: true,
+      failure: { code: 'V_SPEEDS_DELETED' as const, text: 'VR MUST BE < V2', source: 'takeoffActions' },
+    };
+  }
+
   return {
     handled: true,
     success: { clearScratchpad: true, patch: { takeoff: { ...state.takeoff, vr }, isModified: true, execLit: true } },
@@ -193,6 +200,13 @@ export function handleSetTrim(state: FMCState, scratchpad: string): FmcActionRes
     return {
       handled: true,
       failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'takeoffActions' },
+    };
+  }
+
+  if (trim < 0 || trim > 17) {
+    return {
+      handled: true,
+      failure: { code: 'OUT_OF_RANGE' as const, text: 'OUT OF RANGE', source: 'takeoffActions' },
     };
   }
 

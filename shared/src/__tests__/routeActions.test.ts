@@ -95,8 +95,8 @@ describe('handleSetOrigin (via dispatcher)', () => {
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
     const patch = getPatch(result);
-    expect(patch.pendingRoute.origin).toBe('KJFK');
-    expect(patch.pendingFlightPlan.origin).toBe('KJFK');
+    expect(patch.pendingRoute?.origin).toBe('KJFK');
+    expect(patch.pendingFlightPlan?.origin).toBe('KJFK');
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
     expect(result.success?.sideEffect).toBe('expand_active_route');
@@ -109,9 +109,9 @@ describe('handleSetOrigin (via dispatcher)', () => {
     };
     const result = handleRouteAction('set_origin', state, 'KJFK');
     const patch = getPatch(result);
-    expect(patch.pendingRoute.origin).toBe('KJFK');
-    expect(patch.pendingRoute.destination).toBe('KDCA');
-    expect(patch.pendingRoute.flightNumber).toBe('AAL123');
+    expect(patch.pendingRoute?.origin).toBe('KJFK');
+    expect(patch.pendingRoute?.destination).toBe('KDCA');
+    expect(patch.pendingRoute?.flightNumber).toBe('AAL123');
   });
 });
 
@@ -120,8 +120,8 @@ describe('handleSetDest (via dispatcher)', () => {
     const result = handleRouteAction('set_dest', makeState(), 'KDCA');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.pendingRoute.destination).toBe('KDCA');
-    expect(patch.pendingFlightPlan.destination).toBe('KDCA');
+    expect(patch.pendingRoute?.destination).toBe('KDCA');
+    expect(patch.pendingFlightPlan?.destination).toBe('KDCA');
     expect(result.success?.sideEffect).toBe('expand_active_route');
   });
 });
@@ -137,8 +137,8 @@ describe('handleSetFltNo (via dispatcher)', () => {
     const result = handleRouteAction('set_flt_no', makeState(), 'AAL123');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.pendingRoute.flightNumber).toBe('AAL123');
-    expect(patch.pendingFlightPlan.flightNumber).toBe('AAL123');
+    expect(patch.pendingRoute?.flightNumber).toBe('AAL123');
+    expect(patch.pendingFlightPlan?.flightNumber).toBe('AAL123');
   });
 });
 
@@ -152,7 +152,7 @@ describe('handleSetRoute (via dispatcher)', () => {
     const result = handleRouteAction('set_route', makeState(), 'KJFK DCT RBV DCT KDCA');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.pendingRoute.routeString).toBe('KJFK DCT RBV DCT KDCA');
+    expect(patch.pendingRoute?.routeString).toBe('KJFK DCT RBV DCT KDCA');
     expect(patch.legsPageCount).toBeGreaterThanOrEqual(1);
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
@@ -167,7 +167,7 @@ describe('handleSetRoute (via dispatcher)', () => {
 
 describe('handleSetDirectTo (via dispatcher)', () => {
   it('returns failure for invalid waypoint', () => {
-    const result = handleRouteAction('set_direct_to', makeState(), 'X');
+    const result = handleRouteAction('set_direct_to', makeState(), '*');
     expect(result.handled).toBe(true);
     expect(result.failure?.code).toBe('NOT_IN_DATABASE');
   });
@@ -176,7 +176,7 @@ describe('handleSetDirectTo (via dispatcher)', () => {
     const result = handleRouteAction('set_direct_to', makeState(), 'RBV');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.pendingRoute.directTo).toBe('RBV');
+    expect(patch.pendingRoute?.directTo).toBe('RBV');
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
   });

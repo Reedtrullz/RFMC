@@ -42,7 +42,7 @@ describe('FMCEngine', () => {
 
   it('triggers ROUTE/SID MISMATCH when entered route procedure conflicts with route.sid', () => {
     const engine = new FMCEngine();
-    engine.getState().route.sid = 'DEEZZ1';
+    (engine as any).state.route.sid = 'DEEZZ1';
 
     engine.processInput('RTE');
     engine.processInput('NEXT_PAGE');
@@ -58,8 +58,8 @@ describe('FMCEngine', () => {
 
   it('resolves backend LEGS discontinuities by replacing them with scratchpad waypoint entries', () => {
     const engine = new FMCEngine();
-    engine.getState().currentPage = 'LEGS';
-    engine.getState().flightPlan = {
+    (engine as any).state.currentPage = 'LEGS';
+    (engine as any).state.flightPlan = {
       origin: 'KJFK',
       destination: 'KDCA',
       flightNumber: '',
@@ -341,7 +341,7 @@ describe('FMCEngine', () => {
 
   it('renders Airbus PROG with shared LNAV and performance truth in backend CONTROL mode', () => {
     const engine = new FMCEngine();
-    const state = engine.getState();
+    const state = (engine as any).state;
     state.aircraft = 'AIRBUS_A320';
     state.currentPage = 'PROG_A';
     state.route = {
@@ -402,7 +402,7 @@ describe('FMCEngine', () => {
 
   it('renders Airbus FUEL PRED with shared performance truth in backend CONTROL mode', () => {
     const engine = new FMCEngine();
-    const state = engine.getState();
+    const state = (engine as any).state;
     state.aircraft = 'AIRBUS_A320';
     state.currentPage = 'FUEL_PRED';
     state.route = {

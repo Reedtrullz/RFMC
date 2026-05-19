@@ -201,6 +201,12 @@ export const useCockpitLayoutStore = create<CockpitLayoutStore>((set, get) => ({
 // ─── Dev/test window exposure ─────────────────────────────────────────────────
 // Exposes the store on window in non-production builds so Playwright helpers
 // (dismissWelcome, ensureTrainingMode) can read cockpitMode without races.
+declare global {
+  interface Window {
+    useCockpitLayoutStore?: typeof useCockpitLayoutStore;
+  }
+}
+
 if (typeof window !== 'undefined' && import.meta.env.MODE !== 'production') {
-  (window as any).useCockpitLayoutStore = useCockpitLayoutStore;
+  window.useCockpitLayoutStore = useCockpitLayoutStore;
 }

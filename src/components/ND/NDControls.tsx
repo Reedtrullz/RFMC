@@ -39,6 +39,8 @@ export function NDControls({ model, side }: NDControlsProps) {
               <button
                 key={m}
                 onClick={() => setNDMode(side, m)}
+                aria-label={`ND mode ${m}`}
+                aria-pressed={efis.mode === m}
                 className={`h-5 px-1.5 rounded-full text-[8px] font-bold transition-all ${efis.mode === m ? 'bg-cdu-cyan text-black shadow-[0_0_8px_rgba(0,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
               >
                 {m.replace('ROSE_', '').replace('NAV', 'NV')}
@@ -55,6 +57,8 @@ export function NDControls({ model, side }: NDControlsProps) {
               <button
                 key={r}
                 onClick={() => setNDRange(side, r)}
+                aria-label={`ND range ${r} NM`}
+                aria-pressed={efis.range === r}
                 className={`h-5 w-5 rounded-full text-[8px] font-bold transition-all flex items-center justify-center ${efis.range === r ? 'bg-white text-black shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-gray-500 hover:text-white'}`}
               >
                 {r}

@@ -36,7 +36,7 @@ export interface FmcActionResult {
   failure?: FmcActionFailure;
 }
 
-export function getPatch(result: FmcActionResult): any {
+export function getPatch(result: FmcActionResult): Partial<FMCState> {
   if (!result.success?.patch) {
     throw new Error('Expected a successful FmcActionResult with a patch');
   }

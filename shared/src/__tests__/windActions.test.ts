@@ -18,31 +18,31 @@ describe('handleWindAction', () => {
     expect(result.handled).toBe(true);
     expect(result.success?.clearScratchpad).toBe(true);
     const patch = getPatch(result);
-    expect(patch.takeoff.windDir).toBe(180);
-    expect(patch.takeoff.windSpeed).toBe(20);
+    expect(patch.takeoff?.windDir).toBe(180);
+    expect(patch.takeoff?.windSpeed).toBe(20);
   });
 
   it('set_clb_wind sets performance clb wind', () => {
     const result = handleWindAction('set_clb_wind', makeState(), '270/80');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.performance.clbWindDir).toBe(270);
-    expect(patch.performance.clbWindSpeed).toBe(80);
+    expect(patch.performance?.clbWindDir).toBe(270);
+    expect(patch.performance?.clbWindSpeed).toBe(80);
   });
 
   it('set_crz_wind sets performance crz wind', () => {
     const result = handleWindAction('set_crz_wind', makeState(), '090/50');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.performance.crzWindDir).toBe(90);
-    expect(patch.performance.crzWindSpeed).toBe(50);
+    expect(patch.performance?.crzWindDir).toBe(90);
+    expect(patch.performance?.crzWindSpeed).toBe(50);
   });
 
   it('set_isa_dev sets performance isaDev', () => {
     const result = handleWindAction('set_isa_dev', makeState(), '10');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.performance.isaDev).toBe(10);
+    expect(patch.performance?.isaDev).toBe(10);
   });
 
   it('invalid wind returns failure', () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useFPSMonitor } from '../../hooks/useFPSMonitor';
 
 export function PerformanceOverlay({ enabled }: { enabled: boolean }) {
-  const { fps, latency } = useFPSMonitor();
+  const { fps, latency } = useFPSMonitor(enabled);
 
   if (!enabled) return null;
 

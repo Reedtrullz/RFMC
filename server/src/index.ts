@@ -15,9 +15,24 @@ async function shutdown(): Promise<void> {
   process.exit(0);
 }
 
-process.on('SIGINT', () => void shutdown());
-process.on('SIGTERM', () => void shutdown());
-process.on('SIGHUP', () => void shutdown());
+process.on('SIGINT', () => {
+  shutdown().catch((err) => {
+    logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Error during shutdown' });
+    process.exit(1);
+  });
+});
+process.on('SIGTERM', () => {
+  shutdown().catch((err) => {
+    logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Error during shutdown' });
+    process.exit(1);
+  });
+});
+process.on('SIGHUP', () => {
+  shutdown().catch((err) => {
+    logger.error(LogEvent.SIM_ERROR, { error: String(err), message: 'Error during shutdown' });
+    process.exit(1);
+  });
+});
 
 process.on('unhandledRejection', (reason) => {
   logger.error(LogEvent.SIM_ERROR, {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export function useFPSMonitor() {
+export function useFPSMonitor(enabled: boolean = true) {
   const [fps, setFps] = useState(0);
   const [latency, setLatency] = useState(0);
   const frameCount = useRef(0);
@@ -8,6 +8,9 @@ export function useFPSMonitor() {
   const requestRef = useRef<number>();
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const animate = (time: number) => {
       frameCount.current++;
       if (time >= lastTime.current + 1000) {
@@ -22,7 +25,7 @@ export function useFPSMonitor() {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [enabled]);
 
   // Latency tracking helper
   const recordInteraction = (startTime: number) => {

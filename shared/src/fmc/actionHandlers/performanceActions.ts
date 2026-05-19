@@ -91,6 +91,14 @@ export function handleSetReserve(state: FMCState, scratchpad: string): FmcAction
     };
   }
 
+  const maxFuelKlbs = (state.performance.fuel ?? 0) / 1000;
+  if (maxFuelKlbs > 0 && reserve > maxFuelKlbs) {
+    return {
+      handled: true,
+      failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'performanceActions' },
+    };
+  }
+
   return {
     handled: true,
     success: {

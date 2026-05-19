@@ -167,7 +167,11 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     const data = JSON.stringify(msg);
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(data);
+        try {
+          client.send(data);
+        } catch (err) {
+          devError('[WS] Broadcast send error:', err);
+        }
       }
     });
   }
@@ -254,7 +258,10 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     isConnecting = true;
     logger.info(LogEvent.SIM_CONNECTED, { message: 'Attempting auto-reconnect' });
     try {
-      const connectPromise = aircraft.connect();
+      const connectPromise = aircraft.connect().catch((err) => {
+        devError('[SimConnect] Auto-reconnect background error:', err);
+        return false;
+      });
       const timeoutPromise = new Promise<boolean>((_, reject) =>
         setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000),
       );
@@ -371,7 +378,10 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
             }
             isConnecting = true;
 
-            const connectPromise = aircraft.connect();
+            const connectPromise = aircraft.connect().catch((err) => {
+              devError('[SimConnect] Connection background error:', err);
+              return false;
+            });
             const timeoutPromise = new Promise<boolean>((_, reject) =>
               setTimeout(() => reject(new Error('SimConnect connection timed out')), 8000),
             );
@@ -435,7 +445,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
           }
 
           case 'mode':
-            // Already validated, but could add specific mode handling here
+            devLog(`[Bridge] Mode change: ${msg.mode}`);
+            broadcast({ type: 'sim.heartbeat', serverTime: Date.now() } as ServerMessage);
             break;
         }
       } catch (err) {
@@ -447,6 +458,9 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     ws.on('close', () => {
       metrics.clientDisconnected();
       logger.info(LogEvent.WS_CLIENT_DISCONNECTED, { remaining: wss.clients.size });
+      if (wss.clients.size === 0) {
+        stopHeartbeat();
+      }
     });
 
     ws.on('error', (err) => {
@@ -474,6 +488,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       logger.info(LogEvent.SERVER_STOP, {});
       stopPolling();
       stopHeartbeat();
+      fmc.destroy();
       await aircraft.disconnect();
       wss.clients.forEach((client) => client.terminate());
       await new Promise<void>((resolve) => wss.close(() => resolve()));

@@ -43,8 +43,8 @@ describe('handleIrsAction — set_irs_pos', () => {
     const result = handleIrsAction('set_irs_pos', state, 'N4715.4W12218.6');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.position.irsAlignmentProgress).toBe(0);
-    expect(patch.position.irsTimeRemaining).toBe(600);
+    expect(patch.position?.irsAlignmentProgress).toBe(0);
+    expect(patch.position?.irsTimeRemaining).toBe(600);
   });
 
   it('uses 30s alignment time for FAST_ALIGNING', () => {
@@ -55,7 +55,7 @@ describe('handleIrsAction — set_irs_pos', () => {
     const result = handleIrsAction('set_irs_pos', state, 'N4715.4W12218.6');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.position.irsTimeRemaining).toBe(30);
+    expect(patch.position?.irsTimeRemaining).toBe(30);
   });
 
   it('undhandled for unrecognised action', () => {

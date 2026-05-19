@@ -6,11 +6,11 @@ export class AuralAlertService {
    * Safe to call multiple times — the singleton is created once.
    */
   public static async init(): Promise<void> {
-    getAudioContext();
     try {
+      getAudioContext();
       await resumeAudioContext();
     } catch (e) {
-      console.warn('[AuralAlertService] Failed to resume audio context:', e);
+      console.warn('[AuralAlertService] Failed to initialize audio context:', e);
     }
   }
 

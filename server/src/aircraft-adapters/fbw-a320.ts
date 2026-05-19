@@ -11,6 +11,32 @@ import type { IAircraftAdapter, CDUDisplayData, AdapterAircraftState } from './I
 import type { AircraftType, ConnectionStatus } from '@virtual-cdu/shared';
 import { devLog, devError } from '@virtual-cdu/shared';
 
+interface FbwSimState {
+  lat: number;
+  lon: number;
+  headingDeg: number;
+  trackDeg: number;
+  altitudeFt: number;
+  indicatedAirspeedKt: number;
+  verticalSpeedFpm: number;
+  pitchDeg: number;
+  bankDeg: number;
+  altitude: number;
+  heading: number;
+  ias: number;
+  tas: number;
+  gs: number;
+  vs: number;
+  track: number;
+  fuelTotal: number;
+  gw: number;
+  radios?: {
+    vor1: string;
+    vor2: string;
+    adf1: string;
+  };
+}
+
 export class FBWA320Adapter implements IAircraftAdapter {
   readonly name = 'FBW A320neo';
   readonly aircraftType: AircraftType = 'AIRBUS_A320';
@@ -19,7 +45,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
   lastError: string | null = null;
   isConnected = false;
 
-  private simState: any | null = null;
+  private simState: FbwSimState | null = null;
 
   private cduLines: string[] = [];
   private handle: SimConnectConnection | null = null;
@@ -231,7 +257,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
       vs: this.simState.vs,
       fuelTotal: 0,
       gw: 0,
-      radios: (this.simState as any).radios,
+      radios: this.simState.radios,
       headingDeg: this.simState.headingDeg,
       trackDeg: this.simState.trackDeg,
       altitudeFt: this.simState.altitudeFt,
@@ -266,12 +292,16 @@ export class FBWA320Adapter implements IAircraftAdapter {
       handle.on('simObjectData', (recvSimObjectData) => {
         if (recvSimObjectData.requestID !== REQ_CDU) return;
 
-        const lines: string[] = [];
-        for (let i = 0; i < 14; i++) {
-          const line = recvSimObjectData.data.readString32();
-          lines.push(line.padEnd(24, ' '));
+        try {
+          const lines: string[] = [];
+          for (let i = 0; i < 14; i++) {
+            const line = recvSimObjectData.data.readString32();
+            lines.push(line.padEnd(24, ' '));
+          }
+          this.cduLines = lines;
+        } catch (readErr) {
+          devError('[FBWA320Adapter] SimConnect CDU data read error:', readErr);
         }
-        this.cduLines = lines;
       });
     } catch (err) {
       devError('[FBW A320] Error setting up CDU display polling:', err);
@@ -338,7 +368,7 @@ export class FBWA320Adapter implements IAircraftAdapter {
             const vor2 = recvSimObjectData.data.readFloat64().toFixed(2);
             const adf1 = Math.round(recvSimObjectData.data.readFloat64()).toString();
 
-            (this.simState as any).radios = { vor1, vor2, adf1 };
+            this.simState.radios = { vor1, vor2, adf1 };
           } catch (readErr) {
             devError('[FBW A320] Error reading aircraft state:', readErr);
           }

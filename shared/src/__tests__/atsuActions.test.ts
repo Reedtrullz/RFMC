@@ -18,9 +18,9 @@ describe('handleAtsuAction', () => {
     expect(result.handled).toBe(true);
     expect(result.success?.patch).toBeDefined();
     const patch = getPatch(result);
-    expect(patch.atsu.pendingUplink).toBeDefined();
-    expect(patch.atsu.pendingUplink.origin).toBe('KJFK');
-    expect(patch.atsu.pendingUplink.destination).toBe('KLAX');
+    expect(patch.atsu?.pendingUplink).toBeDefined();
+    expect(patch.atsu?.pendingUplink?.origin).toBe('KJFK');
+    expect(patch.atsu?.pendingUplink?.destination).toBe('KLAX');
   });
 
   it('atsu navigates to ATSU page', () => {

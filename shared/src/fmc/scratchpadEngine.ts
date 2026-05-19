@@ -39,12 +39,17 @@ export interface ScratchpadState {
 // State Machine Function Signatures
 // ============================================================
 
+const MAX_QUEUE_SIZE = 50;
+const MAX_HISTORY_SIZE = 200;
+
 export function pushMessage(state: ScratchpadState, message: ScratchpadMessage): ScratchpadState {
-  const history = [...state.history, message];
-  const messageQueue = [...state.messageQueue, message].sort((a, b) => {
-    if (a.priority !== b.priority) return a.priority - b.priority;
-    return a.createdAt - b.createdAt;
-  });
+  const history = [...state.history, message].slice(-MAX_HISTORY_SIZE);
+  const messageQueue = [...state.messageQueue, message]
+    .sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return a.createdAt - b.createdAt;
+    })
+    .slice(0, MAX_QUEUE_SIZE);
   const currentMessage = messageQueue[0];
   return { ...state, message: currentMessage, messageQueue, history };
 }

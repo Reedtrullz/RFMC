@@ -15,7 +15,7 @@ describe('handleHoldAction — set_hold_fix', () => {
   });
 
   it('rejects invalid waypoint', () => {
-    const result = handleHoldAction('set_hold_fix', makeState(), 'X');
+    const result = handleHoldAction('set_hold_fix', makeState(), '*');
     expect(result.handled).toBe(true);
     expect(result.failure?.code).toBe('INVALID_ENTRY');
   });
@@ -48,7 +48,7 @@ describe('handleHoldAction — set_hold_fix', () => {
     const result = handleHoldAction('set_hold_fix', state, 'RBV');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.holdPending.fix).toBe('RBV');
+    expect(patch.holdPending?.fix).toBe('RBV');
     expect(patch.isModified).toBe(true);
     expect(patch.execLit).toBe(true);
   });
@@ -67,8 +67,8 @@ describe('handleHoldAction — set_hold_fix', () => {
     });
     const result = handleHoldAction('set_hold_fix', state, 'OLM');
     const patch = getPatch(result);
-    expect(patch.holdPending.inboundCourse).toBe(90);
-    expect(patch.holdPending.legTime).toBe(1.5);
+    expect(patch.holdPending?.inboundCourse).toBe(90);
+    expect(patch.holdPending?.legTime).toBe(1.5);
   });
 });
 
@@ -94,7 +94,7 @@ describe('handleHoldAction — set_inbound_crs', () => {
     const result = handleHoldAction('set_inbound_crs', makeState(), '180');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.holdPending.inboundCourse).toBe(180);
+    expect(patch.holdPending?.inboundCourse).toBe(180);
   });
 
   it('rejects non-numeric value', () => {
@@ -126,7 +126,7 @@ describe('handleHoldAction — set_leg_time', () => {
     const result = handleHoldAction('set_leg_time', makeState(), '1.5');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.holdPending.legTime).toBe(1.5);
+    expect(patch.holdPending?.legTime).toBe(1.5);
   });
 });
 
@@ -146,7 +146,7 @@ describe('handleHoldAction — set_leg_dist', () => {
     const result = handleHoldAction('set_leg_dist', makeState(), '25');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
-    expect(patch.holdPending.legDist).toBe(25);
+    expect(patch.holdPending?.legDist).toBe(25);
   });
 
   it('rejects negative distance', () => {
@@ -171,18 +171,18 @@ describe('handleHoldAction — set_hold_direction', () => {
   it('accepts L direction', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'L');
     expect(result.handled).toBe(true);
-    expect(getPatch(result).holdPending.direction).toBe('L');
+    expect(getPatch(result).holdPending?.direction).toBe('L');
   });
 
   it('accepts R direction', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'R');
     expect(result.handled).toBe(true);
-    expect(getPatch(result).holdPending.direction).toBe('R');
+    expect(getPatch(result).holdPending?.direction).toBe('R');
   });
 
   it('is case-insensitive', () => {
     const result = handleHoldAction('set_hold_direction', makeState(), 'l');
     expect(result.handled).toBe(true);
-    expect(getPatch(result).holdPending.direction).toBe('L');
+    expect(getPatch(result).holdPending?.direction).toBe('L');
   });
 });

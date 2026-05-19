@@ -48,7 +48,6 @@ function handleSetQnh(state: FMCState, scratchpad: string): FmcActionResult {
     success: {
       clearScratchpad: true,
       patch: {
-        takeoff: { ...state.takeoff, qnh: qnh * 100 },
         landing: { ...state.landing, qnh },
         isModified: true,
         execLit: true,

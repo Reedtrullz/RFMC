@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
 import { useFMCStore } from '../../../store/useFMCStore';
@@ -42,7 +43,10 @@ export function BoeingPFD() {
     autopilot,
   };
 
-  const pfd = buildPfdDisplayModel({ fmcState: aggregatedState as unknown as FMCState }).pfd;
+  const pfd = useMemo(
+    () => buildPfdDisplayModel({ fmcState: aggregatedState as unknown as FMCState }).pfd,
+    [aggregatedState],
+  );
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-black font-mono" data-testid="boeing-pfd">

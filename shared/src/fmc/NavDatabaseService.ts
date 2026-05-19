@@ -36,7 +36,7 @@ export class NavDatabaseService {
       ident: 'ELMAA4',
       runway: '16L',
       commonLegs: [
-        { type: 'VA' as any, courseDeg: 161, altitudeConstraint: { value: 1500, type: 'AT' } }, // Heading to Altitude
+        { type: 'VA', courseDeg: 161, altitudeConstraint: { value: 1500, type: 'AT' } }, // Heading to Altitude
         { type: 'DF', fixIdent: 'ELMAA', altitudeConstraint: { value: 5000, type: 'AT' } }, // Direct to Fix
       ],
       transitions: [{ ident: 'HQM', legs: [{ type: 'TF', fixIdent: 'HQM' }] }],

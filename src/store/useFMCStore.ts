@@ -1495,7 +1495,8 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
     set({
       ...defaultState,
       aircraft: type,
-      demoMode: state.demoMode, // Preserve demoMode
+      demoMode: state.demoMode,
+      dbInitializationState: state.dbInitializationState,
       currentPage: startPage,
       pageHistory: [],
       cockpitMode: state.cockpitMode,
@@ -1621,7 +1622,14 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
         completedAt: Date.now(),
       };
       try {
-        const history = JSON.parse(localStorage.getItem('cdu-tutorial-metrics') || '[]');
+        let history: unknown[] = [];
+        const raw = localStorage.getItem('cdu-tutorial-metrics');
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            history = parsed;
+          }
+        }
         history.push(metrics);
         localStorage.setItem('cdu-tutorial-metrics', JSON.stringify(history.slice(-20)));
       } catch {

@@ -2,6 +2,7 @@ import type { ClientMessage, ServerMessage } from '@shared';
 import { devLog, devError } from '@shared';
 import { useFMCStore } from '../store/useFMCStore';
 import { useAircraftStore } from '../store/aircraftStore';
+import { useConnectionStore } from '../store/connectionStore';
 
 type StatusListener = (status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR') => void;
 
@@ -9,8 +10,17 @@ class WebSocketClient {
   private ws: WebSocket | null = null;
   private statusListeners: Set<StatusListener> = new Set();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private url: string = '';
+  private isManualDisconnect = false;
+  private isFatalError = false;
+  private offlineQueue: string[] = [];
+  private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
+  private sendTimestamps: number[] = [];
+  private static readonly SEND_RATE_LIMIT = 8;
+  private static readonly SEND_RATE_WINDOW_MS = 1000;
+  private static readonly HEARTBEAT_TIMEOUT_MS = 15000;
 
   constructor() {
     this.url = this.getSavedServerUrl();
@@ -25,6 +35,20 @@ class WebSocketClient {
 
   private setStatus(status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR') {
     useFMCStore.getState().setConnectionStatus(status);
+    useConnectionStore.getState().setConnectionStatus(status);
+
+    if (status === 'DISCONNECTED' || status === 'ERROR') {
+      // Clear stale telemetry and connected state on disconnect to prevent ghost data
+      useFMCStore.getState().setConnectedAircraft(null, null, null);
+      useFMCStore.getState().setAircraftState(null);
+      useFMCStore.getState().setSimVariables({});
+
+      useConnectionStore.getState().setConnectedAircraft(null, null, null);
+      useConnectionStore.getState().setSimVariables({});
+
+      useAircraftStore.getState().setAircraftState(null);
+    }
+
     this.statusListeners.forEach((l) => l(status));
   }
 
@@ -34,8 +58,16 @@ class WebSocketClient {
       this.saveServerUrl(url);
     }
 
+    // Clear any orphaned reconnect timer from a previous connection
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
 
+    this.isManualDisconnect = false;
+    this.isFatalError = false;
     this.setStatus('CONNECTING');
 
     try {
@@ -47,6 +79,8 @@ class WebSocketClient {
         this.setStatus('CONNECTED');
         this.send({ type: 'sim.connect' } satisfies ClientMessage);
         this.reconnectAttempts = 0;
+        this.flushOfflineQueue();
+        this.resetHeartbeatWatchdog();
       };
 
       ws.onmessage = (event) => {
@@ -60,9 +94,14 @@ class WebSocketClient {
 
       ws.onclose = () => {
         devLog('[WS] Disconnected');
+        this.clearHeartbeatWatchdog();
         this.setStatus('DISCONNECTED');
         this.ws = null;
-        this.scheduleReconnect();
+
+        // Only auto-reconnect if this was NOT a manual disconnect or fatal error
+        if (!this.isManualDisconnect && !this.isFatalError) {
+          this.scheduleReconnect();
+        }
       };
 
       ws.onerror = (err) => {
@@ -73,17 +112,17 @@ class WebSocketClient {
 
         if (isFatal) {
           devError('[WS] Fatal error encountered, stopping reconnect attempts');
+          this.isFatalError = true;
           this.setStatus('ERROR');
-          this.ws?.close();
           if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
           }
           this.handleFatalError(error);
+          this.ws?.close();
         } else {
           this.setStatus('ERROR');
           this.ws?.close();
-          this.scheduleReconnect();
         }
       };
     } catch (err) {
@@ -94,10 +133,12 @@ class WebSocketClient {
   }
 
   public disconnect() {
+    this.isManualDisconnect = true;
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+    this.clearHeartbeatWatchdog();
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.send({ type: 'sim.disconnect' } satisfies ClientMessage);
     }
@@ -107,8 +148,62 @@ class WebSocketClient {
   }
 
   public send(msg: ClientMessage) {
+    const serialized = JSON.stringify(msg);
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(msg));
+      if (this.isRateLimited()) {
+        this.offlineQueue.push(serialized);
+        this.scheduleQueueFlush();
+        return;
+      }
+      this.sendTimestamps.push(Date.now());
+      this.ws.send(serialized);
+    } else {
+      this.offlineQueue.push(serialized);
+    }
+  }
+
+  private scheduleQueueFlush() {
+    if (this.flushTimer) return;
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = null;
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.flushOfflineQueue();
+      }
+    }, WebSocketClient.SEND_RATE_WINDOW_MS);
+  }
+
+  private isRateLimited(): boolean {
+    const now = Date.now();
+    this.sendTimestamps = this.sendTimestamps.filter(
+      (t) => now - t < WebSocketClient.SEND_RATE_WINDOW_MS,
+    );
+    return this.sendTimestamps.length >= WebSocketClient.SEND_RATE_LIMIT;
+  }
+
+  private flushOfflineQueue(): void {
+    while (this.offlineQueue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
+      if (this.isRateLimited()) {
+        this.scheduleQueueFlush();
+        break;
+      }
+      const serialized = this.offlineQueue.shift()!;
+      this.sendTimestamps.push(Date.now());
+      this.ws.send(serialized);
+    }
+  }
+
+  private resetHeartbeatWatchdog(): void {
+    this.clearHeartbeatWatchdog();
+    this.heartbeatTimer = setTimeout(() => {
+      devError('[WS] Heartbeat timeout — forcing reconnect');
+      this.ws?.close();
+    }, WebSocketClient.HEARTBEAT_TIMEOUT_MS);
+  }
+
+  private clearHeartbeatWatchdog(): void {
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+      this.heartbeatTimer = null;
     }
   }
 
@@ -222,6 +317,7 @@ class WebSocketClient {
         }
         break;
       case 'sim.heartbeat':
+        this.resetHeartbeatWatchdog();
         break;
       case 'error':
         devError('[WS] Server error:', msg.message);
