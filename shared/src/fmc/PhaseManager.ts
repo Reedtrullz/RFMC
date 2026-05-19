@@ -11,11 +11,7 @@ export class PhaseManager {
   private static _candidateTimestamp = 0;
   private static readonly HYSTERESIS_MS = 5000;
   /** Phases that bypass hysteresis (safety-critical or terminal). */
-  private static readonly IMMEDIATE_PHASES: ReadonlySet<FlightPhase> = new Set([
-    'GO_AROUND',
-    'PREFLIGHT',
-    'DONE',
-  ]);
+  private static readonly IMMEDIATE_PHASES: ReadonlySet<FlightPhase> = new Set(['GO_AROUND', 'PREFLIGHT', 'DONE']);
 
   /** Reset hysteresis tracking. Intended for test use only. */
   public static _resetHysteresis(): void {

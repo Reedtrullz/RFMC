@@ -174,9 +174,7 @@ class WebSocketClient {
 
   private isRateLimited(): boolean {
     const now = Date.now();
-    this.sendTimestamps = this.sendTimestamps.filter(
-      (t) => now - t < WebSocketClient.SEND_RATE_WINDOW_MS,
-    );
+    this.sendTimestamps = this.sendTimestamps.filter((t) => now - t < WebSocketClient.SEND_RATE_WINDOW_MS);
     return this.sendTimestamps.length >= WebSocketClient.SEND_RATE_LIMIT;
   }
 
