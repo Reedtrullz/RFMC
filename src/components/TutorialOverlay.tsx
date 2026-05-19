@@ -21,7 +21,7 @@ export function TutorialOverlay() {
   const currentStep = getCurrentTutorialStep();
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center pointer-events-none">
+    <div className="fixed inset-x-0 top-14 z-40 flex justify-center pointer-events-none">
       <div className="pointer-events-auto w-full max-w-[500px] mx-2 mb-2">
         <div
           className="
@@ -37,17 +37,17 @@ export function TutorialOverlay() {
               {tutorialCompleted ? 'Complete!' : `Step ${stepIndex + 1}`}
             </span>
             <div className="flex items-center gap-2">
-              {tutorialSkipAvailable && !tutorialCompleted && (
+              {!tutorialCompleted && (
                 <button
                   onClick={skipTutorialStep}
-                  className="text-cdu-amber/60 hover:text-cdu-amber text-[10px] font-cdu uppercase"
+                  className="text-cdu-amber/80 hover:text-cdu-amber text-[10px] font-cdu uppercase border border-cdu-amber/30 rounded px-1.5 py-0.5 bg-cdu-amber/5 hover:bg-cdu-amber/20 transition-all mr-1"
                 >
                   Skip Step
                 </button>
               )}
               <button
                 onClick={skipTutorial}
-                className="text-cdu-text/40 hover:text-cdu-text text-[10px] font-cdu uppercase"
+                className="text-cdu-text/40 hover:text-cdu-text text-[10px] font-cdu uppercase border border-white/10 rounded px-1.5 py-0.5 bg-white/5 hover:bg-white/15 transition-all"
               >
                 Exit Tutorial
               </button>
