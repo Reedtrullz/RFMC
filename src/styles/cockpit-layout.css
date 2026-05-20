@@ -81,9 +81,9 @@
   grid-template-areas:
     'mcpslot mcpslot mcpslot'
     'pfdslot ndslot cduslot';
-  grid-template-columns: 1fr 1fr 1.2fr;
+  grid-template-columns: 1fr 1.25fr 1.15fr;
   grid-template-rows: clamp(160px, 20vh, 280px) 1fr;
-  max-width: 100%;
+  max-width: 1480px;
 }
 
 .cockpit-stage--free-practice {
@@ -300,7 +300,7 @@
   }
 
   .cockpit-stage--full-deck {
-    max-width: 100%;
+    max-width: 1480px;
   }
 
   .cockpit-mcp-slot {
@@ -315,7 +315,7 @@
   }
 
   .cockpit-stage--full-deck {
-    max-width: 100%;
+    max-width: 1480px;
   }
 
   .cockpit-stage--navigation {

@@ -107,7 +107,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['autoflight', 'pfd', 'nd', 'cdu'],
     primaryPanel: 'autoflight',
     layoutPreset: 'fullDeck',
-    defaultZoom: { autoflight: 1.32, pfd: 1.28, nd: 1.28, cdu: 1.22 },
+    defaultZoom: { autoflight: 1.28, pfd: 1.28, nd: 1.28, cdu: 1.28 },
     defaultOverlays: [],
     beginnerHint: 'Use this mode to understand how the instruments relate, then focus a panel for detailed input.',
     practiceTask: 'Cross-check setup across CDU/MCDU, MCP/FCU, PFD, and ND.',
