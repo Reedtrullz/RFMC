@@ -20,15 +20,15 @@
 
 .instrument-shell--airbus-mcdu {
   background:
-    radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.15), transparent 30%),
+    radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.12), transparent 30%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, #3f4245 0%, #25282a 45%, #0e1011 100%);
+    linear-gradient(135deg, #596c7e 0%, #3a4b59 45%, #24303c 100%);
   background-blend-mode: normal, overlay, normal;
-  border: 1.5px solid #0a0b0c;
+  border: 1.8px solid #161e26;
   box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.18),
-    inset 0 -15px 35px rgba(0, 0, 0, 0.75),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 3px 5px rgba(255, 255, 255, 0.22),
+    inset 0 -20px 45px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
     0 24px 64px rgba(0, 0, 0, 0.75);
 }
 
@@ -398,9 +398,25 @@
   text-shadow: 0 0 calc(2px * var(--cockpit-backlight, 1)) rgba(255, 255, 240, calc(0.25 * var(--cockpit-backlight, 1)));
 }
 
+.avionics-key--airbus {
+  background: #111518 !important;
+  border-radius: 6px !important;
+  padding: 2.5px 3px 3.5px 3px !important;
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0.5px rgba(255, 255, 255, 0.05),
+    0 1px 1px rgba(255, 255, 255, 0.04),
+    0 0 0 1.5px rgba(0, 0, 0, 0.65) !important;
+}
+
 .avionics-key--airbus .avionics-key__legend {
-  text-shadow: 0 0 calc(2px * var(--cockpit-backlight, 1)) rgba(255, 180, 50, calc(0.4 * var(--cockpit-backlight, 1)));
-  color: rgba(255, 240, 220, calc(0.85 + 0.15 * var(--cockpit-backlight, 1)));
+  text-shadow:
+    0 0 calc(3px * var(--cockpit-backlight, 1)) rgba(255, 120, 0, calc(0.7 * var(--cockpit-backlight, 1))),
+    0 0 calc(8px * var(--cockpit-backlight, 1)) rgba(255, 140, 0, calc(0.4 * var(--cockpit-backlight, 1))),
+    0 1px 0.5px rgba(0, 0, 0, 0.8);
+  color: #ff9800;
+  font-weight: 800;
+  letter-spacing: 0.05em;
 }
 
 /* Mechanical Key Travel press states */
@@ -421,8 +437,13 @@
 }
 
 .avionics-key--airbus .avionics-key__face {
-  background: linear-gradient(135deg, #535658 0%, #3e4143 50%, #1c1d1f 100%);
+  background: linear-gradient(135deg, #4b5258 0%, #2f3438 50%, #171a1d 100%);
   border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.95);
+  box-shadow:
+    inset 1px 1.5px 0.5px rgba(255, 255, 255, 0.12),
+    inset -1px -1.5px 1.5px rgba(0, 0, 0, 0.75),
+    0 2px 3px rgba(0, 0, 0, 0.7);
 }
 
 /* EXEC status light skeuomorphic simulation */

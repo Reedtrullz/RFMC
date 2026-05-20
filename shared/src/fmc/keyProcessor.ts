@@ -74,6 +74,10 @@ export function processFMCKey(state: FMCState, key: string): Partial<FMCState> {
     MCDU_MENU: 'MCDU_MENU',
     RAD_NAV: 'RAD_NAV',
     DATA_INDEX: 'DATA_INDEX',
+    FUEL_PRED: 'FUEL_PRED',
+    SEC_F_PLN: 'SEC_FPLN',
+    ATC_COMM: 'ATSU',
+    AIR_PORT: 'INIT_A',
   };
 
   if (key in PAGE_MAP) {
