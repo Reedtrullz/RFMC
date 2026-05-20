@@ -86,7 +86,9 @@ export interface AircraftStore {
 }
 
 export const useAircraftStore = create<AircraftStore>((set) => ({
-  aircraft: (typeof window !== 'undefined' ? (localStorage.getItem('cdu-aircraft-type') as AircraftType) : null) || 'BOEING_737',
+  aircraft:
+    (typeof window !== 'undefined' ? (localStorage.getItem('cdu-aircraft-type') as AircraftType) : null) ||
+    'BOEING_737',
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: {
     refAirport: '',

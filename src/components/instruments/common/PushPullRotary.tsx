@@ -80,7 +80,7 @@ export function PushPullRotary({ value, onRotate, onPush, onPull, label, highlig
         <div className="absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.07),rgba(0,0,0,0.72)_70%)] shadow-[inset_0_6px_14px_rgba(0,0,0,0.85)] pointer-events-none" />
         <div className="absolute -left-6 top-1/2 h-0.5 w-4 -translate-y-1/2 bg-white/24 pointer-events-none" />
         <div className="absolute -right-6 top-1/2 h-0.5 w-4 -translate-y-1/2 bg-white/24 pointer-events-none" />
-        
+
         {/* Clickable PUSH Overlay Button */}
         <button
           type="button"

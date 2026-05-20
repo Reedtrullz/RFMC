@@ -101,19 +101,24 @@ export function Boeing737CDU() {
     [displayData.lskActions, displayData.lskLabels],
   );
 
-  const isHighlighted = useCallback((id: string) => {
-    if (tutorialHighlight === id) return true;
-    if (layoutMode !== 'free-practice') {
-      if (progress.expectedLSK === id) return true;
-      if (progress.expectedKey === id) return true;
-      if (id === 'POS_INIT' && progress.expectedKey === 'INIT_REF') return true;
-      if (id === 'PERF_INIT' && progress.expectedKey === 'PERF') return true;
-      if (id === 'PROGRESS' && progress.expectedKey === 'PROG') return true;
-    }
-    return false;
-  }, [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode]);
+  const isHighlighted = useCallback(
+    (id: string) => {
+      if (tutorialHighlight === id) return true;
+      if (layoutMode !== 'free-practice') {
+        if (progress.expectedLSK === id) return true;
+        if (progress.expectedKey === id) return true;
+        if (id === 'POS_INIT' && progress.expectedKey === 'INIT_REF') return true;
+        if (id === 'PERF_INIT' && progress.expectedKey === 'PERF') return true;
+        if (id === 'PROGRESS' && progress.expectedKey === 'PROG') return true;
+      }
+      return false;
+    },
+    [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
+  );
 
-  const effectiveHintLevel = tutorialHintLevel || (tutorialHighlight || (layoutMode !== 'free-practice' && (progress.expectedKey || progress.expectedLSK)) ? 1 : 0);
+  const effectiveHintLevel =
+    tutorialHintLevel ||
+    (tutorialHighlight || (layoutMode !== 'free-practice' && (progress.expectedKey || progress.expectedLSK)) ? 1 : 0);
   const keypadHighlight = tutorialHighlight || (layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
   return (

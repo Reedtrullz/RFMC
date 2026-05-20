@@ -376,24 +376,29 @@
 }
 
 @keyframes control-pulse-boeing {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(0, 215, 255, 0.45);
     outline-color: var(--boeing-cyan);
   }
   50% {
-    box-shadow: 0 0 20px rgba(0, 215, 255, 0.8), inset 0 0 6px rgba(0, 215, 255, 0.25);
+    box-shadow:
+      0 0 20px rgba(0, 215, 255, 0.8),
+      inset 0 0 6px rgba(0, 215, 255, 0.25);
     outline-color: rgba(0, 215, 255, 0.7);
   }
 }
 
 @keyframes control-pulse-airbus {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(255, 176, 0, 0.5);
     outline-color: var(--airbus-amber);
   }
   50% {
-    box-shadow: 0 0 20px rgba(255, 176, 0, 0.85), inset 0 0 6px rgba(255, 176, 0, 0.3);
+    box-shadow:
+      0 0 20px rgba(255, 176, 0, 0.85),
+      inset 0 0 6px rgba(255, 176, 0, 0.3);
     outline-color: rgba(255, 176, 0, 0.75);
   }
 }
-

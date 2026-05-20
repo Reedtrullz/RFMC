@@ -93,7 +93,7 @@ describe('TrainingScenarioEngine', () => {
     };
     const engine = new TrainingScenarioEngine(mcpScenario);
     engine.start();
-    
+
     // Intermediate change to 210
     const result1 = engine.processAction({ type: 'set_mcp', field: 'heading', value: 210 }, {});
     expect(result1.success).toBe(false);

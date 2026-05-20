@@ -124,7 +124,13 @@ describe('handleSpecialLskAction', () => {
       route: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'DAL123' },
       flightPlan: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'DAL123', route: '', waypoints: [] },
       pendingRoute: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'UAL456' },
-      pendingFlightPlan: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'UAL456', route: 'RZS J501 BSR', waypoints: [] },
+      pendingFlightPlan: {
+        origin: 'KLAX',
+        destination: 'KSFO',
+        flightNumber: 'UAL456',
+        route: 'RZS J501 BSR',
+        waypoints: [],
+      },
       isModified: true,
       execLit: true,
     });

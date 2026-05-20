@@ -81,9 +81,7 @@ function formatConditionLabel(path: string, expected: any, operator: string = '=
         return 'Active FMC Page';
       default:
         const base = path.split('.').pop() || path;
-        return base
-          .replace(/([A-Z])/g, ' $1')
-          .replace(/^./, (str) => str.toUpperCase());
+        return base.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
     }
   })();
 
@@ -96,11 +94,16 @@ function formatConditionLabel(path: string, expected: any, operator: string = '=
 
   const prettyOperator = (() => {
     switch (operator) {
-      case '!=': return 'should not be';
-      case '>': return 'greater than';
-      case '<': return 'less than';
-      case 'includes': return 'containing';
-      default: return 'to';
+      case '!=':
+        return 'should not be';
+      case '>':
+        return 'greater than';
+      case '<':
+        return 'less than';
+      case 'includes':
+        return 'containing';
+      default:
+        return 'to';
     }
   })();
 
@@ -174,10 +177,10 @@ export function StepCard({ step }: { step: TrainingStep }) {
                     )}
                   </div>
                   <div className="flex-grow flex items-center justify-between text-xs font-cdu">
-                    <span className={isSatisfied ? 'text-cdu-green font-medium' : 'text-cdu-text/70'}>
-                      {label}
-                    </span>
-                    <span className={`text-[10px] uppercase font-mono ${isSatisfied ? 'text-cdu-green/80' : 'text-cdu-text/30'}`}>
+                    <span className={isSatisfied ? 'text-cdu-green font-medium' : 'text-cdu-text/70'}>{label}</span>
+                    <span
+                      className={`text-[10px] uppercase font-mono ${isSatisfied ? 'text-cdu-green/80' : 'text-cdu-text/30'}`}
+                    >
                       {isSatisfied ? 'OK' : String(actualValue ?? 'PENDING')}
                     </span>
                   </div>

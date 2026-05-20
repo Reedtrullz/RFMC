@@ -2,13 +2,7 @@ import { useState } from 'react';
 import { useFMCStore } from '../store/useFMCStore';
 import { useAircraftStore } from '../store/aircraftStore';
 import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
-import {
-  tutorialScenarios,
-  airbusTutorialScenarios,
-  parseSimBrief,
-  boeingLessons,
-  airbusLessons,
-} from '@shared';
+import { tutorialScenarios, airbusTutorialScenarios, parseSimBrief, boeingLessons, airbusLessons } from '@shared';
 
 // ─── Inline SVG Icons for Premium Aeronautical Aesthetics ───────────────────
 const CompassIcon = () => (
@@ -116,9 +110,7 @@ export function DemoWelcome() {
         {/* Main Content Layout */}
         <div className="relative z-10">
           <div className="text-center mb-6">
-            <h1 className={`${titleColor} text-3xl font-cdu font-bold tracking-wide mb-1.5`}>
-              VirtualCDU
-            </h1>
+            <h1 className={`${titleColor} text-3xl font-cdu font-bold tracking-wide mb-1.5`}>VirtualCDU</h1>
             <p className="text-white/60 text-[10px] font-cdu uppercase tracking-[0.25em]">{subtitle}</p>
           </div>
 
@@ -132,7 +124,9 @@ export function DemoWelcome() {
                   : 'border border-transparent text-white/40 hover:text-white/60 hover:bg-white/5'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${!isAirbus ? 'bg-cdu-cyan animate-pulse' : 'bg-transparent'}`} />
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${!isAirbus ? 'bg-cdu-cyan animate-pulse' : 'bg-transparent'}`}
+              />
               737 NG FMC
             </button>
             <button
@@ -143,7 +137,9 @@ export function DemoWelcome() {
                   : 'border border-transparent text-white/40 hover:text-white/60 hover:bg-white/5'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${isAirbus ? 'bg-cdu-amber animate-pulse' : 'bg-transparent'}`} />
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${isAirbus ? 'bg-cdu-amber animate-pulse' : 'bg-transparent'}`}
+              />
               A320neo MCDU
             </button>
           </div>
@@ -201,16 +197,12 @@ export function DemoWelcome() {
                       <div className="text-white text-xs font-cdu font-bold group-hover:text-white transition-colors duration-300">
                         {s.name}
                       </div>
-                      <div className="text-white/50 text-[10px] font-cdu mt-1 leading-relaxed">
-                        {s.description}
-                      </div>
+                      <div className="text-white/50 text-[10px] font-cdu mt-1 leading-relaxed">{s.description}</div>
                     </div>
                   </button>
                 ))}
                 {scenarios.length === 0 && (
-                  <p className="text-white/30 text-xs font-cdu text-center py-6">
-                    More flight scenarios coming soon
-                  </p>
+                  <p className="text-white/30 text-xs font-cdu text-center py-6">More flight scenarios coming soon</p>
                 )}
               </div>
             ) : (

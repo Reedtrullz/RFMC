@@ -15,7 +15,7 @@ export function renderSecFplnGrid(state: FMCState): DisplayData {
   if (hasSec) {
     segments.push(
       airbusDisplaySegment(1, 0, '<ACTIVATE SEC', 'white'),
-      airbusDisplaySegment(3, 0, '<ERASE SEC', 'white')
+      airbusDisplaySegment(3, 0, '<ERASE SEC', 'white'),
     );
     lskActions.L1 = 'activate_sec';
     lskActions.L2 = 'erase';
@@ -23,7 +23,7 @@ export function renderSecFplnGrid(state: FMCState): DisplayData {
     segments.push(
       airbusDisplaySegment(1, 0, '<', 'white'),
       airbusDisplaySegment(1, 1, 'COPY ACTIVE', 'white'),
-      airbusDisplaySegment(3, 1, 'FROM/TO', 'white')
+      airbusDisplaySegment(3, 1, 'FROM/TO', 'white'),
     );
     lskActions.L1 = 'copy_active';
   }

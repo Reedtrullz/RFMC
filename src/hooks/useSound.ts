@@ -18,49 +18,52 @@ export function useSound() {
   const soundVolume = useCockpitLayoutStore((state) => state.soundVolume);
   const setSoundMuted = useCockpitLayoutStore((state) => state.setSoundMuted);
 
-  const play = useCallback(async (name: SoundName) => {
-    if (soundMuted) return;
+  const play = useCallback(
+    async (name: SoundName) => {
+      if (soundMuted) return;
 
-    const ctx = getAudioContext();
-    try {
-      await resumeAudioContext();
-    } catch (e) {
-      console.warn('[useSound] Failed to resume audio context:', e);
-    }
+      const ctx = getAudioContext();
+      try {
+        await resumeAudioContext();
+      } catch (e) {
+        console.warn('[useSound] Failed to resume audio context:', e);
+      }
 
-    const s = SOUNDS[name];
-    const volScale = soundVolume / 100;
-    const scaledVolume = s.volume * volScale;
+      const s = SOUNDS[name];
+      const volScale = soundVolume / 100;
+      const scaledVolume = s.volume * volScale;
 
-    if (name === 'chime') {
-      [554.37, 440.0].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.5);
-        gain.gain.setValueAtTime(scaledVolume, ctx.currentTime + i * 0.5);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        trackNode(osc, gain);
-        osc.start(ctx.currentTime + i * 0.5);
-        osc.stop(ctx.currentTime + i * 0.5 + 1.2);
-      });
-      return;
-    }
+      if (name === 'chime') {
+        [554.37, 440.0].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.5);
+          gain.gain.setValueAtTime(scaledVolume, ctx.currentTime + i * 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          trackNode(osc, gain);
+          osc.start(ctx.currentTime + i * 0.5);
+          osc.stop(ctx.currentTime + i * 0.5 + 1.2);
+        });
+        return;
+      }
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = s.type;
-    osc.frequency.setValueAtTime(s.freq, ctx.currentTime);
-    gain.gain.setValueAtTime(scaledVolume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    trackNode(osc, gain);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + s.duration);
-  }, [soundMuted, soundVolume]);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = s.type;
+      osc.frequency.setValueAtTime(s.freq, ctx.currentTime);
+      gain.gain.setValueAtTime(scaledVolume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      trackNode(osc, gain);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + s.duration);
+    },
+    [soundMuted, soundVolume],
+  );
 
   const toggleMute = useCallback(() => {
     const nextMuted = !soundMuted;
