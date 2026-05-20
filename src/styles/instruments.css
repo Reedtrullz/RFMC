@@ -6,33 +6,36 @@
   height: var(--shell-height-mm, auto);
   border-radius: var(--bezel-radius-mm, 14px);
   background:
-    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.12), transparent 22%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
-    linear-gradient(145deg, #3a3d3f 0%, #1c1f20 48%, #0b0c0d 100%);
+    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.16), transparent 28%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #2b2e30 0%, #17191a 45%, #08090a 100%);
   background-blend-mode: normal, overlay, normal;
+  border: 1.5px solid #111;
   box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.16),
-    inset 0 -10px 24px rgba(0, 0, 0, 0.65),
-    0 18px 48px rgba(0, 0, 0, 0.55);
+    inset 0 2px 4px rgba(255, 255, 255, 0.12),
+    inset 0 -12px 30px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 50px rgba(0, 0, 0, 0.7);
 }
 
 .instrument-shell--airbus-mcdu {
   background:
-    radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.12), transparent 25%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
-    linear-gradient(145deg, #4b4e52 0%, #2f3235 45%, #1a1c1d 100%);
+    radial-gradient(circle at 30% 15%, rgba(255, 255, 255, 0.15), transparent 30%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #3f4245 0%, #25282a 45%, #0e1011 100%);
   background-blend-mode: normal, overlay, normal;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1.5px solid #0a0b0c;
   box-shadow:
-    inset 0 1px 2px rgba(255, 255, 255, 0.22),
-    inset 0 -12px 32px rgba(0, 0, 0, 0.6),
-    0 24px 64px rgba(0, 0, 0, 0.65);
+    inset 0 2px 3px rgba(255, 255, 255, 0.18),
+    inset 0 -15px 35px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 24px 64px rgba(0, 0, 0, 0.75);
 }
 
 .instrument-shell__edge-highlight {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: inherit;
   pointer-events: none;
   z-index: 2;
@@ -42,22 +45,22 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.25;
+  opacity: 0.38;
   background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='scratchFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02 0.3' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0, 1 0 0 0 0, 1 0 0 0 0, 0 0 0 0.8 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23scratchFilter)'/%3E%3C/svg%3E"),
-    radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 1px),
-    radial-gradient(circle at 70% 65%, #fff 0 1px, transparent 1px),
-    radial-gradient(circle at 40% 85%, #fff 0 1px, transparent 1px),
-    radial-gradient(circle at 80% 15%, #fff 0 1px, transparent 1px);
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='scratchFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.35' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0, 1 0 0 0 0, 1 0 0 0 0, 0 0 0 1.2 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23scratchFilter)'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 35% 82%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.5px);
   background-size:
-    180px 180px,
-    37px 43px,
-    53px 47px,
-    29px 31px,
-    41px 23px;
+    190px 190px,
+    41px 47px,
+    57px 51px,
+    31px 37px,
+    43px 29px;
   box-shadow:
-    inset 0 0 40px 5px rgba(255, 255, 255, 0.08),
-    inset 4px 4px 15px rgba(255, 255, 255, 0.1);
+    inset 0 0 50px 8px rgba(0, 0, 0, 0.5),
+    inset 4px 4px 18px rgba(255, 255, 255, 0.08);
   mix-blend-mode: overlay;
 }
 
@@ -66,18 +69,21 @@
   z-index: 1;
 }
 
-/* Screws */
+/* Screws - High Fidelity Weathered Dzus / Hex Fasteners */
 .bezel-screw {
-  width: 13px;
-  height: 13px;
-  border-radius: 999px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.42), transparent 18%),
-    radial-gradient(circle at 60% 70%, rgba(0, 0, 0, 0.65), transparent 38%), linear-gradient(145deg, #555, #181818);
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 20%),
+    radial-gradient(circle at 65% 65%, rgba(0, 0, 0, 0.8) 0%, transparent 40%),
+    linear-gradient(135deg, #6b6f72 0%, #3e4143 50%, #1c1d1e 100%);
+  border: 1px solid #111;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.25),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.75),
-    0 1px 2px rgba(0, 0, 0, 0.8);
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.85),
+    0 1.5px 3px rgba(0, 0, 0, 0.95),
+    0 0 1px 2px rgba(255, 255, 255, 0.04); /* Wear halo on surrounding metal panel */
 }
 
 .bezel-screw__slot {
@@ -85,24 +91,32 @@
   left: 2px;
   right: 2px;
   top: 50%;
-  height: 2px;
+  height: 2.2px;
   transform: translateY(-50%);
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.65);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18);
+  border-radius: 1.5px;
+  background:
+    linear-gradient(to bottom, #000, #222);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.8),
+    0 1px 0.5px rgba(255, 255, 255, 0.25);
 }
 
+/* Double-beveled protective screen bezel frame */
 .instrument-shell__inner-bevel {
   position: absolute;
-  inset: 0;
-  border: 1px solid;
+  inset: -1.5px;
+  border: 2px solid;
   border-image: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.45) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(0, 0, 0, 0.8) 100%
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(0, 0, 0, 0.95) 100%
     )
-    1;
+    2;
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.9),
+    inset 0 -3px 6px rgba(255, 255, 255, 0.06),
+    0 1.5px 3px rgba(255, 255, 255, 0.08);
   pointer-events: none;
   z-index: 10;
 }
@@ -113,8 +127,11 @@
   overflow: hidden;
   background: radial-gradient(circle at 50% 45%, rgba(20, 45, 35, 0.22), transparent 72%), #020505;
   box-shadow:
-    inset 0 0 16px rgba(0, 0, 0, 0.9),
-    inset 0 0 3px rgba(255, 255, 255, 0.12);
+    inset 0 10px 15px rgba(0, 0, 0, 0.95),
+    inset 0 -8px 10px rgba(0, 0, 0, 0.85),
+    inset 8px 0 10px rgba(0, 0, 0, 0.9),
+    inset -8px 0 10px rgba(0, 0, 0, 0.9),
+    inset 0 0 4px rgba(255, 255, 255, 0.15);
   filter: brightness(var(--screen-brightness, 100%));
 }
 
@@ -303,20 +320,28 @@
 .avionics-key {
   position: relative;
   min-height: 44px;
-  background: transparent;
+  background: #0a0b0c; /* Keywell bottom plate */
   border: none;
-  padding: 0;
+  padding: 2px 2.5px 3.5px 2.5px; /* Keywell cutout recess padding */
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  box-sizing: border-box;
   /* Base shadow/well for the key */
   border-radius: 5px;
-  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.55);
+  box-shadow:
+    inset 0 3px 5px rgba(0, 0, 0, 0.92),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .avionics-key--round {
   border-radius: 50%;
+  box-shadow:
+    inset 0 3px 4px rgba(0, 0, 0, 0.92),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 1px rgba(255, 255, 255, 0.04);
 }
 
 .avionics-key--round .avionics-key__face {
@@ -336,17 +361,17 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.95);
   border-radius: 5px;
-  background: linear-gradient(180deg, #4a4d4d 0%, #2a2d2d 46%, #111313 100%);
+  background: linear-gradient(135deg, #444748 0%, #2f3233 48%, #161819 100%);
   color: rgba(245, 245, 235, 0.92);
   font-family: var(--font-avionics);
   font-weight: 700;
   letter-spacing: 0.04em;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.18),
-    inset 0 -3px 4px rgba(0, 0, 0, 0.58),
-    0 2px 0 #050505;
+    inset 1px 1.5px 0.5px rgba(255, 255, 255, 0.16),
+    inset -1px -1.5px 1.5px rgba(0, 0, 0, 0.7),
+    0 2.5px 4px rgba(0, 0, 0, 0.65);
   transition:
     transform 60ms cubic-bezier(0.2, 0, 0, 1),
     box-shadow 60ms cubic-bezier(0.2, 0, 0, 1);
@@ -369,13 +394,25 @@
   z-index: 2;
 }
 
+/* Base key legends soft glow scaling with cockpit backlight */
+.avionics-key--boeing .avionics-key__legend {
+  text-shadow: 0 0 calc(2px * var(--cockpit-backlight, 1)) rgba(255, 255, 240, calc(0.25 * var(--cockpit-backlight, 1)));
+}
+
+.avionics-key--airbus .avionics-key__legend {
+  text-shadow: 0 0 calc(2px * var(--cockpit-backlight, 1)) rgba(255, 180, 50, calc(0.4 * var(--cockpit-backlight, 1)));
+  color: rgba(255, 240, 220, calc(0.85 + 0.15 * var(--cockpit-backlight, 1)));
+}
+
+/* Mechanical Key Travel press states */
 .avionics-key:active .avionics-key__face,
 .avionics-key--active .avionics-key__face {
-  transform: translateY(2px);
+  transform: translateY(1.5px);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
-    0 0 0 #050505; /* removed bottom ridge shadow on press */
+    inset 1px 1px 0.5px rgba(255, 255, 255, 0.05),
+    inset -1px -1px 1px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0.5px 0.5px rgba(0, 0, 0, 0.85);
 }
 
 .avionics-key:focus-visible,
@@ -385,15 +422,43 @@
 }
 
 .avionics-key--airbus .avionics-key__face {
-  background: linear-gradient(180deg, #535658 0%, #3a3d3f 52%, #1e2021 100%);
+  background: linear-gradient(135deg, #535658 0%, #3e4143 50%, #1c1d1f 100%);
   border-radius: 4px;
 }
 
+/* EXEC status light skeuomorphic simulation */
+.avionics-key--exec .avionics-key__face::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 3.5px;
+  border-radius: 1px;
+  background: #1a1c1a; /* Deep dark set glass when unlit */
+  border: 0.5px solid rgba(0, 0, 0, 0.7);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.85),
+    0 0.5px 0.5px rgba(255, 255, 255, 0.04);
+  transition: background 120ms ease, box-shadow 120ms ease;
+  z-index: 3;
+}
+
+.avionics-key--exec.avionics-key--lit .avionics-key__face::before {
+  background: #39ff14;
+  box-shadow:
+    0 0 8px #39ff14,
+    0 0 16px rgba(57, 255, 20, 0.65),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.6);
+}
+
+/* Specific lit state override */
 .avionics-key--lit {
   color: #eaffdf;
   text-shadow:
-    0 0 2px rgba(80, 255, 80, 0.75),
-    0 0 7px rgba(80, 255, 80, 0.35);
+    0 0 3px rgba(80, 255, 80, 0.85),
+    0 0 8px rgba(80, 255, 80, 0.45);
 }
 
 .panel-label {

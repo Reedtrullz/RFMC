@@ -24,22 +24,22 @@ export function BoeingCDUShell({ annunciators, children }: BoeingCDUShellProps) 
       <div className="instrument-shell__content">
         <div className="relative">
           {/* LSK Labels L1-L6 */}
-          <div className="absolute -left-1 top-2 flex h-[300px] flex-col justify-around text-[7px] font-bold text-white/20">
-            <span>L1</span>
-            <span>L2</span>
-            <span>L3</span>
-            <span>L4</span>
-            <span>L5</span>
-            <span>L6</span>
+          <div className="absolute -left-1.5 top-2 flex h-[300px] flex-col justify-around text-[8px] font-bold text-white/40 tracking-wider">
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L1</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L2</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L3</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L4</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L5</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">L6</span>
           </div>
           {/* LSK Labels R1-R6 */}
-          <div className="absolute -right-1 top-2 flex h-[300px] flex-col justify-around text-right text-[7px] font-bold text-white/20">
-            <span>R1</span>
-            <span>R2</span>
-            <span>R3</span>
-            <span>R4</span>
-            <span>R5</span>
-            <span>R6</span>
+          <div className="absolute -right-1.5 top-2 flex h-[300px] flex-col justify-around text-right text-[8px] font-bold text-white/40 tracking-wider">
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R1</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R2</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R3</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R4</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R5</span>
+            <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.15)] select-none">R6</span>
           </div>
           {children}
         </div>
