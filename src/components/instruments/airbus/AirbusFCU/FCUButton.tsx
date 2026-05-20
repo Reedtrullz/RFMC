@@ -12,7 +12,7 @@ export function FCUButton({ label, active, onPress, highlighted = false }: FCUBu
       className={`
         relative flex h-11 w-16 items-center justify-center rounded-[3px] border border-black/60 border-b-[4px]
         font-bold text-[10px] uppercase tracking-normal transition-all active:translate-y-[2px] active:border-b
-        ${highlighted ? 'ring-2 ring-cdu-amber shadow-[0_0_18px_rgba(255,184,77,0.65)]' : ''}
+        ${highlighted ? 'highlighted-airbus' : ''}
         ${active ? 'bg-[#697273] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]' : 'bg-[#333a3b] text-white/62 hover:bg-[#424a4b]'}
       `}
     >

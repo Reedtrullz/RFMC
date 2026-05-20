@@ -6,6 +6,7 @@ import { renderClbPage, renderCrzPage, renderDesPage, renderDirIntcPage, renderN
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
 import { renderBoeingProgressGrid } from '../fmc/pages/boeing/progress.grid';
 import { renderBoeingLegsGrid } from '../fmc/pages/boeing/legs.grid';
+import { renderBoeingTakeoffRefGrid } from '../fmc/pages/boeing/takeoffRef.grid';
 import { createBaseState } from './testUtils';
 
 const baseState = createBaseState({
@@ -294,5 +295,41 @@ describe('Airbus Page Renderers', () => {
       : segments.some((l: any) => (l.text || '').includes('HIGH'));
     expect(hasNavAccur).toBe(true);
     expect(hasHigh).toBe(true);
+  });
+});
+
+describe('Boeing Takeoff Ref Page Renderer', () => {
+  it('renders authentic Boeing TAKEOFF REF page layout', () => {
+    const state = createBaseState({
+      aircraft: 'BOEING_737',
+      takeoff: {
+        runway: '04R',
+        toMode: 'TO 1',
+        flaps: '5',
+        windDir: 270,
+        windSpeed: 10,
+        v1: 140,
+        vr: 145,
+        v2: 150,
+        oat: 15,
+        trim: 5,
+        assumedTemp: 0,
+        qnh: 1013,
+      },
+    });
+
+    const data = renderBoeingTakeoffRefGrid(state);
+
+    // Check titles & page index
+    expect(data.segments?.some((s) => s.semantic === 'title' && s.text === 'TAKEOFF REF')).toBe(true);
+
+    // Check OAT field rendering
+    expect(data.segments?.some((s) => s.text === 'OAT')).toBe(true);
+    expect(data.segments?.some((s) => s.text.includes('15°'))).toBe(true);
+
+    // Check LSK action bindings for OAT and WIND
+    expect(data.lskActions.L4).toBe('set_wind');
+    expect(data.lskActions.L5).toBe('set_oat');
+    expect(data.lskActions.L3).toBe('set_flaps');
   });
 });

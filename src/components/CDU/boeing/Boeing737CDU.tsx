@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
@@ -6,7 +6,8 @@ import { useFMCStore } from '../../../store/useFMCStore';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
-import type { CDUKey } from '@shared';
+import { useAutopilotStore } from '../../../store/autopilotStore';
+import { buildTrainingProgress, type CDUKey } from '@shared';
 import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
 import { BoeingCDUShell } from './BoeingCDUShell';
 import { BoeingDisplayBay } from './BoeingDisplayBay';
@@ -27,6 +28,31 @@ export function Boeing737CDU() {
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
   const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
+
+  const currentPage = useFMCStore((s) => s.currentPage);
+  const aircraft = useFMCStore((s) => s.aircraft);
+  const flightPhase = useFMCStore((s) => s.flightPhase);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+
+  void currentPage;
+  void flightPhase;
+  void tutorialActive;
+
+  const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
+  const autopilotState = useAutopilotStore((state) => ({
+    boeing: state.boeing,
+    airbus: state.airbus,
+    truth: state.truth,
+  }));
+
+  const progress = useMemo(() => {
+    return buildTrainingProgress({
+      aircraft,
+      layoutMode,
+      fmcState: useFMCStore.getState(),
+      autopilotState,
+    });
+  }, [aircraft, layoutMode, currentPage, flightPhase, tutorialActive, autopilotState]);
 
   const { send } = useWebSocket();
 
@@ -76,7 +102,20 @@ export function Boeing737CDU() {
     [displayData.lskActions, displayData.lskLabels],
   );
 
-  const isHighlighted = useCallback((id: string) => tutorialHighlight === id, [tutorialHighlight]);
+  const isHighlighted = useCallback((id: string) => {
+    if (tutorialHighlight === id) return true;
+    if (layoutMode !== 'free-practice') {
+      if (progress.expectedLSK === id) return true;
+      if (progress.expectedKey === id) return true;
+      if (id === 'POS_INIT' && progress.expectedKey === 'INIT_REF') return true;
+      if (id === 'PERF_INIT' && progress.expectedKey === 'PERF') return true;
+      if (id === 'PROGRESS' && progress.expectedKey === 'PROG') return true;
+    }
+    return false;
+  }, [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode]);
+
+  const effectiveHintLevel = tutorialHintLevel || (tutorialHighlight || (layoutMode !== 'free-practice' && (progress.expectedKey || progress.expectedLSK)) ? 1 : 0);
+  const keypadHighlight = tutorialHighlight || (layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
@@ -85,14 +124,14 @@ export function Boeing737CDU() {
           brightness={brightness}
           getLSKLabel={getLSKLabel}
           isHighlighted={isHighlighted}
-          hintLevel={tutorialHintLevel}
+          hintLevel={effectiveHintLevel}
           onPressLSK={onPressLSK}
         />
-        <BoeingFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} hintLevel={tutorialHintLevel} />
+        <BoeingFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} hintLevel={effectiveHintLevel} />
         <BoeingAlphaNumericKeypad
           onPress={onPressKey}
-          highlight={tutorialHighlight}
-          hintLevel={tutorialHintLevel}
+          highlight={keypadHighlight}
+          hintLevel={effectiveHintLevel}
           execLit={execLit}
           brightness={brightness}
           onBrightnessChange={setBrightness}

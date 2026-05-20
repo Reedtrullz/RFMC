@@ -1,5 +1,6 @@
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { getAudioContext, resumeAudioContext, trackNode } from '../services/audioContext';
+import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 
 const SOUNDS = {
   keypress: { freq: 800, duration: 0.05, type: 'square' as OscillatorType, volume: 0.03 },
@@ -13,14 +14,12 @@ const SOUNDS = {
 type SoundName = keyof typeof SOUNDS;
 
 export function useSound() {
-  const mutedRef = useRef(false);
-
-  if (mutedRef.current === false) {
-    mutedRef.current = localStorage.getItem('cdu-muted') === 'true';
-  }
+  const soundMuted = useCockpitLayoutStore((state) => state.soundMuted);
+  const soundVolume = useCockpitLayoutStore((state) => state.soundVolume);
+  const setSoundMuted = useCockpitLayoutStore((state) => state.setSoundMuted);
 
   const play = useCallback(async (name: SoundName) => {
-    if (mutedRef.current) return;
+    if (soundMuted) return;
 
     const ctx = getAudioContext();
     try {
@@ -30,6 +29,8 @@ export function useSound() {
     }
 
     const s = SOUNDS[name];
+    const volScale = soundVolume / 100;
+    const scaledVolume = s.volume * volScale;
 
     if (name === 'chime') {
       [554.37, 440.0].forEach((freq, i) => {
@@ -37,7 +38,7 @@ export function useSound() {
         const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.5);
-        gain.gain.setValueAtTime(s.volume, ctx.currentTime + i * 0.5);
+        gain.gain.setValueAtTime(scaledVolume, ctx.currentTime + i * 0.5);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 1.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -52,22 +53,22 @@ export function useSound() {
     const gain = ctx.createGain();
     osc.type = s.type;
     osc.frequency.setValueAtTime(s.freq, ctx.currentTime);
-    gain.gain.setValueAtTime(s.volume, ctx.currentTime);
+    gain.gain.setValueAtTime(scaledVolume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
     trackNode(osc, gain);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + s.duration);
-  }, []);
+  }, [soundMuted, soundVolume]);
 
   const toggleMute = useCallback(() => {
-    mutedRef.current = !mutedRef.current;
-    localStorage.setItem('cdu-muted', String(mutedRef.current));
-    return mutedRef.current;
-  }, []);
+    const nextMuted = !soundMuted;
+    setSoundMuted(nextMuted);
+    return nextMuted;
+  }, [soundMuted, setSoundMuted]);
 
-  const isMuted = () => mutedRef.current;
+  const isMuted = useCallback(() => soundMuted, [soundMuted]);
 
   return { play, toggleMute, isMuted };
 }

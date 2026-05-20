@@ -118,4 +118,30 @@ describe('handleSpecialLskAction', () => {
     expect(result.handled).toBe(false);
     expect(result.success).toBeUndefined();
   });
+
+  it('activate_sec successfully promotes pending route and flight plan and clears modified flags', () => {
+    const state = makeState({
+      route: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'DAL123' },
+      flightPlan: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'DAL123', route: '', waypoints: [] },
+      pendingRoute: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'UAL456' },
+      pendingFlightPlan: { origin: 'KLAX', destination: 'KSFO', flightNumber: 'UAL456', route: 'RZS J501 BSR', waypoints: [] },
+      isModified: true,
+      execLit: true,
+    });
+    const result = handleSpecialLskAction('activate_sec', state, '');
+
+    expect(result.handled).toBe(true);
+    expect(result.success?.patch).toEqual({
+      flightPlan: state.pendingFlightPlan,
+      route: state.pendingRoute,
+      pendingRoute: null,
+      pendingFlightPlan: null,
+      holdPending: null,
+      isModified: false,
+      execLit: false,
+      scratchpad: 'SEC PLAN ACTIVE',
+      scratchpadError: null,
+      msgLight: true,
+    });
+  });
 });

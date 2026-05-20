@@ -1,3 +1,6 @@
+import { useState, useRef } from 'react';
+import { tactile } from '../../../../utils/tactile';
+
 interface MCPKnobProps {
   label: string;
   value: number;
@@ -8,6 +11,36 @@ interface MCPKnobProps {
 }
 
 export function MCPKnob({ label, value, onRotate, onPress, unit, highlighted }: MCPKnobProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const lastY = useRef(0);
+  const hasDragged = useRef(false);
+
+  const triggerRotate = (delta: number) => {
+    tactile.vibrate(5);
+    onRotate(delta);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    hasDragged.current = false;
+    lastY.current = e.clientY;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const deltaY = lastY.current - e.clientY;
+    if (Math.abs(deltaY) > 5) {
+      hasDragged.current = true;
+      triggerRotate(deltaY > 0 ? 1 : -1);
+      lastY.current = e.clientY;
+    }
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="flex flex-col items-center gap-2.5">
       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-cdu">{label}</span>
@@ -21,14 +54,21 @@ export function MCPKnob({ label, value, onRotate, onPress, unit, highlighted }: 
           aria-label={label}
           aria-valuenow={value}
           data-testid={`mcp-${label.toLowerCase().replace(/[\s\/]/g, '-')}-knob`}
-          className={`relative h-14 w-14 cursor-ns-resize rounded-full bg-[#1c1c1c] shadow-[0_8px_16px_rgba(0,0,0,0.7),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all active:scale-95 group-hover:bg-[#252525] ${
-            highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_20px_rgba(0,255,255,0.5)]' : ''
-          }`}
+          className={`relative h-14 w-14 cursor-ns-resize rounded-full bg-[#1c1c1c] shadow-[0_8px_16px_rgba(0,0,0,0.7),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all active:scale-95 group-hover:bg-[#252525] touch-none outline-none ${
+            highlighted ? 'highlighted-boeing' : ''
+          } ${isDragging ? 'ring-2 ring-cdu-cyan/50' : ''}`}
           onWheel={(e) => {
             const delta = e.deltaY < 0 ? 1 : -1;
             onRotate(delta);
           }}
-          onClick={onPress}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onClick={() => {
+            if (!hasDragged.current && onPress) {
+              onPress();
+            }
+          }}
         >
           {/* Radial Knurling (Industrial Texture) */}
           <div className="absolute inset-0 rounded-full opacity-40 mix-blend-overlay overflow-hidden">

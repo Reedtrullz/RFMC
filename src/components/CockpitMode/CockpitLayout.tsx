@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, type CSSProperties } from 'react';
-import type { AircraftType, CockpitLayoutMode } from '@shared';
+import { buildTrainingProgress, type AircraftType, type CockpitLayoutMode } from '@shared';
 import { useFMCStore } from '../../store/useFMCStore';
 import { CDU } from '../CDU/CDU';
 import { NavigationDisplay } from '../ND/NavigationDisplay';
@@ -41,6 +41,8 @@ interface LayoutControls {
   onZoomIn: (panelId: InstrumentPanelId) => void;
   onZoomOut: (panelId: InstrumentPanelId) => void;
   onZoomReset: (panelId: InstrumentPanelId) => void;
+  expectedPanel: PanelId | null;
+  layoutMode: CockpitLayoutMode;
 }
 
 const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
@@ -71,6 +73,29 @@ export function CockpitLayout() {
   const highContrast = useCockpitLayoutStore((s) => s.highContrast);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const orientation = useOrientation();
+
+  const currentPage = useFMCStore((s) => s.currentPage);
+  const flightPhase = useFMCStore((s) => s.flightPhase);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+
+  void currentPage;
+  void flightPhase;
+  void tutorialActive;
+
+  const autopilotState = useAutopilotStore((state) => ({
+    boeing: state.boeing,
+    airbus: state.airbus,
+    truth: state.truth,
+  }));
+
+  const progress = useMemo(() => {
+    return buildTrainingProgress({
+      aircraft,
+      layoutMode,
+      fmcState: useFMCStore.getState(),
+      autopilotState,
+    });
+  }, [aircraft, layoutMode, currentPage, flightPhase, tutorialActive, autopilotState]);
 
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -107,6 +132,8 @@ export function CockpitLayout() {
       onZoomIn: (panelId) => adjustInstrumentZoom(panelId, 0.08),
       onZoomOut: (panelId) => adjustInstrumentZoom(panelId, -0.08),
       onZoomReset: resetInstrumentZoom,
+      expectedPanel: progress.expectedPanel,
+      layoutMode,
     }),
     [
       aircraft,
@@ -118,6 +145,8 @@ export function CockpitLayout() {
       togglePanelPinned,
       adjustInstrumentZoom,
       resetInstrumentZoom,
+      progress.expectedPanel,
+      layoutMode,
     ],
   );
 
@@ -342,12 +371,18 @@ function renderInstrumentPanel(
   if (controls.hiddenPanels.has(panelId)) return null;
 
   const zoom = options.preferredScale ?? controls.instrumentZoom[panelId] ?? 1;
+  const isExpected = controls.layoutMode !== 'free-practice' && controls.expectedPanel === panelId;
+  const highlightClass = isExpected
+    ? controls.aircraft === 'AIRBUS_A320'
+      ? 'highlighted-airbus'
+      : 'highlighted-boeing'
+    : '';
 
   return (
     <InstrumentFit
       key={panelId}
       target={targetForPanel(panelId, controls.aircraft)}
-      className={options.className}
+      className={`${options.className || ''} ${highlightClass}`.trim()}
       preferredScale={zoom}
       dataTestId={`${panelId}-panel`}
       overlay={

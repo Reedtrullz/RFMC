@@ -177,14 +177,43 @@ describe('handleSetFlaps (takeoff)', () => {
     expect(result.handled).toBe(false);
   });
 
-  it('sets takeoff flaps and recalculates V-speeds', () => {
-    const result = handleLandingAction('set_flaps', makeState(), '5');
+  it('sets takeoff flaps and recalculates V-speeds for Boeing', () => {
+    const result = handleLandingAction('set_flaps', makeState({ aircraft: 'BOEING_737' }), '5');
     expect(result.handled).toBe(true);
     const patch = getPatch(result);
     expect(patch.takeoff?.flaps).toBe('5');
     expect(patch.takeoff?.suggestedV1).toBeGreaterThan(0);
     expect(patch.takeoff?.suggestedVr).toBeGreaterThan(patch.takeoff?.suggestedV1 ?? 0);
     expect(patch.takeoff?.suggestedV2).toBeGreaterThan(patch.takeoff?.suggestedVr ?? 0);
+  });
+
+  it('rejects invalid Boeing takeoff flaps', () => {
+    const result = handleLandingAction('set_flaps', makeState({ aircraft: 'BOEING_737' }), 'abc');
+    expect(result.handled).toBe(true);
+    expect(result.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultAirbusFlap = handleLandingAction('set_flaps', makeState({ aircraft: 'BOEING_737' }), '1+F');
+    expect(resultAirbusFlap.handled).toBe(true);
+    expect(resultAirbusFlap.failure?.code).toBe('INVALID_ENTRY');
+  });
+
+  it('sets takeoff flaps and validates for Airbus', () => {
+    const stateAirbus = makeState({ aircraft: 'AIRBUS_A320' });
+    const result1 = handleLandingAction('set_flaps', stateAirbus, '1+F');
+    expect(result1.handled).toBe(true);
+    expect(getPatch(result1).takeoff?.flaps).toBe('1+F');
+
+    const result2 = handleLandingAction('set_flaps', stateAirbus, '2/UP0.5');
+    expect(result2.handled).toBe(true);
+    expect(getPatch(result2).takeoff?.flaps).toBe('2/UP0.5');
+
+    const resultInvalid = handleLandingAction('set_flaps', stateAirbus, '15');
+    expect(resultInvalid.handled).toBe(true);
+    expect(resultInvalid.failure?.code).toBe('INVALID_ENTRY');
+
+    const resultGarbage = handleLandingAction('set_flaps', stateAirbus, 'abc');
+    expect(resultGarbage.handled).toBe(true);
+    expect(resultGarbage.failure?.code).toBe('INVALID_ENTRY');
   });
 });
 

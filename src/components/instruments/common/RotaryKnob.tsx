@@ -6,11 +6,12 @@ interface RotaryKnobProps {
   size?: 'sm' | 'md' | 'lg';
   label?: string;
   highlighted?: boolean;
+  variant?: 'boeing' | 'airbus';
 }
 
 import { tactile } from '../../../utils/tactile';
 
-export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }: RotaryKnobProps) {
+export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted, variant = 'airbus' }: RotaryKnobProps) {
   const [isDragging, setIsDragging] = useState(false);
   const lastY = useRef(0);
 
@@ -68,7 +69,7 @@ export function RotaryKnob({ value, onRotate, size = 'md', label, highlighted }:
           shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_2px_4px_rgba(255,255,255,0.1)] 
           transition-transform active:scale-95 touch-none outline-none
           ${isDragging ? 'ring-2 ring-cdu-cyan/50' : 'focus:ring-2 focus:ring-white/20'}
-          ${highlighted ? 'ring-4 ring-cdu-cyan animate-pulse shadow-[0_0_20px_rgba(0,255,255,0.4)]' : ''}
+          ${highlighted ? (variant === 'boeing' ? 'highlighted-boeing' : 'highlighted-airbus') : ''}
         `}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

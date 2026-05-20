@@ -86,7 +86,7 @@ export interface AircraftStore {
 }
 
 export const useAircraftStore = create<AircraftStore>((set) => ({
-  aircraft: 'BOEING_737',
+  aircraft: (typeof window !== 'undefined' ? (localStorage.getItem('cdu-aircraft-type') as AircraftType) : null) || 'BOEING_737',
   ident: { aircraftType: '737-800', engRating: '26K', navDataVersion: 'FMC21A1', opProgram: '2247662-03' },
   position: {
     refAirport: '',
@@ -140,6 +140,9 @@ export const useAircraftStore = create<AircraftStore>((set) => ({
 
   setAircraft: (type) => {
     set({ aircraft: type });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cdu-aircraft-type', type);
+    }
     // This will be synchronized with useFMCStore via subscription or direct call
   },
   setAircraftState: (state) => set({ aircraftState: state }),

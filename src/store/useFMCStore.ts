@@ -2293,16 +2293,16 @@ export const useFMCStore = create<FMCStore>((set, get) => ({
       }
     }
 
-    // 5b. Active Training Lesson Auto-Verification (e.g. verify_fma)
+    // 5b. Active Training Lesson Auto-Verification
     if (state.trainingActive && state.trainingEngine && state.trainingScenario) {
       const currentStep = state.trainingScenario.steps[state.trainingStepIndex];
-      if (currentStep?.expectedAction?.type === 'verify_fma') {
+      if (currentStep?.stateValidation && currentStep.stateValidation.length > 0) {
         const isValid = state.trainingEngine.validateState(
           state as unknown as Record<string, unknown>,
-          currentStep.stateValidation || [],
+          currentStep.stateValidation,
         );
         if (isValid) {
-          get().processTrainingAction({ type: 'verify_fma', mode: currentStep.expectedAction.mode });
+          get().processTrainingAction(currentStep.expectedAction);
         }
       }
     }

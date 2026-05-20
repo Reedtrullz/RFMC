@@ -235,6 +235,18 @@ describe('Airbus Grid Pages', () => {
       const result = renderSecFplnGrid(state);
       checkSegment(result, 4, 1, ' KLAX/KSFO', 'magenta');
     });
+
+    it('displays ACTIVATE SEC and ERASE SEC when secondary flight plan is present', () => {
+      const state = createMinimalState({
+        isModified: true,
+        pendingRoute: { origin: 'KLAX', destination: 'KSFO' } as typeof state.route,
+      });
+      const result = renderSecFplnGrid(state);
+      checkSegment(result, 1, 0, '<ACTIVATE SEC', 'white');
+      checkSegment(result, 3, 0, '<ERASE SEC', 'white');
+      expect(result.lskActions!.L1).toBe('activate_sec');
+      expect(result.lskActions!.L2).toBe('erase');
+    });
   });
 
   describe('renderDataIndexGrid', () => {

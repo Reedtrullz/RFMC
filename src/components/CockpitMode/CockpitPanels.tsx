@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAircraftStore } from '../../store/aircraftStore';
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 import { useAutopilotStore } from '../../store/autopilotStore';
@@ -7,11 +7,126 @@ import { getCockpitChecklists, type CockpitChecklistItem } from '../../checklist
 import { useDraggable } from '../../hooks/useDraggable';
 import { useSound } from '../../hooks/useSound';
 
+interface AudioVisualizerProps {
+  muted: boolean;
+  volume: number;
+}
+
+function AudioVisualizer({ muted, volume }: AudioVisualizerProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+    let phase = 0;
+
+    const render = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      const width = rect.width;
+      const height = rect.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw background CRT style diagnostic grid line
+      ctx.strokeStyle = 'rgba(42, 45, 45, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+
+      // Horizontal minor ticks
+      ctx.beginPath();
+      for (let x = 15; x < width; x += 15) {
+        ctx.moveTo(x, height / 2 - 2);
+        ctx.lineTo(x, height / 2 + 2);
+      }
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineWidth = 1.5;
+
+      if (muted) {
+        // Muted amber subtle heartbeat flatline
+        ctx.strokeStyle = '#ff9f0a';
+        ctx.shadowColor = '#ff9f0a';
+        ctx.shadowBlur = 4;
+
+        for (let x = 0; x < width; x++) {
+          const y = height / 2 + Math.sin(x * 0.08 + phase) * 0.3;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+      } else {
+        // Glowing cyan/green dynamic multi-harmonic scrolling wave
+        const maxAmp = height / 2.8;
+        const amp = (volume / 100) * maxAmp;
+        ctx.strokeStyle = '#39ff14';
+        ctx.shadowColor = '#39ff14';
+        ctx.shadowBlur = 6;
+
+        for (let x = 0; x < width; x++) {
+          const wave1 = Math.sin(x * 0.06 - phase * 1.6) * 1.0;
+          const wave2 = Math.sin(x * 0.14 + phase * 2.8) * 0.35;
+          const wave3 = Math.sin(x * 0.03 - phase * 0.9) * 0.15;
+          // Smooth fade envelope at the edges
+          const envelope = Math.sin((x / width) * Math.PI);
+          const y = height / 2 + (wave1 + wave2 + wave3) * amp * envelope;
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+      }
+
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      phase += 0.04;
+      animationId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [muted, volume]);
+
+  return (
+    <div className="relative w-full h-9 bg-black/80 rounded border border-[#2a2d2d] overflow-hidden flex items-center justify-center">
+      <canvas ref={canvasRef} className="w-full h-full block" />
+      <span className="absolute top-1 left-2 text-[6px] font-mono text-white/30 uppercase tracking-widest select-none">
+        Acoustic Monitor
+      </span>
+      <span className="absolute top-1 right-2 text-[6px] font-mono text-cdu-exec uppercase tracking-widest select-none flex items-center gap-1">
+        <span className={`w-1 h-1 rounded-full ${muted ? 'bg-[#ff9f0a]' : 'bg-[#39ff14] animate-pulse'}`} />
+        {muted ? 'SUSPENDED' : 'ACTIVE'}
+      </span>
+    </div>
+  );
+}
+
 export function SettingsPanel() {
   const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('settings'));
   const cockpitMode = useCockpitLayoutStore((s) => s.cockpitMode);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
+
+  const soundMuted = useCockpitLayoutStore((s) => s.soundMuted);
+  const soundVolume = useCockpitLayoutStore((s) => s.soundVolume);
+  const setSoundMuted = useCockpitLayoutStore((s) => s.setSoundMuted);
+  const setSoundVolume = useCockpitLayoutStore((s) => s.setSoundVolume);
 
   const signsOn = useAircraftStore((s) => s.signsOn);
   const windowsLocked = useAircraftStore((s) => s.windowsLocked);
@@ -64,6 +179,36 @@ export function SettingsPanel() {
             onChange={(e) => setBrightness(parseInt(e.target.value))}
             className="w-full h-1.5 bg-black/60 rounded-full appearance-none accent-cdu-cyan cursor-pointer"
           />
+        </div>
+
+        <div className="pt-2 border-t border-white/5 space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="text-[9px] font-cdu text-white/40 uppercase tracking-tighter">Acoustic Console</label>
+            <button
+              onClick={() => setSoundMuted(!soundMuted)}
+              className={`px-2 py-0.5 border text-[8px] font-cdu uppercase tracking-tighter transition-all rounded ${soundMuted ? 'border-amber-500/30 bg-amber-500/10 text-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.2)]' : 'border-cdu-cyan/30 bg-cdu-cyan/10 text-cdu-cyan shadow-[0_0_6px_rgba(0,255,255,0.2)]'}`}
+            >
+              {soundMuted ? 'Muted' : 'Audible'}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-mono text-white/35 w-6 uppercase text-right select-none">VOL</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={soundVolume}
+              onChange={(e) => setSoundVolume(parseInt(e.target.value))}
+              disabled={soundMuted}
+              className="flex-1 h-1.5 bg-black/60 rounded-full appearance-none accent-[#39ff14] cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            />
+            <span className="text-[9px] font-mono text-[#39ff14] w-8 text-right select-none transition-colors disabled:text-white/20">
+              {soundMuted ? '---' : `${soundVolume}%`}
+            </span>
+          </div>
+
+          <AudioVisualizer muted={soundMuted} volume={soundVolume} />
         </div>
 
         <div className="pt-2 border-t border-white/5">

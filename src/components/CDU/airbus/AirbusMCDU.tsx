@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
@@ -6,7 +6,8 @@ import { useFMCStore } from '../../../store/useFMCStore';
 import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
-import type { CDUKey } from '@shared';
+import { useAutopilotStore } from '../../../store/autopilotStore';
+import { buildTrainingProgress, type CDUKey } from '@shared';
 import { AirbusMCDUShell } from './AirbusMCDUShell';
 import { AirbusDisplayBay } from './AirbusDisplayBay';
 import { AirbusFunctionKeyPanel } from './AirbusFunctionKeyPanel';
@@ -23,6 +24,31 @@ export function AirbusMCDU() {
   const connectionStatus = useConnectionStore((s) => s.connectionStatus);
   const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
+
+  const currentPage = useFMCStore((s) => s.currentPage);
+  const aircraft = useFMCStore((s) => s.aircraft);
+  const flightPhase = useFMCStore((s) => s.flightPhase);
+  const tutorialActive = useFMCStore((s) => s.tutorialActive);
+
+  void currentPage;
+  void flightPhase;
+  void tutorialActive;
+
+  const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
+  const autopilotState = useAutopilotStore((state) => ({
+    boeing: state.boeing,
+    airbus: state.airbus,
+    truth: state.truth,
+  }));
+
+  const progress = useMemo(() => {
+    return buildTrainingProgress({
+      aircraft: 'AIRBUS_A320',
+      layoutMode,
+      fmcState: useFMCStore.getState(),
+      autopilotState,
+    });
+  }, [layoutMode, currentPage, flightPhase, tutorialActive, autopilotState]);
   const { send } = useWebSocket();
 
   const onPressKey = useCallback(
@@ -59,7 +85,17 @@ export function AirbusMCDU() {
     return undefined;
   };
 
-  const isHighlighted = (id: string) => tutorialHighlight === id;
+  const isHighlighted = useCallback((id: string) => {
+    if (tutorialHighlight === id) return true;
+    if (layoutMode !== 'free-practice') {
+      if (progress.expectedLSK === id) return true;
+      if (progress.expectedKey === id) return true;
+      if (id === 'INIT_A' && progress.expectedKey === 'INIT_B') return true;
+    }
+    return false;
+  }, [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode]);
+
+  const keypadHighlight = tutorialHighlight || (layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
   return (
     <div
@@ -73,7 +109,7 @@ export function AirbusMCDU() {
           onPressLSK={onPressLSK}
         />
         <AirbusFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
-        <AirbusKeypad onPress={onPressKey} highlight={tutorialHighlight} execLit={execLit} />
+        <AirbusKeypad onPress={onPressKey} highlight={keypadHighlight} execLit={execLit} />
       </AirbusMCDUShell>
     </div>
   );

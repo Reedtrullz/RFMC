@@ -1,4 +1,5 @@
 import { getAudioContext, resumeAudioContext, trackNode, stopAll } from './audioContext';
+import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
 
 export class AuralAlertService {
   /**
@@ -73,6 +74,8 @@ export class AuralAlertService {
   }
 
   public static playVoice(text: string, rate: number = 1.0) {
+    const { soundMuted, soundVolume } = useCockpitLayoutStore.getState();
+    if (soundMuted) return;
     if (!window.speechSynthesis) return;
 
     // Cancel any ongoing speech to prioritize new alerts
@@ -81,7 +84,7 @@ export class AuralAlertService {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = rate;
     utterance.pitch = 0.8;
-    utterance.volume = 1.0;
+    utterance.volume = soundVolume / 100;
 
     // Select a male voice if available
     const voices = window.speechSynthesis.getVoices();
@@ -128,11 +131,15 @@ export class AuralAlertService {
   }
 
   private static playPulse(ctx: AudioContext, freq: number, duration: number, time: number, volume: number = 0.15) {
+    const { soundMuted, soundVolume } = useCockpitLayoutStore.getState();
+    if (soundMuted) return;
+
+    const scaledVolume = volume * (soundVolume / 100);
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, time);
-    gain.gain.setValueAtTime(volume, time);
+    gain.gain.setValueAtTime(scaledVolume, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -142,11 +149,15 @@ export class AuralAlertService {
   }
 
   private static playRichPulse(ctx: AudioContext, freq: number, duration: number, time: number, volume: number = 0.2) {
+    const { soundMuted, soundVolume } = useCockpitLayoutStore.getState();
+    if (soundMuted) return;
+
+    const scaledVolume = volume * (soundVolume / 100);
     const frequencies = [freq, freq * 1.5, freq * 2];
     const gains = [1, 0.4, 0.2];
 
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(volume, time);
+    masterGain.gain.setValueAtTime(scaledVolume, time);
     masterGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
     masterGain.connect(ctx.destination);
 

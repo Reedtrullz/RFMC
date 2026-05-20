@@ -52,6 +52,18 @@ export class TrainingScenarioEngine {
         nextStep: completed ? undefined : this.getCurrentStep(),
       };
     } else {
+      // UX Safeguard for intermediate dial scroll/drag values during training
+      if (
+        action.type === 'set_mcp' &&
+        step.expectedAction?.type === 'set_mcp' &&
+        action.field === step.expectedAction.field &&
+        action.value !== step.expectedAction.value
+      ) {
+        return {
+          success: false,
+          completed: false,
+        };
+      }
       let description = `Expected ${this.formatAction(step.expectedAction)}`;
       let diagnosticHint: string | undefined;
 

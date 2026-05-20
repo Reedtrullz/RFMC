@@ -58,6 +58,9 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
       seg(7, 1, 'WIND', 'white', { size: 'small' }),
       seg(8, 1, takeoff.windDir ? `${takeoff.windDir}°/${takeoff.windSpeed}` : '---', 'green'),
 
+      seg(9, 1, 'OAT', 'white', { size: 'small' }),
+      seg(10, 1, takeoff.oat !== undefined ? `${takeoff.oat}°` : '---', 'green'),
+
       seg(1, 20, 'V1', 'white', { size: 'small' }),
       seg(2, 18, v1.text.padStart(3), v1.color, { size: v1.size }),
 
@@ -77,8 +80,8 @@ export function renderBoeingTakeoffRefGrid(state: FMCState): DisplayData {
       L1: 'set_runway',
       L2: 'set_to_mode',
       L3: 'set_flaps',
-      L4: 'set_oat',
-      L5: 'set_wind',
+      L4: 'set_wind',
+      L5: 'set_oat',
       L6: 'menu',
       R1: 'set_v1',
       R2: 'set_vr',

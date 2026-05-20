@@ -12,7 +12,7 @@ export function MCPDisplayWindow({ label, value, active = true, highlighted, uni
       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-cdu">{label}</span>
 
       <div
-        className={`relative group p-[2px] bg-[#2a2d2d] rounded-sm shadow-lg ${highlighted ? 'ring-2 ring-cdu-cyan shadow-[0_0_15px_rgba(0,255,255,0.4)]' : ''}`}
+        className={`relative group p-[2px] bg-[#2a2d2d] rounded-sm shadow-lg ${highlighted ? 'highlighted-boeing' : ''}`}
       >
         {/* Recessed Bezel */}
         <div

@@ -189,6 +189,27 @@ function handleSetIlsCourse(state: FMCState, scratchpad: string): FmcActionResul
 function handleSetFlaps(state: FMCState, scratchpad: string): FmcActionResult {
   if (!scratchpad) return { handled: false };
   const flaps = scratchpad.toUpperCase();
+
+  // High fidelity validation based on aircraft type
+  if (state.aircraft === 'AIRBUS_A320') {
+    // Airbus allows: 1, 2, 3, 1+F (optionally with pitch trim after a slash like 1/UP0.2)
+    const match = flaps.match(/^([123]|1\+F)(\/[A-Z0-9.\-+]+)?$/);
+    if (!match) {
+      return {
+        handled: true,
+        failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_flaps' },
+      };
+    }
+  } else {
+    // Boeing 737: 1, 5, 10, 15, 25
+    if (!['1', '5', '10', '15', '25'].includes(flaps)) {
+      return {
+        handled: true,
+        failure: { code: 'INVALID_ENTRY' as const, text: 'INVALID ENTRY', source: 'landingActions.set_flaps' },
+      };
+    }
+  }
+
   const takeoff = { ...state.takeoff, flaps };
   const speeds = PerformanceEngine.calculateTakeoffSpeeds(state.performance.grossWeight || 140000, flaps);
   takeoff.suggestedV1 = speeds.v1;

@@ -82,6 +82,26 @@ export function handleSpecialLskAction(
         },
       };
 
+    case 'activate_sec':
+      return {
+        handled: true,
+        success: {
+          clearScratchpad: true,
+          patch: {
+            flightPlan: state.pendingFlightPlan || state.flightPlan,
+            route: state.pendingRoute || state.route,
+            pendingRoute: null,
+            pendingFlightPlan: null,
+            holdPending: null,
+            isModified: false,
+            execLit: false,
+            scratchpad: 'SEC PLAN ACTIVE',
+            scratchpadError: null,
+            msgLight: true,
+          },
+        },
+      };
+
     default:
       return { handled: false };
   }
