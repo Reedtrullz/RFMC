@@ -34,10 +34,6 @@ export function Boeing737CDU() {
   const flightPhase = useFMCStore((s) => s.flightPhase);
   const tutorialActive = useFMCStore((s) => s.tutorialActive);
 
-  void currentPage;
-  void flightPhase;
-  void tutorialActive;
-
   const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
   const autopilotState = useAutopilotStore((state) => ({
     boeing: state.boeing,
@@ -46,6 +42,9 @@ export function Boeing737CDU() {
   }));
 
   const progress = useMemo(() => {
+    void currentPage;
+    void flightPhase;
+    void tutorialActive;
     return buildTrainingProgress({
       aircraft,
       layoutMode,
