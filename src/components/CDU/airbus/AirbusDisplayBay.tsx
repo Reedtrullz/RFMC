@@ -36,28 +36,26 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
         <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
         <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
-        <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
+        <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%', height: '100%' }}>
           <ScreenGlass
             brightness={brightness}
-            className="bg-cdu-screen rounded-b-none w-full border-cdu-bezel-light/30"
+            variant="airbus"
+            className="bg-cdu-screen w-full h-full border border-cdu-bezel-light/30 rounded-sm flex flex-col"
           >
             <div className="w-full" style={{ height: `calc(${tokens.screen.rows - 1} * ${rowHeight})` }}>
               <Display variant="airbus" />
             </div>
+            <div
+              className="w-full"
+              style={{
+                height: scratchpadHeight,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Scratchpad variant="airbus" />
+            </div>
           </ScreenGlass>
-        </div>
-        <div
-          className="bg-cdu-screen border-x-2 border-b-2 border-cdu-bezel-light/30 rounded-b-sm overflow-hidden"
-          style={{
-            gridRow: 14,
-            gridColumn: 2,
-            filter: `brightness(${brightness}%)`,
-            height: scratchpadHeight,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <Scratchpad variant="airbus" />
         </div>
       </div>
     </div>

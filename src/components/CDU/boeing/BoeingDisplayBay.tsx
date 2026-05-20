@@ -62,26 +62,23 @@ export function BoeingDisplayBay({
         onPress={onPressLSK}
       />
 
-      <div style={{ gridRow: '1 / 14', gridColumn: 2, width: '100%' }}>
-        <ScreenGlass brightness={brightness} className="bg-cdu-screen rounded-b-none w-full">
+      <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%', height: '100%' }}>
+        <ScreenGlass brightness={brightness} className="bg-cdu-screen w-full h-full flex flex-col">
           <div className="w-full" style={{ height: 'calc(13 * var(--cdu-row-h, 21px))' }}>
             <Display />
           </div>
+          <div
+            className="w-full"
+            style={{
+              height: scratchpadHeight,
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: '4px',
+            }}
+          >
+            <Scratchpad />
+          </div>
         </ScreenGlass>
-      </div>
-      <div
-        className="bg-cdu-screen"
-        style={{
-          gridRow: 14,
-          gridColumn: 2,
-          filter: `brightness(${brightness}%)`,
-          height: scratchpadHeight,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: '4px',
-        }}
-      >
-        <Scratchpad />
       </div>
     </div>
   );

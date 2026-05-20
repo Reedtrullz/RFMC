@@ -8,10 +8,9 @@ import { useConnectionStore } from '../../../store/connectionStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
 import { buildTrainingProgress, type CDUKey } from '@shared';
-import { BoeingAlphaNumericKeypad } from './BoeingAlphaNumericKeypad';
+import { BoeingKeypadArea } from './BoeingKeypadArea';
 import { BoeingCDUShell } from './BoeingCDUShell';
 import { BoeingDisplayBay } from './BoeingDisplayBay';
-import { BoeingFunctionKeyPanel } from './BoeingFunctionKeyPanel';
 import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
 
 export function Boeing737CDU() {
@@ -135,10 +134,9 @@ export function Boeing737CDU() {
           hintLevel={effectiveHintLevel}
           onPressLSK={onPressLSK}
         />
-        <BoeingFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} hintLevel={effectiveHintLevel} />
-        <BoeingAlphaNumericKeypad
+        <BoeingKeypadArea
           onPress={onPressKey}
-          highlight={keypadHighlight}
+          isHighlighted={isHighlighted}
           hintLevel={effectiveHintLevel}
           execLit={execLit}
           brightness={brightness}
