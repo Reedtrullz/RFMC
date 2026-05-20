@@ -62,7 +62,7 @@ export const trainingModes: TrainingModeConfig[] = [
     minimumRequiredPanels: ['nd', 'cdu'],
     primaryPanel: 'nd',
     layoutPreset: 'twoPanelTraining',
-    defaultZoom: { nd: 1.55, cdu: 1.2 },
+    defaultZoom: { nd: 1.38, cdu: 1.38 },
     defaultOverlays: ['instructor'],
     beginnerHint: 'Use this mode when the lesson asks you to verify route geometry or waypoint changes.',
     practiceTask: 'Enter or modify a route, then verify the route line and active waypoint on the ND.',
