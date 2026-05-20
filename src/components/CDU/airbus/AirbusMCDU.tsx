@@ -87,17 +87,18 @@ export function AirbusMCDU() {
   const isHighlighted = useCallback(
     (id: string) => {
       if (tutorialHighlight === id) return true;
-      if (layoutMode !== 'free-practice') {
+      if (tutorialActive && layoutMode !== 'free-practice') {
         if (progress.expectedLSK === id) return true;
         if (progress.expectedKey === id) return true;
         if (id === 'INIT_A' && progress.expectedKey === 'INIT_B') return true;
       }
       return false;
     },
-    [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
+    [tutorialActive, tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
   );
 
-  const keypadHighlight = tutorialHighlight || (layoutMode !== 'free-practice' ? progress.expectedKey : null);
+  const keypadHighlight =
+    tutorialHighlight || (tutorialActive && layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
   return (
     <div

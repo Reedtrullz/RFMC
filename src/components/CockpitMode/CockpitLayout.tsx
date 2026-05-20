@@ -43,6 +43,7 @@ interface LayoutControls {
   onZoomReset: (panelId: InstrumentPanelId) => void;
   expectedPanel: PanelId | null;
   layoutMode: CockpitLayoutMode;
+  tutorialActive: boolean;
 }
 
 const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
@@ -134,6 +135,7 @@ export function CockpitLayout() {
       onZoomReset: resetInstrumentZoom,
       expectedPanel: progress.expectedPanel,
       layoutMode,
+      tutorialActive,
     }),
     [
       aircraft,
@@ -147,6 +149,7 @@ export function CockpitLayout() {
       resetInstrumentZoom,
       progress.expectedPanel,
       layoutMode,
+      tutorialActive,
     ],
   );
 
@@ -371,7 +374,8 @@ function renderInstrumentPanel(
   if (controls.hiddenPanels.has(panelId)) return null;
 
   const zoom = options.preferredScale ?? controls.instrumentZoom[panelId] ?? 1;
-  const isExpected = controls.layoutMode !== 'free-practice' && controls.expectedPanel === panelId;
+  const isExpected =
+    controls.tutorialActive && controls.layoutMode !== 'free-practice' && controls.expectedPanel === panelId;
   const highlightClass = isExpected
     ? controls.aircraft === 'AIRBUS_A320'
       ? 'highlighted-airbus'

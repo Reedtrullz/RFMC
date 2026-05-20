@@ -104,7 +104,7 @@ export function Boeing737CDU() {
   const isHighlighted = useCallback(
     (id: string) => {
       if (tutorialHighlight === id) return true;
-      if (layoutMode !== 'free-practice') {
+      if (tutorialActive && layoutMode !== 'free-practice') {
         if (progress.expectedLSK === id) return true;
         if (progress.expectedKey === id) return true;
         if (id === 'POS_INIT' && progress.expectedKey === 'INIT_REF') return true;
@@ -113,13 +113,17 @@ export function Boeing737CDU() {
       }
       return false;
     },
-    [tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
+    [tutorialActive, tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
   );
 
   const effectiveHintLevel =
     tutorialHintLevel ||
-    (tutorialHighlight || (layoutMode !== 'free-practice' && (progress.expectedKey || progress.expectedLSK)) ? 1 : 0);
-  const keypadHighlight = tutorialHighlight || (layoutMode !== 'free-practice' ? progress.expectedKey : null);
+    (tutorialHighlight ||
+    (tutorialActive && layoutMode !== 'free-practice' && (progress.expectedKey || progress.expectedLSK))
+      ? 1
+      : 0);
+  const keypadHighlight =
+    tutorialHighlight || (tutorialActive && layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
