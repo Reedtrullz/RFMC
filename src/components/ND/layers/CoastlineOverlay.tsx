@@ -1,4 +1,5 @@
 import { NavigationDisplayModel, projectGeoPointToND } from '@shared';
+import europeBorders from './europe-borders.json';
 
 interface CoastlineOverlayProps {
   model: NavigationDisplayModel;
@@ -9,76 +10,10 @@ interface GeoPoint {
   lon: number;
 }
 
-// ── High-Fidelity Western Europe Coastline Vectors ───────────────────────────
-// These paths trace the coastlines along the EHAM-EGLL flight corridor
-const GREAT_BRITAIN_COAST: GeoPoint[] = [
-  { lat: 54.5, lon: -0.8 },
-  { lat: 54.1, lon: -0.2 },
-  { lat: 53.8, lon: -0.1 },
-  { lat: 53.5, lon: 0.1 },
-  { lat: 53.1, lon: 0.2 },
-  { lat: 52.9, lon: 0.5 },
-  { lat: 52.8, lon: 0.2 },
-  { lat: 52.9, lon: 1.2 },
-  { lat: 52.6, lon: 1.7 },
-  { lat: 52.2, lon: 1.6 },
-  { lat: 51.9, lon: 1.3 },
-  { lat: 51.7, lon: 1.0 },
-  { lat: 51.5, lon: 0.8 },
-  { lat: 51.4, lon: 0.6 },
-  { lat: 51.4, lon: 1.4 },
-  { lat: 51.1, lon: 1.3 },
-  { lat: 50.9, lon: 0.9 },
-  { lat: 50.7, lon: 0.3 },
-  { lat: 50.8, lon: -0.5 },
-  { lat: 50.8, lon: -1.0 },
-  { lat: 50.6, lon: -1.2 },
-  { lat: 50.6, lon: -2.4 },
-  { lat: 50.5, lon: -3.0 },
-  { lat: 50.2, lon: -3.5 },
-  { lat: 50.2, lon: -4.8 },
-  { lat: 50.1, lon: -5.7 },
-];
-
-const CONTINENTAL_COAST: GeoPoint[] = [
-  { lat: 53.5, lon: 6.5 },
-  { lat: 53.3, lon: 5.0 },
-  { lat: 52.9, lon: 4.7 },
-  { lat: 52.4, lon: 4.5 }, // Near EHAM
-  { lat: 52.1, lon: 4.2 },
-  { lat: 51.9, lon: 4.0 },
-  { lat: 51.6, lon: 3.7 },
-  { lat: 51.4, lon: 3.4 },
-  { lat: 51.3, lon: 3.2 }, // Belgium
-  { lat: 51.2, lon: 2.9 },
-  { lat: 51.0, lon: 2.5 },
-  { lat: 50.9, lon: 1.8 }, // France (Calais)
-  { lat: 50.5, lon: 1.6 },
-  { lat: 50.0, lon: 1.1 },
-  { lat: 49.8, lon: 0.2 },
-];
-
-// ── Realistic Country Borders ────────────────────────────────────────────────
-const BELGIUM_NETHERLANDS_BORDER: GeoPoint[] = [
-  { lat: 51.3, lon: 3.4 },
-  { lat: 51.2, lon: 4.0 },
-  { lat: 51.4, lon: 4.8 },
-  { lat: 51.1, lon: 5.7 },
-  { lat: 50.8, lon: 6.0 },
-];
-
-const FRANCE_BELGIUM_BORDER: GeoPoint[] = [
-  { lat: 51.0, lon: 2.5 },
-  { lat: 50.8, lon: 2.7 },
-  { lat: 50.3, lon: 4.1 },
-  { lat: 50.0, lon: 4.8 },
-];
-
 export function CoastlineOverlay({ model }: CoastlineOverlayProps) {
   // Coastlines are base map elements, always visible as a subtle reference when IRS is in NAV (or GPS)
   if (model.irsState !== 'NAV' && model.navSource !== 'GPS') return null;
 
-  const isPlanMode = model.mode === 'PLAN' || model.mode === 'PLN';
   const cy = model.centered ? 50 : 84;
 
   const context = {
@@ -90,60 +25,88 @@ export function CoastlineOverlay({ model }: CoastlineOverlayProps) {
     style: model.style,
   };
 
-  // Helper to project a geo path into SVG points and compile an SVG path string
-  const renderPath = (points: GeoPoint[], isDashed: boolean, strokeColor: string) => {
+  // Pre-calculate spatial bounding box for rapid culling
+  // 1 degree latitude = 60 nm
+  // Add a 1.5x margin because the ND range is measured from the center to the top edge
+  const maxLatDist = (model.range / 60) * 1.5;
+  const maxLonDist = maxLatDist / Math.max(0.1, Math.cos((model.aircraftPosition.lat * Math.PI) / 180));
+
+  const centerLat = model.aircraftPosition.lat;
+  const centerLon = model.aircraftPosition.lon;
+
+  const isPointInBounds = (lat: number, lon: number) => {
+    return Math.abs(lat - centerLat) <= maxLatDist && Math.abs(lon - centerLon) <= maxLonDist;
+  };
+
+  const paths: string[] = [];
+
+  for (let i = 0; i < europeBorders.length; i++) {
+    const ring = europeBorders[i];
+
+    // Quick bounding box check: Does this ring have ANY point in the bounding box?
+    let visible = false;
+    // We check every 5th point for the bounding box test to speed it up
+    for (let j = 0; j < ring.length; j += 5) {
+      if (isPointInBounds(ring[j][0], ring[j][1])) {
+        visible = true;
+        break;
+      }
+    }
+
+    // Also check the very last point just in case
+    if (!visible && isPointInBounds(ring[ring.length - 1][0], ring[ring.length - 1][1])) {
+      visible = true;
+    }
+
+    if (!visible) continue;
+
     let d = '';
     let drawing = false;
 
-    for (let i = 0; i < points.length; i++) {
-      const p = projectGeoPointToND(points[i], context);
+    for (let j = 0; j < ring.length; j++) {
+      const p = projectGeoPointToND({ lat: ring[j][0], lon: ring[j][1] }, context);
+
       if (p) {
-        // Ensure points are strictly within or close to the compass boundary for clean clipping
+        // Distance from compass center check
         const distFromCenter = Math.sqrt((p.x - 50) ** 2 + (p.y - cy) ** 2);
+
+        // ND bounds is a radius of 50
         if (distFromCenter > 50) {
           drawing = false;
           continue;
         }
 
         if (!drawing) {
-          d += ` M ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+          d += ` M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
           drawing = true;
         } else {
-          d += ` L ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+          d += ` L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
         }
       } else {
         drawing = false;
       }
     }
 
-    if (!d) return null;
+    if (d) {
+      paths.push(d);
+    }
+  }
 
-    return (
-      <path
-        d={d}
-        fill="none"
-        stroke={strokeColor}
-        strokeWidth="0.4"
-        strokeDasharray={isDashed ? '1,2' : undefined}
-        opacity="0.35"
-        filter="url(#crt-bloom)"
-      />
-    );
-  };
+  if (paths.length === 0) return null;
 
   // Realistic dim blue-gray colors typical of modern Honeywell and Thales ND vector charts
-  const coastlineColor = '#1e3f52';
-  const borderColor = '#2d5b75';
+  const strokeColor = model.style === 'boeing' ? '#2d5b75' : '#457491';
 
   return (
     <g data-testid="nd-coastline-overlay" pointerEvents="none">
-      {/* Coastlines */}
-      {renderPath(GREAT_BRITAIN_COAST, false, coastlineColor)}
-      {renderPath(CONTINENTAL_COAST, false, coastlineColor)}
-
-      {/* Country Borders */}
-      {renderPath(BELGIUM_NETHERLANDS_BORDER, true, borderColor)}
-      {renderPath(FRANCE_BELGIUM_BORDER, true, borderColor)}
+      <path
+        d={paths.join(' ')}
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth="0.5"
+        opacity={model.style === 'boeing' ? '0.35' : '0.45'}
+        filter="url(#crt-bloom)"
+      />
     </g>
   );
 }
