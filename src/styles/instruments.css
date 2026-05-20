@@ -318,10 +318,10 @@
 
 .avionics-key {
   position: relative;
-  min-height: 44px;
+  min-height: 36px;
   background: #0a0b0c; /* Keywell bottom plate */
   border: none;
-  padding: 2px 2.5px 3.5px 2.5px; /* Keywell cutout recess padding */
+  padding: 1px 1.5px 2px 1.5px; /* Keywell cutout recess padding */
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
@@ -406,7 +406,7 @@
 /* Mechanical Key Travel press states */
 .avionics-key:active .avionics-key__face,
 .avionics-key--active .avionics-key__face {
-  transform: translateY(1.5px);
+  transform: translateY(1px);
   box-shadow:
     inset 1px 1px 0.5px rgba(255, 255, 255, 0.05),
     inset -1px -1px 1px rgba(0, 0, 0, 0.4),

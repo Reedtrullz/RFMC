@@ -44,9 +44,9 @@ export function BoeingKeypadArea({
   const getHint = (id: string) => (isHighlighted(id) ? hintLevel : 0);
 
   return (
-    <div className="mt-2 w-full rounded-[8px] border-2 border-[#1a1c1d] bg-[#2a2d2d] p-3 shadow-[inset_0_4px_10px_rgba(255,255,255,0.05),0_10px_20px_rgba(0,0,0,0.5)]">
+    <div className="mt-1 w-full rounded-[8px] border-2 border-[#1a1c1d] bg-[#2a2d2d] pt-1.5 pb-2 px-2.5 shadow-[inset_0_4px_10px_rgba(255,255,255,0.05),0_10px_20px_rgba(0,0,0,0.5)]">
       {/* Top Section (Functions + EXEC/BRT) */}
-      <div className="grid grid-cols-[5fr_1fr] gap-3 mb-3">
+      <div className="grid grid-cols-[5fr_1fr] gap-3 mb-2">
         {/* Row 1 & 2 Functions */}
         <div className="grid grid-cols-5 gap-1.5">
           <AvionicsKey
@@ -160,7 +160,7 @@ export function BoeingKeypadArea({
       <div className="flex gap-4">
         {/* Left Bottom (Menu, N1 LIMIT, Prev/Next, Numbers) */}
         <div className="flex flex-col flex-[3.2]">
-          <div className="grid grid-cols-2 gap-1.5 mb-4">
+          <div className="grid grid-cols-2 gap-1.5 mb-2">
             <AvionicsKey
               label="MENU"
               shape="rect"
@@ -197,7 +197,7 @@ export function BoeingKeypadArea({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-x-2 gap-y-3 px-1 mt-auto">
+          <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 px-1 mt-auto">
             {numKeys.map((row, rIdx) =>
               row.map((key) => (
                 <AvionicsKey
@@ -207,7 +207,7 @@ export function BoeingKeypadArea({
                   variant="boeing"
                   hintLevel={getHint(key)}
                   onPress={() => onPress(key)}
-                  className="aspect-square w-full h-auto !min-h-[40px] text-lg"
+                  className="aspect-square w-full h-auto !min-h-[36px] text-lg"
                 />
               )),
             )}
@@ -216,7 +216,7 @@ export function BoeingKeypadArea({
 
         {/* Right Bottom (Alphas) */}
         <div className="flex flex-col flex-[5] pl-2 border-l border-black/20">
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="grid grid-cols-5 gap-1">
             {alphaKeys.map((row, rIdx) =>
               row.map((key) => (
                 <AvionicsKey
@@ -226,7 +226,7 @@ export function BoeingKeypadArea({
                   variant="boeing"
                   hintLevel={getHint(key)}
                   onPress={() => onPress(key)}
-                  className="aspect-square w-full h-auto !min-h-[40px] text-base"
+                  className="aspect-square w-full h-auto !min-h-[36px] text-base"
                 />
               )),
             )}
@@ -238,7 +238,7 @@ export function BoeingKeypadArea({
                 variant={item.variant}
                 hintLevel={getHint(item.key)}
                 onPress={() => onPress(item.key)}
-                className="aspect-square w-full h-auto !min-h-[40px] text-sm"
+                className="aspect-square w-full h-auto !min-h-[36px] text-sm"
               />
             ))}
           </div>

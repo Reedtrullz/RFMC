@@ -27,12 +27,12 @@ const alphaKeys = [
 
 export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps) {
   return (
-    <div className="mt-1.5 flex w-full gap-1">
+    <div className="mt-1 flex w-full gap-1">
       <div className="flex-[1] flex flex-col gap-1">
         {numKeys.map((row, ri) => (
           <div key={ri} className="flex gap-1">
             {row.map((k) => (
-              <AvionicsKey key={k} label={k} variant="airbus" onPress={() => onPress(k)} className="flex-1 h-11" />
+              <AvionicsKey key={k} label={k} variant="airbus" onPress={() => onPress(k)} className="flex-1 h-[38px]" />
             ))}
           </div>
         ))}
@@ -46,7 +46,7 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
               variant="airbus"
               ariaLabel={k === 'SP' ? 'Space' : undefined}
               onPress={() => onPress(k === 'SP' ? 'SPACE' : k)}
-              className="h-11"
+              className="h-[38px]"
             />
           ))}
         </div>
@@ -56,21 +56,21 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
             variant="airbus"
             ariaLabel="Slash"
             onPress={() => onPress('SLASH')}
-            className="flex-1 h-11"
+            className="flex-1 h-[38px]"
           />
           <AvionicsKey
             label="CLR"
             variant="airbus"
             ariaLabel="Clear"
             onPress={() => onPress('CLR')}
-            className="flex-[2] h-11"
+            className="flex-[2] h-[38px]"
           />
           <AvionicsKey
             label="DEL"
             variant="airbus"
             ariaLabel="Delete"
             onPress={() => onPress('DEL')}
-            className="flex-1 h-11"
+            className="flex-1 h-[38px]"
           />
           <AvionicsKey
             label="EXEC"
@@ -79,7 +79,7 @@ export function AirbusKeypad({ onPress, highlight, execLit }: AirbusKeypadProps)
             lit={execLit}
             active={highlight === 'EXEC'}
             onPress={() => onPress('EXEC')}
-            className="flex-[2] h-11"
+            className="flex-[2] h-[38px]"
           />
         </div>
       </div>
