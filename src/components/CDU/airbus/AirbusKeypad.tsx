@@ -24,7 +24,7 @@ export function AirbusKeypad({ onPress, highlight }: AirbusKeypadProps) {
   const isHighlighted = (k: string) => highlight === k;
 
   return (
-    <div className="mt-2.5 flex w-full gap-3 px-1">
+    <div className="airbus-keypad-panel hardware-wear-panel mt-2.5 flex w-full gap-3 px-1">
       <div className="flex-[3] flex flex-col gap-2">
         <div className="grid grid-cols-3 gap-1.5 w-full max-w-[150px] mx-auto bg-[#1f2326]/30 p-1.5 rounded-lg border border-black/20">
           <div />

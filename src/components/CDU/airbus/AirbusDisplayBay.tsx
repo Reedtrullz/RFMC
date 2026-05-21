@@ -32,7 +32,7 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
   } as React.CSSProperties;
 
   return (
-    <div className="instrument-display-recess">
+    <div className="instrument-display-recess cdu-display-bay">
       <div className="p-1" style={displayStyle}>
         <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
         <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />

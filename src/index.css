@@ -448,3 +448,255 @@
   background: #111;
   box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.9);
 }
+
+/* Dynamic physical wear: driven by Hardware > Wear. */
+.hardware-wear-unit {
+  --hardware-wear: 0.35;
+  --hardware-wear-inverse: 0.65;
+}
+
+.hardware-wear-unit .instrument-shell--boeing-cdu,
+.hardware-wear-unit .instrument-shell--airbus-mcdu {
+  filter: contrast(calc(1 + var(--hardware-wear) * 0.08)) brightness(calc(1 - var(--hardware-wear) * 0.08))
+    saturate(calc(1 - var(--hardware-wear) * 0.12));
+}
+
+.hardware-wear-unit .instrument-shell__wear {
+  opacity: calc(0.14 + var(--hardware-wear) * 0.72);
+  mix-blend-mode: overlay;
+}
+
+.hardware-wear-unit .instrument-shell--boeing-cdu::after,
+.hardware-wear-unit .instrument-shell--airbus-mcdu::after {
+  background-image:
+    radial-gradient(ellipse at 8% 6%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.2)) 0 1px, transparent 6px),
+    radial-gradient(ellipse at 91% 9%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.14)) 0 1px, transparent 5px),
+    radial-gradient(ellipse at 22% 82%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.42)) 0 12px, transparent 34px),
+    radial-gradient(ellipse at 78% 74%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.32)) 0 8px, transparent 28px),
+    repeating-linear-gradient(
+      98deg,
+      transparent 0 16px,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.08)) 17px 18px,
+      transparent 19px 34px
+    ),
+    repeating-linear-gradient(3deg, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.018)) 0 1px, transparent 1px 4px),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    46px 46px,
+    6px 6px,
+    3px 3px,
+    3px 3px;
+  opacity: calc(0.22 + var(--hardware-wear) * 0.72);
+  mix-blend-mode: overlay;
+}
+
+.hardware-wear-unit .panel-label {
+  position: relative;
+  opacity: calc(1 - var(--hardware-wear) * 0.24);
+  text-shadow:
+    0 1px 1px rgba(0, 0, 0, calc(0.6 + var(--hardware-wear) * 0.25)),
+    calc(var(--hardware-wear) * 1px) 0 rgba(255, 255, 255, calc(var(--hardware-wear) * 0.12));
+}
+
+.hardware-wear-unit .panel-label::after {
+  content: '';
+  position: absolute;
+  inset: -0.2em -0.35em;
+  background:
+    linear-gradient(
+      102deg,
+      transparent 0 42%,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.38)) 43% 47%,
+      transparent 48%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 5px,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.12)) 6px,
+      transparent 7px 12px
+    );
+  mix-blend-mode: multiply;
+  opacity: calc(var(--hardware-wear) * 0.72);
+  pointer-events: none;
+}
+
+.hardware-wear-panel,
+.cdu-display-bay {
+  position: relative;
+  overflow: hidden;
+}
+
+.hardware-wear-panel::before,
+.cdu-display-bay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 18% 12%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.18)) 0 1px, transparent 9px),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.1)) 0 1px, transparent 8px),
+    radial-gradient(ellipse at 12% 74%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.46)) 0 10px, transparent 36px),
+    radial-gradient(ellipse at 65% 90%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.34)) 0 8px, transparent 34px),
+    repeating-linear-gradient(
+      104deg,
+      transparent 0 13px,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.09)) 14px,
+      transparent 15px 31px
+    );
+  mix-blend-mode: overlay;
+  opacity: calc(var(--hardware-wear) * 0.9);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hardware-wear-panel::after,
+.cdu-display-bay::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.5)),
+      transparent 10% 88%,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.48))
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.12)),
+      transparent 12% 72%,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.32))
+    );
+  mix-blend-mode: multiply;
+  opacity: calc(var(--hardware-wear) * 0.58);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hardware-wear-panel > *,
+.cdu-display-bay > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hardware-wear-unit .avionics-key {
+  box-shadow:
+    inset 0 3px 5px rgba(0, 0, 0, 0.94),
+    inset 0 -1px 0 rgba(255, 255, 255, calc(0.08 * var(--hardware-wear-inverse))),
+    0 1px 1px rgba(255, 255, 255, calc(0.05 * var(--hardware-wear-inverse))),
+    0 0 0 1px rgba(0, 0, 0, calc(var(--hardware-wear) * 0.56));
+}
+
+.hardware-wear-unit .avionics-key__face {
+  background:
+    radial-gradient(ellipse at 18% 14%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.2)) 0 2px, transparent 10px),
+    radial-gradient(ellipse at 82% 80%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.36)) 0 8px, transparent 24px),
+    radial-gradient(ellipse at 45% 52%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.1)) 0 1px, transparent 7px),
+    linear-gradient(135deg, #4a4d4e 0%, #303334 42%, #151718 100%);
+  border-color: rgba(0, 0, 0, calc(0.88 + var(--hardware-wear) * 0.12));
+  color: rgba(245, 245, 235, calc(0.98 - var(--hardware-wear) * 0.18));
+  filter: contrast(calc(1 + var(--hardware-wear) * 0.2)) brightness(calc(1 - var(--hardware-wear) * 0.13));
+  box-shadow:
+    inset 1px 1.5px 0.5px rgba(255, 255, 255, calc(0.18 * var(--hardware-wear-inverse))),
+    inset -1px -1.5px 1.5px rgba(0, 0, 0, calc(0.7 + var(--hardware-wear) * 0.2)),
+    inset 0 0 calc(18px * var(--hardware-wear)) rgba(0, 0, 0, 0.52),
+    0 2.5px 4px rgba(0, 0, 0, calc(0.66 + var(--hardware-wear) * 0.2));
+}
+
+.hardware-wear-unit .avionics-key--airbus .avionics-key__face {
+  background:
+    radial-gradient(ellipse at 16% 12%, rgba(255, 255, 255, calc(var(--hardware-wear) * 0.18)) 0 2px, transparent 10px),
+    radial-gradient(ellipse at 78% 84%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.38)) 0 8px, transparent 24px),
+    linear-gradient(135deg, #51585f 0%, #30363a 44%, #14171a 100%);
+}
+
+.hardware-wear-unit .avionics-key__face::after {
+  background-image:
+    radial-gradient(circle at 12% 20%, rgba(255, 255, 245, calc(var(--hardware-wear) * 0.34)) 0 1px, transparent 4px),
+    radial-gradient(circle at 74% 26%, rgba(255, 255, 245, calc(var(--hardware-wear) * 0.22)) 0 1px, transparent 5px),
+    radial-gradient(ellipse at 36% 88%, rgba(0, 0, 0, calc(var(--hardware-wear) * 0.42)) 0 5px, transparent 16px),
+    repeating-linear-gradient(
+      108deg,
+      transparent 0 7px,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.12)) 8px,
+      transparent 9px 17px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 5px,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.12)) 6px,
+      transparent 7px 14px
+    ),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
+  opacity: calc(0.22 + var(--hardware-wear) * 0.78);
+  mix-blend-mode: overlay;
+}
+
+.hardware-wear-unit .avionics-key__legend,
+.hardware-wear-unit .avionics-key__sublabel {
+  position: relative;
+  opacity: calc(1 - var(--hardware-wear) * 0.28);
+  text-shadow:
+    0 0 calc(2px * var(--hardware-wear-inverse)) rgba(255, 255, 240, calc(0.28 * var(--hardware-wear-inverse))),
+    calc(var(--hardware-wear) * 1px) calc(var(--hardware-wear) * 0.5px) rgba(0, 0, 0, 0.76);
+}
+
+.hardware-wear-unit .avionics-key__legend::after,
+.hardware-wear-unit .avionics-key__sublabel::after {
+  content: '';
+  position: absolute;
+  inset: -0.12em -0.18em;
+  background:
+    linear-gradient(
+      105deg,
+      transparent 0 34%,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.55)) 35% 39%,
+      transparent 40%
+    ),
+    linear-gradient(
+      12deg,
+      transparent 0 60%,
+      rgba(0, 0, 0, calc(var(--hardware-wear) * 0.38)) 61% 64%,
+      transparent 65%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 8px,
+      rgba(255, 255, 255, calc(var(--hardware-wear) * 0.12)) 9px,
+      transparent 10px 15px
+    );
+  mix-blend-mode: multiply;
+  opacity: calc(var(--hardware-wear) * 0.82);
+  pointer-events: none;
+}
+
+.hardware-wear-unit .bezel-screw {
+  filter: brightness(calc(1 - var(--hardware-wear) * 0.18)) contrast(calc(1 + var(--hardware-wear) * 0.22));
+  box-shadow:
+    inset 0 1px 3px rgba(255, 255, 255, calc(0.25 * var(--hardware-wear-inverse))),
+    inset 0 -1px 2px rgba(0, 0, 0, calc(0.62 + var(--hardware-wear) * 0.25)),
+    0 1px 4px rgba(0, 0, 0, 0.82),
+    0 0 calc(9px * var(--hardware-wear)) rgba(120, 95, 55, calc(var(--hardware-wear) * 0.22));
+}
+
+.hardware-wear-unit [role='slider'] {
+  filter: brightness(calc(1 - var(--hardware-wear) * 0.12)) contrast(calc(1 + var(--hardware-wear) * 0.16));
+}
+
+.hardware-wear-unit--abused .avionics-key:nth-of-type(4n + 1) .avionics-key__face {
+  transform: translateY(calc(var(--hardware-wear) * 0.45px)) rotate(-0.18deg);
+}
+
+.hardware-wear-unit--abused .avionics-key:nth-of-type(5n + 2) .avionics-key__face {
+  transform: translateY(calc(var(--hardware-wear) * -0.25px)) rotate(0.16deg);
+}
+
+.hardware-wear-unit--abused .avionics-key:nth-of-type(7n + 3) .avionics-key__legend {
+  opacity: calc(0.55 + var(--hardware-wear-inverse) * 0.18);
+}

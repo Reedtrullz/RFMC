@@ -44,7 +44,7 @@ export function BoeingKeypadArea({
   const getHint = (id: string) => (isHighlighted(id) ? hintLevel : 0);
 
   return (
-    <div className="mt-1 w-full rounded-[8px] border-2 border-[#1a1c1d] bg-[#2a2d2d] pt-1.5 pb-2 px-2.5 shadow-[inset_0_4px_10px_rgba(255,255,255,0.05),0_10px_20px_rgba(0,0,0,0.5)]">
+    <div className="boeing-keypad-panel hardware-wear-panel mt-1 w-full rounded-[8px] border-2 border-[#1a1c1d] bg-[#2a2d2d] pt-1.5 pb-2 px-2.5 shadow-[inset_0_4px_10px_rgba(255,255,255,0.05),0_10px_20px_rgba(0,0,0,0.5)]">
       {/* Top Section (Functions + EXEC/BRT) */}
       <div className="grid grid-cols-[5fr_1fr] gap-3 mb-2">
         {/* Row 1 & 2 Functions */}

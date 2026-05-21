@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { type CSSProperties, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useKioskMode } from '../../../hooks/useKioskMode';
 import { useWebSocket } from '../../../hooks/useWebSocket';
@@ -7,6 +7,7 @@ import { useAircraftStore } from '../../../store/aircraftStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useCockpitLayoutStore } from '../../../store/cockpitLayoutStore';
 import { useAutopilotStore } from '../../../store/autopilotStore';
+import { useDisplaySettings } from '../../../store/displaySettingsStore';
 import { buildTrainingProgress, type CDUKey } from '@shared';
 import { AirbusMCDUShell } from './AirbusMCDUShell';
 import { AirbusDisplayBay } from './AirbusDisplayBay';
@@ -26,6 +27,7 @@ export function AirbusMCDU() {
   const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const focusedPanel = useCockpitLayoutStore((s) => s.focusedPanel);
+  const wearIntensity = useDisplaySettings((s) => s.wearIntensity);
 
   const currentPage = useFMCStore((s) => s.currentPage);
   const aircraft = useFMCStore((s) => s.aircraft);
@@ -85,10 +87,18 @@ export function AirbusMCDU() {
 
   // Only show realism controls when not in focused CDU mode
   const showRealismControls = focusedPanel !== 'cdu';
+  const wearLevel = Math.max(0, Math.min(100, wearIntensity)) / 100;
+  const hardwareWearClass =
+    wearIntensity >= 70 ? 'hardware-wear-unit--abused' : wearIntensity >= 35 ? 'hardware-wear-unit--used' : '';
+  const hardwareWearStyle = {
+    '--hardware-wear': wearLevel.toFixed(2),
+    '--hardware-wear-inverse': (1 - wearLevel).toFixed(2),
+  } as CSSProperties;
 
   return (
     <div
-      className={`flex h-full w-full flex-col items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}
+      className={`hardware-wear-unit ${hardwareWearClass} flex h-full w-full flex-col items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}
+      style={hardwareWearStyle}
     >
       <AirbusMCDUShell annunciators={annunciators}>
         <AirbusDisplayBay

@@ -49,7 +49,7 @@ export function BoeingDisplayBay({
 
   return (
     <div
-      className="w-full rounded-[5px] border border-black/70 p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] mix-blend-normal relative"
+      className="cdu-display-bay w-full rounded-[5px] border border-black/70 p-2 shadow-[inset_0_0_18px_rgba(0,0,0,0.65)] mix-blend-normal relative"
       style={displayBayStyle}
     >
       <BoeingLSKColumn
