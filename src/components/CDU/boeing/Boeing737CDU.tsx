@@ -28,6 +28,7 @@ export function Boeing737CDU() {
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
   const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
+  const focusedPanel = useCockpitLayoutStore((s) => s.focusedPanel);
 
   const currentPage = useFMCStore((s) => s.currentPage);
   const aircraft = useFMCStore((s) => s.aircraft);
@@ -125,30 +126,34 @@ export function Boeing737CDU() {
   const keypadHighlight =
     tutorialHighlight || (tutorialActive && layoutMode !== 'free-practice' ? progress.expectedKey : null);
 
+  // Only show realism controls when not in focused CDU mode
+  const showRealismControls = focusedPanel !== 'cdu';
+
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <div className="flex flex-col items-center gap-3">
-        <BoeingCDUShell annunciators={annunciators}>
-          <BoeingDisplayBay
-            brightness={brightness}
-            getLSKLabel={getLSKLabel}
-            isHighlighted={isHighlighted}
-            hintLevel={effectiveHintLevel}
-            onPressLSK={onPressLSK}
-          />
-          <BoeingKeypadArea
-            onPress={onPressKey}
-            isHighlighted={isHighlighted}
-            hintLevel={effectiveHintLevel}
-            execLit={execLit}
-            brightness={brightness}
-            onBrightnessChange={setBrightness}
-          />
-        </BoeingCDUShell>
+      <BoeingCDUShell annunciators={annunciators}>
+        <BoeingDisplayBay
+          brightness={brightness}
+          getLSKLabel={getLSKLabel}
+          isHighlighted={isHighlighted}
+          hintLevel={effectiveHintLevel}
+          onPressLSK={onPressLSK}
+        />
+        <BoeingKeypadArea
+          onPress={onPressKey}
+          isHighlighted={isHighlighted}
+          hintLevel={effectiveHintLevel}
+          execLit={execLit}
+          brightness={brightness}
+          onBrightnessChange={setBrightness}
+        />
+      </BoeingCDUShell>
 
-        {/* Hardware Realism Controls — Phase 1 */}
-        <HardwareRealismControls className="w-full max-w-[620px]" />
-      </div>
+      {showRealismControls && (
+        <div className="mt-3 w-full max-w-[620px]">
+          <HardwareRealismControls />
+        </div>
+      )}
     </div>
   );
 }

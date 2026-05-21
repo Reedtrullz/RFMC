@@ -25,6 +25,7 @@ export function AirbusMCDU() {
   const connectionStatus = useConnectionStore((s) => s.connectionStatus);
   const tutorialHighlight = useFMCStore((s) => s.tutorialHighlight);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
+  const focusedPanel = useCockpitLayoutStore((s) => s.focusedPanel);
 
   const currentPage = useFMCStore((s) => s.currentPage);
   const aircraft = useFMCStore((s) => s.aircraft);
@@ -82,23 +83,27 @@ export function AirbusMCDU() {
     [tutorialHighlight],
   );
 
+  // Only show realism controls when not in focused CDU mode
+  const showRealismControls = focusedPanel !== 'cdu';
+
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <div className="flex flex-col items-center gap-3">
-        <AirbusMCDUShell annunciators={annunciators}>
-          <AirbusDisplayBay
-            brightness={brightness}
-            getLSKLabel={() => undefined}
-            isHighlighted={isHighlighted}
-            onPressLSK={onPressLSK}
-          />
-          <AirbusFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
-          <AirbusKeypad onPress={onPressKey} highlight={null} execLit={execLit} />
-        </AirbusMCDUShell>
+      <AirbusMCDUShell annunciators={annunciators}>
+        <AirbusDisplayBay
+          brightness={brightness}
+          getLSKLabel={() => undefined}
+          isHighlighted={isHighlighted}
+          onPressLSK={onPressLSK}
+        />
+        <AirbusFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
+        <AirbusKeypad onPress={onPressKey} highlight={null} execLit={execLit} />
+      </AirbusMCDUShell>
 
-        {/* Hardware Realism Controls — Phase 1 (Airbus parity) */}
-        <HardwareRealismControls className="w-full max-w-[620px]" />
-      </div>
+      {showRealismControls && (
+        <div className="mt-3 w-full max-w-[620px]">
+          <HardwareRealismControls />
+        </div>
+      )}
     </div>
   );
 }
