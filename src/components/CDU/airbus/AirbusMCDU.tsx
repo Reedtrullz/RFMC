@@ -74,6 +74,14 @@ export function AirbusMCDU() {
     [pressLSK, connectionMode, connectionStatus, send],
   );
 
+  const isHighlighted = useCallback(
+    (id: string) => {
+      if (tutorialHighlight === id) return true;
+      return false;
+    },
+    [tutorialHighlight],
+  );
+
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
       <div className="flex flex-col items-center gap-3">
@@ -81,11 +89,11 @@ export function AirbusMCDU() {
           <AirbusDisplayBay
             brightness={brightness}
             getLSKLabel={() => undefined}
-            isHighlighted={() => false}
+            isHighlighted={isHighlighted}
             onPressLSK={onPressLSK}
           />
-          <AirbusFunctionKeyPanel />
-          <AirbusKeypad onPress={onPressKey} />
+          <AirbusFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
+          <AirbusKeypad onPress={onPressKey} highlight={null} execLit={execLit} />
         </AirbusMCDUShell>
 
         {/* Hardware Realism Controls — Phase 1 (Airbus parity) */}
