@@ -1,3 +1,302 @@
+@import './styles/tokens.css';
+@import './styles/reset.css';
+@import './styles/cockpit-layout.css';
+@import './styles/instruments.css';
+@import './styles/display.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Overlay Components (e.g. Help Cards, Menus) */
+.mode-help-card,
+.cockpit-first-run,
+.cockpit-empty-state {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)), rgba(3, 6, 7, 0.78);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+}
+
+.mode-help-card {
+  position: absolute;
+  left: clamp(8px, 1vw, 18px);
+  top: clamp(8px, 1vw, 18px);
+  z-index: 22;
+  width: min(292px, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow: auto;
+  display: grid;
+  gap: 0.85rem;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.mode-help-card h2 {
+  margin: 0.15rem 0 0.35rem;
+  color: #00d7ff;
+  font-family: var(--font-avionics);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.mode-help-card__progress {
+  display: grid;
+  gap: 0.35rem;
+  border: 1px solid rgba(0, 215, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 18, 24, 0.45);
+  padding: 0.65rem;
+}
+
+.mode-help-card__list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mode-help-card__list > div,
+.mode-help-card__stats > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.22rem;
+}
+
+.mode-help-card__list > div {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.5rem;
+}
+
+.mode-help-card__stats {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mode-help-card__stats > div {
+  align-items: start;
+  border: 1px solid rgba(0, 215, 255, 0.14);
+  border-radius: 7px;
+  background: rgba(0, 18, 24, 0.55);
+  padding: 0.38rem 0.48rem;
+}
+
+.mode-help-card__progress span,
+.mode-help-card__list span,
+.mode-help-card__stats span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.mode-help-card__progress strong,
+.mode-help-card__list strong,
+.mode-help-card__stats strong {
+  color: #f7fbff;
+  font-size: 12px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mode-help-card__stats strong {
+  color: #ffffff;
+  font-size: 11px;
+  font-family: var(--font-avionics);
+  white-space: normal;
+}
+
+.mode-help-card__stats span::after {
+  content: ':';
+}
+
+.mode-help-card__progress p {
+  margin: 0;
+  color: rgba(226, 244, 255, 0.76);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.mode-help-card__progress em {
+  color: #ffb347;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1rem;
+  background: #000;
+  padding: clamp(12px, 2vw, 28px);
+}
+
+.instrument-header {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.64);
+  padding: 0.25rem;
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  backdrop-filter: blur(8px);
+}
+
+.cockpit-instrument:hover .instrument-header,
+.cockpit-instrument:focus-within .instrument-header {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hint animations */
+.avionics-key--highlighted {
+  outline: 2px solid var(--boeing-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 15px rgba(0, 215, 255, 0.5);
+  animation: cockpit-hint-pulse 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.avionics-key--airbus.avionics-key--highlighted {
+  outline: 2px solid var(--airbus-amber);
+  box-shadow: 0 0 15px rgba(255, 176, 0, 0.65);
+}
+
+.cockpit-first-run {
+  position: absolute;
+  left: clamp(8px, 1vw, 18px);
+  bottom: clamp(8px, 1vw, 18px);
+  z-index: 30;
+  width: min(520px, calc(100% - 2rem));
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.cockpit-first-run strong {
+  display: block;
+}
+
+.cockpit-first-run span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cockpit-first-run button {
+  flex: 0 0 auto;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.35rem 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-tray {
+  position: absolute;
+  right: clamp(8px, 1vw, 18px);
+  bottom: clamp(8px, 1vw, 18px);
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  pointer-events: auto;
+}
+
+.panel-tray button {
+  color: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(3, 6, 7, 0.72);
+  padding: 0.35rem 0.55rem;
+  backdrop-filter: blur(8px);
+}
+
+.panel-tray button:hover {
+  color: #00d7ff;
+  border-color: rgba(0, 215, 255, 0.35);
+}
+
+.cockpit-layout-warning {
+  position: absolute;
+  left: clamp(12px, 1.2vw, 22px);
+  top: clamp(12px, 1.2vw, 22px);
+  z-index: 40;
+  width: min(340px, calc(100% - 2rem));
+  pointer-events: auto;
+}
+
+.cockpit-layout-warning > * {
+  height: auto !important;
+  min-height: 0;
+}
+
+@keyframes cockpit-hint-pulse {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.7;
+    filter: brightness(1.4);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+.cockpit-high-contrast {
+  color: #ffffff;
+  --boeing-green: #7cff7c;
+  --boeing-cyan: #58eaff;
+  --cdu-amber: #ffd166;
+  --screen-brightness: 115%;
+  --scanline-opacity: 0.03;
+  --reflection-opacity: 0.16;
+}
+
+.cockpit-high-contrast .mode-help-card,
+.cockpit-high-contrast .cockpit-first-run,
+.cockpit-high-contrast .cockpit-empty-state,
+.cockpit-high-contrast .panel-tray button,
+.cockpit-high-contrast .instrument-header {
+  border-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(0, 0, 0, 0.88);
+}
+
+.cockpit-high-contrast .mode-help-card__progress,
+.cockpit-high-contrast .mode-help-card__list > div,
+.cockpit-high-contrast .mode-help-card__stats > div {
+  border-color: rgba(88, 234, 255, 0.44);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.cockpit-high-contrast .mode-help-card__progress span,
+.cockpit-high-contrast .mode-help-card__list span,
+.cockpit-high-contrast .mode-help-card__stats span {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.cockpit-high-contrast .mode-help-card__progress p,
+.cockpit-high-contrast .cockpit-first-run span {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .cockpit-high-contrast .avionics-key:focus-visible,
 .cockpit-high-contrast .cdu-button:focus-visible,
 .cockpit-high-contrast button:focus-visible {
@@ -115,7 +414,7 @@
     rgba(0, 0, 0, 0.35) 75%,
     rgba(0, 0, 0, 0.55) 100%
   );
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -133,7 +432,7 @@
   opacity: 0.6;
   mix-blend-mode: overlay;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
 }
 
 /* Enhanced screw realism */

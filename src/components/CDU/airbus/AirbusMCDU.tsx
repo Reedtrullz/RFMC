@@ -87,7 +87,9 @@ export function AirbusMCDU() {
   const showRealismControls = focusedPanel !== 'cdu';
 
   return (
-    <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
+    <div
+      className={`flex h-full w-full flex-col items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}
+    >
       <AirbusMCDUShell annunciators={annunciators}>
         <AirbusDisplayBay
           brightness={brightness}
