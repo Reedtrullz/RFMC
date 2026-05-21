@@ -27,11 +27,11 @@
 .cdu-bezel {
   position: relative;
   background: linear-gradient(145deg, #1a1a1a 0%, #111 50%, #0a0a0a 100%);
-  box-shadow: 
-    inset 0 0 25px rgba(0,0,0,0.85),
-    inset 0 2px 4px rgba(255,255,255,0.06),
-    0 8px 25px rgba(0,0,0,0.9),
-    0 20px 40px rgba(0,0,0,0.6);
+  box-shadow:
+    inset 0 0 25px rgba(0, 0, 0, 0.85),
+    inset 0 2px 4px rgba(255, 255, 255, 0.06),
+    0 8px 25px rgba(0, 0, 0, 0.9),
+    0 20px 40px rgba(0, 0, 0, 0.6);
   border: 1px solid #222;
   border-radius: 8px;
 }
@@ -44,10 +44,10 @@
   border-radius: 8px;
   background: linear-gradient(
     to bottom right,
-    rgba(255,255,255,0.07) 0%,
+    rgba(255, 255, 255, 0.07) 0%,
     transparent 30%,
     transparent 70%,
-    rgba(0,0,0,0.25) 100%
+    rgba(0, 0, 0, 0.25) 100%
   );
   pointer-events: none;
 }
@@ -64,9 +64,9 @@
   height: 11px;
   background: #222;
   border-radius: 50%;
-  box-shadow: 
-    inset 0 1px 2px rgba(255,255,255,0.15),
-    0 1px 3px rgba(0,0,0,0.7);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.7);
   border: 1px solid #111;
   z-index: 20;
   pointer-events: none;
@@ -90,9 +90,8 @@
 /* Brushed metal + deeper multi-layer lighting for high-fidelity hardware feel */
 .instrument-shell--boeing-cdu,
 .instrument-shell--airbus-mcdu {
-  background: 
-    linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 35%, #151515 70%, #0f0f0f 100%);
-  box-shadow: 
+  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 35%, #151515 70%, #0f0f0f 100%);
+  box-shadow:
     inset 0 0 40px rgba(0, 0, 0, 0.9),
     inset 0 3px 8px rgba(255, 255, 255, 0.08),
     inset 0 -4px 10px rgba(0, 0, 0, 0.7),
@@ -110,11 +109,11 @@
   border-radius: 10px;
   background: linear-gradient(
     145deg,
-    rgba(255,255,255,0.12) 0%,
-    rgba(255,255,255,0.03) 20%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
     transparent 45%,
-    rgba(0,0,0,0.35) 75%,
-    rgba(0,0,0,0.55) 100%
+    rgba(0, 0, 0, 0.35) 75%,
+    rgba(0, 0, 0, 0.55) 100%
   );
   z-index: 1;
   pointer-events: none;
@@ -127,9 +126,9 @@
   position: absolute;
   inset: 0;
   border-radius: 8px;
-  background-image: 
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 3px 3px;
   opacity: 0.6;
   mix-blend-mode: overlay;
@@ -139,14 +138,14 @@
 
 /* Enhanced screw realism */
 .bezel-screw {
-  box-shadow: 
-    inset 0 1px 3px rgba(255,255,255,0.25),
-    inset 0 -1px 2px rgba(0,0,0,0.6),
-    0 1px 4px rgba(0,0,0,0.8);
+  box-shadow:
+    inset 0 1px 3px rgba(255, 255, 255, 0.25),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6),
+    0 1px 4px rgba(0, 0, 0, 0.8);
   border: 1px solid #0a0a0a;
 }
 
 .bezel-screw__slot {
   background: #111;
-  box-shadow: inset 0 0 2px rgba(0,0,0,0.9);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.9);
 }

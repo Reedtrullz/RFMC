@@ -27,13 +27,7 @@ interface CDUDisplayProps {
 
 export const CDUDisplay: React.FC<CDUDisplayProps> = ({ data, width = 480, height = 420, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { 
-    displayStyle, 
-    crtIntensity, 
-    wearIntensity,
-    bloomIntensity,
-    scanlineIntensity 
-  } = useDisplaySettings();
+  const { displayStyle, crtIntensity, wearIntensity, bloomIntensity, scanlineIntensity } = useDisplaySettings();
 
   // ── Helper: invoke the active renderer on the current canvas ──────────────
   const doRender = React.useCallback(() => {

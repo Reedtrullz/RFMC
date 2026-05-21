@@ -10,9 +10,9 @@ import type { DisplayStyle } from '../renderers/rendererRegistry';
 
 export interface DisplaySettings {
   displayStyle: DisplayStyle;
-  crtIntensity: number;      // Overall CRT (persistence, vignette, base effects)
-  wearIntensity: number;     // Glass haze / physical wear
-  bloomIntensity: number;    // Extra text glow / bloom strength
+  crtIntensity: number; // Overall CRT (persistence, vignette, base effects)
+  wearIntensity: number; // Glass haze / physical wear
+  bloomIntensity: number; // Extra text glow / bloom strength
   scanlineIntensity: number; // Independent scanline density/strength
 
   setDisplayStyle: (style: DisplayStyle) => void;
@@ -38,12 +38,13 @@ export const useDisplaySettings = create<DisplaySettings>((set) => ({
   setBloomIntensity: (value) => set({ bloomIntensity: Math.max(0, Math.min(100, value)) }),
   setScanlineIntensity: (value) => set({ scanlineIntensity: Math.max(0, Math.min(100, value)) }),
 
-  resetRealism: () => set({
-    crtIntensity: 65,
-    wearIntensity: 35,
-    bloomIntensity: 40,
-    scanlineIntensity: 25,
-  }),
+  resetRealism: () =>
+    set({
+      crtIntensity: 65,
+      wearIntensity: 35,
+      bloomIntensity: 40,
+      scanlineIntensity: 25,
+    }),
 }));
 
 // Re-export the type so consumers can import it from the store file directly.

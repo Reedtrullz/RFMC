@@ -34,18 +34,8 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
   return (
     <div className="instrument-display-recess">
       <div className="p-1" style={displayStyle}>
-        <AirbusLSKColumn
-          side="L"
-          getLabel={getLSKLabel}
-          isHighlighted={isHighlighted}
-          onPress={onPressLSK}
-        />
-        <AirbusLSKColumn
-          side="R"
-          getLabel={getLSKLabel}
-          isHighlighted={isHighlighted}
-          onPress={onPressLSK}
-        />
+        <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
+        <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
 
         <div style={{ gridRow: '1 / 15', gridColumn: 2 }}>
           <ScreenGlass brightness={brightness} className="bg-cdu-screen w-full h-full flex flex-col">

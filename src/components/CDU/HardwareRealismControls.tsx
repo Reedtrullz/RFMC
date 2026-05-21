@@ -51,30 +51,10 @@ export const HardwareRealismControls: React.FC<{ className?: string }> = ({ clas
         HARDWARE
       </div>
       <div className="flex flex-1 items-end justify-around gap-3">
-        <RealismSlider
-          label="CRT"
-          value={crtIntensity}
-          onChange={setCrtIntensity}
-          icon="◉"
-        />
-        <RealismSlider
-          label="WEAR"
-          value={wearIntensity}
-          onChange={setWearIntensity}
-          icon="◌"
-        />
-        <RealismSlider
-          label="BLOOM"
-          value={bloomIntensity}
-          onChange={setBloomIntensity}
-          icon="✧"
-        />
-        <RealismSlider
-          label="SCAN"
-          value={scanlineIntensity}
-          onChange={setScanlineIntensity}
-          icon="≡"
-        />
+        <RealismSlider label="CRT" value={crtIntensity} onChange={setCrtIntensity} icon="◉" />
+        <RealismSlider label="WEAR" value={wearIntensity} onChange={setWearIntensity} icon="◌" />
+        <RealismSlider label="BLOOM" value={bloomIntensity} onChange={setBloomIntensity} icon="✧" />
+        <RealismSlider label="SCAN" value={scanlineIntensity} onChange={setScanlineIntensity} icon="≡" />
       </div>
       <button
         onClick={resetRealism}

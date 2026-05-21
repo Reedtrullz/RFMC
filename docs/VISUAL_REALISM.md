@@ -10,12 +10,12 @@ This document tracks visual realism measurements, design tokens, rendering effec
 
 A new always-visible avionics-styled control strip (`HardwareRealismControls`) gives users direct, granular control over the CDU display’s hardware character:
 
-| Slider | Effect                              | Range | Default |
-|--------|-------------------------------------|-------|---------|
+| Slider | Effect                                               | Range | Default |
+| ------ | ---------------------------------------------------- | ----- | ------- |
 | CRT    | Overall intensity (persistence, vignette, base glow) | 0–100 | 65      |
-| WEAR   | Glass haze + physical wear          | 0–100 | 35      |
-| BLOOM  | Extra text glow / bloom strength    | 0–100 | 40      |
-| SCAN   | Independent scanline density        | 0–100 | 25      |
+| WEAR   | Glass haze + physical wear                           | 0–100 | 35      |
+| BLOOM  | Extra text glow / bloom strength                     | 0–100 | 40      |
+| SCAN   | Independent scanline density                         | 0–100 | 25      |
 
 ### Phase 2 Dynamic Effects
 
