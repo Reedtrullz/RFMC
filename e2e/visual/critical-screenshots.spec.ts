@@ -9,6 +9,7 @@ test.describe('Critical Visual Regression', () => {
     await expect(page.getByTestId('boeing-cdu')).toBeVisible();
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-cdu-default.png', {
       maxDiffPixelRatio: 0.02,
+      mask: page.locator('[data-testid="hardware-realism-controls"]'),
     });
   });
 
@@ -20,6 +21,7 @@ test.describe('Critical Visual Regression', () => {
     await expect(page.getByTestId('airbus-mcdu')).toBeVisible();
     await expect(page.getByTestId('airbus-mcdu')).toHaveScreenshot('airbus-mcdu-default.png', {
       maxDiffPixelRatio: 0.02,
+      mask: page.locator('[data-testid="hardware-realism-controls"]'),
     });
   });
 
@@ -28,6 +30,7 @@ test.describe('Critical Visual Regression', () => {
     await expect(page.getByTestId('boeing-cdu')).toBeVisible();
     await expect(page.getByTestId('boeing-cdu')).toHaveScreenshot('boeing-ident-critical.png', {
       maxDiffPixelRatio: 0.02,
+      mask: page.locator('[data-testid="hardware-realism-controls"]'),
     });
   });
 });

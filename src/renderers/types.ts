@@ -47,6 +47,16 @@ export interface RenderOptions {
    * Ignored by NgLcdRenderer.
    */
   wearIntensity?: number;
+  /**
+   * Extra bloom / glow intensity for text [0–100].
+   * Allows independent control of text halo strength.
+   */
+  bloomIntensity?: number;
+  /**
+   * Independent scanline strength [0–100].
+   * Allows fine control over scanline density and opacity.
+   */
+  scanlineIntensity?: number;
 }
 
 /**

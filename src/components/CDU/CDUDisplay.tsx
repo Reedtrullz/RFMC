@@ -10,24 +10,10 @@ import type { RendererDisplayData, DisplaySegment } from '../../renderers/types'
 // <canvas>-based CDU display component. Delegates all drawing to the active
 // renderer resolved from the display settings Zustand store.
 //
-// DPR strategy:
-//   1. Backing store = CSS-px × devicePixelRatio (sharp HiDPI pixels).
-//   2. ctx.setTransform(dpr, …) maps CSS-logical coordinates → backing store.
-//   3. CSS width/height keep the element in correct layout space.
-//   4. BaseRenderer helpers divide canvas.width / canvas.height by dpr and
-//      return CSS-logical px — no double-scaling on Retina / iPad.
-//
-// Blink strategy:
-//   Blinking segments use Math.floor(Date.now() / 500) % 2 at draw time.
-//   The main render effect fires only on data / settings changes, so without
-//   a periodic trigger blink state would freeze on static data.
-//   A separate 250 ms interval effect runs only when grid or scratchpad
-//   contains at least one blink:true segment, re-invoking render() each tick.
-//   It is torn down on cleanup so there is no timer leak.
-//
-// Accessibility:
-//   A visually-hidden <div> sibling renders plain text via gridToPlainText()
-//   so screen readers receive content equivalent to the existing grid renderer.
+// Updated for Visual Realism Pass — Phase 1:
+//   • Now forwards bloomIntensity and scanlineIntensity to renderer
+//   • HardwareRealismControls should be rendered in the parent layout
+//     (CockpitMode or CDU wrapper) below or beside this component.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface CDUDisplayProps {
@@ -41,7 +27,13 @@ interface CDUDisplayProps {
 
 export const CDUDisplay: React.FC<CDUDisplayProps> = ({ data, width = 480, height = 420, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { displayStyle, crtIntensity, wearIntensity } = useDisplaySettings();
+  const { 
+    displayStyle, 
+    crtIntensity, 
+    wearIntensity,
+    bloomIntensity,
+    scanlineIntensity 
+  } = useDisplaySettings();
 
   // ── Helper: invoke the active renderer on the current canvas ──────────────
   const doRender = React.useCallback(() => {
@@ -49,9 +41,11 @@ export const CDUDisplay: React.FC<CDUDisplayProps> = ({ data, width = 480, heigh
     if (!canvas) return;
     getRenderer(displayStyle).render(data, canvas, {
       intensity: crtIntensity,
-      wearIntensity: wearIntensity,
+      wearIntensity,
+      bloomIntensity,
+      scanlineIntensity,
     });
-  }, [data, displayStyle, crtIntensity, wearIntensity]);
+  }, [data, displayStyle, crtIntensity, wearIntensity, bloomIntensity, scanlineIntensity]);
 
   // ── Effect 1: resize backing store + initial render ───────────────────────
   useEffect(() => {

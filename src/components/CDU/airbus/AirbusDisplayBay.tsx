@@ -2,6 +2,7 @@ import { Display } from '../Display';
 import { Scratchpad } from '../Scratchpad';
 import { ScreenGlass } from '../../instruments/common/ScreenGlass';
 import { AirbusLSKColumn } from './AirbusLSKColumn';
+import { useDisplaySettings } from '../../../store/displaySettingsStore';
 
 interface AirbusDisplayBayProps {
   brightness: number;
@@ -19,43 +20,61 @@ export function AirbusDisplayBay({ brightness, getLSKLabel, isHighlighted, onPre
   const rowHeight = `${tokens.screen.rowHeightMm * mmToPx}px`;
   const scratchpadHeight = `${tokens.screen.scratchpadHeightMm * mmToPx}px`;
   const lskWidth = `${tokens.lsk.insetMm * mmToPx * 2.2}px`;
-  const totalWidth = `${tokens.screen.widthMm * mmToPx + tokens.lsk.insetMm * mmToPx * 4.4}px`;
+
+  const { wearIntensity } = useDisplaySettings();
+  const wearT = wearIntensity / 100;
+
+  const displayStyle = {
+    display: 'grid',
+    gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
+    background: 'linear-gradient(145deg, #151818, #080909)',
+    filter: wearT > 0.1 ? `contrast(${1 + wearT * 0.12})` : undefined,
+  } as React.CSSProperties;
 
   return (
     <div className="instrument-display-recess">
-      <div
-        className="p-1"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `${lskWidth} minmax(0, 1fr) ${lskWidth}`,
-          gridTemplateRows: `repeat(${tokens.screen.rows - 1}, ${rowHeight}) ${scratchpadHeight}`,
-          columnGap: '0.25rem',
-          width: totalWidth,
-        }}
-      >
-        <AirbusLSKColumn side="L" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
-        <AirbusLSKColumn side="R" getLabel={getLSKLabel} isHighlighted={isHighlighted} onPress={onPressLSK} />
+      <div className="p-1" style={displayStyle}>
+        <AirbusLSKColumn
+          side="L"
+          getLabel={getLSKLabel}
+          isHighlighted={isHighlighted}
+          onPress={onPressLSK}
+        />
+        <AirbusLSKColumn
+          side="R"
+          getLabel={getLSKLabel}
+          isHighlighted={isHighlighted}
+          onPress={onPressLSK}
+        />
 
-        <div style={{ gridRow: '1 / 15', gridColumn: 2, width: '100%', height: '100%' }}>
-          <ScreenGlass
-            brightness={brightness}
-            variant="airbus"
-            className="bg-cdu-screen w-full h-full border border-cdu-bezel-light/30 rounded-sm flex flex-col"
-          >
-            <div className="w-full" style={{ height: `calc(${tokens.screen.rows - 1} * ${rowHeight})` }}>
-              <Display variant="airbus" />
+        <div style={{ gridRow: '1 / 15', gridColumn: 2 }}>
+          <ScreenGlass brightness={brightness} className="bg-cdu-screen w-full h-full flex flex-col">
+            <div className="flex-1">
+              <Display />
             </div>
-            <div
-              className="w-full"
-              style={{
-                height: scratchpadHeight,
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <Scratchpad variant="airbus" />
+            <div className="h-[42px] flex items-center px-1">
+              <Scratchpad />
             </div>
           </ScreenGlass>
+
+          {/* Phase 2: Dynamic wear + micro-scratches for Airbus */}
+          {wearT > 0.05 && (
+            <div
+              className="absolute inset-0 pointer-events-none rounded mix-blend-multiply"
+              style={{
+                background: `
+                  linear-gradient(180deg, rgba(0,30,0,${0.04 * wearT}), transparent 40%, rgba(0,30,0,${0.07 * wearT}) 100%),
+                  repeating-linear-gradient(
+                    38deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(0, 40, 0, ${0.05 * wearT}) 4px,
+                    rgba(0, 40, 0, ${0.05 * wearT}) 5px
+                  )
+                `,
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

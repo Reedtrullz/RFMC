@@ -1,5 +1,33 @@
 # Changelog
 
+## [Unreleased] - Visual Realism Pass
+
+### Visual Realism Controls (Phase 1 + Phase 2)
+
+- Added **HardwareRealismControls** — always-visible avionics-styled panel with four independent sliders:
+  - **CRT** — Overall intensity (persistence, vignette, base effects)
+  - **WEAR** — Glass haze and physical wear simulation
+  - **BLOOM** — Extra text glow / bloom strength
+  - **SCAN** — Independent scanline density and opacity
+
+- Extended `displaySettingsStore` with `bloomIntensity`, `scanlineIntensity`, and `resetRealism()`.
+
+- Enhanced `ClassicCrtRenderer` to respect granular bloom and scanline controls while preserving existing multi-pass glow and persistence logic.
+
+- Implemented **Phase 2 dynamic effects**:
+  - Live micro-scratches that scale with WEAR
+  - Dynamic light reflection / catchlight that softens with wear
+  - Contrast filter on the display bay
+
+- Added advanced bezel materials (brushed metal texture, multi-layer machined lighting, improved screws).
+
+- Full parity on both Boeing 737 CDU and Airbus A320 MCDU.
+
+### Testing & Quality
+
+- Added masking strategy for visual regression tests on the new realism controls.
+- Created unit tests for the extended display settings store.
+
 ## [1.0.0] - 2026-05-12
 
 ### Visual & Fidelity
@@ -28,16 +56,3 @@
 - Implemented a CI-safe mock SimConnect adapter for testing.
 - Added SimBrief XML/JSON import support with 20 versioned route fixtures.
 - Migrated to `vite-plugin-pwa` for robust offline iPad cockpit mode.
-- Added iOS-specific safe-area support and native-feel touch controls.
-- Established a GitHub Actions CI pipeline for automated quality gates (tests, types, build, audit).
-
-### Quality & Testing
-
-- Hardened E2E suite to 15 passing tests with visual regression baselines.
-- Achieved 112 unit tests covering core FMC logic and edge cases.
-- Resolved all type-parity issues between frontend store and backend authoritative engine.
-- Established the VirtualCDU Audit Policy and consolidated the roadmap/metrics/scope artifacts.
-
-## [0.1.0] - 2026-05-01
-
-- Initial release with basic Boeing 737 CDU functionality and SimConnect bridge.

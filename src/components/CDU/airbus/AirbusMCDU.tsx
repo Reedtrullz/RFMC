@@ -13,6 +13,7 @@ import { AirbusDisplayBay } from './AirbusDisplayBay';
 import { AirbusFunctionKeyPanel } from './AirbusFunctionKeyPanel';
 import { AirbusKeypad } from './AirbusKeypad';
 import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
+import { HardwareRealismControls } from '../HardwareRealismControls';
 
 export function AirbusMCDU() {
   const isKiosk = useKioskMode();
@@ -48,6 +49,7 @@ export function AirbusMCDU() {
       autopilotState,
     });
   }, [layoutMode, currentPage, flightPhase, tutorialActive, autopilotState]);
+
   const { send } = useWebSocket();
 
   const onPressKey = useCallback(
@@ -72,48 +74,23 @@ export function AirbusMCDU() {
     [pressLSK, connectionMode, connectionStatus, send],
   );
 
-  const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
-  const getLSKLabel = (side: 'L' | 'R', index: number): string | undefined => {
-    const lskId = `${side}${index}`;
-    const action = displayData.lskActions[lskId];
-    if (!action) return undefined;
-    if (action === 'next_page' || action === 'fpln_next') return '▼';
-    if (action === 'prev_page' || action === 'fpln_prev') return '▲';
-    if (side === 'L' && action) return '◄';
-    if (side === 'R' && action) return '►';
-    return undefined;
-  };
-
-  const isHighlighted = useCallback(
-    (id: string) => {
-      if (tutorialHighlight === id) return true;
-      if (tutorialActive && layoutMode !== 'free-practice') {
-        if (progress.expectedLSK === id) return true;
-        if (progress.expectedKey === id) return true;
-        if (id === 'INIT_A' && progress.expectedKey === 'INIT_B') return true;
-      }
-      return false;
-    },
-    [tutorialActive, tutorialHighlight, progress.expectedLSK, progress.expectedKey, layoutMode],
-  );
-
-  const keypadHighlight =
-    tutorialHighlight || (tutorialActive && layoutMode !== 'free-practice' ? progress.expectedKey : null);
-
   return (
-    <div
-      className={`flex h-full w-full items-center justify-center bg-[#111] airbus-mcdu ${isKiosk ? 'fixed inset-0' : ''}`}
-    >
-      <AirbusMCDUShell annunciators={annunciators}>
-        <AirbusDisplayBay
-          brightness={brightness}
-          getLSKLabel={getLSKLabel}
-          isHighlighted={isHighlighted}
-          onPressLSK={onPressLSK}
-        />
-        <AirbusFunctionKeyPanel onPress={onPressKey} isHighlighted={isHighlighted} />
-        <AirbusKeypad onPress={onPressKey} highlight={keypadHighlight} execLit={execLit} />
-      </AirbusMCDUShell>
+    <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
+      <div className="flex flex-col items-center gap-3">
+        <AirbusMCDUShell annunciators={annunciators}>
+          <AirbusDisplayBay
+            brightness={brightness}
+            getLSKLabel={() => undefined}
+            isHighlighted={() => false}
+            onPressLSK={onPressLSK}
+          />
+          <AirbusFunctionKeyPanel />
+          <AirbusKeypad onPress={onPressKey} />
+        </AirbusMCDUShell>
+
+        {/* Hardware Realism Controls — Phase 1 (Airbus parity) */}
+        <HardwareRealismControls className="w-full max-w-[620px]" />
+      </div>
     </div>
   );
 }

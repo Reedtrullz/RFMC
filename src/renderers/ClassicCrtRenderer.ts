@@ -6,13 +6,11 @@ import { buildCells } from '@shared/fmc/displayGrid';
 // ─────────────────────────────────────────────────────────────────────────────
 // Classic CRT Renderer – retro green-phosphor Boeing CDU aesthetic
 //
-// Effects controlled by RenderOptions.intensity (0–100):
-//   ① Green phosphor text with bloom glow
-//   ② Horizontal scanlines
-//   ③ Vignette
-//   ④ Phosphor persistence (afterimage on change)
-//   ⑤ Optional curvature distortion (at intensity >= 50)
-//   ⑥ Subtle glass haze (wearIntensity)
+// Effects controlled by RenderOptions:
+//   • intensity         → overall CRT (persistence, vignette, base glow)
+//   • wearIntensity     → glass haze
+//   • bloomIntensity    → extra text glow strength (Phase 1 addition)
+//   • scanlineIntensity → independent scanline control (Phase 1 addition)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SUPPORTS_OFFSCREEN = typeof OffscreenCanvas !== 'undefined';
@@ -52,9 +50,16 @@ export class ClassicCrtRenderer extends BaseRenderer {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // ── Phase 1: Granular intensity controls ────────────────────────────────
     const intensity = Math.max(0, Math.min(100, options?.intensity ?? 65));
     const wearIntensity = Math.max(0, Math.min(100, options?.wearIntensity ?? 35));
+    const bloomIntensity = Math.max(0, Math.min(100, options?.bloomIntensity ?? 40));
+    const scanlineIntensity = Math.max(0, Math.min(100, options?.scanlineIntensity ?? 25));
+
     const t = intensity / 100;
+    const wearT = wearIntensity / 100;
+    const bloomT = bloomIntensity / 100;
+    const scanT = scanlineIntensity / 100;
 
     const cW = this.cssWidth(canvas);
     const cH = this.cssHeight(canvas);
@@ -114,10 +119,12 @@ export class ClassicCrtRenderer extends BaseRenderer {
           continue;
         }
 
+        // ── Phase 1 bloom enhancement ───────────────────────────────────────
         if (t > 0.1) {
-          const blurR = Math.round(2 + 6 * t);
+          const baseBlur = Math.round(2 + 6 * t);
+          const extraBloom = Math.round(4 * bloomT);
           ctx.shadowColor = glow;
-          ctx.shadowBlur = blurR;
+          ctx.shadowBlur = baseBlur + extraBloom;
           ctx.fillStyle = hex;
           const passes = intensity >= 60 ? 3 : 2;
           for (let p = 0; p < passes; p++) ctx.fillText(cell.char, cellX, y + h / 2);
@@ -129,16 +136,16 @@ export class ClassicCrtRenderer extends BaseRenderer {
     }
 
     // ── 4. Scratchpad (per-segment, below page rows) ──────────────────────────
-    this._drawScratchpad(ctx, canvas, data, t);
+    this._drawScratchpad(ctx, canvas, data, t, bloomT);
 
     // ── 5. Capture for persistence ────────────────────────────────────────────
     if (t > 0) this._captureFrame(canvas);
 
-    // ── 6. Post-processing (scanlines, vignette, curvature, haze) ────────────
-    if (intensity >= 10) this._drawScanlines(ctx, cW, cH, t);
+    // ── 6. Post-processing (scanlines now driven by scanT) ────────────────────
+    if (intensity >= 10) this._drawScanlines(ctx, cW, cH, scanT);
     if (intensity >= 5) this._drawVignette(ctx, cW, cH, t);
     if (intensity >= 50) this._drawCurvatureDarken(ctx, cW, cH, t);
-    if (wearIntensity >= 5) this._drawGlassHaze(ctx, cW, cH, wearIntensity / 100);
+    if (wearIntensity >= 5) this._drawGlassHaze(ctx, cW, cH, wearT);
   }
 
   private _drawScratchpad(
@@ -146,6 +153,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
     canvas: HTMLCanvasElement,
     data: RendererDisplayData,
     t: number,
+    bloomT: number,
   ): void {
     const rowIndex = SCRATCHPAD_ROW;
     const y = this.rowTop(canvas, rowIndex);
@@ -159,8 +167,6 @@ export class ClassicCrtRenderer extends BaseRenderer {
     ctx.fillStyle = SCRATCHPAD_BG;
     ctx.fillRect(0, y, cW, h);
 
-    // Draw each scratchpad segment character-by-character to preserve
-    // color, size, inverse video, and blink per segment.
     for (const segment of data.scratchpad) {
       const hex = CRT_PALETTE[segment.color ?? 'white'];
       const glow = this._rgba(hex, 0.6 + 0.4 * t);
@@ -184,8 +190,9 @@ export class ClassicCrtRenderer extends BaseRenderer {
           ctx.fillText(char, cellX, y + h / 2);
         } else {
           if (t > 0.1) {
+            const extraBloom = Math.round(4 * bloomT);
             ctx.shadowColor = glow;
-            ctx.shadowBlur = Math.round(2 + 6 * t);
+            ctx.shadowBlur = Math.round(2 + 6 * t) + extraBloom;
             ctx.fillStyle = hex;
             const passes = t >= 0.6 ? 3 : 2;
             for (let p = 0; p < passes; p++) ctx.fillText(char, cellX, y + h / 2);
@@ -198,11 +205,11 @@ export class ClassicCrtRenderer extends BaseRenderer {
     }
   }
 
-  private _drawScanlines(ctx: CanvasRenderingContext2D, cW: number, cH: number, t: number): void {
-    const alpha = 0.08 + 0.22 * t;
+  private _drawScanlines(ctx: CanvasRenderingContext2D, cW: number, cH: number, scanT: number): void {
+    const alpha = 0.08 + 0.25 * scanT;
     const spacing = Math.max(2, Math.round(cH / 240));
     ctx.fillStyle = `rgba(0,0,0,${alpha})`;
-    for (let y = 0; y < cH; y += spacing * 2) ctx.fillRect(0, y, cW, spacing);
+    for (let y = 0; y < cH; y += spacing * 2) ctx.fillRect(0, y, cW, spacing * 0.6);
   }
 
   private _drawVignette(ctx: CanvasRenderingContext2D, cW: number, cH: number, t: number): void {
@@ -237,7 +244,7 @@ export class ClassicCrtRenderer extends BaseRenderer {
   }
 
   private _drawGlassHaze(ctx: CanvasRenderingContext2D, cW: number, cH: number, w: number): void {
-    ctx.fillStyle = `rgba(0,30,0,${0.04 * w})`;
+    ctx.fillStyle = `rgba(0,30,0,${0.12 * w})`;
     ctx.fillRect(0, 0, cW, cH);
   }
 
@@ -247,17 +254,17 @@ export class ClassicCrtRenderer extends BaseRenderer {
     if (!this._prevFrame || this._prevFrame.width !== bW || this._prevFrame.height !== bH) {
       this._prevFrame = createPersistenceBuffer(bW, bH);
     }
-    const pCtx = this._prevFrame.getContext('2d') as
-      | CanvasRenderingContext2D
-      | OffscreenCanvasRenderingContext2D
-      | null;
-    if (pCtx) {
-      pCtx.clearRect(0, 0, bW, bH);
-      pCtx.drawImage(canvas, 0, 0);
+    const ctx = this._prevFrame.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, bW, bH);
+      ctx.drawImage(canvas, 0, 0, bW, bH);
     }
   }
 
   private _rgba(hex: string, alpha: number): string {
-    return `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${alpha.toFixed(2)})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 }

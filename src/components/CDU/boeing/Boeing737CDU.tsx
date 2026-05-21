@@ -12,6 +12,7 @@ import { BoeingKeypadArea } from './BoeingKeypadArea';
 import { BoeingCDUShell } from './BoeingCDUShell';
 import { BoeingDisplayBay } from './BoeingDisplayBay';
 import { AnnunciatorLight } from '../../instruments/common/AnnunciatorLight';
+import { HardwareRealismControls } from '../HardwareRealismControls';
 
 export function Boeing737CDU() {
   const isKiosk = useKioskMode();
@@ -126,23 +127,28 @@ export function Boeing737CDU() {
 
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[#111] ${isKiosk ? 'fixed inset-0' : ''}`}>
-      <BoeingCDUShell annunciators={annunciators}>
-        <BoeingDisplayBay
-          brightness={brightness}
-          getLSKLabel={getLSKLabel}
-          isHighlighted={isHighlighted}
-          hintLevel={effectiveHintLevel}
-          onPressLSK={onPressLSK}
-        />
-        <BoeingKeypadArea
-          onPress={onPressKey}
-          isHighlighted={isHighlighted}
-          hintLevel={effectiveHintLevel}
-          execLit={execLit}
-          brightness={brightness}
-          onBrightnessChange={setBrightness}
-        />
-      </BoeingCDUShell>
+      <div className="flex flex-col items-center gap-3">
+        <BoeingCDUShell annunciators={annunciators}>
+          <BoeingDisplayBay
+            brightness={brightness}
+            getLSKLabel={getLSKLabel}
+            isHighlighted={isHighlighted}
+            hintLevel={effectiveHintLevel}
+            onPressLSK={onPressLSK}
+          />
+          <BoeingKeypadArea
+            onPress={onPressKey}
+            isHighlighted={isHighlighted}
+            hintLevel={effectiveHintLevel}
+            execLit={execLit}
+            brightness={brightness}
+            onBrightnessChange={setBrightness}
+          />
+        </BoeingCDUShell>
+
+        {/* Hardware Realism Controls — Phase 1 */}
+        <HardwareRealismControls className="w-full max-w-[620px]" />
+      </div>
     </div>
   );
 }
