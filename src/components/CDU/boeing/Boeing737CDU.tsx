@@ -28,7 +28,14 @@ export function Boeing737CDU() {
   const tutorialHintLevel = useFMCStore((s) => s.tutorialHintLevel);
   const brightness = useCockpitLayoutStore((s) => s.brightness);
   const setBrightness = useCockpitLayoutStore((s) => s.setBrightness);
-  const wearIntensity = useDisplaySettings((s) => s.wearIntensity);
+  const { crtIntensity, wearIntensity, bloomIntensity, scanlineIntensity } = useDisplaySettings(
+    useShallow((s) => ({
+      crtIntensity: s.crtIntensity,
+      wearIntensity: s.wearIntensity,
+      bloomIntensity: s.bloomIntensity,
+      scanlineIntensity: s.scanlineIntensity,
+    })),
+  );
   const displayData = useFMCStore(useShallow((s) => s.getDisplayData()));
   const focusedPanel = useCockpitLayoutStore((s) => s.focusedPanel);
 
@@ -134,8 +141,11 @@ export function Boeing737CDU() {
   const hardwareWearClass =
     wearIntensity >= 70 ? 'hardware-wear-unit--abused' : wearIntensity >= 35 ? 'hardware-wear-unit--used' : '';
   const hardwareWearStyle = {
+    '--hardware-crt': (Math.max(0, Math.min(100, crtIntensity)) / 100).toFixed(2),
     '--hardware-wear': wearLevel.toFixed(2),
     '--hardware-wear-inverse': (1 - wearLevel).toFixed(2),
+    '--hardware-bloom': (Math.max(0, Math.min(100, bloomIntensity)) / 100).toFixed(2),
+    '--hardware-scan': (Math.max(0, Math.min(100, scanlineIntensity)) / 100).toFixed(2),
   } as CSSProperties;
 
   return (

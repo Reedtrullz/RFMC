@@ -34,9 +34,16 @@ export class NgLcdRenderer extends BaseRenderer {
     return 'NG LCD';
   }
 
-  render(data: RendererDisplayData, canvas: HTMLCanvasElement, _options?: RenderOptions): void {
+  render(data: RendererDisplayData, canvas: HTMLCanvasElement, options?: RenderOptions): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const crtIntensity = Math.max(0, Math.min(100, options?.intensity ?? 65));
+    const bloomIntensity = Math.max(0, Math.min(100, options?.bloomIntensity ?? 40));
+    const scanlineIntensity = Math.max(0, Math.min(100, options?.scanlineIntensity ?? 25));
+    const crtT = crtIntensity / 100;
+    const bloomT = bloomIntensity / 100;
+    const scanT = scanlineIntensity / 100;
 
     const cW = this.cssWidth(canvas);
     const cH = this.cssHeight(canvas);
@@ -97,9 +104,12 @@ export class NgLcdRenderer extends BaseRenderer {
           ctx.fillStyle = color;
           ctx.font = font;
           ctx.textBaseline = 'middle';
-          if (cell.color === 'amber') {
-            ctx.shadowColor = 'rgba(255,179,0,0.4)';
-            ctx.shadowBlur = 4;
+          if (bloomT > 0.02 && cell.color !== 'black') {
+            ctx.shadowColor = this._rgba(color, 0.22 + bloomT * 0.55);
+            ctx.shadowBlur = (cell.color === 'amber' ? 4 : 2) + bloomT * 10;
+            if (bloomT > 0.65 || crtT > 0.75) {
+              ctx.fillText(cell.char, cellX, y + h / 2);
+            }
           } else {
             ctx.shadowBlur = 0;
           }
@@ -110,10 +120,17 @@ export class NgLcdRenderer extends BaseRenderer {
     }
 
     // ── 3. Scratchpad (separate row, drawn per-segment) ───────────────────────
-    this._drawScratchpad(ctx, canvas, data);
+    this._drawScratchpad(ctx, canvas, data, bloomT, crtT);
+    this._drawPostProcess(ctx, cW, cH, crtT, scanT);
   }
 
-  private _drawScratchpad(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, data: RendererDisplayData): void {
+  private _drawScratchpad(
+    ctx: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement,
+    data: RendererDisplayData,
+    bloomT: number,
+    crtT: number,
+  ): void {
     const rowIndex = SCRATCHPAD_ROW;
     const y = this.rowTop(canvas, rowIndex);
     const h = this.rowHeight(canvas, rowIndex);
@@ -159,9 +176,12 @@ export class NgLcdRenderer extends BaseRenderer {
           ctx.fillStyle = color;
           ctx.font = font;
           ctx.textBaseline = 'middle';
-          if (segment.color === 'amber') {
-            ctx.shadowColor = 'rgba(255,179,0,0.4)';
-            ctx.shadowBlur = 4;
+          if (bloomT > 0.02 && segment.color !== 'black') {
+            ctx.shadowColor = this._rgba(color, 0.22 + bloomT * 0.55);
+            ctx.shadowBlur = (segment.color === 'amber' ? 4 : 2) + bloomT * 10;
+            if (bloomT > 0.65 || crtT > 0.75) {
+              ctx.fillText(char, cellX, y + h / 2);
+            }
           } else {
             ctx.shadowBlur = 0;
           }
@@ -170,5 +190,37 @@ export class NgLcdRenderer extends BaseRenderer {
         }
       }
     }
+  }
+
+  private _drawPostProcess(ctx: CanvasRenderingContext2D, cW: number, cH: number, crtT: number, scanT: number): void {
+    if (scanT > 0.01) {
+      const alpha = 0.02 + scanT * 0.2;
+      const gap = scanT > 0.65 ? 3 : 4;
+      ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+      for (let y = 0; y < cH; y += gap) ctx.fillRect(0, y, cW, 1);
+    }
+
+    if (crtT > 0.01) {
+      const glow = ctx.createRadialGradient(cW * 0.5, cH * 0.45, 0, cW * 0.5, cH * 0.45, cW * 0.72);
+      glow.addColorStop(0, `rgba(57,255,20,${0.05 * crtT})`);
+      glow.addColorStop(0.45, `rgba(57,255,20,${0.025 * crtT})`);
+      glow.addColorStop(1, 'rgba(57,255,20,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, cW, cH);
+
+      const vignette = ctx.createRadialGradient(cW * 0.5, cH * 0.48, cW * 0.2, cW * 0.5, cH * 0.48, cW * 0.72);
+      vignette.addColorStop(0, 'rgba(0,0,0,0)');
+      vignette.addColorStop(0.75, `rgba(0,0,0,${0.12 * crtT})`);
+      vignette.addColorStop(1, `rgba(0,0,0,${0.42 * crtT})`);
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, cW, cH);
+    }
+  }
+
+  private _rgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 }
