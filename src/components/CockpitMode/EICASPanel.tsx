@@ -95,9 +95,6 @@ function EICSDial({
   );
 }
 
-export function EICASPanel() {
-  const alerts = useFMCStore((s) => s.alerts);
-  const cockpitMode = useFMCStore((s) => s.cockpitMode);
 function useEngineData() {
   const aircraftState = useFMCStore((s) => s.aircraftState);
   const vs = aircraftState?.verticalSpeedFpm ?? 0;

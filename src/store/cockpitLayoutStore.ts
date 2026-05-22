@@ -2,16 +2,17 @@ import { create } from 'zustand';
 import type { CockpitLayoutMode, PanelId, EFISState, TCASTarget, NDMapMode } from '@shared';
 import { getRecommendedHiddenPanels, getTrainingModeConfig } from '../config/trainingModes';
 
-export type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
+export type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight' | 'eicas'>;
 
 const defaultInstrumentZoom: Record<InstrumentPanelId, number> = {
   cdu: 1.35,
   nd: 1.45,
   pfd: 1.45,
   autoflight: 1.45,
+  eicas: 1.45,
 };
 
-const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'eicas'];
 
 function isInstrumentPanelId(panelId: PanelId): panelId is InstrumentPanelId {
   return instrumentPanelIds.includes(panelId as InstrumentPanelId);
