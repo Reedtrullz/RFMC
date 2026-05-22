@@ -307,7 +307,8 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
             {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
             {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
             {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
-            {!controls.hiddenPanels.has('eicas') && renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
+            {!controls.hiddenPanels.has('eicas') &&
+              renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
             {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
           </CockpitLayoutGrid>
         );
@@ -358,7 +359,8 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--free-practice">
           {hasPfd && renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
           {hasNd && renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
-          {!controls.hiddenPanels.has('eicas') && renderInstrumentPanel('eicas', controls, { className: 'cockpit-free-practice__optional' })}
+          {!controls.hiddenPanels.has('eicas') &&
+            renderInstrumentPanel('eicas', controls, { className: 'cockpit-free-practice__optional' })}
           {hasCdu && renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
           {hasAutoflight &&
             renderInstrumentPanel('autoflight', controls, {
