@@ -6,7 +6,9 @@ export type InstrumentTarget =
   | 'boeingPfd'
   | 'airbusPfd'
   | 'boeingMcp'
-  | 'airbusFcu';
+  | 'airbusFcu'
+  | 'boeingEicas'
+  | 'airbusEcam';
 
 export interface InstrumentDimensions {
   idealWidth: number;
@@ -63,5 +65,17 @@ export const instrumentDimensions: Record<InstrumentTarget, InstrumentDimensions
     idealHeight: 180,
     minReadableWidth: 800,
     maxWidth: 1200,
+  },
+  boeingEicas: {
+    idealWidth: 500,
+    idealHeight: 500,
+    minReadableWidth: 350,
+    maxWidth: 650,
+  },
+  airbusEcam: {
+    idealWidth: 500,
+    idealHeight: 500,
+    minReadableWidth: 350,
+    maxWidth: 650,
   },
 };

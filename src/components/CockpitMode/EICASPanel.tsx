@@ -1,6 +1,9 @@
 import { useFMCStore } from '../../store/useFMCStore';
 import { useDraggable } from '../../hooks/useDraggable';
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
+import { useAircraftStore } from '../../store/aircraftStore';
+import { InstrumentBezel } from '../instruments/common/InstrumentBezel';
+import { ScreenGlass } from '../instruments/common/ScreenGlass';
 
 // Circular SVG dial component mimicking Boeing 737 NG Engine Indicating System (EIS) primary instruments.
 // Renders a 270-degree clockwise sweeping needle with limit tick marks and central readouts.
@@ -95,20 +98,10 @@ function EICSDial({
 export function EICASPanel() {
   const alerts = useFMCStore((s) => s.alerts);
   const cockpitMode = useFMCStore((s) => s.cockpitMode);
+function useEngineData() {
   const aircraftState = useFMCStore((s) => s.aircraftState);
-  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('eicas'));
-
-  const { position, dragHandlers, isDragging } = useDraggable();
-
-  if (!cockpitMode || isHidden) return null;
-
-  // 1. Crew Alerting System (CAS) Overlay
-  const displayAlerts = alerts.filter((a) => a.level !== 'STATUS').slice(0, 10);
-
-  // 2. Primary Engine Indications (EICAS Engine Display)
   const vs = aircraftState?.verticalSpeedFpm ?? 0;
 
-  // Dynamic N1 calculations (B737 idle 32%, cruise ~65-75%, climb/takeoff ~90-96%)
   let targetN1 = 64.5;
   if (vs < -100) {
     targetN1 = Math.max(32.0, 64.5 + vs / 150);
@@ -116,20 +109,142 @@ export function EICASPanel() {
     targetN1 = Math.min(95.5, 74.0 + vs / 100);
   }
 
-  const n1_1 = targetN1;
-  const n1_2 = targetN1 + 0.1;
+  return {
+    n1_1: targetN1,
+    n1_2: targetN1 + 0.1,
+    egt_1: Math.round(360 + (targetN1 - 32.0) * 7.2),
+    egt_2: Math.round(360 + (targetN1 - 32.0) * 7.2) - 2,
+    n2_1: (59.0 + (targetN1 - 32.0) * 0.61).toFixed(1),
+    n2_2: (59.0 + (targetN1 - 32.0) * 0.61 + 0.1).toFixed(1),
+    ff_1: Math.round(800 + (targetN1 - 32.0) * 50.8),
+    ff_2: Math.round(800 + (targetN1 - 32.0) * 50.8) - 10,
+  };
+}
 
-  // EGT (approx 360°C at idle, 820°C max)
-  const egt_1 = Math.round(360 + (targetN1 - 32.0) * 7.2);
-  const egt_2 = egt_1 - 2;
+export function EICASInstrument() {
+  const aircraft = useAircraftStore((s) => s.aircraft);
+  const isBoeing = aircraft === 'BOEING_737';
+  const data = useEngineData();
+  const gearDown = useAircraftStore((s) => s.aircraftState?.gearDown ?? false);
+  const flapsPosition = useAircraftStore((s) => s.aircraftState?.flapsPosition ?? 0);
+  const alerts = useFMCStore((s) => s.alerts);
+  const displayAlerts = alerts.filter((a) => a.level !== 'STATUS').slice(0, 10);
 
-  // N2 (idle 59%, max 98%)
-  const n2_1 = (59.0 + (targetN1 - 32.0) * 0.61).toFixed(1);
-  const n2_2 = (59.0 + (targetN1 - 32.0) * 0.61 + 0.1).toFixed(1);
+  return (
+    <div className="h-full w-full" data-testid="eicas-instrument">
+      <InstrumentBezel variant={isBoeing ? 'boeing-eicas' : 'airbus-ecam'} className="h-full w-full">
+        <ScreenGlass className="h-full w-full flex flex-col items-center justify-center p-2 bg-black">
+          <div className="flex flex-col w-[300px] gap-6 transform scale-110">
+            {/* N1 Dials Row */}
+        <div>
+          <div className="flex justify-between items-center text-xs text-zinc-400 font-bold uppercase tracking-wide px-2">
+            <span>ENG 1</span>
+            <span className="text-emerald-400">N1 %</span>
+            <span>ENG 2</span>
+          </div>
+          <div className="flex justify-between mt-2">
+            <EICSDial value={data.n1_1} maxVal={110} label="L N1" color="#10b981" limit={98} />
+            <EICSDial value={data.n1_2} maxVal={110} label="R N1" color="#10b981" limit={98} />
+          </div>
+        </div>
 
-  // Fuel Flow (lbs/hr per engine: 800 idle, ~4000 max)
-  const ff_1 = Math.round(800 + (targetN1 - 32.0) * 50.8);
-  const ff_2 = ff_1 - 10;
+        {/* EGT Dials Row */}
+        <div>
+          <div className="flex justify-between items-center text-xs text-zinc-400 font-bold uppercase tracking-wide px-2">
+            <span>ENG 1</span>
+            <span className="text-amber-500">EGT °C</span>
+            <span>ENG 2</span>
+          </div>
+          <div className="flex justify-between mt-2">
+            <EICSDial value={data.egt_1} maxVal={1000} label="L EGT" color="#f59e0b" limit={820} />
+            <EICSDial value={data.egt_2} maxVal={1000} label="R EGT" color="#f59e0b" limit={820} />
+          </div>
+        </div>
+
+        {/* Secondary Displays (N2, FF, Gear, Flaps) */}
+        <div className="flex w-full gap-4 mt-2">
+          {/* N2 and FF */}
+          <div className="flex-1 bg-[#0f0f11] border border-zinc-800 rounded-md p-3 text-[13px] space-y-3 font-bold">
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 uppercase">N2 %</span>
+              <div className="flex gap-4">
+                <span className="text-zinc-300">{data.n2_1}</span>
+                <span className="text-zinc-300">{data.n2_2}</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500 uppercase">FF LBS/H</span>
+              <div className="flex gap-4">
+                <span className="text-cdu-cyan">{data.ff_1}</span>
+                <span className="text-cdu-cyan">{data.ff_2}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Configuration (Gear & Flaps) */}
+          <div className="flex-1 bg-[#0f0f11] border border-zinc-800 rounded-md p-2 flex flex-col justify-around items-center">
+            {/* Gear Indicator */}
+            <div className="flex flex-col items-center mt-1">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5">GEAR</span>
+              {gearDown ? (
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-5 h-5 border-2 border-[#00ff44] bg-[#00ff44]/30 rounded-[3px] shadow-[0_0_8px_#00ff44] flex items-center justify-center text-[#00ff44] text-[8px] font-black">N</div>
+                  <div className="flex gap-1.5">
+                    <div className="w-5 h-5 border-2 border-[#00ff44] bg-[#00ff44]/30 rounded-[3px] shadow-[0_0_8px_#00ff44] flex items-center justify-center text-[#00ff44] text-[8px] font-black">L</div>
+                    <div className="w-5 h-5 border-2 border-[#00ff44] bg-[#00ff44]/30 rounded-[3px] shadow-[0_0_8px_#00ff44] flex items-center justify-center text-[#00ff44] text-[8px] font-black">R</div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-zinc-500 text-sm font-bold tracking-widest mt-2 mb-2">UP</span>
+              )}
+            </div>
+
+            {/* Flaps Indicator */}
+            <div className="flex items-baseline gap-2 mt-2 w-full justify-center border-t border-zinc-800/50 pt-2">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">FLAPS</span>
+              <span className={`text-xl font-black ${flapsPosition > 0 ? 'text-[#00ff44]' : 'text-cdu-cyan'}`}>{flapsPosition > 0 ? flapsPosition : 'UP'}</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Instrument-level Alerts */}
+        {displayAlerts.length > 0 && (
+          <div className="mt-4 flex flex-col items-center space-y-1">
+            {displayAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={`px-4 py-1 rounded text-xs font-bold uppercase tracking-wider ${getAlertStyles(alert.level)}`}
+              >
+                {alert.text}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      </ScreenGlass>
+      </InstrumentBezel>
+    </div>
+  );
+}
+
+export function EICASPanel() {
+  const alerts = useFMCStore((s) => s.alerts);
+  const cockpitMode = useFMCStore((s) => s.cockpitMode);
+  // Only show the floating HUD if EICAS is NOT in the layout, but the user hasn't explicitly hidden it either.
+  // Actually, let's only show it if it's explicitly allowed. But wait, if they have an EICAS instrument, we don't need the floating one.
+  const isHidden = useCockpitLayoutStore((s) => s.hiddenPanels.includes('eicas'));
+  const layoutMode = useCockpitLayoutStore((s) => s.cockpitLayoutMode);
+  
+  // If the layout includes EICAS natively, we don't need the floating one.
+  const gridHasEicas = layoutMode === 'full-deck' || (layoutMode === 'free-practice' && !isHidden);
+  
+  const { position, dragHandlers, isDragging } = useDraggable();
+
+  if (!cockpitMode) return null;
+
+  // 1. Crew Alerting System (CAS) Overlay
+  const displayAlerts = alerts.filter((a) => a.level !== 'STATUS').slice(0, 10);
+  const data = useEngineData();
 
   return (
     <>
@@ -150,6 +265,7 @@ export function EICASPanel() {
       )}
 
       {/* Primary Engine EICAS Panel (Floating HUD Card) */}
+      {!gridHasEicas && !isHidden && (
       <div
         className={`fixed bottom-4 right-4 z-40 bg-zinc-950/95 border rounded-lg p-3 text-white font-mono w-[260px] shadow-2xl backdrop-blur-md pointer-events-auto transition-transform ${isDragging ? 'scale-[1.01] border-cdu-cyan' : 'border-zinc-800'}`}
         style={{
@@ -179,8 +295,8 @@ export function EICASPanel() {
               <span>ENG 2</span>
             </div>
             <div className="flex justify-between mt-1">
-              <EICSDial value={n1_1} maxVal={110} label="L N1" color="#10b981" limit={98} />
-              <EICSDial value={n1_2} maxVal={110} label="R N1" color="#10b981" limit={98} />
+              <EICSDial value={data.n1_1} maxVal={110} label="L N1" color="#10b981" limit={98} />
+              <EICSDial value={data.n1_2} maxVal={110} label="R N1" color="#10b981" limit={98} />
             </div>
           </div>
 
@@ -192,8 +308,8 @@ export function EICASPanel() {
               <span>ENG 2</span>
             </div>
             <div className="flex justify-between mt-1">
-              <EICSDial value={egt_1} maxVal={1000} label="L EGT" color="#f59e0b" limit={820} />
-              <EICSDial value={egt_2} maxVal={1000} label="R EGT" color="#f59e0b" limit={820} />
+              <EICSDial value={data.egt_1} maxVal={1000} label="L EGT" color="#f59e0b" limit={820} />
+              <EICSDial value={data.egt_2} maxVal={1000} label="R EGT" color="#f59e0b" limit={820} />
             </div>
           </div>
 
@@ -203,8 +319,8 @@ export function EICASPanel() {
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-zinc-500 uppercase">N2 %</span>
               <div className="flex gap-4">
-                <span className="text-zinc-300">{n2_1}</span>
-                <span className="text-zinc-300">{n2_2}</span>
+                <span className="text-zinc-300">{data.n2_1}</span>
+              <span className="text-zinc-300">{data.n2_2}</span>
               </div>
             </div>
 
@@ -212,13 +328,14 @@ export function EICASPanel() {
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-zinc-500 uppercase">FF LBS/H</span>
               <div className="flex gap-4">
-                <span className="text-cdu-cyan">{ff_1}</span>
-                <span className="text-cdu-cyan">{ff_2}</span>
+                <span className="text-cdu-cyan">{data.ff_1}</span>
+              <span className="text-cdu-cyan">{data.ff_2}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+      )}
     </>
   );
 }

@@ -21,6 +21,7 @@ import { CockpitEmptyState } from './CockpitEmptyState';
 import { ModeHelpCard } from './ModeHelpCard';
 import { FirstRunGuidance } from './FirstRunGuidance';
 import { CockpitLayoutGrid } from './CockpitLayoutGrid';
+import { EICASInstrument } from './EICASPanel';
 
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
 import { useAircraftStore } from '../../store/aircraftStore';
@@ -28,7 +29,7 @@ import { useAutopilotStore } from '../../store/autopilotStore';
 import { useConnectionStore } from '../../store/connectionStore';
 import { KeyboardHelpOverlay } from './KeyboardHelpOverlay';
 
-type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight'>;
+type InstrumentPanelId = Extract<PanelId, 'cdu' | 'nd' | 'pfd' | 'autoflight' | 'eicas'>;
 
 interface LayoutControls {
   aircraft: AircraftType;
@@ -46,7 +47,7 @@ interface LayoutControls {
   tutorialActive: boolean;
 }
 
-const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight'];
+const instrumentPanelIds: InstrumentPanelId[] = ['cdu', 'nd', 'pfd', 'autoflight', 'eicas'];
 
 function isInstrumentPanelId(panelId: PanelId | null): panelId is InstrumentPanelId {
   return !!panelId && instrumentPanelIds.includes(panelId as InstrumentPanelId);
@@ -177,7 +178,7 @@ export function CockpitLayout() {
   return (
     <div
       className={`
-        cockpit-grid cockpit-lock no-scrollbar bg-black text-white
+        cockpit-grid cockpit-lock no-scrollbar bg-[#1c2226] text-white
         ${isNight ? 'cockpit-night' : ''}
         ${highContrast ? 'cockpit-high-contrast' : ''}
         ${isTall ? 'cockpit--tall-viewport' : 'cockpit--wide-viewport'}
@@ -288,6 +289,7 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
           {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
           {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+          {renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
           {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
         </CockpitLayoutGrid>
       );
@@ -305,6 +307,7 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
             {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
             {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
             {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
+            {!controls.hiddenPanels.has('eicas') && renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
             {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
           </CockpitLayoutGrid>
         );
@@ -355,6 +358,7 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
         <CockpitLayoutGrid preset="twoPanelTraining" modeClass="cockpit-stage--free-practice">
           {hasPfd && renderInstrumentPanel('pfd', controls, { className: 'cockpit-split-panel' })}
           {hasNd && renderInstrumentPanel('nd', controls, { className: 'cockpit-split-panel' })}
+          {!controls.hiddenPanels.has('eicas') && renderInstrumentPanel('eicas', controls, { className: 'cockpit-free-practice__optional' })}
           {hasCdu && renderInstrumentPanel('cdu', controls, { className: 'cockpit-free-practice__optional' })}
           {hasAutoflight &&
             renderInstrumentPanel('autoflight', controls, {
@@ -435,6 +439,8 @@ function renderPanel(panelId: InstrumentPanelId) {
       return <NavigationDisplay />;
     case 'pfd':
       return <PrimaryFlightDisplay />;
+    case 'eicas':
+      return <EICASInstrument />;
     case 'autoflight':
       return <AutopilotTrainer />;
   }
@@ -449,6 +455,8 @@ function targetForPanel(panelId: InstrumentPanelId, aircraft: AircraftType): Ins
         return 'airbusNd';
       case 'pfd':
         return 'airbusPfd';
+      case 'eicas':
+        return 'airbusEcam';
       case 'autoflight':
         return 'airbusFcu';
     }
@@ -461,6 +469,8 @@ function targetForPanel(panelId: InstrumentPanelId, aircraft: AircraftType): Ins
       return 'boeingNd';
     case 'pfd':
       return 'boeingPfd';
+    case 'eicas':
+      return 'boeingEicas';
     case 'autoflight':
       return 'boeingMcp';
   }

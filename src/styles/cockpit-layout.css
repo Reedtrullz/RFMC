@@ -80,10 +80,11 @@
 .cockpit-stage--full-deck {
   grid-template-areas:
     'mcpslot mcpslot mcpslot'
-    'pfdslot ndslot cduslot';
-  grid-template-columns: 1fr 1.25fr 1.15fr;
-  grid-template-rows: clamp(160px, 20vh, 280px) 1fr;
-  max-width: 1480px;
+    'pfdslot ndslot eicasslot'
+    '. cduslot .';
+  grid-template-columns: 1fr 1.15fr 1fr;
+  grid-template-rows: clamp(160px, 20vh, 280px) 1.2fr 1fr;
+  max-width: 1600px;
 }
 
 .cockpit-stage--free-practice {
@@ -109,6 +110,9 @@
 }
 .cockpit-slot--pfd {
   grid-area: pfdslot;
+}
+.cockpit-slot--eicas {
+  grid-area: eicasslot;
 }
 .cockpit-slot--mcp,
 .cockpit-mcp-slot {
