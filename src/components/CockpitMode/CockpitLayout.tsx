@@ -287,11 +287,13 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
     case 'full-deck':
       return (
         <CockpitShell aircraft={controls.aircraft}>
-          {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
-          {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
-          {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
-          {renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
-          {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
+          <CockpitShell.Glareshield>{renderInstrumentPanel('autoflight', controls)}</CockpitShell.Glareshield>
+          <CockpitShell.MainPanel>
+            {renderInstrumentPanel('pfd', controls)}
+            {renderInstrumentPanel('nd', controls)}
+            {renderInstrumentPanel('eicas', controls)}
+          </CockpitShell.MainPanel>
+          <CockpitShell.Pedestal>{renderInstrumentPanel('cdu', controls)}</CockpitShell.Pedestal>
         </CockpitShell>
       );
 
@@ -305,12 +307,13 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
       if (hasCdu && hasNd && hasPfd && hasAutoflight) {
         return (
           <CockpitShell aircraft={controls.aircraft}>
-            {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
-            {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
-            {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
-            {!controls.hiddenPanels.has('eicas') &&
-              renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
-            {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
+            <CockpitShell.Glareshield>{renderInstrumentPanel('autoflight', controls)}</CockpitShell.Glareshield>
+            <CockpitShell.MainPanel>
+              {renderInstrumentPanel('pfd', controls)}
+              {renderInstrumentPanel('nd', controls)}
+              {!controls.hiddenPanels.has('eicas') && renderInstrumentPanel('eicas', controls)}
+            </CockpitShell.MainPanel>
+            <CockpitShell.Pedestal>{renderInstrumentPanel('cdu', controls)}</CockpitShell.Pedestal>
           </CockpitShell>
         );
       }
