@@ -111,6 +111,8 @@
 /* MCP housing — recessed cutout centered in glareshield */
 .cockpit-shell__mcp-housing {
   width: clamp(560px, 55vw, 1100px);
+  flex: 1 1 auto;
+  min-height: 0;
   margin-bottom: clamp(8px, 1.5vh, 20px);
   padding: 6px;
   background: #080a0d;
