@@ -291,9 +291,11 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
           <CockpitShell.MainPanel>
             {renderInstrumentPanel('pfd', controls)}
             {renderInstrumentPanel('nd', controls)}
-            {renderInstrumentPanel('eicas', controls)}
+            {renderInstrumentPanel('cdu', controls)}
           </CockpitShell.MainPanel>
-          <CockpitShell.Pedestal>{renderInstrumentPanel('cdu', controls)}</CockpitShell.Pedestal>
+          {!controls.hiddenPanels.has('eicas') && (
+            <CockpitShell.Pedestal>{renderInstrumentPanel('eicas', controls)}</CockpitShell.Pedestal>
+          )}
         </CockpitShell>
       );
 

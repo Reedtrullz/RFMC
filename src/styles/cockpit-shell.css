@@ -157,7 +157,7 @@
 /* 3-column instrument grid inside main panel */
 .cockpit-shell__instrument-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.85fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
   gap: clamp(8px, 1.2vw, 20px);
   width: 100%;
