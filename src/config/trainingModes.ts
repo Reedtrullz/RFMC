@@ -101,7 +101,8 @@ export const trainingModes: TrainingModeConfig[] = [
   {
     id: 'full-deck',
     label: 'Flight Deck Scan',
-    purpose: 'Show every primary cockpit tool. CDU sits alongside PFD/ND on the main panel for quick cross-checks. EICAS is minimizable in the pedestal.',
+    purpose:
+      'Show every primary cockpit tool. CDU sits alongside PFD/ND on the main panel for quick cross-checks. EICAS is minimizable in the pedestal.',
     aircraft: 'both',
     visiblePanels: ['autoflight', 'pfd', 'nd', 'cdu', 'eicas'],
     minimumRequiredPanels: ['autoflight', 'pfd', 'nd', 'cdu'],
@@ -109,7 +110,8 @@ export const trainingModes: TrainingModeConfig[] = [
     layoutPreset: 'fullDeck',
     defaultZoom: { autoflight: 1.28, pfd: 1.28, nd: 1.28, cdu: 1.28, eicas: 1.28 },
     defaultOverlays: [],
-    beginnerHint: 'MCP sits above. PFD, ND, and CDU share the main panel row. Toggle EICAS via the PANELS toolbar — it appears in the pedestal below.',
+    beginnerHint:
+      'MCP sits above. PFD, ND, and CDU share the main panel row. Toggle EICAS via the PANELS toolbar — it appears in the pedestal below.',
     practiceTask: 'Cross-check setup across CDU/MCDU, MCP/FCU, PFD, and ND. Toggle EICAS on/off as needed.',
     lookAt: 'Scan MCP/FCU at the top, PFD/ND/CDU across the middle, and EICAS in the pedestal when enabled.',
   },
