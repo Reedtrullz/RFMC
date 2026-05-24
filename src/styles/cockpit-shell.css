@@ -28,15 +28,15 @@
   display: grid;
 
   grid-template-areas:
-    "gla-l    gla      gla-r"
-    "mcpslot  mcpslot  mcpslot"
-    "pfdslot  ndslot   eicasslot"
-    "ped-l    cduslot  ped-r";
+    'gla-l    gla      gla-r'
+    'mcpslot  mcpslot  mcpslot'
+    'pfdslot  ndslot   eicasslot'
+    'ped-l    cduslot  ped-r';
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows:
-    clamp(14px, 2vh, 28px)     /* glareshield lip */
-    clamp(140px, 19vh, 260px)  /* MCP row */
-    1fr                        /* PFD/ND/EICAS main panel */
+    clamp(14px, 2vh, 28px) /* glareshield lip */
+    clamp(140px, 19vh, 260px) /* MCP row */
+    1fr /* PFD/ND/EICAS main panel */
     clamp(160px, 28vh, 380px); /* CDU pedestal */
 
   gap: 0;
@@ -106,14 +106,7 @@
   left: 0;
   right: 0;
   bottom: calc(clamp(160px, 28vh, 380px));
-  background: linear-gradient(
-    180deg,
-    #5a5f66 0%,
-    #6b7178 10%,
-    #787d84 50%,
-    #6b7178 90%,
-    #5a5f66 100%
-  );
+  background: linear-gradient(180deg, #5a5f66 0%, #6b7178 10%, #787d84 50%, #6b7178 90%, #5a5f66 100%);
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.03),
     inset 0 -2px 0 rgba(0, 0, 0, 0.1);
@@ -125,11 +118,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.012) 0%,
-    transparent 70%
-  );
+  background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.012) 0%, transparent 70%);
 }
 
 /* Pedestal surface — row 4 */
@@ -181,9 +170,15 @@
   margin: clamp(6px, 1vh, 14px) clamp(4px, 0.8vw, 12px);
 }
 
-.cockpit-shell__cutout--pfd  { grid-area: pfdslot; }
-.cockpit-shell__cutout--nd   { grid-area: ndslot; }
-.cockpit-shell__cutout--eicas { grid-area: eicasslot; }
+.cockpit-shell__cutout--pfd {
+  grid-area: pfdslot;
+}
+.cockpit-shell__cutout--nd {
+  grid-area: ndslot;
+}
+.cockpit-shell__cutout--eicas {
+  grid-area: eicasslot;
+}
 
 /* CDU bay — recessed cutout in the pedestal */
 .cockpit-shell__cdu-bay {
@@ -215,8 +210,12 @@
   pointer-events: none;
 }
 
-.cockpit-shell__annunciator--left  { left: clamp(12px, 2vw, 32px); }
-.cockpit-shell__annunciator--right { right: clamp(12px, 2vw, 32px); }
+.cockpit-shell__annunciator--left {
+  left: clamp(12px, 2vw, 32px);
+}
+.cockpit-shell__annunciator--right {
+  right: clamp(12px, 2vw, 32px);
+}
 
 .cockpit-shell__annunciator-light {
   width: clamp(5px, 0.6vw, 8px);
@@ -237,8 +236,12 @@
   pointer-events: none;
 }
 
-.cockpit-shell__label-stripes--left  { left: clamp(16px, 3vw, 48px); }
-.cockpit-shell__label-stripes--right { right: clamp(16px, 3vw, 48px); }
+.cockpit-shell__label-stripes--left {
+  left: clamp(16px, 3vw, 48px);
+}
+.cockpit-shell__label-stripes--right {
+  right: clamp(16px, 3vw, 48px);
+}
 
 .cockpit-shell__label-stripe {
   width: clamp(12px, 1.2vw, 20px);
@@ -303,7 +306,9 @@
     margin: clamp(16px, 3vh, 32px) clamp(24px, 4vw, 60px) clamp(6px, 1vh, 12px);
   }
 
-  .cockpit-shell__annunciator { gap: 5px; }
+  .cockpit-shell__annunciator {
+    gap: 5px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -321,7 +326,9 @@
   }
 
   .cockpit-shell__annunciator,
-  .cockpit-shell__label-stripes { display: none; }
+  .cockpit-shell__label-stripes {
+    display: none;
+  }
 }
 
 @media (min-width: 2200px) and (min-height: 1200px) {

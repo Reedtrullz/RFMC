@@ -72,30 +72,21 @@ export function CockpitShell({ children, aircraft, className = '' }: CockpitShel
         </div>
 
         {/* Glareshield label */}
-        <span
-          className="cockpit-shell__panel-label"
-          style={{ bottom: 4, left: '50%', transform: 'translateX(-50%)' }}
-        >
+        <span className="cockpit-shell__panel-label" style={{ bottom: 4, left: '50%', transform: 'translateX(-50%)' }}>
           {isBoeing ? 'GLA RESHIELD' : 'GLA RESHIELD'}
         </span>
       </div>
 
       {/* 2. Main instrument panel surface */}
       <div className="cockpit-shell__panel-surface">
-        <span
-          className="cockpit-shell__panel-label"
-          style={{ top: 3, left: '50%', transform: 'translateX(-50%)' }}
-        >
+        <span className="cockpit-shell__panel-label" style={{ top: 3, left: '50%', transform: 'translateX(-50%)' }}>
           {isBoeing ? 'B737 NG · PRIMARY FLIGHT DISPLAYS' : 'A320 · PRIMARY FLIGHT DISPLAYS'}
         </span>
       </div>
 
       {/* 3. Pedestal surface */}
       <div className="cockpit-shell__pedestal-surface">
-        <span
-          className="cockpit-shell__panel-label"
-          style={{ top: 3, left: '50%', transform: 'translateX(-50%)' }}
-        >
+        <span className="cockpit-shell__panel-label" style={{ top: 3, left: '50%', transform: 'translateX(-50%)' }}>
           CONTROL STAND
         </span>
       </div>
