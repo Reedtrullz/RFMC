@@ -21,6 +21,7 @@ import { CockpitEmptyState } from './CockpitEmptyState';
 import { ModeHelpCard } from './ModeHelpCard';
 import { FirstRunGuidance } from './FirstRunGuidance';
 import { CockpitLayoutGrid } from './CockpitLayoutGrid';
+import { CockpitShell } from './CockpitShell';
 import { EICASInstrument } from './EICASPanel';
 
 import { useCockpitLayoutStore } from '../../store/cockpitLayoutStore';
@@ -285,13 +286,13 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
 
     case 'full-deck':
       return (
-        <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
+        <CockpitShell aircraft={controls.aircraft}>
           {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
           {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
           {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
           {renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
           {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
-        </CockpitLayoutGrid>
+        </CockpitShell>
       );
 
     case 'free-practice': {
@@ -303,14 +304,14 @@ function renderLayout(mode: CockpitLayoutMode, orientation: 'portrait' | 'landsc
       // 1. Full Deck (All 4 active)
       if (hasCdu && hasNd && hasPfd && hasAutoflight) {
         return (
-          <CockpitLayoutGrid preset="fullDeck" modeClass="cockpit-stage--full-deck">
+          <CockpitShell aircraft={controls.aircraft}>
             {renderInstrumentPanel('autoflight', controls, { className: 'cockpit-slot--mcp' })}
             {renderInstrumentPanel('pfd', controls, { className: 'cockpit-slot--pfd' })}
             {renderInstrumentPanel('nd', controls, { className: 'cockpit-slot--nd' })}
             {!controls.hiddenPanels.has('eicas') &&
               renderInstrumentPanel('eicas', controls, { className: 'cockpit-slot--eicas' })}
             {renderInstrumentPanel('cdu', controls, { className: 'cockpit-slot--cdu' })}
-          </CockpitLayoutGrid>
+          </CockpitShell>
         );
       }
 

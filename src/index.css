@@ -1,6 +1,7 @@
 @import './styles/tokens.css';
 @import './styles/reset.css';
 @import './styles/cockpit-layout.css';
+@import './styles/cockpit-shell.css';
 @import './styles/instruments.css';
 @import './styles/display.css';
 

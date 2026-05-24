@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════════════
+   CockpitShell — Boeing 737 NG Flight Deck Physical Frame
+
+   Architecture:
+   - The shell IS a CSS grid (grid-template-areas)
+   - Background surfaces (glareshield, panel, pedestal) are absolutely
+     positioned behind grid items (z:0, pointer-events:none)
+   - Cutout divs are grid items providing dark recessed backgrounds
+   - Instruments (children) are grid items stacked on top of cutouts
+     by DOM order (both at z:auto → later DOM wins)
+   - Decorative details (labels, rivets, annunciators) are absolutely
+     positioned with pointer-events:none
+
+   Grid areas match existing cockpit-slot--* classes:
+     mcpslot → .cockpit-slot--mcp
+     pfdslot → .cockpit-slot--pfd
+     ndslot  → .cockpit-slot--nd
+     eicasslot → .cockpit-slot--eicas
+     cduslot → .cockpit-slot--cdu
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Shell: the grid + physical frame ── */
+
+.cockpit-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+
+  grid-template-areas:
+    "gla-l    gla      gla-r"
+    "mcpslot  mcpslot  mcpslot"
+    "pfdslot  ndslot   eicasslot"
+    "ped-l    cduslot  ped-r";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows:
+    clamp(14px, 2vh, 28px)     /* glareshield lip */
+    clamp(140px, 19vh, 260px)  /* MCP row */
+    1fr                        /* PFD/ND/EICAS main panel */
+    clamp(160px, 28vh, 380px); /* CDU pedestal */
+
+  gap: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+
+  /* Physical frame border */
+  border: 4px solid #2a2d32;
+  outline: 2px solid #1a1d22;
+  outline-offset: -6px;
+  box-shadow:
+    0 0 0 8px #14171b,
+    0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+
+  /* Boeing gray base — visible through gaps */
+  background: #6b7178;
+}
+
+/* ── Background surfaces (absolutely positioned, behind grid items) ── */
+
+/* Glareshield surface — spans rows 1+2 */
+.cockpit-shell__glareshield-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(clamp(14px, 2vh, 28px) + clamp(140px, 19vh, 260px));
+  background: linear-gradient(180deg, #14171b 0%, #1e2227 60%, #24282d 100%);
+  border-bottom: 3px solid #0d0f12;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.02),
+    0 6px 14px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* Eyebrow lip at top of glareshield */
+.cockpit-shell__glareshield-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(180deg, #2a2e35, transparent);
+}
+
+/* Glareshield surface texture — subtle horizontal grain */
+.cockpit-shell__glareshield-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.006) 2px,
+    rgba(255, 255, 255, 0.006) 3px
+  );
+}
+
+/* Main instrument panel surface — row 3 */
+.cockpit-shell__panel-surface {
+  position: absolute;
+  top: calc(clamp(14px, 2vh, 28px) + clamp(140px, 19vh, 260px));
+  left: 0;
+  right: 0;
+  bottom: calc(clamp(160px, 28vh, 380px));
+  background: linear-gradient(
+    180deg,
+    #5a5f66 0%,
+    #6b7178 10%,
+    #787d84 50%,
+    #6b7178 90%,
+    #5a5f66 100%
+  );
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Panel surface grain */
+.cockpit-shell__panel-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.012) 0%,
+    transparent 70%
+  );
+}
+
+/* Pedestal surface — row 4 */
+.cockpit-shell__pedestal-surface {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: clamp(160px, 28vh, 380px);
+  background: linear-gradient(180deg, #3a3f45 0%, #2e3237 30%, #25282d 70%, #1a1d22 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* ── Instrument cutouts (grid items, behind instruments via DOM order) ── */
+
+/* MCP housing — recessed cutout in the glareshield */
+.cockpit-shell__mcp-cutout {
+  grid-area: mcpslot;
+  position: relative;
+  margin: clamp(24px, 5vh, 48px) clamp(40px, 6vw, 100px) clamp(10px, 2vh, 20px);
+  background: #0a0c0f;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+  border: 1px solid #1a1d22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Main panel instrument cutouts */
+.cockpit-shell__cutout {
+  position: relative;
+  background: #050608;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+  border: 1px solid #1a1d22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: clamp(6px, 1vh, 14px) clamp(4px, 0.8vw, 12px);
+}
+
+.cockpit-shell__cutout--pfd  { grid-area: pfdslot; }
+.cockpit-shell__cutout--nd   { grid-area: ndslot; }
+.cockpit-shell__cutout--eicas { grid-area: eicasslot; }
+
+/* CDU bay — recessed cutout in the pedestal */
+.cockpit-shell__cdu-bay {
+  grid-area: cduslot;
+  position: relative;
+  margin: clamp(6px, 1.2vh, 16px) auto;
+  width: clamp(280px, 32vw, 540px);
+  max-width: 90%;
+  background: #0a0c0f;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.03);
+  border: 1px solid #1a1d22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Decorative details (pointer-events: none) ── */
+
+/* Annunciator light clusters on glareshield flanks */
+.cockpit-shell__annunciator {
+  position: absolute;
+  top: clamp(6px, 1vh, 16px);
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cockpit-shell__annunciator--left  { left: clamp(12px, 2vw, 32px); }
+.cockpit-shell__annunciator--right { right: clamp(12px, 2vw, 32px); }
+
+.cockpit-shell__annunciator-light {
+  width: clamp(5px, 0.6vw, 8px);
+  height: clamp(5px, 0.6vw, 8px);
+  border-radius: 2px;
+  background: #1a1d22;
+  border: 1px solid #2a2d32;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Warning/caution label stripes */
+.cockpit-shell__label-stripes {
+  position: absolute;
+  top: clamp(4px, 0.6vh, 8px);
+  display: flex;
+  gap: 2px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cockpit-shell__label-stripes--left  { left: clamp(16px, 3vw, 48px); }
+.cockpit-shell__label-stripes--right { right: clamp(16px, 3vw, 48px); }
+
+.cockpit-shell__label-stripe {
+  width: clamp(12px, 1.2vw, 20px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 1px;
+}
+
+/* Panel section labels */
+.cockpit-shell__panel-label {
+  position: absolute;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(6px, 0.6vw, 8px);
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Rivet / screw details */
+.cockpit-shell__rivet {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #5a5f66, #2a2d32);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Airbus variant ── */
+
+.cockpit-shell--airbus .cockpit-shell__glareshield-surface {
+  background: linear-gradient(180deg, #1a1e24 0%, #242a32 60%, #2a3038 100%);
+}
+
+.cockpit-shell--airbus .cockpit-shell__panel-surface {
+  background: linear-gradient(180deg, #5a6068 0%, #6e747c 50%, #5a6068 100%);
+}
+
+.cockpit-shell--airbus .cockpit-shell__pedestal-surface {
+  background: linear-gradient(180deg, #3a4048 0%, #2a2e34 50%, #1e2228 100%);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1024px) {
+  .cockpit-shell {
+    grid-template-rows:
+      clamp(10px, 1.5vh, 20px)
+      clamp(110px, 16vh, 200px)
+      1fr
+      clamp(130px, 24vh, 280px);
+  }
+
+  .cockpit-shell__mcp-cutout {
+    margin: clamp(16px, 3vh, 32px) clamp(24px, 4vw, 60px) clamp(6px, 1vh, 12px);
+  }
+
+  .cockpit-shell__annunciator { gap: 5px; }
+}
+
+@media (max-width: 768px) {
+  .cockpit-shell {
+    grid-template-rows:
+      clamp(8px, 1vh, 14px)
+      clamp(90px, 14vh, 160px)
+      1fr
+      clamp(110px, 20vh, 220px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  .cockpit-shell__mcp-cutout {
+    margin: clamp(10px, 2vh, 20px) clamp(16px, 3vw, 40px) clamp(4px, 0.5vh, 8px);
+  }
+
+  .cockpit-shell__annunciator,
+  .cockpit-shell__label-stripes { display: none; }
+}
+
+@media (min-width: 2200px) and (min-height: 1200px) {
+  .cockpit-shell {
+    grid-template-rows:
+      clamp(22px, 2.5vh, 36px)
+      clamp(200px, 20vh, 320px)
+      1fr
+      clamp(240px, 30vh, 460px);
+  }
+
+  .cockpit-shell__mcp-cutout {
+    margin: clamp(40px, 6vh, 64px) clamp(60px, 8vw, 160px) clamp(16px, 2vh, 32px);
+  }
+
+  .cockpit-shell__cdu-bay {
+    width: clamp(420px, 36vw, 600px);
+  }
+}
