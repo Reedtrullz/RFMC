@@ -90,6 +90,21 @@ export class NavDatabaseService {
         { type: 'TF', fixIdent: 'CANAR' },
       ],
     });
+
+    // ENVA Trondheim Værnes
+    const envaRunways: Runway[] = [
+      { ident: '09', magneticCourse: 88, thresholdLat: 63.457, thresholdLon: 10.91, elevationFt: 56 },
+      { ident: '27', magneticCourse: 268, thresholdLat: 63.457, thresholdLon: 10.9383, elevationFt: 56 },
+    ];
+    this.airports['ENVA'] = {
+      icao: 'ENVA',
+      name: 'Trondheim Værnes',
+      lat: 63.4575,
+      lon: 10.9242,
+      elevationFt: 56,
+      runways: envaRunways,
+    };
+    this.navaids['TRD'] = { ident: 'TRD', type: 'VORDME', frequency: '114.4', lat: 63.455, lon: 10.9183 };
   }
 
   public getAirport(icao: string): Airport | undefined {

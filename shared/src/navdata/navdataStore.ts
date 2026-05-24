@@ -38,6 +38,8 @@ export const NAV_FIXES: Record<string, NavFix> = {
   ENTC: { ident: 'ENTC', type: 'AIRPORT', lat: 69.6814, lon: 18.9189, elevationFt: 32 },
   ENTO: { ident: 'ENTO', type: 'AIRPORT', lat: 59.1867, lon: 10.2586, elevationFt: 286 },
   ENZV: { ident: 'ENZV', type: 'AIRPORT', lat: 58.8767, lon: 5.6378, elevationFt: 30 },
+  ENVA: { ident: 'ENVA', type: 'AIRPORT', lat: 63.4575, lon: 10.9242, elevationFt: 56 },
+  TRD: { ident: 'TRD', type: 'VOR', lat: 63.455, lon: 10.9183, frequency: '114.4' },
   // Route ENGM-ENBR
   LUNIP: { ident: 'LUNIP', type: 'WAYPOINT', lat: 60.1, lon: 10.5 },
   PESOT: { ident: 'PESOT', type: 'WAYPOINT', lat: 60.15, lon: 8.5 },
