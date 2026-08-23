@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { validateDisplayGrid } from '../fmc/displayGridValidation';
 import { displayDataToGrid } from '../fmc/displayGrid';
+import { dispatchLskAction } from '../fmc/actionHandlers/lskDispatcher';
 import { buildInitialFMCState } from '../fmc/initialState';
 import { getPageRenderer } from '../fmc/pages/index';
 import { getAirbusPageRenderer } from '../fmc/pages/airbus/index';
@@ -78,6 +79,14 @@ const airbusData: Partial<FMCState> = {
   ident: { aircraftType: 'A320-214', engRating: 'CFM56-5B4', navDataVersion: '2501', opProgram: 'FMS2' },
 };
 
+const rteScratchpadByAction: Record<string, string> = {
+  set_origin: 'KJFK',
+  set_dest: 'KDCA',
+  set_co_route: 'KJFKDCA1',
+  set_flt_no: 'UA123',
+  set_route: 'KJFK DCT RBV DCT KDCA',
+};
+
 describe('Boeing renderer grammar conformance', () => {
   const boeingPages: string[] = ['IDENT', 'POS_INIT', 'RTE', 'DEP_ARR', 'PERF_INIT', 'TAKEOFF_REF', 'LEGS', 'PROGRESS'];
 
@@ -95,6 +104,31 @@ describe('Boeing renderer grammar conformance', () => {
       }
     });
   }
+
+  it('Boeing RTE emits only dispatcher-recognized LSK actions', () => {
+    const renderer = getPageRenderer('RTE');
+    if (!renderer) throw new Error('No renderer for RTE');
+
+    for (const rteSubPage of [0, 1]) {
+      const rendererState = state({
+        ...boeingData,
+        currentPage: 'RTE',
+        rteSubPage,
+        route: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'UA123', companyRoute: '', routeString: '' },
+      });
+      const data = renderer(rendererState);
+
+      for (const [slot, action] of Object.entries(data.lskActions)) {
+        if (!action) continue;
+        const result = dispatchLskAction({
+          state: rendererState,
+          action,
+          scratchpad: rteScratchpadByAction[action] ?? '',
+        });
+        expect(result.handled, `RTE ${rteSubPage + 1}/2 ${slot} emitted unhandled action "${action}"`).toBe(true);
+      }
+    }
+  });
 });
 
 describe('Airbus renderer grammar conformance', () => {

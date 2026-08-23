@@ -26,7 +26,7 @@
     "test:visual:update": "playwright test --grep=\"Visual Regression\" --update-snapshots",
     "check:status-docs": "node scripts/check-status-docs.mjs",
     "measure:visual": "node scripts/measure-visual-fidelity.mjs",
-    "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=chromium",
+    "capture:baseline": "CAPTURE_BASELINE=1 playwright test e2e/baseline-screenshots.spec.ts --project=desktop-chromium",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

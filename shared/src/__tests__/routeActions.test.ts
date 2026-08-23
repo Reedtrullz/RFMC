@@ -142,6 +142,43 @@ describe('handleSetFltNo (via dispatcher)', () => {
   });
 });
 
+describe('handleSetCoRoute (via dispatcher)', () => {
+  it('returns handled:false when scratchpad is empty', () => {
+    const result = handleRouteAction('set_co_route', makeState(), '');
+    expect(result.handled).toBe(false);
+  });
+
+  it('returns failure for malformed company route identifiers', () => {
+    const result = handleRouteAction('set_co_route', makeState(), 'KJFK KDCA');
+    expect(result.handled).toBe(true);
+    expect(result.failure).toMatchObject({
+      code: 'INVALID_FORMAT',
+      text: 'INVALID ENTRY',
+      source: 'routeActions.set_co_route',
+    });
+  });
+
+  it('sets company route on pending route without replacing existing route fields', () => {
+    const state = makeState({
+      route: { origin: 'KJFK', destination: 'KDCA', flightNumber: 'AAL123', companyRoute: '', routeString: '' },
+    });
+    const result = handleRouteAction('set_co_route', state, 'kjfkdca1');
+
+    expect(result.handled).toBe(true);
+    expect(result.success?.clearScratchpad).toBe(true);
+    const patch = getPatch(result);
+    expect(patch.pendingRoute).toMatchObject({
+      origin: 'KJFK',
+      destination: 'KDCA',
+      flightNumber: 'AAL123',
+      companyRoute: 'KJFKDCA1',
+      coRoute: 'KJFKDCA1',
+    });
+    expect(patch.isModified).toBe(true);
+    expect(patch.execLit).toBe(true);
+  });
+});
+
 describe('handleSetRoute (via dispatcher)', () => {
   it('returns handled:false when scratchpad is empty', () => {
     const result = handleRouteAction('set_route', makeState(), '');

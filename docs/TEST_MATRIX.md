@@ -2,15 +2,21 @@
 
 Status source: `docs/STATUS.md`.
 
+Playwright uses an isolated strict-port RFMS dev server on `127.0.0.1:5174` by default. Use `PLAYWRIGHT_BASE_URL` only for intentional external-server validation.
+
 ## Automated Gates
 
-| Gate                              | Command                        | Current status       | Required status              |
+| Gate                              | Command                        | Current local status | Required release status      |
 | --------------------------------- | ------------------------------ | -------------------- | ---------------------------- |
-| Shared/frontend/server TypeScript | `npm run typecheck:all`        | See `docs/STATUS.md` | 0 errors                     |
-| Unit/regression tests             | `npm test -- --run`            | See `docs/STATUS.md` | 100% pass                    |
-| Playwright E2E                    | `npm run test:e2e`             | See `docs/STATUS.md` | 100% pass for runnable tests |
-| Production build                  | `npm run build`                | See `docs/STATUS.md` | Successful build             |
-| Audit policy                      | `npm audit --audit-level=high` | See `docs/STATUS.md` | No high/critical issues      |
+| Shared/frontend/server TypeScript | `npm run typecheck:all`        | Passing              | 0 errors                     |
+| Unit/regression tests             | `npm test -- --run`            | Passing              | Clean process exit           |
+| Coverage                          | `npm run test:coverage`        | Passing              | Thresholds met and recorded  |
+| Playwright smoke E2E              | `npm run test:e2e:ci`          | Passing              | 100% pass                    |
+| Playwright full E2E               | `npm run test:e2e`             | Not refreshed        | 100% pass for runnable tests |
+| Production build                  | `npm run build`                | Passing              | Successful build             |
+| Audit policy                      | `npm audit --audit-level=high` | Passing              | No high/critical issues      |
+| Visual fidelity manifest          | `npm run measure:visual`       | Passing with warning | Pass without overclaiming    |
+| Baseline capture                  | `npm run capture:baseline`     | Not capture-run      | Approved if snapshots change |
 
 ## Major Flow Coverage
 
@@ -35,7 +41,7 @@ Status source: `docs/STATUS.md`.
 | CONTROL mode                      | Backend-authoritative page/input parity                                          | Mock WebSocket bridge test | Live PMDG required            | Mock adapter verifies connect/input/display/key forwarding                                                 |
 | MSFS PMDG                         | Keypress -> CDU update -> display readback                                       | No                         | Required on Windows/MSFS/PMDG | Cannot be validated on this macOS workspace                                                                |
 | PWA/iPad                          | Offline refresh, mounted cockpit layout, safe areas                              | Partial                    | Required on iPad              | Update prompt and portrait fallback are automated; real offline startup remains production/iPad validation |
-| Visual baseline                   | Snapshot suites, high-res layouts, and baseline capture                          | Scripted                   | Reference comparison required | `npm run capture:baseline` plus `npm run measure:visual`                                                   |
+| Visual baseline                   | Snapshot suites, high-res layouts, and baseline capture                          | Scripted                   | Reference comparison required | `npm run capture:baseline` plus `npm run measure:visual`; capture is approval work, not a hardware claim   |
 
 ## Coverage Targets
 
@@ -49,7 +55,7 @@ Status source: `docs/STATUS.md`.
 
 ## CI Gate Policy
 
-Every PR should pass:
+Every PR should pass the gates below. This is policy, not evidence that CI passed for the current local checkout; record CI run IDs or URLs in `docs/STATUS.md` or release notes when checked.
 
 - `npm run typecheck:all`
 - `npm test -- --run`
@@ -62,3 +68,12 @@ Every PR should pass:
 - Audit policy review for dependency changes
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` runs these gates with `AIRCRAFT_ADAPTER=mock` so CI does not depend on Windows/MSFS/PMDG.
+
+## External Proof Gates
+
+These gates are intentionally nonlocal and remain unclaimed until recorded with environment details and artifacts:
+
+- Rights-cleared hardware reference approval and pixel/geometry measurement.
+- Physical iPad cockpit usability, mounted-device touch review, and installed/offline startup.
+- CI and deployment proof with run IDs, deploy IDs, health checks, and immutable commit SHA or image digest.
+- Windows/MSFS/PMDG keypress-to-display round trip in `docs/MSFS_LIVE_VALIDATION.md`.

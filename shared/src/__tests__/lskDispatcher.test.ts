@@ -46,6 +46,12 @@ describe('dispatchLskAction', () => {
     expect(result.success?.patch).toBeDefined();
   });
 
+  it('dispatches route action (set_co_route)', () => {
+    const result = dispatchLskAction({ state: makeState(), action: 'set_co_route', scratchpad: 'KJFKDCA1' });
+    expect(result.handled).toBe(true);
+    expect(getPatch(result).pendingRoute?.companyRoute).toBe('KJFKDCA1');
+  });
+
   it('dispatches performance action (set_crz_alt)', () => {
     const result = dispatchLskAction({ state: makeState(), action: 'set_crz_alt', scratchpad: '350' });
     expect(result.handled).toBe(true);

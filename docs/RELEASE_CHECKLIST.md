@@ -5,14 +5,16 @@ Follow these steps for every production release.
 ## 1. Development & Quality
 
 - [ ] Release branch or focused commit merged to `main`.
+- [ ] `docs/STATUS.md` updated with local commit SHA, environment, command evidence, and explicit non-claims.
 - [ ] `npm run typecheck:all` passes.
-- [ ] `npm test -- --run` passes.
+- [ ] `npm test -- --run` passes with a clean process exit.
 - [ ] `npm run build` passes.
 - [ ] `npm run check:status-docs` passes.
 - [ ] `npm run test:e2e:ci` passes.
 - [ ] Broader `npm run test:e2e` result is recorded in `docs/STATUS.md`, including any local browser/runtime caveats.
 - [ ] Visual regression baselines approved (`npm run capture:baseline` if changed).
 - [ ] `npm run measure:visual` passes and the report does not overstate hardware accuracy.
+- [ ] Coverage result refreshed or explicitly deferred in `docs/STATUS.md`.
 - [ ] No new `TODO` or `FIXME` items introduced without tracking.
 
 ## 2. Security Audit
@@ -38,6 +40,7 @@ Follow these steps for every production release.
 - [ ] Deployment references an immutable commit SHA or image digest.
 - [ ] Rollback command and previous known-good SHA are recorded.
 - [ ] TLS termination, memory limits, and CPU limits are configured or explicitly deferred.
+- [ ] CI run URL/ID and deployment run URL/ID are recorded, or the release notes explicitly say they were not checked.
 
 ## 5. Post-Release
 

@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMessage, DisplayData, ServerMessage } from '@virtual-cdu/shared';
+import type { DisplayData, ServerMessage } from '@virtual-cdu/shared';
 import { devError, devLog } from '@virtual-cdu/shared';
 import { createAircraftAdapter } from './aircraft-adapters';
 import { getAdapterHealth, toAdapterCapabilities } from './aircraft-adapters/adapter-health';
@@ -86,7 +86,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         if (token !== authToken) {
           metrics.authRejected();
           logger.warn(LogEvent.WS_AUTH_REJECTED, { ip: getClientIp(req) });
-          done(false, 4001, 'Authentication failed');
+          done(false, 401, 'Authentication failed');
           return;
         }
       }
@@ -106,7 +106,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   const fmc =
     options.fmc ??
     new FMCEngine({
-      onError: (err) => {
+      onError: () => {
         broadcast({ type: 'error', message: 'Engine sync error' });
       },
     });
@@ -151,6 +151,8 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
       ...metrics.getMetrics(),
       aircraft: aircraft.isConnected ? aircraft.name : 'none',
       aircraftType: aircraft.aircraftType,
+      capabilities: aircraft.capabilities,
+      structuredCapabilities: toAdapterCapabilities(aircraft),
       connectionStatus: aircraft.connectionStatus,
       adapterHealth: getAdapterHealth(aircraft),
     });
@@ -449,7 +451,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
             broadcast({ type: 'sim.heartbeat', serverTime: Date.now() } as ServerMessage);
             break;
         }
-      } catch (err) {
+      } catch {
         metrics.validationError();
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON' } as ServerMessage));
       }
