@@ -1,3 +1,5 @@
+import { getRuntimeIdentity } from './runtime-identity';
+
 /**
  * Structured logging for production
  */
@@ -23,10 +25,10 @@ interface LogContext {
 }
 
 export function log(context: LogContext) {
+  const identity = getRuntimeIdentity();
   const output = {
     timestamp: new Date().toISOString(),
-    version: process.env.APP_VERSION || 'unknown',
-    commit: process.env.COMMIT_SHA || 'unknown',
+    ...identity,
     ...context,
   };
 

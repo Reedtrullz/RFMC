@@ -12,6 +12,8 @@ import { configureSecurity } from './security';
 import { logger, LogEvent } from './logging';
 import { metrics } from './metrics';
 import { validateClientMessage, WSRateLimiter, WSConnectionRateLimiter } from './websocketValidation';
+import { getClientIp } from './client-ip';
+import { getRuntimeIdentity } from './runtime-identity';
 
 function parseAllowedOrigins(value: string | undefined): string[] {
   if (!value) return [];
@@ -60,14 +62,6 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
   const allowedOrigins = options.allowedOrigins ?? parseAllowedOrigins(process.env.WS_ALLOWED_ORIGINS);
   const maxMessageBytes = options.maxMessageBytes ?? parseInt(process.env.WS_MAX_MESSAGE_BYTES || '65536', 10);
   const connectionRateLimiter = new WSConnectionRateLimiter();
-
-  function getClientIp(req: http.IncomingMessage): string {
-    const forwarded = req.headers['x-forwarded-for'];
-    if (forwarded) {
-      return (Array.isArray(forwarded) ? forwarded[0] : forwarded).split(',')[0].trim();
-    }
-    return req.socket.remoteAddress || 'unknown';
-  }
 
   const wss = new WebSocketServer({
     server,
@@ -149,6 +143,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
     res.json({
       status: 'ok',
       ...metrics.getMetrics(),
+      build: getRuntimeIdentity(),
       aircraft: aircraft.isConnected ? aircraft.name : 'none',
       aircraftType: aircraft.aircraftType,
       connectionStatus: aircraft.connectionStatus,

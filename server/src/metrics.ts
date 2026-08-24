@@ -1,3 +1,5 @@
+import { getRuntimeIdentity } from './runtime-identity';
+
 /**
  * Basic application metrics tracking
  */
@@ -50,7 +52,7 @@ export class MetricsRegistry {
       authRejections: this.authRejections,
       rateLimitedConnections: this.rateLimitedConnections,
       pingTimeouts: this.pingTimeouts,
-      version: process.env.APP_VERSION || '0.1.0',
+      version: getRuntimeIdentity().version,
     };
   }
 }
