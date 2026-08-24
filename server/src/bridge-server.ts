@@ -80,7 +80,7 @@ export function createBridgeServer(options: BridgeServerOptions = {}): BridgeSer
         if (token !== authToken) {
           metrics.authRejected();
           logger.warn(LogEvent.WS_AUTH_REJECTED, { ip: getClientIp(req) });
-          done(false, 4001, 'Authentication failed');
+          done(false, 401, 'Authentication failed');
           return;
         }
       }

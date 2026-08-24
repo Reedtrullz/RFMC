@@ -17,6 +17,8 @@ export function handleRouteAction(
       return handleSetDest(state, scratchpad);
     case 'set_flt_no':
       return handleSetFltNo(state, scratchpad);
+    case 'set_co_route':
+      return handleSetCoRoute(state, scratchpad);
     case 'set_route':
       return handleSetRoute(state, scratchpad);
     case 'set_direct_to':
@@ -159,6 +161,35 @@ function handleSetFltNo(state: FMCState, scratchpad: string): FmcActionResult {
       patch: {
         pendingRoute: { ...route, flightNumber: scratchpad.toUpperCase() },
         pendingFlightPlan: { ...fp, flightNumber: scratchpad.toUpperCase() },
+        isModified: true,
+        execLit: true,
+      },
+    },
+  };
+}
+
+function handleSetCoRoute(state: FMCState, scratchpad: string): FmcActionResult {
+  if (!scratchpad) return { handled: false };
+
+  const coRoute = scratchpad.trim().toUpperCase();
+  if (!/^[A-Z0-9]{1,10}$/.test(coRoute)) {
+    return {
+      handled: true,
+      failure: {
+        code: 'INVALID_FORMAT' as const,
+        text: 'INVALID ENTRY',
+        source: 'routeActions.set_co_route',
+      },
+    };
+  }
+
+  const route = state.pendingRoute ?? state.route;
+  return {
+    handled: true,
+    success: {
+      clearScratchpad: true,
+      patch: {
+        pendingRoute: { ...route, companyRoute: coRoute, coRoute },
         isModified: true,
         execLit: true,
       },

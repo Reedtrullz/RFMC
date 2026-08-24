@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import type { ServerMessage } from '@virtual-cdu/shared';
 import { createBridgeServer, type BridgeServer } from '../bridge-server';
 import { MockSimConnectAdapter } from '../aircraft-adapters/mock-simconnect';
 
 let bridge: BridgeServer | null = null;
+const originalAuthToken = process.env.AUTH_TOKEN;
 
 class MessageCollector {
   private messages: ServerMessage[] = [];
@@ -44,12 +45,54 @@ function waitOpen(ws: WebSocket): Promise<void> {
   });
 }
 
+function waitRejectedUpgrade(ws: WebSocket): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timed out waiting for rejected upgrade'));
+    }, 2000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      ws.off('open', handleOpen);
+      ws.off('unexpected-response', handleUnexpectedResponse);
+      ws.off('error', handleError);
+    }
+
+    function handleOpen() {
+      cleanup();
+      reject(new Error('WebSocket unexpectedly opened'));
+    }
+
+    function handleUnexpectedResponse(_request: unknown, response: { statusCode?: number; resume: () => void }) {
+      cleanup();
+      response.resume();
+      resolve(response.statusCode ?? 0);
+    }
+
+    function handleError(error: Error) {
+      cleanup();
+      reject(error);
+    }
+
+    ws.once('open', handleOpen);
+    ws.once('unexpected-response', handleUnexpectedResponse);
+    ws.once('error', handleError);
+  });
+}
+
 describe('bridge server', () => {
+  beforeEach(() => {
+    delete process.env.AUTH_TOKEN;
+  });
+
   afterEach(async () => {
     if (bridge) {
       await bridge.stop();
       bridge = null;
     }
+    if (originalAuthToken === undefined) delete process.env.AUTH_TOKEN;
+    else process.env.AUTH_TOKEN = originalAuthToken;
   });
 
   it('connects through the mock adapter and broadcasts CONTROL-mode display data', async () => {
@@ -170,17 +213,27 @@ describe('bridge server', () => {
       headers: { Origin: 'https://evil.example.test' },
     });
 
-    await expect(
-      new Promise<void>((resolve, reject) => {
-        ws.once('open', () => resolve());
-        ws.once('unexpected-response', (_request, response) => {
-          reject(new Error(`unexpected-response:${response.statusCode}`));
-        });
-        ws.once('error', reject);
-      }),
-    ).rejects.toThrow('unexpected-response:403');
+    await expect(waitRejectedUpgrade(ws)).resolves.toBe(403);
+  });
 
-    ws.close();
+  it('rejects clients with an invalid AUTH_TOKEN using an HTTP status code', async () => {
+    process.env.AUTH_TOKEN = 'expected-token';
+    bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+    const port = await bridge.start();
+    const ws = new WebSocket(`ws://127.0.0.1:${port}?token=wrong-token`);
+
+    await expect(waitRejectedUpgrade(ws)).resolves.toBe(401);
+  });
+
+  it('keeps adapter capabilities off the unauthenticated health endpoint', async () => {
+    bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+    const port = await bridge.start();
+
+    const response = await fetch(`http://127.0.0.1:${port}/health`);
+    const health = await response.json();
+
+    expect(health).not.toHaveProperty('capabilities');
+    expect(health).not.toHaveProperty('structuredCapabilities');
   });
 
   it('sets baseline security headers on HTTP responses', async () => {

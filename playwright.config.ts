@@ -1,5 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const playwrightPort = process.env.PLAYWRIGHT_PORT ?? '5174';
+const parsedPlaywrightPort = Number(playwrightPort);
+if (
+  !/^\d+$/.test(playwrightPort) ||
+  !Number.isInteger(parsedPlaywrightPort) ||
+  parsedPlaywrightPort < 1 ||
+  parsedPlaywrightPort > 65535
+) {
+  throw new Error(`Invalid PLAYWRIGHT_PORT: ${playwrightPort}`);
+}
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${parsedPlaywrightPort}`;
+const useExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
+
 export default defineConfig({
   testDir: './e2e',
   snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}',
@@ -9,7 +22,7 @@ export default defineConfig({
   workers: process.env.CI ? '50%' : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -46,9 +59,11 @@ export default defineConfig({
       use: { ...devices['iPhone 14'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: useExternalServer
+    ? undefined
+    : {
+        command: `npm run dev -- --host 127.0.0.1 --port ${parsedPlaywrightPort} --strictPort`,
+        url: baseURL,
+        reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',
+      },
 });

@@ -11,7 +11,7 @@ export function renderBoeingRteGrid(state: FMCState): DisplayData {
     const origin = route.origin || '[    ]';
     const dest = route.destination || '[    ]';
     const fltNo = route.flightNumber || '--------';
-    const coRte = route.companyRoute || '---------';
+    const coRte = route.companyRoute || route.coRoute || '---------';
 
     return boeingPage(
       [

@@ -2,6 +2,8 @@
 
 Status source: `docs/STATUS.md`.
 
+Playwright starts an isolated strict-port RFMS dev server on `127.0.0.1:5174` by default. Set `PLAYWRIGHT_PORT` to another valid TCP port (1-65535), or use `PLAYWRIGHT_BASE_URL` only for intentional external-server validation.
+
 ## Automated Gates
 
 | Gate                              | Command                        | Current status       | Required status              |

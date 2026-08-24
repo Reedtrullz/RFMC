@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useWebSocket, saveServerUrl, getServerUrl } from '../hooks/useWebSocket';
-import { useFMCStore } from '../store/useFMCStore';
 import { useAircraftStore } from '../store/aircraftStore';
 import { useConnectionStore } from '../store/connectionStore';
 import { useCockpitLayoutStore } from '../store/cockpitLayoutStore';
@@ -92,8 +91,10 @@ export function ConnectionStatus() {
     typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '---';
 
   const handleConnect = () => {
-    saveServerUrl(serverUrl);
-    connect();
+    const nextServerUrl = serverUrl.trim();
+    if (!nextServerUrl) return;
+    saveServerUrl(nextServerUrl);
+    connect(nextServerUrl);
   };
 
   const handleDisconnect = () => {
@@ -172,8 +173,11 @@ export function ConnectionStatus() {
             </div>
           )}
 
-          <label className="block text-cdu-text/50 text-[10px] font-cdu mb-1">Server URL (WebSocket)</label>
+          <label htmlFor="connection-server-url" className="block text-cdu-text/50 text-[10px] font-cdu mb-1">
+            Server URL (WebSocket)
+          </label>
           <input
+            id="connection-server-url"
             type="text"
             value={serverUrl}
             onChange={(e) => setServerUrl(e.target.value)}
@@ -194,6 +198,7 @@ export function ConnectionStatus() {
                 label={connectionStatus === 'ERROR' ? 'RETRY MSFS' : 'CONNECT TO MSFS'}
                 className="flex-1 h-8 text-[10px]"
                 variant="exec"
+                disabled={!serverUrl.trim()}
                 onPress={handleConnect}
               />
             )}
