@@ -1,31 +1,36 @@
 # VirtualCDU Status
 
-Last updated: 2026-05-19
+Last updated: 2026-06-17
 
-This is the current source of truth for automated status. Other docs should link here instead of duplicating live test counts or build metrics.
+> **Historical evidence snapshot, not a current release/status claim.** The commands below were recorded on 2026-06-17 against a dirty working tree based on `main` at `810fc9652da431eaf8978b85bf4af131605559b5`. That work in progress was later preserved at `8f746b3be8a665e9b8653a0580d578934a451018`; no exact-tree rerun is recorded for the preservation commit.
+
+Other docs should link here for the dated evidence snapshot rather than presenting these counts as live metrics.
+
+Evidence scope: the commands below ran against local `main` at `810fc9652da431eaf8978b85bf4af131605559b5` (`feat(navdata): add ENVA Trondheim Vaernes airport`), Node `v22.22.3`, npm `10.9.8`. This page records command results from that historical local working tree only. It does not claim CI, deployment, physical iPad, Windows/MSFS/PMDG, pilot review, or hardware-reference validation unless that evidence is listed explicitly.
 
 ## Automated Baseline
 
-| Gate                              | Command                                                                                  | Current result                                                                                                                  |
-| --------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| TypeScript                        | `npm run typecheck:all`                                                                  | Passing (all 3 workspaces)                                                                                                      |
-| Unit/regression tests             | `npm test -- --run`                                                                      | 845/845 passing (65 test files)                                                                                                 |
-| Playwright smoke E2E              | `npm run test:e2e:ci`                                                                    | 3/3 passing (desktop Chromium smoke gate)                                                                                       |
-| Playwright full E2E               | `npm run test:e2e`                                                                       | Not currently green on this macOS checkout; see caveats                                                                         |
-| Production build                  | `npm run build`                                                                          | Passing                                                                                                                         |
-| Coverage                          | `npm run test:coverage`                                                                  | Passed (Lines 57%, Functions 52%, Branches 52%, Statements 54% global thresholds)                                               |
-| Audit policy                      | `npm audit --audit-level=high`                                                           | Passing high/critical policy; moderate Vite/esbuild dev-dependency exception documented                                         |
-| ND visual baseline                | `npm run test:e2e:visual`                                                                | 4/4 passing (Boeing MAP, Boeing MAP failure, Airbus ARC, Airbus ARC aligning)                                                   |
-| PFD visual baseline               | `npx playwright test e2e/visual-pfd.spec.ts --project=desktop-chromium`                  | 8/8 passing (Boeing/Airbus automation, focused, approach, and failure PFDs)                                                     |
-| Cockpit visual baseline           | `npx playwright test e2e/visual/cockpit-layouts.spec.ts --project=desktop-chromium`      | 27/27 passing (task modes, focused panels, tablet landscape layouts, layout assertions)                                         |
-| Broad desktop visual suite        | `npm run test:visual -- --project=desktop-chromium`                                      | 60/60 passing, 18 high-resolution-only tests skipped                                                                            |
-| 3456x2234 cockpit visual baseline | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234`     | 18/18 passing                                                                                                                   |
-| Retina cockpit visual baseline    | `npx playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2` | 18/18 passing                                                                                                                   |
-| Visual fidelity manifest          | `npm run measure:visual`                                                                 | Passing; generated `docs/VISUAL_FIDELITY_REPORT.md` and warns that rights-cleared hardware reference crops are not approved yet |
+| Gate                         | Command                                   | Local result on 2026-06-17                                                                                                                                                   |
+| ---------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript                   | `npm run typecheck:all`                   | Passing across `shared`, `src`, and `server`.                                                                                                                                |
+| Unit/regression tests        | `npm test -- --run`                       | Passing cleanly: 69 files / 864 tests.                                                                                                                                       |
+| Playwright smoke E2E         | `npm run test:e2e:ci`                     | Passing: 3 desktop Chromium smoke tests. Playwright starts RFMS on isolated strict port `127.0.0.1:5174` by default. Vite/Tailwind and Zustand deprecation warnings remain.  |
+| Playwright full E2E          | `npm run test:e2e`                        | Not run in this refresh; no full-matrix pass is claimed.                                                                                                                     |
+| Production build             | `npm run build`                           | Passing. Vite emitted Tailwind content-pattern, ineffective dynamic-import, chunk-size, and plugin-timing warnings.                                                          |
+| Coverage                     | `npm run test:coverage`                   | Passing configured thresholds: statements 58.99%, branches 56.70%, functions 57.86%, lines 60.76%.                                                                           |
+| Lint                         | `npm run lint`                            | Passing with warnings only; warnings are tracked technical debt, not a hard release blocker in the current config.                                                           |
+| Format                       | `npm run format:check`                    | Passing.                                                                                                                                                                     |
+| Status-doc consolidation     | `npm run check:status-docs`               | Passing.                                                                                                                                                                     |
+| Audit policy                 | `npm audit --omit=dev --audit-level=high` | Passing; npm reported `found 0 vulnerabilities`.                                                                                                                             |
+| Full audit check             | `npm audit --audit-level=high`            | Passing; npm reported `found 0 vulnerabilities`.                                                                                                                             |
+| Visual fidelity manifest     | `npm run measure:visual`                  | Passing. Report found 367 app-owned snapshots, 4 reference entries, and 0 approved pixel-measurement references; hardware pixel accuracy remains not measured.               |
+| Baseline capture script path | `npm run capture:baseline -- --list`      | Passing; the script resolves the `desktop-chromium` Playwright project and lists 2 baseline tests. Baseline capture itself was not run because it writes approval artifacts. |
 
 ## Current Commit
 
-Latest reviewed base commit: `9f1886d` (latest `019f13d` / `d9147b1` / `a93967f` / `8d88ddf` / `6beb401` / `ca27524`). PRs #1–#24 merged. Store extraction phase complete. Cockpit visual regression baselines added (#23). ND symbology realism pass merged (#24) with Boeing/Airbus ND visual baselines captured and verified. PFD focused/approach/failure states, Boeing MCP and Airbus FCU hardware styling, focused/tablet cockpit visual baselines, 3456x2234 plus Retina-equivalent cockpit visual protection, state-aware cockpit guidance, shared PFD/autoflight/LNAV/VNAV/performance derived-state models, Airbus PROG/FUEL PRED shared-truth rendering, and backend CONTROL-mode Airbus display coverage are present. The current working tree resolves 100% of all 59+ gaps: compiles 3 workspaces clean, passes all 845 tests with 100% success under newly raised thresholds, heals all CI/CD eslint and prettier formatting checks, migrates 100% of Boeing and Airbus page layouts to grid segments with dynamic line compilation for backwards compatibility, upgrades the GPWS engine to support all 7 modes with dynamic voice alerts enroute, implements a highly authentic EICAS Engine Primary dial instrument display, enables draggable/detachable overlays (Tutorials, EICAS, Checklist, Settings) to prevent keyboard blocking, and resolves tutorial step highlights and subpage sync defects.
+Latest local commit observed for this refresh: `810fc9652da431eaf8978b85bf4af131605559b5`.
+
+The working tree contained source/test/docs edits for this hardening slice. The command results above were gathered against that dirty local tree, so they are useful local evidence but not a release certification.
 
 ## Implementation State
 
@@ -34,6 +39,9 @@ See `docs/IMPLEMENTATION_STATUS.md` for the dispatcher milestone, cockpit visual
 ## Next Major Work
 
 - Rights-cleared hardware reference intake and actual pixel/geometry measurements against those references.
+- Physical iPad cockpit validation on the target device class.
+- CI/deploy evidence capture with run IDs, URLs, or immutable image/commit identifiers.
+- Windows + MSFS + PMDG live round-trip validation recorded in `docs/MSFS_LIVE_VALIDATION.md`.
 - Expand state-aware training from cockpit help into lesson packs, scoring, debrief, and highlighted expected controls.
 - Continue integrating shared LNAV/VNAV truth into ND active segment/vertical cues, direct-to workflows, and backend CONTROL-mode parity beyond the current Boeing/Airbus PROG slices.
 - Integrate trainer-grade performance prediction into PERF, scratchpad messages, and training guidance.
@@ -42,8 +50,11 @@ See `docs/IMPLEMENTATION_STATUS.md` for the dispatcher milestone, cockpit visual
 ## Validation Caveats
 
 - The app is a web-based procedure trainer, not certified training software and not approved for real-world operations.
-- PMDG/MSFS live round-trip validation requires a Windows + MSFS + PMDG environment and is not proven by local macOS CI.
-- Visual screenshots and the visual-fidelity manifest prove render stability and metadata completeness only; they do not prove hardware pixel accuracy until rights-cleared reference crops are measured.
+- Passing local gates do not imply CI, deployment, physical-device, pilot-review, or live-simulator readiness.
+- Playwright local runs now use an isolated strict-port dev server by default; set `PLAYWRIGHT_BASE_URL` only when intentionally targeting an already-running RFMS instance.
+- PMDG/MSFS live round-trip validation requires a Windows + MSFS + PMDG environment and was not run in this local refresh.
+- Physical iPad cockpit usability, mounted-device ergonomics, touch feel, and offline startup were not validated on hardware in this refresh.
+- No CI workflow run, deploy pipeline, live URL, health endpoint, TLS termination, rollback, or post-release monitor was checked in this refresh.
+- Visual screenshots and the visual-fidelity manifest prove render stability and metadata completeness only; they do not prove hardware pixel accuracy until rights-cleared reference crops are approved and measured.
 - Airbus remains secondary scope; display-only pages must stay clearly scoped in docs and UI.
-- `npm run test:e2e` remains broader than the current verified smoke gate. The verified E2E gate for this update is `npm run test:e2e:ci`.
-- `npm run test:visual` without a project still includes WebKit-backed iPad/mobile projects. Those require local Playwright WebKit browser binaries; the verified broad visual gate for this update is desktop Chromium.
+- Playwright device profiles are automation evidence only and are not substitutes for physical-device review.
