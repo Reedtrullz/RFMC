@@ -16,9 +16,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     return webSocketClient.subscribe(setStatus);
   }, []);
 
-  const connect = useCallback(() => {
-    webSocketClient.connect(options.url);
-  }, [options.url]);
+  const connect = useCallback(
+    (url?: string) => {
+      webSocketClient.connect(url ?? options.url);
+    },
+    [options.url],
+  );
 
   const disconnect = useCallback(() => {
     webSocketClient.disconnect();
