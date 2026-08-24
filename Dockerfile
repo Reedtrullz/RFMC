@@ -23,6 +23,9 @@ RUN npm run build
 # Stage 2: Production runtime
 FROM node:22-slim
 
+ARG APP_VERSION=unknown
+ARG COMMIT_SHA=unknown
+
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     curl \
@@ -47,6 +50,8 @@ RUN npm ci --omit=dev -w server
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV APP_VERSION=${APP_VERSION}
+ENV COMMIT_SHA=${COMMIT_SHA}
 
 RUN chown -R node:node /app
 USER node

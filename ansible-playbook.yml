@@ -10,6 +10,13 @@
     public_origin: 'https://fmc.reidar.tech'
 
   tasks:
+    - name: Validate exact deployment commit
+      assert:
+        that:
+          - deploy_sha is defined
+          - deploy_sha is match('^[0-9a-f]{40}$')
+        fail_msg: 'deploy_sha must be the exact 40-character CI-tested commit.'
+
     - name: Ensure app directory exists
       file:
         path: '{{ app_dir }}'
@@ -18,22 +25,57 @@
         group: deploy
         mode: '0755'
 
+    - name: Inspect current production container for rollback
+      community.docker.docker_container_info:
+        name: '{{ container_name }}'
+      register: previous_container_info
+
+    - name: Record rollback image
+      set_fact:
+        previous_image_id: '{{ previous_container_info.container.Image }}'
+        previous_image_ref: '{{ previous_container_info.container.Config.Image }}'
+      when: previous_container_info.exists
+
     - name: Clone or pull repository
       git:
         repo: '{{ repo_url }}'
         dest: '{{ app_dir }}'
-        version: main
+        version: '{{ deploy_sha }}'
         force: true
       register: git_result
 
+    - name: Verify checkout and read application version
+      block:
+        - name: Assert checkout matches tested commit
+          assert:
+            that:
+              - git_result.after == deploy_sha
+
+        - name: Read server package metadata
+          slurp:
+            src: '{{ app_dir }}/server/package.json'
+          register: server_package
+
+        - name: Set immutable build identity
+          set_fact:
+            app_version: '{{ (server_package.content | b64decode | from_json).version }}'
+            image_ref: '{{ container_name }}:sha-{{ deploy_sha }}'
+
     - name: Build Docker image
       community.docker.docker_image:
-        name: '{{ container_name }}'
+        name: '{{ image_ref }}'
         source: build
         build:
           path: '{{ app_dir }}'
+          args:
+            APP_VERSION: '{{ app_version }}'
+            COMMIT_SHA: '{{ deploy_sha }}'
         force_source: true
       register: build_result
+
+    - name: Record exact image identity
+      set_fact:
+        image_id: '{{ build_result.image.Id }}'
 
     - name: Stop any stale canary container
       community.docker.docker_container:
@@ -43,7 +85,7 @@
     - name: Start canary container for health check
       community.docker.docker_container:
         name: '{{ container_name }}_canary'
-        image: '{{ container_name }}'
+        image: '{{ image_ref }}'
         state: started
         ports:
           - '127.0.0.1:8083:{{ container_port }}'
@@ -52,12 +94,24 @@
           PORT: '{{ container_port }}'
           AIRCRAFT_ADAPTER: 'mock'
           WS_ALLOWED_ORIGINS: '{{ public_origin }}'
+          IMAGE_ID: '{{ image_id }}'
+          IMAGE_REF: '{{ image_ref }}'
         healthcheck:
           test: ['CMD-SHELL', 'curl -f http://localhost:{{ container_port }}/health || exit 1']
           interval: 10s
           timeout: 5s
           retries: 5
           start_period: 5s
+
+    - name: Verify canary uses the built image
+      community.docker.docker_container_info:
+        name: '{{ container_name }}_canary'
+      register: canary_container_info
+
+    - name: Assert canary Docker image identity
+      assert:
+        that:
+          - canary_container_info.container.Image == image_id
 
     - name: Wait for canary health check
       block:
@@ -67,7 +121,12 @@
             return_content: true
             timeout: 5
           register: canary_health
-          until: canary_health is succeeded and canary_health.json.status == "ok"
+          until:
+            - canary_health is succeeded
+            - canary_health.json.status == "ok"
+            - canary_health.json.build.commit == deploy_sha
+            - canary_health.json.build.imageId == image_id
+            - canary_health.json.build.imageRef == image_ref
           retries: 12
           delay: 5
       rescue:
@@ -107,7 +166,7 @@
         - name: Start production container
           community.docker.docker_container:
             name: '{{ container_name }}'
-            image: '{{ container_name }}'
+            image: '{{ image_ref }}'
             state: started
             restart_policy: unless-stopped
             ports:
@@ -124,11 +183,86 @@
               AIRCRAFT_ADAPTER: 'mock'
               WS_ALLOWED_ORIGINS: '{{ public_origin }}'
               WS_MAX_MESSAGE_BYTES: '65536'
+              IMAGE_ID: '{{ image_id }}'
+              IMAGE_REF: '{{ image_ref }}'
+
+        - name: Inspect promoted production container
+          community.docker.docker_container_info:
+            name: '{{ container_name }}'
+          register: promoted_container_info
+
+        - name: Assert promoted Docker image identity
+          assert:
+            that:
+              - promoted_container_info.container.Image == image_id
+
+        - name: Verify promoted runtime identity
+          uri:
+            url: 'http://localhost:{{ host_port }}/health'
+            return_content: true
+            timeout: 5
+          register: promoted_health
+          until:
+            - promoted_health is succeeded
+            - promoted_health.json.status == "ok"
+            - promoted_health.json.build.commit == deploy_sha
+            - promoted_health.json.build.imageId == image_id
+            - promoted_health.json.build.imageRef == image_ref
+          retries: 12
+          delay: 5
 
         - name: Remove canary container
           community.docker.docker_container:
             name: '{{ container_name }}_canary'
             state: absent
+      rescue:
+        - name: Remove canary after failed promotion
+          community.docker.docker_container:
+            name: '{{ container_name }}_canary'
+            state: absent
+
+        - name: Remove failed production container
+          community.docker.docker_container:
+            name: '{{ container_name }}'
+            state: absent
+
+        - name: Restore previous production image
+          community.docker.docker_container:
+            name: '{{ container_name }}'
+            image: '{{ previous_image_id }}'
+            state: started
+            restart_policy: unless-stopped
+            ports:
+              - '127.0.0.1:{{ host_port }}:{{ container_port }}'
+            memory: '512m'
+            cpus: 1.0
+            log_driver: 'json-file'
+            log_options:
+              max-size: '10m'
+              max-file: '3'
+            env:
+              NODE_ENV: production
+              PORT: '{{ container_port }}'
+              AIRCRAFT_ADAPTER: 'mock'
+              WS_ALLOWED_ORIGINS: '{{ public_origin }}'
+              WS_MAX_MESSAGE_BYTES: '65536'
+              IMAGE_ID: '{{ previous_image_id }}'
+              IMAGE_REF: '{{ previous_image_ref }}'
+          when: previous_container_info.exists
+
+        - name: Verify rollback health
+          uri:
+            url: 'http://localhost:{{ host_port }}/health'
+            timeout: 5
+          register: rollback_health
+          until: rollback_health is succeeded and rollback_health.json.status == "ok"
+          retries: 12
+          delay: 5
+          when: previous_container_info.exists
+
+        - name: Fail deployment after rollback
+          fail:
+            msg: 'Production promotion failed; the previous image was restored when available.'
 
     - name: Ensure Caddy config includes fmc.reidar.tech
       become: true
@@ -152,6 +286,26 @@
         name: '{{ container_name }}'
       register: container_info
 
+    - name: Assert production Docker image identity
+      assert:
+        that:
+          - container_info.container.Image == image_id
+
+    - name: Verify production runtime identity
+      uri:
+        url: 'http://localhost:{{ host_port }}/health'
+        return_content: true
+        timeout: 5
+      register: production_health
+      until:
+        - production_health is succeeded
+        - production_health.json.status == "ok"
+        - production_health.json.build.commit == deploy_sha
+        - production_health.json.build.imageId == image_id
+        - production_health.json.build.imageRef == image_ref
+      retries: 12
+      delay: 5
+
     - name: Report deployment status
       debug:
-        msg: 'VirtualCDU deployed: {{ container_info.container.State.Status }} -> https://fmc.reidar.tech'
+        msg: 'VirtualCDU deployed: {{ container_info.container.State.Status }} {{ deploy_sha }} {{ image_id }} -> https://fmc.reidar.tech'

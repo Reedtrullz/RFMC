@@ -18,6 +18,8 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Install Ansible
         run: |
@@ -36,10 +38,13 @@ jobs:
 
       - name: Smoke test SSH connection
         run: |
-          ssh -i ~/.ssh/id_rsa_racknerd deploy@198.23.137.16 "echo SSH_OK"
+          ssh -i ~/.ssh/id_rsa_racknerd -o IdentitiesOnly=yes deploy@198.23.137.16 "echo SSH_OK"
 
       - name: Run Ansible playbook
-        run: |
-          ansible-playbook -i inventory/hosts.yml ansible-playbook.yml -vv
         env:
-          ANSIBLE_HOST_KEY_CHECKING: false
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
+          ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook \
+            -i inventory/hosts.yml ansible-playbook.yml \
+            --extra-vars "deploy_sha=$DEPLOY_SHA" -vv

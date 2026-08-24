@@ -194,4 +194,48 @@ describe('bridge server', () => {
     expect(response.headers.get('x-frame-options')).toBe('DENY');
     expect(response.headers.get('content-security-policy')).toContain("default-src 'self'");
   });
+
+  it('trusts exactly one reverse-proxy hop', async () => {
+    bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+    await bridge.start();
+
+    expect(bridge.app.get('trust proxy')('127.0.0.1', 0)).toBe(true);
+    expect(bridge.app.get('trust proxy')('127.0.0.1', 1)).toBe(false);
+  });
+
+  it('reports the exact runtime build identity', async () => {
+    const previous = {
+      APP_VERSION: process.env.APP_VERSION,
+      COMMIT_SHA: process.env.COMMIT_SHA,
+      IMAGE_ID: process.env.IMAGE_ID,
+      IMAGE_REF: process.env.IMAGE_REF,
+    };
+    Object.assign(process.env, {
+      APP_VERSION: '1.2.3',
+      COMMIT_SHA: 'a'.repeat(40),
+      IMAGE_ID: `sha256:${'b'.repeat(64)}`,
+      IMAGE_REF: `virtual-cdu:sha-${'a'.repeat(40)}`,
+    });
+
+    try {
+      bridge = createBridgeServer({ aircraft: new MockSimConnectAdapter() });
+      const port = await bridge.start();
+      const response = await fetch(`http://127.0.0.1:${port}/health`);
+
+      await expect(response.json()).resolves.toMatchObject({
+        version: '1.2.3',
+        build: {
+          version: '1.2.3',
+          commit: 'a'.repeat(40),
+          imageId: `sha256:${'b'.repeat(64)}`,
+          imageRef: `virtual-cdu:sha-${'a'.repeat(40)}`,
+        },
+      });
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
 });

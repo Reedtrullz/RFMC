@@ -1,11 +1,17 @@
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import express, { Express } from 'express';
+import { trustImmediateProxy } from './client-ip';
 
 /**
  * Configure production security headers and request limits
  */
 export function configureSecurity(app: Express) {
+  // Caddy is the only trusted hop to the loopback-published container port.
+  // This lets Express and express-rate-limit resolve the same client address
+  // without trusting arbitrary left-most X-Forwarded-For values.
+  app.set('trust proxy', trustImmediateProxy);
+
   // Disable X-Powered-By to hide Express
   app.disable('x-powered-by');
 
