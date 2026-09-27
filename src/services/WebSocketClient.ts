@@ -330,7 +330,7 @@ class WebSocketClient {
     } catch {
       devError('[WS] Failed to read server URL');
     }
-    return `ws://${window.location.hostname}:8080`;
+    return window.location.protocol === 'https:' ? '' : `ws://${window.location.hostname}:8080`;
   }
 
   private saveServerUrl(url: string): void {

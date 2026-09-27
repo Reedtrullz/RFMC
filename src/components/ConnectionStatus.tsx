@@ -92,7 +92,7 @@ export function ConnectionStatus() {
 
   const handleConnect = () => {
     const nextServerUrl = serverUrl.trim();
-    if (!nextServerUrl) return;
+    if (!nextServerUrl || (window.location.protocol === 'https:' && !nextServerUrl.startsWith('wss://'))) return;
     saveServerUrl(nextServerUrl);
     connect(nextServerUrl);
   };
@@ -181,9 +181,16 @@ export function ConnectionStatus() {
             type="text"
             value={serverUrl}
             onChange={(e) => setServerUrl(e.target.value)}
-            placeholder="ws://192.168.1.100:8080"
+            placeholder={
+              window.location.protocol === 'https:' ? 'wss://your-bridge.example.com/ws' : 'ws://192.168.1.100:8080'
+            }
             className="w-full px-2 py-1.5 text-xs font-cdu bg-cdu-screen border border-cdu-bezel-light rounded text-cdu-text mb-2"
           />
+          {window.location.protocol === 'https:' && (
+            <p className="mb-2 text-[10px] font-cdu text-cdu-amber">
+              MSFS needs a separate secure WSS bridge. The standalone trainer works without one.
+            </p>
+          )}
 
           <div className="flex gap-1">
             {connectionStatus === 'CONNECTED' ? (
@@ -198,7 +205,9 @@ export function ConnectionStatus() {
                 label={connectionStatus === 'ERROR' ? 'RETRY MSFS' : 'CONNECT TO MSFS'}
                 className="flex-1 h-8 text-[10px]"
                 variant="exec"
-                disabled={!serverUrl.trim()}
+                disabled={
+                  !serverUrl.trim() || (window.location.protocol === 'https:' && !serverUrl.trim().startsWith('wss://'))
+                }
                 onPress={handleConnect}
               />
             )}
