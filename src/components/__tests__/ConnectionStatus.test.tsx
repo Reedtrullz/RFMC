@@ -72,4 +72,22 @@ describe('ConnectionStatus', () => {
     expect(saveServerUrlSpy).not.toHaveBeenCalled();
     expect(connectSpy).not.toHaveBeenCalled();
   });
+
+  it('requires a secure bridge URL when hosted over HTTPS', () => {
+    vi.stubGlobal('location', { protocol: 'https:' });
+    try {
+      render(<ConnectionStatus />);
+      fireEvent.click(screen.getByRole('button', { name: /disconnected/i }));
+      expect(screen.getByText(/separate secure WSS bridge/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /connect to msfs/i })).toBeDisabled();
+
+      fireEvent.change(screen.getByLabelText('Server URL (WebSocket)'), {
+        target: { value: 'wss://bridge.example/ws' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: /connect to msfs/i }));
+      expect(connectSpy).toHaveBeenCalledWith('wss://bridge.example/ws');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

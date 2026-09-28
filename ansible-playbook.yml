@@ -9,6 +9,13 @@
     container_port: '8080'
     public_origin: 'https://fmc.reidar.tech'
 
+  pre_tasks:
+    - name: Require explicit VPS rollback after Cloudflare migration
+      assert:
+        that:
+          - lookup('env', 'RFMS_VPS_ROLLBACK') == '1'
+        fail_msg: 'The frontend now deploys to Cloudflare Pages. Set RFMS_VPS_ROLLBACK=1 only for an intentional VPS rollback.'
+
   tasks:
     - name: Validate exact deployment commit
       assert:

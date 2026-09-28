@@ -78,6 +78,12 @@ npm test -- --run      # Unit/regression tests
 npm run test:e2e:ci    # Desktop Chromium smoke gate
 ```
 
+## Cloudflare Pages preview
+
+The static frontend can run at `https://reidar-rfms.pages.dev/` in standalone/offline mode. Build with Node 22 and upload the contents of `dist/` to the `reidar-rfms` Pages project. The `cloudflare-preview.yml` workflow provides a repeatable manual preview after repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are configured.
+
+Pages does not run `server/` or the Windows/MSFS bridge. Connecting from the HTTPS preview requires a separately hosted, authenticated `wss://` bridge; simulator integration is not validated by the static preview.
+
 ## Visual Baseline Workflow
 
 ```bash
