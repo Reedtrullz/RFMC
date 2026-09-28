@@ -78,11 +78,13 @@ npm test -- --run      # Unit/regression tests
 npm run test:e2e:ci    # Desktop Chromium smoke gate
 ```
 
-## Cloudflare Pages preview
+## Cloudflare Pages hosting
 
-The static frontend can run at `https://reidar-rfms.pages.dev/` in standalone/offline mode. Build with Node 22 and upload the contents of `dist/` to the `reidar-rfms` Pages project. The `cloudflare-preview.yml` workflow provides a repeatable manual preview after repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are configured.
+The static frontend runs at `https://fmc.reidar.tech/` on Cloudflare Pages in standalone/offline mode. Successful main CI runs deploy `dist/` to the `reidar-rfms` Pages project through `cloudflare-preview.yml`. A manual production deployment is also available from that workflow. The deployment uses repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` and the `CLOUDFLARE_DEPLOY_ENABLED` repository variable.
 
-Pages does not run `server/` or the Windows/MSFS bridge. Connecting from the HTTPS preview requires a separately hosted, authenticated `wss://` bridge; simulator integration is not validated by the static preview.
+Pages does not run `server/` or the Windows/MSFS bridge. Connecting from HTTPS requires a separately hosted, authenticated `wss://` bridge; simulator integration is not validated by the static deployment.
+
+For a VPS rollback, run the manual `deploy.yml` workflow with the exact checked commit, verify its canary and origin, then restore the proxied `fmc.reidar.tech` DNS A record to `198.23.137.16`. The workflow explicitly sets `RFMS_VPS_ROLLBACK=1` for the guarded `ansible-playbook.yml`. The old `ansible/playbook.yml` referenced a role absent from this repository and has been removed.
 
 ## Visual Baseline Workflow
 
