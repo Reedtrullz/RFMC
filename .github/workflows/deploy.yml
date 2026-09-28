@@ -1,11 +1,11 @@
-name: Deploy to VPS
+name: Manual VPS rollback
 
 on:
-  workflow_run:
-    workflows: ['CI']
-    branches: [main]
-    types: [completed]
   workflow_dispatch:
+    inputs:
+      deploy_sha:
+        description: Exact 40-character commit to restore on the VPS
+        required: true
 
 concurrency:
   group: deploy
@@ -15,11 +15,10 @@ jobs:
   deploy:
     name: Deploy VirtualCDU
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ inputs.deploy_sha }}
 
       - name: Install Ansible
         run: |
@@ -42,7 +41,8 @@ jobs:
 
       - name: Run Ansible playbook
         env:
-          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOY_SHA: ${{ inputs.deploy_sha }}
+          RFMS_VPS_ROLLBACK: '1'
         run: |
           [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
           ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook \
