@@ -26,6 +26,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { PerformanceOverlay } from './components/CockpitMode/PerformanceOverlay';
 import { OrientationPrompt } from './components/CockpitMode/OrientationPrompt';
 import { InstrumentSlot } from './components/layout/InstrumentSlot';
+import { InstrumentFit } from './components/layout/InstrumentFit';
 import { EICASPanel } from './components/CockpitMode/EICASPanel';
 import { useCockpitLayoutStore } from './store/cockpitLayoutStore';
 import { useAircraftStore } from './store/aircraftStore';
@@ -505,13 +506,17 @@ export default function App() {
         </div>
 
         <ErrorBoundary fallback={<SectionErrorFallback title="CDU ERROR" message="CDU display encountered an error" />}>
-          <InstrumentSlot
-            className="h-full w-full max-lg:col-span-2"
-            contentClassName="normal-cdu-scale origin-top"
-            dataTestId="cdu-panel"
-          >
-            <CDU />
-          </InstrumentSlot>
+          <div className="h-full min-h-0 min-w-0 max-lg:col-span-2">
+            <InstrumentFit
+              target={aircraft === 'AIRBUS_A320' ? 'airbusMcdu' : 'boeingCdu'}
+              preferredScale={1}
+              allowOverflowZoom
+              className="!h-[calc(100%-3.5rem)] !justify-start [&>.instrument-fit-viewport]:shrink-0 [&_.instrument-shell]:!h-auto [&_button]:!min-h-11 [&_button]:!min-w-11"
+              dataTestId="cdu-panel"
+            >
+              <CDU />
+            </InstrumentFit>
+          </div>
         </ErrorBoundary>
       </main>
     </div>

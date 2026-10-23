@@ -215,21 +215,6 @@
   transform-origin: top center;
 }
 
-.normal-cdu-scale {
-  --instrument-slot-scale: 0.36;
-}
-
-@media (min-width: 1280px) {
-  .normal-cdu-scale {
-    --instrument-slot-scale: 0.38;
-  }
-}
-@media (min-width: 1536px) {
-  .normal-cdu-scale {
-    --instrument-slot-scale: 0.5;
-  }
-}
-
 /* ── Responsive: collapse sidebar + tray on small screens ── */
 
 @media (max-width: 1024px) {
