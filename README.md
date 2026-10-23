@@ -64,18 +64,19 @@ Current screenshot baselines are maintained through Playwright visual tests unde
 ```bash
 git clone https://github.com/Reedtrullz/RFMC.git
 cd RFMC
-npm install
+corepack enable   # once; provides the pnpm version pinned in package.json
+pnpm install
 ```
 
 ## Development Commands
 
 ```bash
-npm run dev            # Vite dev server on :5173
-npm run server         # WebSocket bridge on :8080
-npm run build          # Production build
-npm run typecheck:all  # TypeScript for shared/frontend/server
-npm test -- --run      # Unit/regression tests
-npm run test:e2e:ci    # Desktop Chromium smoke gate
+pnpm run dev            # Vite dev server on :5173
+pnpm run server         # WebSocket bridge on :8080
+pnpm run build          # Production build
+pnpm run typecheck:all  # TypeScript for shared/frontend/server
+pnpm test --run      # Unit/regression tests
+pnpm run test:e2e:ci    # Desktop Chromium smoke gate
 ```
 
 ## Cloudflare Pages hosting
@@ -89,19 +90,19 @@ For a VPS rollback, run the manual `deploy.yml` workflow with the exact checked 
 ## Visual Baseline Workflow
 
 ```bash
-npm run test:e2e:visual
-npm run test:visual -- --project=desktop-chromium
-npx playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234
-npx playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2
-npm run capture:baseline
-npm run measure:visual
+pnpm run test:e2e:visual
+pnpm run test:visual --project=desktop-chromium
+pnpm exec playwright test e2e/visual/cockpit-highres.spec.ts --project=desktop-3456x2234
+pnpm exec playwright test e2e/visual/cockpit-highres.spec.ts --project=retina-1728x1117-dsf2
+pnpm run capture:baseline
+pnpm run measure:visual
 ```
 
-`npm run measure:visual` verifies the reference manifest, measurement profiles, and committed visual baselines. It does not imply measured real-hardware accuracy unless the report explicitly marks a surface as measured against approved references.
+`pnpm run measure:visual` verifies the reference manifest, measurement profiles, and committed visual baselines. It does not imply measured real-hardware accuracy unless the report explicitly marks a surface as measured against approved references.
 
 ## Architecture Overview
 
-RFMC is an npm workspace monorepo:
+RFMC is a pnpm workspace monorepo:
 
 ```txt
 shared/  TypeScript FMC state, page renderers, validation, navdata, training, display models

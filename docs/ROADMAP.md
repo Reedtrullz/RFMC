@@ -14,7 +14,7 @@ This roadmap starts from the current implementation state: dispatcher cleanup, c
 ## Phase 2: Measured Visual Fidelity
 
 - Intake rights-cleared hardware references before using any image for pixel measurement.
-- Expand `npm run measure:visual` from manifest/snapshot validation into reference-backed geometry/color/font checks when approved references exist.
+- Expand `pnpm run measure:visual` from manifest/snapshot validation into reference-backed geometry/color/font checks when approved references exist.
 - Keep unmeasured instruments labeled as snapshot-protected only.
 - Use desktop, tablet, 3456x2234, Retina-equivalent, ND, PFD, and focused-panel baselines as regression protection.
 

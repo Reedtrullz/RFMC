@@ -35,11 +35,11 @@ Local CI and macOS development can validate mock adapter behavior, backend FMC r
 
 Record the exact automated command and commit when citing mock evidence:
 
-| Mock check                    | Command               | Commit | Evidence |
-| ----------------------------- | --------------------- | ------ | -------- |
-| Backend FMC parity            | `npm test -- --run`   |        |          |
-| Bridge/WebSocket mock adapter | `npm test -- --run`   |        |          |
-| Smoke E2E with mock adapter   | `npm run test:e2e:ci` |        |          |
+| Mock check                    | Command                | Commit | Evidence |
+| ----------------------------- | ---------------------- | ------ | -------- |
+| Backend FMC parity            | `pnpm test --run`      |        |          |
+| Bridge/WebSocket mock adapter | `pnpm test --run`      |        |          |
+| Smoke E2E with mock adapter   | `pnpm run test:e2e:ci` |        |          |
 
 ## Evidence Requirements
 

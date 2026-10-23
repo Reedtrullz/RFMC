@@ -5,19 +5,19 @@ Follow these steps for every production release.
 ## 1. Development & Quality
 
 - [ ] Release branch or focused commit merged to `main`.
-- [ ] `npm run typecheck:all` passes.
-- [ ] `npm test -- --run` passes.
-- [ ] `npm run build` passes.
-- [ ] `npm run check:status-docs` passes.
-- [ ] `npm run test:e2e:ci` passes.
-- [ ] Broader `npm run test:e2e` result is recorded in `docs/STATUS.md`, including any local browser/runtime caveats.
-- [ ] Visual regression baselines approved (`npm run capture:baseline` if changed).
-- [ ] `npm run measure:visual` passes and the report does not overstate hardware accuracy.
+- [ ] `pnpm run typecheck:all` passes.
+- [ ] `pnpm test --run` passes.
+- [ ] `pnpm run build` passes.
+- [ ] `pnpm run check:status-docs` passes.
+- [ ] `pnpm run test:e2e:ci` passes.
+- [ ] Broader `pnpm run test:e2e` result is recorded in `docs/STATUS.md`, including any local browser/runtime caveats.
+- [ ] Visual regression baselines approved (`pnpm run capture:baseline` if changed).
+- [ ] `pnpm run measure:visual` passes and the report does not overstate hardware accuracy.
 - [ ] No new `TODO` or `FIXME` items introduced without tracking.
 
 ## 2. Security Audit
 
-- [ ] `npm audit` reviewed (no High/Critical).
+- [ ] `pnpm audit` reviewed (no High/Critical).
 - [ ] New WebSocket messages added to `websocketValidation.ts`.
 - [ ] No sensitive keys committed.
 

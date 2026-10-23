@@ -234,18 +234,18 @@ Watch-outs:
 Run these before committing a roadmap implementation slice:
 
 ```bash
-npm run typecheck:all
-npm test -- --run
-npm run test:e2e
-npm run build
-npm audit --audit-level=high
+pnpm run typecheck:all
+pnpm test --run
+pnpm run test:e2e
+pnpm run build
+pnpm audit --audit-level high
 ```
 
 Expected audit behavior:
 
 - Command exits 0 for the current high/critical policy.
 - It still prints 2 moderate Vite/esbuild dev dependency advisories.
-- Do not run `npm audit fix --force` casually; current docs explicitly defer that breaking update.
+- Do not force breaking audit fixes (`pnpm audit --fix` or major upgrades) casually; current docs explicitly defer that breaking update.
 
 ## Commit And Push Expectations
 

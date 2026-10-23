@@ -12,7 +12,7 @@ VirtualCDU is a web-based procedure trainer. It is not certified, approved, or s
 - Airbus secondary pages such as PERF APPR, SEC F-PLN, RAD NAV, and DATA INDEX are partly display-only until explicitly wired and tested. PROG and FUEL PRED consume shared trainer-grade LNAV/performance truth where currently implemented, but remain scoped trainer pages.
 - The Navigation Display and Primary Flight Display are trainer-grade visualizations. They are not real avionics replicas, certified flight displays, weather/terrain/TCAS systems, or live simulator display mirrors.
 - CONTROL mode intentionally keeps some immediate frontend responsiveness while server display data becomes authoritative. This behavior must remain documented and tested.
-- `npm audit` currently reports two moderate Vite/esbuild development dependency issues. The available automatic fix requires a breaking Vite upgrade and is deferred.
+- The dependency audit (`pnpm audit`; previously `npm audit`) currently reports two moderate Vite/esbuild development dependency issues. The available automatic fix requires a breaking Vite upgrade and is deferred.
 
 ## Scope Boundaries
 

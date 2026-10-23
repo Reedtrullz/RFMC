@@ -5,7 +5,7 @@
 Run:
 
 ```bash
-npm run capture:baseline
+pnpm run capture:baseline
 ```
 
 Playwright writes screenshots under `test-results/`. These are generated artifacts and are intentionally ignored by Git.
@@ -17,7 +17,7 @@ Each capture test also attaches a `baseline-manifest` JSON payload with screensh
 Run:
 
 ```bash
-npm run measure:visual
+pnpm run measure:visual
 ```
 
 This checks the reference manifest, measurement profile files, committed app-owned Playwright baselines, and whether any profile is backed by a reference explicitly approved for pixel measurement. It writes `docs/VISUAL_FIDELITY_REPORT.md`, which classifies each cockpit surface as snapshot-protected, measured against references, pilot-reviewed, and live-validated.

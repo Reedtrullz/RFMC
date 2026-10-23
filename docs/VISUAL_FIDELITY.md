@@ -67,5 +67,5 @@ The cockpit layout tests in `e2e/visual-layouts.spec.ts` are the minimum guardra
 
 1. **Develop**: Make visual improvements in the component files.
 2. **Measure**: Compare against the relevant `reference-library/*/measurements.json` target.
-3. **Verify**: Run `npm run typecheck:all`, `npm test -- --run`, `npm run build`, and targeted Playwright layout/visual tests.
-4. **Approve**: If screenshot changes are intentional and improve fidelity, update Playwright snapshots with `npx playwright test --update-snapshots`.
+3. **Verify**: Run `pnpm run typecheck:all`, `pnpm test --run`, `pnpm run build`, and targeted Playwright layout/visual tests.
+4. **Approve**: If screenshot changes are intentional and improve fidelity, update Playwright snapshots with `pnpm exec playwright test --update-snapshots`.

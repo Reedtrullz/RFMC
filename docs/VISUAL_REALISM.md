@@ -44,7 +44,7 @@ These effects are implemented in `BoeingDisplayBay.tsx` and `AirbusDisplayBay.ts
 
 Current executable visual-fidelity manifest/report:
 
-- `npm run measure:visual`
+- `pnpm run measure:visual`
 - `docs/VISUAL_FIDELITY_REPORT.md`
 
 The report separates app-owned snapshot protection from measured reference fidelity, pilot review, and live validation. It currently records hardware pixel accuracy as not measured because no rights-cleared hardware reference crops have been approved for measurement.

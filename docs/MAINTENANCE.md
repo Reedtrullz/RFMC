@@ -46,14 +46,14 @@ VirtualCDU uses a custom "ARINC-Lite" JSON schema for navigation data.
 2. **Format**: Defined in `docs/NAVDATA_SCHEMA.md`.
 3. **Update Procedure**:
    - Add new airports/waypoints to the JSON files.
-   - Run `npm run test` to ensure the route parser still functions.
+   - Run `pnpm run test` to ensure the route parser still functions.
    - Deploy via the standard CI/CD pipeline.
 
 ## Monitoring
 
 - **Heartbeat**: The bridge server has a 5-second heartbeat mechanism.
 - **Frontend Diagnostics**: Access the "Connection Status" panel in the app to view real-time latency and server uptime.
-- **Visual Regression**: Run `npm run capture:baseline` periodically to ensure UI updates haven't introduced regressions.
+- **Visual Regression**: Run `pnpm run capture:baseline` periodically to ensure UI updates haven't introduced regressions.
 
 ## Troubleshooting
 

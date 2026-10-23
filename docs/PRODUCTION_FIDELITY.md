@@ -38,9 +38,9 @@ The seed measurements are normalized implementation fiducials. They are not evid
 
 ## Gates
 
-- Status/doc gate: `npm run check:status-docs`.
-- Static and unit gate: `npm run typecheck:all` and `npm test -- --run`.
-- Behavioral gate: `npm run test:e2e`.
-- Build gate: `npm run build`.
-- Visual gate: `npm run capture:baseline` plus reviewed `toHaveScreenshot()` updates for intentional shell/display changes.
+- Status/doc gate: `pnpm run check:status-docs`.
+- Static and unit gate: `pnpm run typecheck:all` and `pnpm test --run`.
+- Behavioral gate: `pnpm run test:e2e`.
+- Build gate: `pnpm run build`.
+- Visual gate: `pnpm run capture:baseline` plus reviewed `toHaveScreenshot()` updates for intentional shell/display changes.
 - Manual external gates: pilot review, licensing review, physical iPad review, and Windows/MSFS/PMDG live validation.

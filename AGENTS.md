@@ -63,7 +63,7 @@ RFMS/
 
 ## CONVENTIONS (THIS PROJECT)
 
-- **Monorepo**: npm workspaces — `shared`, `src`, `server` (order matters for install)
+- **Monorepo**: pnpm workspaces — `shared`, `src`, `server` (order matters for install)
 - **TypeScript strict**: All packages use strict TypeScript, run `typecheck` per workspace
 - **Workspace imports**: `@virtual-cdu/shared` for shared package
 - **Vitest**: Unit tests in `__tests__` folders, config at root `vitest.config.ts`
@@ -91,17 +91,17 @@ RFMS/
 ## COMMANDS
 
 ```bash
-npm run dev           # Vite dev server :5173
-npm run server        # Node.js WS bridge :8080
-npm run build         # Vite build to dist/
-npm run typecheck:all # TypeScript check all workspaces
-npm run test          # Vitest unit tests (845 pass, 65 files)
-npm run test:e2e      # Playwright e2e (all)
-npm run test:e2e:ci   # Playwright CI smoke (@smoke)
-npm run test:e2e:visual # Visual regression
-npm run test:visual   # Visual regression (grep filter)
-npm run test:visual:update # Update visual snapshots
-npm run capture:baseline   # Capture Playwright baselines
+pnpm run dev           # Vite dev server :5173
+pnpm run server        # Node.js WS bridge :8080
+pnpm run build         # Vite build to dist/
+pnpm run typecheck:all # TypeScript check all workspaces
+pnpm run test          # Vitest unit tests (845 pass, 65 files)
+pnpm run test:e2e      # Playwright e2e (all)
+pnpm run test:e2e:ci   # Playwright CI smoke (@smoke)
+pnpm run test:e2e:visual # Visual regression
+pnpm run test:visual   # Visual regression (grep filter)
+pnpm run test:visual:update # Update visual snapshots
+pnpm run capture:baseline   # Capture Playwright baselines
 ```
 
 ## NOTES
@@ -111,7 +111,7 @@ npm run capture:baseline   # Capture Playwright baselines
 - `docs/IMPLEMENTATION_STATUS.md` — recent changes and transitional state
 - 962 total files, ~58k lines of code, depth 5 max
 - 9 files >500 lines (useFMCStore.ts is largest at 2,260 lines)
-- Monorepo with npm workspaces, not Turborepo/pnpm
+- Monorepo with pnpm workspaces (pnpm 10 via Corepack), not Turborepo
 - `shared/src/fmc/actionHandlers/` — 18 extracted LSK handler modules (store extraction complete)
 - CI: GitHub Actions (typecheck + unit + e2e + Docker build + format + lint), VPS deploy via Ansible
 - Coverage thresholds: Lines 57%, Functions 52%, Branches 52%, Statements 54% (Vitest, v8 provider)
