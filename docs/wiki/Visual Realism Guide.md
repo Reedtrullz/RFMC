@@ -10,7 +10,7 @@ Most surfaces are currently snapshot-protected. Hardware pixel accuracy is not c
 Use:
 
 ```bash
-npm run measure:visual
+pnpm run measure:visual
 ```
 
 See `docs/VISUAL_REALISM.md`, `docs/VISUAL_MEASUREMENT.md`, and `docs/VISUAL_FIDELITY_REPORT.md`.

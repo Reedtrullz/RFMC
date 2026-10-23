@@ -23,32 +23,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+      - name: Enable pnpm via Corepack (version pinned by packageManager)
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck (all workspaces)
-        run: npm run typecheck:all
+        run: pnpm run typecheck:all
 
       - name: Lint check
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Format check
-        run: npm run format:check
+        run: pnpm run format:check
 
       - name: Unit tests + coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
 
       - name: Build production bundle
-        run: npm run build
+        run: pnpm run build
 
       - name: Bundle size check
         run: |
           du -sh dist/ 2>/dev/null || echo "No dist/ directory — skipping bundle size check"
 
       - name: Status docs are consolidated
-        run: npm run check:status-docs
+        run: pnpm run check:status-docs
 
   # ── Slower checks: E2E with Playwright (needs browser) ──
   e2e:
@@ -62,16 +63,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+      - name: Enable pnpm via Corepack (version pinned by packageManager)
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e:ci
+        run: pnpm run test:e2e:ci
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -98,13 +100,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+      - name: Enable pnpm via Corepack (version pinned by packageManager)
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=high
+        run: pnpm audit --prod --audit-level high
 
   # ── Docker build verification: ensure image builds successfully ──
   docker-build:

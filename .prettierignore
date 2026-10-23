@@ -3,3 +3,4 @@ node_modules/
 coverage/
 e2e/**/snapshots/
 nginx.conf
+pnpm-lock.yaml

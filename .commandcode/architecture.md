@@ -19,7 +19,7 @@
 
 ## Key Updates
 
-1. **shared/ package** with npm workspaces:
+1. **shared/ package** with pnpm workspaces:
    - `shared/types/` — FMC types, WebSocket types, constants
    - `shared/fmc/` — State machine, page functions, flight plan parser, tutorial engine
 

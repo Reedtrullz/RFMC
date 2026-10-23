@@ -14,13 +14,13 @@ All contributions must satisfy the following automated quality gates:
   - Functions: 50%
   - Lines: 50%
 - **Target Coverage**: 80%+ for core business logic in `shared/src/fmc` and `src/store`.
-- **Command**: `npm test -- --coverage`
+- **Command**: `pnpm test --coverage`
 
 ### 1.2 Visual Regression (Playwright)
 
 - **Visual Parity**: UI components (CDU, ND) must maintain visual parity with baseline screenshots within a 5% pixel difference.
 - **Baseline Management**: Snapshots are stored in `e2e/visual-regression.spec.ts-snapshots`.
-- **Command**: `npx playwright test e2e/visual-regression.spec.ts`
+- **Command**: `pnpm exec playwright test e2e/visual-regression.spec.ts`
 
 ### 1.3 Static Analysis
 
@@ -47,5 +47,5 @@ All contributions must satisfy the following automated quality gates:
 
 ## 4. Maintenance & Compliance
 
-- **Dependency Audits**: Monthly audits of `npm` dependencies using `npm audit`.
+- **Dependency Audits**: Monthly audits of npm-registry dependencies using `pnpm audit`.
 - **Roadmap Alignment**: All feature additions must be documented in `ROADMAP.md` and tracked in `IMPLEMENTATION_STATUS.md`.

@@ -1,6 +1,6 @@
 # Architecture
 
-RFMC is an npm workspace monorepo:
+RFMC is a pnpm workspace monorepo:
 
 - `shared/`: FMC state, page renderers, validation, navdata, training selectors, and display models.
 - `src/`: React/Vite frontend, Zustand stores, CDU/MCDU, cockpit instruments, PWA shell, and visual routes.

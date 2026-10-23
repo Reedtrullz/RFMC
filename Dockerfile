@@ -9,16 +9,25 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY package*.json ./
+# pnpm comes from Corepack at the exact version pinned by package.json "packageManager".
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/
 COPY src/package.json src/
 COPY server/package.json server/
 
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
+
+# Self-contained production bundle for the server workspace: server sources plus
+# its production dependencies, with @virtual-cdu/shared copied into node_modules.
+# --legacy keeps the normal symlinked workspace links for development (pnpm 10
+# otherwise requires inject-workspace-packages for deploy).
+RUN pnpm --filter @virtual-cdu/server deploy --prod --legacy /prod/server
 
 # Stage 2: Production runtime
 FROM node:22-slim
@@ -33,20 +42,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy workspace config with lockfile for npm ci
-COPY --from=builder /app/package.json /app/package-lock.json ./
-COPY --from=builder /app/shared/package.json ./shared/
-COPY --from=builder /app/server/package.json ./server/
-
-# Copy shared source (types needed at runtime by server)
-COPY --from=builder /app/shared ./shared
-# Copy server source
-COPY --from=builder /app/server ./server
-# Copy built frontend
+# Server sources with production-only dependencies (from pnpm deploy). The shared
+# workspace is included as server/node_modules/@virtual-cdu/shared.
+COPY --from=builder /prod/server ./server
+# Copy built frontend (served from ../dist relative to the server directory)
 COPY --from=builder /app/dist ./dist
-
-# Install only production deps for the server workspace
-RUN npm ci --omit=dev -w server
 
 ENV NODE_ENV=production
 ENV PORT=8080
@@ -61,4 +61,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 
 EXPOSE 8080
 
-CMD ["npm", "run", "start", "-w", "server"]
+# Same as the server's "start" script (tsx src/index.ts), run from /app/server so
+# ../dist resolves to the built frontend.
+WORKDIR /app/server
+CMD ["node", "node_modules/tsx/dist/cli.mjs", "src/index.ts"]

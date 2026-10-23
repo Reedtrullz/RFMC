@@ -27,7 +27,7 @@ Playwright E2E + visual regression tests.
 - Snapshots in `*/snapshots/`
 - Visual diff tolerance: 2% (maxDiffPixelRatio: 0.02)
 - `@Visual Regression` test tag for grep-filtered visual tests
-- `npm run test:visual` / `npm run test:visual:update` scripts
+- `pnpm run test:visual` / `pnpm run test:visual:update` scripts
 
 ## ANTI-PATTERNS
 

@@ -62,7 +62,7 @@ export default defineConfig({
   webServer: useExternalServer
     ? undefined
     : {
-        command: `npm run dev -- --host 127.0.0.1 --port ${parsedPlaywrightPort} --strictPort`,
+        command: `pnpm run dev --host 127.0.0.1 --port ${parsedPlaywrightPort} --strictPort`,
         url: baseURL,
         reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',
       },

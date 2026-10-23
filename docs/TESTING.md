@@ -72,22 +72,22 @@ export default defineConfig({
 
 ```bash
 # Run all unit tests (watch mode)
-npm test
+pnpm test
 
 # Run once (CI mode)
-npm test -- --run
+pnpm test --run
 
 # Run with coverage
-npm run test:coverage
+pnpm run test:coverage
 
 # Run with UI dashboard
-npm run test:ui
+pnpm run test:ui
 
 # Run a specific test file
-npx vitest shared/src/__tests__/scratchpadEngine.test.ts
+pnpm exec vitest shared/src/__tests__/scratchpadEngine.test.ts
 
 # Run tests matching a pattern
-npx vitest --run -t "route discontinuity"
+pnpm exec vitest --run -t "route discontinuity"
 ```
 
 ### Coverage targets
@@ -138,10 +138,10 @@ Component tests are co-located with unit tests and use the same Vitest runner:
 
 ```bash
 # All frontend tests (includes component tests)
-npm test
+pnpm test
 
 # Filter to component tests
-npx vitest --run --reporter=verbose src/components
+pnpm exec vitest --run --reporter=verbose src/components
 ```
 
 ---
@@ -201,28 +201,28 @@ e2e/
 
 ```bash
 # Full E2E suite (all projects, all tests)
-npm run test:e2e
+pnpm run test:e2e
 
 # Smoke tests only (fast CI gate, desktop Chromium)
-npm run test:e2e:smoke
+pnpm run test:e2e:smoke
 
 # CI smoke gate (desktop Chromium)
-npm run test:e2e:ci
+pnpm run test:e2e:ci
 
 # Full test matrix (all projects, all tests — alias)
-npm run test:e2e:full
+pnpm run test:e2e:full
 
 # Specific test file
-npx playwright test e2e/basic.spec.ts
+pnpm exec playwright test e2e/basic.spec.ts
 
 # Single project (e.g., iPad)
-npx playwright test --project=ipad-landscape
+pnpm exec playwright test --project=ipad-landscape
 
 # With UI mode
-npx playwright test --ui
+pnpm exec playwright test --ui
 
 # Debug mode
-npx playwright test --debug
+pnpm exec playwright test --debug
 ```
 
 ### CI split strategy
@@ -280,35 +280,35 @@ When visual changes are intentional (e.g., a UI improvement or new feature), upd
 
 ```bash
 # Update ALL visual baselines
-npm run test:visual:update
+pnpm run test:visual:update
 
 # Update baselines for a specific file
-npx playwright test e2e/visual-boeing-cdu.spec.ts --update-snapshots --project=desktop-chromium
+pnpm exec playwright test e2e/visual-boeing-cdu.spec.ts --update-snapshots --project=desktop-chromium
 
 # Update PFD follow-up baselines
-npx playwright test e2e/visual-pfd.spec.ts --update-snapshots --project=desktop-chromium
+pnpm exec playwright test e2e/visual-pfd.spec.ts --update-snapshots --project=desktop-chromium
 
 # Update cockpit layout/focused-panel/tablet-landscape baselines
-npx playwright test e2e/visual/cockpit-layouts.spec.ts --update-snapshots --project=desktop-chromium
+pnpm exec playwright test e2e/visual/cockpit-layouts.spec.ts --update-snapshots --project=desktop-chromium
 
 # Update high-resolution cockpit baselines
-npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=desktop-3456x2234
-npx playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=retina-1728x1117-dsf2
+pnpm exec playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=desktop-3456x2234
+pnpm exec playwright test e2e/visual/cockpit-highres.spec.ts --update-snapshots --project=retina-1728x1117-dsf2
 
 # Rebuild the visual-fidelity manifest/report after visual baseline changes
-npm run measure:visual
+pnpm run measure:visual
 
 # Capture fresh baselines for the baseline-screenshots spec
-npm run capture:baseline
+pnpm run capture:baseline
 ```
 
 **Baseline update process:**
 
 1. Make your UI changes
-2. Run `npm run test:visual` to see which snapshots fail
+2. Run `pnpm run test:visual` to see which snapshots fail
 3. Review the diff artifacts in the Playwright HTML report (`playwright-report/`)
-4. If the changes are correct, run `npm run test:visual:update` to update baselines
-5. Run `npm run measure:visual` so `docs/VISUAL_FIDELITY_REPORT.md` reflects the protected surfaces
+4. If the changes are correct, run `pnpm run test:visual:update` to update baselines
+5. Run `pnpm run measure:visual` so `docs/VISUAL_FIDELITY_REPORT.md` reflects the protected surfaces
 6. Commit the updated snapshot files alongside your code changes
 7. In CI, visual tests use the committed baselines for comparison
 
@@ -338,22 +338,22 @@ test('Boeing IDENT page @Visual Regression', async ({ page }) => {
 
 ## 5. Test Commands Reference
 
-| Command                      | Category | Description                                    |
-| ---------------------------- | -------- | ---------------------------------------------- |
-| `npm test`                   | Unit     | Watch mode — all Vitest tests                  |
-| `npm test -- --run`          | Unit     | Single run — all Vitest tests                  |
-| `npm run test:coverage`      | Unit     | Single run with coverage report                |
-| `npm run test:ui`            | Unit     | Vitest UI dashboard (interactive)              |
-| `npm run test:e2e`           | E2E      | Full Playwright suite, all projects            |
-| `npm run test:e2e:ci`        | E2E      | Smoke-only for CI (desktop Chromium, `@smoke`) |
-| `npm run test:e2e:smoke`     | E2E      | Same as CI — smoke tests only                  |
-| `npm run test:e2e:full`      | E2E      | Full Playwright suite (alias)                  |
-| `npm run test:visual`        | Visual   | Tests tagged `Visual Regression`               |
-| `npm run test:visual:update` | Visual   | Update all visual baselines                    |
-| `npm run capture:baseline`   | Visual   | Capture fresh baseline screenshots             |
-| `npm run test:e2e:visual`    | Visual   | Legacy — ND visual tests only                  |
-| `npm run typecheck:all`      | Type     | TypeScript check all 3 workspaces              |
-| `npm run build`              | Build    | Production bundle                              |
+| Command                       | Category | Description                                    |
+| ----------------------------- | -------- | ---------------------------------------------- |
+| `pnpm test`                   | Unit     | Watch mode — all Vitest tests                  |
+| `pnpm test --run`             | Unit     | Single run — all Vitest tests                  |
+| `pnpm run test:coverage`      | Unit     | Single run with coverage report                |
+| `pnpm run test:ui`            | Unit     | Vitest UI dashboard (interactive)              |
+| `pnpm run test:e2e`           | E2E      | Full Playwright suite, all projects            |
+| `pnpm run test:e2e:ci`        | E2E      | Smoke-only for CI (desktop Chromium, `@smoke`) |
+| `pnpm run test:e2e:smoke`     | E2E      | Same as CI — smoke tests only                  |
+| `pnpm run test:e2e:full`      | E2E      | Full Playwright suite (alias)                  |
+| `pnpm run test:visual`        | Visual   | Tests tagged `Visual Regression`               |
+| `pnpm run test:visual:update` | Visual   | Update all visual baselines                    |
+| `pnpm run capture:baseline`   | Visual   | Capture fresh baseline screenshots             |
+| `pnpm run test:e2e:visual`    | Visual   | Legacy — ND visual tests only                  |
+| `pnpm run typecheck:all`      | Type     | TypeScript check all 3 workspaces              |
+| `pnpm run build`              | Build    | Production bundle                              |
 
 ---
 

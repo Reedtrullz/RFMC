@@ -6,15 +6,15 @@ Current pass/fail counts and build/audit status live in `docs/STATUS.md`.
 
 ## Baseline Commands
 
-| Metric                   | Command or method          | Current result source                                     |
-| ------------------------ | -------------------------- | --------------------------------------------------------- |
-| TypeScript               | `npm run typecheck:all`    | `docs/STATUS.md`                                          |
-| Unit tests               | `npm test -- --run`        | `docs/STATUS.md`                                          |
-| E2E tests                | `npm run test:e2e`         | `docs/STATUS.md`                                          |
-| Build                    | `npm run build`            | `docs/STATUS.md`                                          |
-| Audit                    | `npm audit`                | `docs/STATUS.md`                                          |
-| Baseline screenshots     | `npm run capture:baseline` | Script added; run output is under Playwright test-results |
-| Visual-fidelity manifest | `npm run measure:visual`   | `docs/VISUAL_FIDELITY_REPORT.md`                          |
+| Metric                   | Command or method           | Current result source                                     |
+| ------------------------ | --------------------------- | --------------------------------------------------------- |
+| TypeScript               | `pnpm run typecheck:all`    | `docs/STATUS.md`                                          |
+| Unit tests               | `pnpm test --run`           | `docs/STATUS.md`                                          |
+| E2E tests                | `pnpm run test:e2e`         | `docs/STATUS.md`                                          |
+| Build                    | `pnpm run build`            | `docs/STATUS.md`                                          |
+| Audit                    | `pnpm audit`                | `docs/STATUS.md`                                          |
+| Baseline screenshots     | `pnpm run capture:baseline` | Script added; run output is under Playwright test-results |
+| Visual-fidelity manifest | `pnpm run measure:visual`   | `docs/VISUAL_FIDELITY_REPORT.md`                          |
 
 ## Visual Measurement Method
 

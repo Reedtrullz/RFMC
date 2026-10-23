@@ -1,0 +1,12 @@
+packages:
+  - shared
+  - src
+  - server
+
+# pnpm 10 runs no dependency install scripts unless they are listed here.
+# esbuild: postinstall verifies and links the platform binary (same as Handli).
+# workerd (via wrangler, used by the Cloudflare Pages deploy): same kind of
+# postinstall that verifies and links its platform binary.
+allowBuilds:
+  esbuild: true
+  workerd: true

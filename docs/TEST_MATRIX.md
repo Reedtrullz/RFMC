@@ -6,13 +6,13 @@ Playwright starts an isolated strict-port RFMS dev server on `127.0.0.1:5174` by
 
 ## Automated Gates
 
-| Gate                              | Command                        | Current status       | Required status              |
-| --------------------------------- | ------------------------------ | -------------------- | ---------------------------- |
-| Shared/frontend/server TypeScript | `npm run typecheck:all`        | See `docs/STATUS.md` | 0 errors                     |
-| Unit/regression tests             | `npm test -- --run`            | See `docs/STATUS.md` | 100% pass                    |
-| Playwright E2E                    | `npm run test:e2e`             | See `docs/STATUS.md` | 100% pass for runnable tests |
-| Production build                  | `npm run build`                | See `docs/STATUS.md` | Successful build             |
-| Audit policy                      | `npm audit --audit-level=high` | See `docs/STATUS.md` | No high/critical issues      |
+| Gate                              | Command                         | Current status       | Required status              |
+| --------------------------------- | ------------------------------- | -------------------- | ---------------------------- |
+| Shared/frontend/server TypeScript | `pnpm run typecheck:all`        | See `docs/STATUS.md` | 0 errors                     |
+| Unit/regression tests             | `pnpm test --run`               | See `docs/STATUS.md` | 100% pass                    |
+| Playwright E2E                    | `pnpm run test:e2e`             | See `docs/STATUS.md` | 100% pass for runnable tests |
+| Production build                  | `pnpm run build`                | See `docs/STATUS.md` | Successful build             |
+| Audit policy                      | `pnpm audit --audit-level high` | See `docs/STATUS.md` | No high/critical issues      |
 
 ## Major Flow Coverage
 
@@ -37,7 +37,7 @@ Playwright starts an isolated strict-port RFMS dev server on `127.0.0.1:5174` by
 | CONTROL mode                      | Backend-authoritative page/input parity                                          | Mock WebSocket bridge test | Live PMDG required            | Mock adapter verifies connect/input/display/key forwarding                                                 |
 | MSFS PMDG                         | Keypress -> CDU update -> display readback                                       | No                         | Required on Windows/MSFS/PMDG | Cannot be validated on this macOS workspace                                                                |
 | PWA/iPad                          | Offline refresh, mounted cockpit layout, safe areas                              | Partial                    | Required on iPad              | Update prompt and portrait fallback are automated; real offline startup remains production/iPad validation |
-| Visual baseline                   | Snapshot suites, high-res layouts, and baseline capture                          | Scripted                   | Reference comparison required | `npm run capture:baseline` plus `npm run measure:visual`                                                   |
+| Visual baseline                   | Snapshot suites, high-res layouts, and baseline capture                          | Scripted                   | Reference comparison required | `pnpm run capture:baseline` plus `pnpm run measure:visual`                                                 |
 
 ## Coverage Targets
 
@@ -53,13 +53,13 @@ Playwright starts an isolated strict-port RFMS dev server on `127.0.0.1:5174` by
 
 Every PR should pass:
 
-- `npm run typecheck:all`
-- `npm test -- --run`
-- `npm run test:e2e`
-- `npm run build`
-- `npm run check:status-docs`
-- `npm run measure:visual` for visual/public-demo slices
-- `npm run test:coverage` once thresholds are enforced
+- `pnpm run typecheck:all`
+- `pnpm test --run`
+- `pnpm run test:e2e`
+- `pnpm run build`
+- `pnpm run check:status-docs`
+- `pnpm run measure:visual` for visual/public-demo slices
+- `pnpm run test:coverage` once thresholds are enforced
 - Visual baseline/snapshot checks for pages touched by the PR
 - Audit policy review for dependency changes
 

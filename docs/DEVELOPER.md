@@ -61,7 +61,7 @@ To add a new aircraft:
 Run unit tests with Vitest:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 Tests are located alongside the source files (e.g., `useFMCStore.test.ts`).
@@ -71,13 +71,13 @@ Tests are located alongside the source files (e.g., `useFMCStore.test.ts`).
 Run Playwright tests:
 
 ```bash
-npx playwright test
+pnpm exec playwright test
 ```
 
 To update visual baselines:
 
 ```bash
-npm run capture:baseline
+pnpm run capture:baseline
 ```
 
 ## UI Semantic Hooks
