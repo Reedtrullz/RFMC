@@ -54,7 +54,7 @@ jobs:
   # ── Slower checks: E2E with Playwright (needs browser) ──
   e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       AIRCRAFT_ADAPTER: mock
     steps:

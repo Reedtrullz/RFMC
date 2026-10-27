@@ -3,6 +3,9 @@ packages:
   - src
   - server
 
+overrides:
+  body-parser@<1.20.9: 1.20.9
+
 # pnpm 10 runs no dependency install scripts unless they are listed here.
 # esbuild: postinstall verifies and links the platform binary (same as Handli).
 # workerd (via wrangler, used by the Cloudflare Pages deploy): same kind of
