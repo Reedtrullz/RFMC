@@ -39,6 +39,7 @@ export function BoeingPFD() {
   // Aggregate state for the builder (legacy compatibility for now)
   const aggregatedState = {
     ...fmc,
+    aircraft: 'BOEING_737',
     aircraftState,
     autopilot,
   };

@@ -36,6 +36,7 @@ export function AirbusPFD() {
   );
   const aggregatedState = {
     ...state,
+    aircraft: 'AIRBUS_A320',
     aircraftState,
     autopilot,
   };
