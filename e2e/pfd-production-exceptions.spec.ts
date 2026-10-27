@@ -38,7 +38,7 @@ for (const aircraft of AIRCRAFT) {
   for (const layout of LAYOUTS) {
     for (const viewport of VIEWPORTS) {
       const name = `${aircraft.type.split('_')[0].toLowerCase()}-${layout}-${viewport.name}`;
-      test(`${name} warm/offline production PFD @smoke`, async (_fixtures, testInfo) => {
+      test(`${name} warm/offline production PFD @smoke`, async ({}, testInfo) => {
         const root = process.cwd();
         const distDir = path.join(root, 'dist');
         const manifest = hashDirectory(distDir);
