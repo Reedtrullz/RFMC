@@ -328,6 +328,11 @@ for (const aircraft of AIRCRAFT) {
           };
           const assertCduInput = async () => {
             await dismissPwaPrompt();
+            if (layout === 'cockpit' && viewport.mobile) {
+              const label = aircraft.type === 'AIRBUS_A320' ? 'MCDU' : 'CDU';
+              await page.getByRole('button', { name: `Focus ${label}`, exact: true }).click();
+              await expect(page.getByRole('dialog', { name: 'CDU focus mode', exact: true })).toBeVisible();
+            }
             const variant = aircraft.type === 'AIRBUS_A320' ? 'airbus' : 'boeing';
             const scratchpad = page.getByTestId('scratchpad').first();
             await page.getByTestId(`key-${variant}-Q`).click();
@@ -338,6 +343,13 @@ for (const aircraft of AIRCRAFT) {
             await expect(scratchpad).toHaveAttribute('aria-label', 'Scratchpad: Q');
             await page.getByTestId(`key-${variant}-CLR`).click();
             await expect(scratchpad).not.toHaveAttribute('aria-label', /Scratchpad: Q/);
+            if (layout === 'cockpit' && viewport.mobile) {
+              await page
+                .getByRole('dialog', { name: 'CDU focus mode', exact: true })
+                .getByRole('button', { name: 'Back', exact: true })
+                .click();
+              await assertInstrument();
+            }
           };
           const waitForPrecache = async () => {
             await expect
@@ -422,6 +434,12 @@ for (const aircraft of AIRCRAFT) {
           });
           await step('offline cached reload', async () => {
             const serverHitsBefore = server.requests.length;
+            // The native offline probe still received SW update requests; close its owned origin as well.
+            const offlineNetwork = await server.close();
+            evidence.offlineNetwork = offlineNetwork;
+            expect(offlineNetwork.serverClosed).toBe(true);
+            expect(offlineNetwork.sockets).toBe(0);
+            expect(server.requests.length).toBe(serverHitsBefore);
             await context.setOffline(true);
             await page.reload();
             await enterApp(false);

@@ -292,24 +292,29 @@ export async function startProductionGuard(distDir: string): Promise<ProductionG
       request.end();
     });
 
-  const close = async () => {
-    const serverClosed = new Promise<void>((resolve, reject) =>
-      server.close((error) => (error ? reject(error) : resolve())),
-    );
-    const closing = [...sockets];
-    const closed = closing.map(([socket]) => new Promise<void>((resolve) => socket.once('close', () => resolve())));
-    for (const [socket, id] of closing) {
-      socketEvents.push({ id, event: 'destroy', at: Date.now() });
-      socket.destroy();
-    }
-    server.closeAllConnections();
-    await Promise.all([serverClosed, ...closed]);
-    return {
-      serverClosed: !server.listening,
-      sockets: sockets.size,
-      closedSockets: closing.length,
-      socketEvents: socketEvents.slice(),
-    };
+  let closePromise: ReturnType<ProductionGuard['close']> | undefined;
+  const close = () => {
+    if (closePromise) return closePromise;
+    closePromise = (async () => {
+      const serverClosed = new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+      const closing = [...sockets];
+      const closed = closing.map(([socket]) => new Promise<void>((resolve) => socket.once('close', () => resolve())));
+      for (const [socket, id] of closing) {
+        socketEvents.push({ id, event: 'destroy', at: Date.now() });
+        socket.destroy();
+      }
+      server.closeAllConnections();
+      await Promise.all([serverClosed, ...closed]);
+      return {
+        serverClosed: !server.listening,
+        sockets: sockets.size,
+        closedSockets: closing.length,
+        socketEvents: socketEvents.slice(),
+      };
+    })();
+    return closePromise;
   };
 
   return { origin, wsUrl: `${origin.replace(/^http/, 'ws')}/ws`, requests, denials, probeUpgrade, close };
