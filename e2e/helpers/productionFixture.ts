@@ -7,7 +7,15 @@ import path from 'node:path';
 
 export type FileDigest = { sha256: string; bytes: number };
 export type Manifest = Record<string, FileDigest>;
-export type GuardRequest = { path: string; status: number; bytes: number };
+export type GuardRequest = {
+  path: string;
+  status: number;
+  bytes: number;
+  method: string;
+  receivedAt: number;
+  finishedAt?: number;
+};
+export type GuardSocketEvent = { id: number; event: 'open' | 'destroy' | 'close'; at: number };
 export type GuardDenial = { method: string; host?: string; url?: string };
 export type CacheEntry = { cache: string; url: string; bytes: number; sha: string };
 export type AssetProbe = { path: string; status: number; bytes: number; sha: string } | { path: string; error: string };
@@ -18,7 +26,12 @@ export type ProductionGuard = {
   requests: GuardRequest[];
   denials: GuardDenial[];
   probeUpgrade: (pathname: string) => Promise<number | string>;
-  close: () => Promise<{ serverClosed: boolean; sockets: number }>;
+  close: () => Promise<{
+    serverClosed: boolean;
+    sockets: number;
+    closedSockets: number;
+    socketEvents: GuardSocketEvent[];
+  }>;
 };
 
 const MIME: Record<string, string> = {
@@ -136,16 +149,38 @@ export async function startProductionGuard(distDir: string): Promise<ProductionG
   if (!existsSync(path.join(distRoot, 'index.html'))) throw new Error(`dist/index.html is missing: ${distRoot}`);
   const requests: GuardRequest[] = [];
   const denials: GuardDenial[] = [];
-  const sockets = new Set<Socket>();
+  const sockets = new Map<Socket, number>();
+  const socketEvents: GuardSocketEvent[] = [];
+  let nextSocketId = 0;
   let origin = '';
   let port = 0;
 
   const track = (socket: Socket) => {
-    sockets.add(socket);
-    socket.on('close', () => sockets.delete(socket));
+    if (sockets.has(socket)) return;
+    const id = ++nextSocketId;
+    sockets.set(socket, id);
+    socketEvents.push({ id, event: 'open', at: Date.now() });
+    socket.once('close', () => {
+      sockets.delete(socket);
+      socketEvents.push({ id, event: 'close', at: Date.now() });
+    });
   };
 
   const server = createServer((req, res) => {
+    const receivedAt = Date.now();
+    const recordRequest = (pathname: string, status: number, bytes: number) => {
+      const record: GuardRequest = {
+        path: pathname,
+        status,
+        bytes,
+        method: req.method ?? 'GET',
+        receivedAt,
+      };
+      requests.push(record);
+      res.once('finish', () => {
+        record.finishedAt = Date.now();
+      });
+    };
     const raw = req.url ?? '/';
     const absolute = raw.startsWith('http') ? new URL(raw).origin : origin;
     if (absolute !== origin || req.headers.host !== new URL(origin).host) {
@@ -156,7 +191,7 @@ export async function startProductionGuard(distDir: string): Promise<ProductionG
     }
     const url = new URL(raw, origin);
     if (url.pathname.startsWith('/api/')) {
-      requests.push({ path: url.pathname, status: 503, bytes: 0 });
+      recordRequest(url.pathname, 503, 0);
       res.writeHead(503);
       res.end('fixture: no provider');
       return;
@@ -177,13 +212,13 @@ export async function startProductionGuard(distDir: string): Promise<ProductionG
       return;
     }
     if (!existsSync(file)) {
-      requests.push({ path: url.pathname, status: 404, bytes: 0 });
+      recordRequest(url.pathname, 404, 0);
       res.writeHead(404);
       res.end();
       return;
     }
     const body = readFileSync(file);
-    requests.push({ path: url.pathname, status: 200, bytes: body.byteLength });
+    recordRequest(url.pathname, 200, body.byteLength);
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(file)] ?? 'application/octet-stream',
       'Content-Length': body.byteLength,
@@ -258,10 +293,23 @@ export async function startProductionGuard(distDir: string): Promise<ProductionG
     });
 
   const close = async () => {
-    for (const socket of sockets) socket.destroy();
+    const serverClosed = new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+    const closing = [...sockets];
+    const closed = closing.map(([socket]) => new Promise<void>((resolve) => socket.once('close', () => resolve())));
+    for (const [socket, id] of closing) {
+      socketEvents.push({ id, event: 'destroy', at: Date.now() });
+      socket.destroy();
+    }
     server.closeAllConnections();
-    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
-    return { serverClosed: !server.listening, sockets: sockets.size };
+    await Promise.all([serverClosed, ...closed]);
+    return {
+      serverClosed: !server.listening,
+      sockets: sockets.size,
+      closedSockets: closing.length,
+      socketEvents: socketEvents.slice(),
+    };
   };
 
   return { origin, wsUrl: `${origin.replace(/^http/, 'ws')}/ws`, requests, denials, probeUpgrade, close };

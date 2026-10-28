@@ -1,6 +1,8 @@
-import { chromium, expect, test, type Browser, type BrowserContext } from '@playwright/test';
+import { chromium, expect, test, type Browser, type BrowserContext, type Request } from '@playwright/test';
 import path from 'node:path';
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { request as httpRequest } from 'node:http';
+import type { Duplex } from 'node:stream';
 import {
   captureCache,
   cachePath,
@@ -19,9 +21,9 @@ test.use({ trace: 'off' });
 test.setTimeout(120_000);
 test.describe.configure({ mode: 'default', retries: 0 });
 
-type StepResult = { name: string; ok: boolean; error?: string };
+type StepResult = { name: string; ok: boolean; startedAt: number; endedAt: number; error?: string };
 type ConsoleSignal = { type: string; text: string };
-type RequestSignal = { method: string; url: string; resourceType: string };
+type RequestSignal = { method: string; url: string; resourceType: string; at: number; phase: string };
 type FailedSignal = { url: string; failure: string };
 
 const AIRCRAFT = [
@@ -33,6 +35,51 @@ const VIEWPORTS = [
   { name: '1280x900-desktop', width: 1280, height: 900, mobile: false },
   { name: '393x851-touch', width: 393, height: 851, mobile: true },
 ] as const;
+
+let helperCloseProbe: Awaited<ReturnType<ProductionGuard['close']>> | null = null;
+test.beforeAll(async () => {
+  const guard = await startProductionGuard(path.join(process.cwd(), 'dist'));
+  let client: Duplex | undefined;
+  let closing: ReturnType<ProductionGuard['close']> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    client = await new Promise<Duplex>((resolve, reject) => {
+      const request = httpRequest(guard.origin + '/ws', {
+        headers: {
+          Connection: 'Upgrade',
+          Upgrade: 'websocket',
+          'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
+          'Sec-WebSocket-Version': '13',
+        },
+      });
+      request.on('upgrade', (_response, socket) => resolve(socket));
+      request.on('response', (response) => {
+        response.resume();
+        reject(new Error('Lifecycle upgrade rejected: ' + response.statusCode));
+      });
+      request.on('error', reject);
+      request.setTimeout(3000, () => request.destroy(new Error('Lifecycle upgrade timed out')));
+      request.end();
+    });
+    closing = guard.close();
+    helperCloseProbe = await Promise.race([
+      closing,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Lifecycle close exceeded 5 seconds')), 5000);
+      }),
+    ]);
+    expect(helperCloseProbe.closedSockets).toBeGreaterThan(0);
+    expect(helperCloseProbe.serverClosed).toBe(true);
+    expect(helperCloseProbe.sockets).toBe(0);
+    expect(helperCloseProbe.socketEvents.filter((event) => event.event === 'close')).toHaveLength(
+      helperCloseProbe.socketEvents.filter((event) => event.event === 'open').length,
+    );
+  } finally {
+    clearTimeout(timer);
+    client?.destroy();
+    if (!closing) await guard.close();
+  }
+});
 
 for (const aircraft of AIRCRAFT) {
   for (const layout of LAYOUTS) {
@@ -49,7 +96,7 @@ for (const aircraft of AIRCRAFT) {
         let browserLaunchAttempted = false;
         let primaryError: unknown;
         let guard: ProductionGuard | undefined;
-        let cleanup: { serverClosed: boolean; sockets: number } | null = null;
+        let cleanup: Awaited<ReturnType<ProductionGuard['close']>> | null = null;
         const contexts: BrowserContext[] = [];
         const steps: StepResult[] = [];
         const consoleSignals: ConsoleSignal[] = [];
@@ -58,6 +105,8 @@ for (const aircraft of AIRCRAFT) {
         const failedRequests: FailedSignal[] = [];
         const responseSignals: { url: string; status: number }[] = [];
         const authored = { received: [] as string[], sent: [] as string[] };
+        const inFlight = new Set<Request>();
+        let currentPhase = 'setup';
         const runtimeDir = testInfo.outputPath('production-runtime');
         expect(existsSync(runtimeDir), 'runtime directory must be newly owned by this case').toBe(false);
         mkdirSync(runtimeDir, { recursive: true });
@@ -77,6 +126,7 @@ for (const aircraft of AIRCRAFT) {
           manifest,
           sourcesBefore,
           authored,
+          helperCloseProbe,
           fixture: {
             origin: 'own ephemeral 127.0.0.1 static dist server',
             websocket:
@@ -84,11 +134,19 @@ for (const aircraft of AIRCRAFT) {
           },
         };
         const step = async (stepName: string, run: () => Promise<void>) => {
+          currentPhase = stepName;
+          const startedAt = Date.now();
           try {
             await run();
-            steps.push({ name: stepName, ok: true });
+            steps.push({ name: stepName, ok: true, startedAt, endedAt: Date.now() });
           } catch (error) {
-            steps.push({ name: stepName, ok: false, error: String(error).slice(0, 1000) });
+            steps.push({
+              name: stepName,
+              ok: false,
+              startedAt,
+              endedAt: Date.now(),
+              error: String(error).slice(0, 1000),
+            });
             throw error;
           }
         };
@@ -118,6 +176,13 @@ for (const aircraft of AIRCRAFT) {
             ],
           });
           contexts.push(context);
+          context.on('request', (request) => {
+            if (new URL(request.url()).origin === server.origin && request.resourceType() !== 'websocket') {
+              inFlight.add(request);
+            }
+          });
+          context.on('requestfinished', (request) => inFlight.delete(request));
+          context.on('requestfailed', (request) => inFlight.delete(request));
           browser = context.browser();
           expect(browser, 'persistent Chromium must expose its owned browser').not.toBeNull();
           const probePage = await context.newPage();
@@ -134,7 +199,13 @@ for (const aircraft of AIRCRAFT) {
           page.on('pageerror', (error) => pageErrors.push(String(error)));
           page.on('response', (response) => responseSignals.push({ url: response.url(), status: response.status() }));
           page.on('request', (request) =>
-            requestSignals.push({ method: request.method(), url: request.url(), resourceType: request.resourceType() }),
+            requestSignals.push({
+              method: request.method(),
+              url: request.url(),
+              resourceType: request.resourceType(),
+              at: Date.now(),
+              phase: currentPhase,
+            }),
           );
           page.on('requestfailed', (request) =>
             failedRequests.push({ url: request.url(), failure: request.failure()?.errorText ?? '' }),
@@ -187,6 +258,7 @@ for (const aircraft of AIRCRAFT) {
           const enterApp = async (selectAircraft: boolean) => {
             const skip = page.getByRole('button', { name: /Skip Demo/ });
             await expect(skip).toBeVisible({ timeout: 20000 });
+            await dismissOrientation();
             if (selectAircraft) {
               await page.getByRole('button', { name: aircraft.label }).click();
               evidence.selectedViaWelcome = aircraft.type;
@@ -232,7 +304,15 @@ for (const aircraft of AIRCRAFT) {
           };
           const connectSim = async () => {
             await dismissPwaPrompt();
-            const status = page.locator('div.fixed.bottom-2.right-2 > button').first();
+            if (layout === 'cockpit') {
+              const toggle = page.getByRole('button', { name: 'Toggle Connection panel', exact: true });
+              await expect(toggle).toBeVisible();
+              if ((await toggle.getAttribute('aria-pressed')) === 'false') await toggle.click();
+              await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+            }
+            const status = page
+              .getByRole('button', { name: /^(DISCONNECTED|CONNECTING|CONNECTED|ERROR)(\s|$)/ })
+              .first();
             await expect(status).toBeVisible();
             await status.click();
             const heading = page.getByRole('heading', { name: 'MSFS Connection Diagnostics' });
@@ -326,6 +406,19 @@ for (const aircraft of AIRCRAFT) {
               .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)), { timeout: 15000 })
               .toBe(true);
             evidence.warmReloadControlled = true;
+          });
+          await step('settle warm service-worker and HTTP work before the offline boundary', async () => {
+            await page.waitForLoadState('networkidle');
+            await page.evaluate(async () => {
+              const registration = await navigator.serviceWorker.ready;
+              await registration.update();
+            });
+            await expect.poll(() => inFlight.size, { timeout: 10000 }).toBe(0);
+            evidence.offlineBoundary = {
+              at: Date.now(),
+              serverRequests: server.requests.length,
+              inFlightRequests: [...inFlight].map((request) => request.url()),
+            };
           });
           await step('offline cached reload', async () => {
             const serverHitsBefore = server.requests.length;
@@ -422,6 +515,7 @@ for (const aircraft of AIRCRAFT) {
           evidence.distUnchanged = distUnchanged;
           evidence.sourcesUnchanged = sourcesUnchanged;
           evidence.serverRequests = guard?.requests.length ?? 0;
+          evidence.serverRequestDetails = guard?.requests;
           const browserClosed = browser ? !browser.isConnected() : !browserLaunchAttempted;
           evidence.browserClosed = browserClosed;
           if (!browserClosed) cleanupErrors.push(new Error('Owned browser closure is unproven'));
