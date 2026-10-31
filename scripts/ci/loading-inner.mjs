@@ -13,7 +13,7 @@ assert(Number.isInteger(config.uid) && config.uid > 0);
 assert.notEqual(readlinkSync('/proc/self/ns/net'), config.hostNetns);
 assert.notEqual(readlinkSync('/proc/self/ns/pid'), config.hostPidns);
 const sha = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
-for (const item of [config.node, config.guard, config.browser, config.crashpad, config.inner, config.tools.setpriv]) {
+for (const item of [config.node, config.guard, config.browser, config.inner, config.tools.setpriv]) {
   assert.equal(sha(item.path), item.sha256, 'executable changed inside namespace');
 }
 for (const [file, expected] of Object.entries(config.frozenFiles)) assert.equal(sha(file), expected, 'source changed');

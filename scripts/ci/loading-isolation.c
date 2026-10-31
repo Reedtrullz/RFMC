@@ -174,9 +174,6 @@ static int make_ruleset(int abi, uint16_t port, const char *scratch) {
     add_path(fd, esbuild, FILE_READ_EXEC, 0);
     add_path(fd, linker, FILE_READ_EXEC, 0);
     if (browser_mode) {
-        const char *crashpad = getenv("PERF_BROWSER_CRASHPAD_EXEC");
-        need(crashpad && crashpad[0] == '/', "pinned browser crashpad executable");
-        add_path(fd, crashpad, FILE_READ_EXEC, 0);
         add_path(fd, "/proc", READ_DIR_FILE, 1);
     }
     add_optional(fd, "/dev/null", FILE_READ | (1ULL << 1), 0);

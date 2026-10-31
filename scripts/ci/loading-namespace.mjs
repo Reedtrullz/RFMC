@@ -96,7 +96,7 @@ export function namespaceArgv(config) {
       'script command resolution differs from the pinned tool',
     );
   }
-  for (const file of [config.node, config.guard, config.browser, config.crashpad]) pinned(file);
+  for (const file of [config.node, config.guard, config.browser]) pinned(file);
   pinned(config.inner, false);
   assert(inside(config.inner.path, path.join(config.root, 'scripts', 'ci')), 'foreign namespace supervisor');
   assert.equal(config.command[0], config.node.path, 'only the pinned Node entry is executable');
@@ -138,7 +138,6 @@ export function namespaceArgv(config) {
     PATH: path.dirname(config.node.path) + ':/usr/bin:/bin',
     PERF_NODE: config.node.path,
     PERF_ESBUILD: config.browser.path,
-    PERF_BROWSER_CRASHPAD_EXEC: config.crashpad.path,
     PERF_REAL_HOME: config.home,
     PERF_BOUNDED_BROWSER: 'owned-loopback-20261031',
     PERF_BROWSER_PORTS: '45000,45001',

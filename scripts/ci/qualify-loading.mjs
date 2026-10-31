@@ -64,7 +64,6 @@ const browser = pin(
   registryModule.registry.findExecutable('chromium-headless-shell').executablePathOrDie('javascript'),
 );
 const browsers = realpathSync(path.resolve(path.dirname(browser.path), '../..'));
-const crashpad = pin(path.join(path.dirname(browser.path), 'chrome_crashpad_handler'));
 const tools = {};
 for (const name of [
   'sudo',
@@ -98,7 +97,6 @@ const result = {
   node: pin(process.execPath),
   browser,
   sdkRegistry: pin(registryFile),
-  crashpad,
   tools,
   controls: [],
   status: 'FAILED',
@@ -165,7 +163,6 @@ try {
     node: result.node,
     guard: pin(guardFile),
     browser,
-    crashpad,
     inner: pin(path.join(root, 'scripts/ci/loading-inner.mjs')),
     tools,
     frozenFiles,
