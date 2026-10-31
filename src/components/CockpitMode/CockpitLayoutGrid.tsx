@@ -8,5 +8,16 @@ interface CockpitLayoutGridProps {
 }
 
 export function CockpitLayoutGrid({ preset, modeClass, children }: CockpitLayoutGridProps) {
-  return <div className={`cockpit-stage cockpit-stage--${preset} ${modeClass}`}>{children}</div>;
+  return (
+    <div
+      className={`cockpit-stage cockpit-stage--${preset} ${modeClass}`}
+      style={
+        preset === 'mobileSwipeDeck'
+          ? { gridTemplateColumns: 'minmax(0, 1fr)', gridAutoRows: '100%', overflow: 'auto' }
+          : undefined
+      }
+    >
+      {children}
+    </div>
+  );
 }

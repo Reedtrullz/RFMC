@@ -55,6 +55,7 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     env:
       AIRCRAFT_ADAPTER: mock
     steps:
@@ -71,6 +72,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build production bundle
+        run: pnpm run build
 
       - name: Run E2E tests
         run: pnpm run test:e2e:ci
