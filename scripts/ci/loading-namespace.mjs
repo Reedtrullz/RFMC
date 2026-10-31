@@ -27,6 +27,10 @@ const requiredTools = [
 const ROOT_PATH = '/usr/sbin:/usr/bin:/sbin:/bin';
 const inside = (child, parent) => child.startsWith(parent + path.sep);
 
+export function ownsReadRoot(directory, root, browsers) {
+  return directory === browsers || inside(directory, root) || inside(directory, browsers);
+}
+
 function pinned(item, executable = true) {
   assert(item && path.isAbsolute(item.path) && /^[a-f0-9]{64}$/.test(item.sha256), 'missing executable pin');
   assert.equal(realpathSync(item.path), item.path, 'noncanonical executable');
@@ -116,7 +120,7 @@ export function namespaceArgv(config) {
   assert(Object.hasOwn(config.frozenFiles, script), 'scenario entry is not hash-bound');
   assert.equal(config.frozenFiles[config.inner.path], config.inner.sha256, 'supervisor must be source-bound');
   for (const directory of config.readDirs) {
-    assert(inside(directory, config.root) || inside(directory, config.browsers), 'foreign read root');
+    assert(ownsReadRoot(directory, config.root, config.browsers), 'foreign read root');
     assert.equal(realpathSync(directory), directory);
     assert(
       !directory

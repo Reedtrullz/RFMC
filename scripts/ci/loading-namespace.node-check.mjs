@@ -1,7 +1,26 @@
 // This explicit Node suite must stay outside Vitest's jsdom file discovery.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { unwrapInner } from './loading-namespace.mjs';
+import { ownsReadRoot, unwrapInner } from './loading-namespace.mjs';
+
+const project = '/home/runner/work/RFMC/RFMC';
+const sdk = '/home/runner/.cache/ms-playwright/chromium-1223';
+for (const [name, directory, allowed] of [
+  ['exact pinned SDK directory', sdk, true],
+  ['pinned SDK child', sdk + '/chrome-linux64', true],
+  ['owned scripts', project + '/scripts/ci', true],
+  ['owned packages', project + '/node_modules', true],
+  ['whole project root', project, false],
+  ['SDK parent', '/home/runner/.cache/ms-playwright', false],
+  ['SDK prefix shadow', sdk + '-shadow', false],
+  ['private home root', '/home/runner', false],
+  ['private credentials', '/home/runner/.ssh', false],
+  ['unrelated sibling', '/home/runner/work/Other/Other', false],
+]) {
+  test('read roots: ' + name, () => {
+    assert.equal(ownsReadRoot(directory, project, sdk), allowed);
+  });
+}
 
 const config = { uid: 1001, hostNetns: 'net:[10]', hostPidns: 'pid:[11]' };
 function envelope() {
