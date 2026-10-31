@@ -172,9 +172,11 @@ for (let pass = 0; leftovers.length && pass < 10; pass++) {
 let sentinelBeforeAfter = null;
 if (sentinel) {
   sentinelBeforeAfter = await sentinelProbe();
-  for (const socket of sentinelSockets) socket.destroy();
-  await new Promise((resolve) => sentinel.close(resolve));
-  await new Promise((resolve) => setImmediate(resolve));
+  const closing = [...sentinelSockets];
+  const closedSockets = closing.map((socket) => new Promise((resolve) => socket.once('close', resolve)));
+  const serverClosed = new Promise((resolve) => sentinel.close(resolve));
+  for (const socket of closing) socket.destroy();
+  await Promise.all([serverClosed, ...closedSockets]);
   assert.equal(sentinelSockets.size, 0, 'owned sentinel sockets remain');
 }
 const output = {
