@@ -76,6 +76,18 @@ jobs:
       - name: Build production bundle
         run: pnpm run build
 
+      - name: Qualify bounded loading guard
+        if: github.event_name == 'workflow_dispatch' || github.head_ref == 'codex/perf-rfmc-icon-loading-20261031'
+        run: node --test scripts/ci/loading-namespace.test.mjs && node scripts/ci/qualify-loading.mjs
+
+      - name: Upload loading guard qualification
+        if: ${{ always() && (github.event_name == 'workflow_dispatch' || github.head_ref == 'codex/perf-rfmc-icon-loading-20261031') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: loading-guard-qualification
+          path: .qa/loading-qualification/
+          retention-days: 14
+
       - name: Run E2E tests
         run: pnpm run test:e2e:ci
       - name: Upload Playwright report
