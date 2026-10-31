@@ -13,6 +13,7 @@ import {
   readdirSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,8 +56,13 @@ assert.match(head, /^[a-f0-9]{40}$/);
 assert.equal(git(['diff', '--name-only', 'HEAD']), '', 'tracked source must be clean');
 const fs = statfsSync(root);
 assert(fs.bavail * fs.bsize >= 30 * 1024 ** 3, '30GiB floor');
-const { chromium } = await import('@playwright/test');
-const browser = pin(chromium.executablePath());
+const testRequire = createRequire(import.meta.resolve('@playwright/test'));
+const playwrightRequire = createRequire(testRequire.resolve('playwright'));
+const registryFile = playwrightRequire.resolve('playwright-core/lib/coreBundle');
+const { registry: registryModule } = playwrightRequire(registryFile);
+const browser = pin(
+  registryModule.registry.findExecutable('chromium-headless-shell').executablePathOrDie('javascript'),
+);
 const browsers = realpathSync(path.resolve(path.dirname(browser.path), '../..'));
 const crashpad = pin(path.join(path.dirname(browser.path), 'chrome_crashpad_handler'));
 const tools = {};
@@ -91,6 +97,7 @@ const result = {
   frozenFiles,
   node: pin(process.execPath),
   browser,
+  sdkRegistry: pin(registryFile),
   crashpad,
   tools,
   controls: [],
