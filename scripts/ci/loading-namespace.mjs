@@ -27,11 +27,11 @@ const requiredTools = [
 const ROOT_PATH = '/usr/sbin:/usr/bin:/sbin:/bin';
 const inside = (child, parent) => child.startsWith(parent + path.sep);
 
-function pinned(item) {
+function pinned(item, executable = true) {
   assert(item && path.isAbsolute(item.path) && /^[a-f0-9]{64}$/.test(item.sha256), 'missing executable pin');
   assert.equal(realpathSync(item.path), item.path, 'noncanonical executable');
   assert(lstatSync(item.path).isFile() && sha(item.path) === item.sha256, 'stale executable');
-  accessSync(item.path, constants.X_OK);
+  accessSync(item.path, executable ? constants.X_OK : constants.R_OK);
   return item.path;
 }
 
@@ -92,7 +92,8 @@ export function namespaceArgv(config) {
       'script command resolution differs from the pinned tool',
     );
   }
-  for (const file of [config.node, config.guard, config.browser, config.crashpad, config.inner]) pinned(file);
+  for (const file of [config.node, config.guard, config.browser, config.crashpad]) pinned(file);
+  pinned(config.inner, false);
   assert(inside(config.inner.path, path.join(config.root, 'scripts', 'ci')), 'foreign namespace supervisor');
   assert.equal(config.command[0], config.node.path, 'only the pinned Node entry is executable');
   assert(

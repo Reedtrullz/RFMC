@@ -1,3 +1,4 @@
+// This explicit Node suite must stay outside Vitest's jsdom file discovery.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { unwrapInner } from './loading-namespace.mjs';
