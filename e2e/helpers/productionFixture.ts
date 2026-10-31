@@ -363,19 +363,24 @@ export async function fetchAssetsInPage(page: Page, paths: string[]): Promise<As
 
 export async function runGuardProbe(guard: ProductionGuard, page: Page) {
   const record = { http: 0, https: '', loopback: '', foreignWs: '', ownOrigin: 0, ownWs: '' as number | string };
-  const http = await page.goto('http://guard-denied.invalid/x', { timeout: 10000 });
-  record.http = http?.status() ?? 0;
+  const negativePage = await page.context().newPage();
   try {
-    const https = await page.goto('https://guard-denied.invalid/x', { timeout: 10000 });
-    record.https = `status:${https?.status() ?? 0}`;
-  } catch {
-    record.https = 'rejected';
-  }
-  try {
-    const loopback = await page.goto('http://127.0.0.1:8080/', { timeout: 10000 });
-    record.loopback = `status:${loopback?.status() ?? 0}`;
-  } catch {
-    record.loopback = 'rejected';
+    const http = await negativePage.goto('http://guard-denied.invalid/x', { timeout: 10000 });
+    record.http = http?.status() ?? 0;
+    try {
+      const https = await negativePage.goto('https://guard-denied.invalid/x', { timeout: 10000 });
+      record.https = `status:${https?.status() ?? 0}`;
+    } catch {
+      record.https = 'rejected';
+    }
+    try {
+      const loopback = await negativePage.goto('http://127.0.0.1:8080/', { timeout: 10000 });
+      record.loopback = `status:${loopback?.status() ?? 0}`;
+    } catch {
+      record.loopback = 'rejected';
+    }
+  } finally {
+    await negativePage.close();
   }
   const own = await page.goto(`${guard.origin}/manifest.json`, { timeout: 10000 });
   record.ownOrigin = own?.status() ?? 0;
