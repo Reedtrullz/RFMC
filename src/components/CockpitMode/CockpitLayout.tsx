@@ -174,6 +174,11 @@ export function CockpitLayout() {
     '--cockpit-brightness': brightness / 100,
     '--cockpit-contrast': isNight ? 1.2 : 1.0,
     ...dynamicStageStyle,
+    ...(orientation === 'portrait' && {
+      gridTemplateColumns: 'minmax(0, 1fr)',
+      height: '100dvh',
+      touchAction: 'pan-x pan-y',
+    }),
   } as CSSProperties;
 
   return (
@@ -186,7 +191,7 @@ export function CockpitLayout() {
       `}
       style={cockpitStyle}
     >
-      <div className="px-4 py-2 flex flex-col gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
+      <div className="min-w-0 overflow-x-auto px-4 py-2 flex flex-col gap-3 border-b border-white/5 bg-black/40 backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <DisplaySelector current={layoutMode} onSelect={setLayoutMode} />
           <div className="flex items-center gap-4">
@@ -202,7 +207,14 @@ export function CockpitLayout() {
         <CockpitToolbar />
       </div>
 
-      <main className="cockpit-main">
+      <main
+        className="cockpit-main"
+        style={
+          orientation === 'portrait'
+            ? { gridTemplateAreas: "'stage'", gridTemplateColumns: 'minmax(0, 1fr)', minWidth: 0 }
+            : undefined
+        }
+      >
         <FirstRunGuidance />
         {layoutMode !== 'full-deck' && (
           <div className="mode-help-sidebar">
@@ -386,6 +398,7 @@ function renderInstrumentPanel(
   if (controls.hiddenPanels.has(panelId)) return null;
 
   const zoom = options.preferredScale ?? controls.instrumentZoom[panelId] ?? 1;
+  const scrollableCdu = panelId === 'cdu';
   const isExpected =
     controls.tutorialActive && controls.layoutMode !== 'free-practice' && controls.expectedPanel === panelId;
   const highlightClass = isExpected
@@ -398,8 +411,9 @@ function renderInstrumentPanel(
     <InstrumentFit
       key={panelId}
       target={targetForPanel(panelId, controls.aircraft)}
-      className={`${options.className || ''} ${highlightClass}`.trim()}
-      preferredScale={zoom}
+      className={`${options.className || ''} ${highlightClass} ${scrollableCdu ? '!justify-start [&>.instrument-fit-viewport]:shrink-0 [&_button]:!min-h-11 [&_button]:!min-w-11' : ''}`.trim()}
+      preferredScale={scrollableCdu ? Math.max(1, zoom) : zoom}
+      allowOverflowZoom={scrollableCdu}
       dataTestId={`${panelId}-panel`}
       overlay={
         <InstrumentHeader
@@ -432,6 +446,12 @@ function renderFocusedPanel(panelId: InstrumentPanelId, controls: LayoutControls
     <InstrumentFit
       target={targetForPanel(panelId, controls.aircraft)}
       preferredScale={focusedScale}
+      allowOverflowZoom={panelId === 'cdu'}
+      className={
+        panelId === 'cdu'
+          ? '!justify-start [&>.instrument-fit-viewport]:shrink-0 [&_button]:!min-h-11 [&_button]:!min-w-11'
+          : ''
+      }
       dataTestId={`focused-${panelId}-panel`}
     >
       {renderPanel(panelId)}

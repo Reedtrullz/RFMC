@@ -377,6 +377,9 @@ export async function runGuardProbe(guard: ProductionGuard, page: Page) {
   } catch {
     record.loopback = 'rejected';
   }
+  const own = await page.goto(`${guard.origin}/manifest.json`, { timeout: 10000 });
+  record.ownOrigin = own?.status() ?? 0;
+  await expect(page).toHaveURL(`${guard.origin}/manifest.json`);
   const wsDenialStart = guard.denials.length;
   const foreignWsUrl = 'ws://ws-source-admission-probe.invalid/ws-source-admission-probe';
   record.foreignWs = await page.evaluate(
@@ -410,8 +413,6 @@ export async function runGuardProbe(guard: ProductionGuard, page: Page) {
     ),
     'The real foreign WebSocket must produce its own new proxy denial',
   ).toBe(true);
-  const own = await page.goto(`${guard.origin}/manifest.json`, { timeout: 10000 });
-  record.ownOrigin = own?.status() ?? 0;
   record.ownWs = await guard.probeUpgrade('/ws');
   const foreignPath = await guard.probeUpgrade('/ws-denied');
   const denials = guard.denials.slice();
